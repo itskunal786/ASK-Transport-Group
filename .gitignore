@@ -1,0 +1,46 @@
+# Build files
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local / environment configuration
+appsettings.Development.json
+appsettings.Production.json
+appsettings.UAT.json
+appsettings.Local.json
+appsettings.*.local.json
+
+# Environment / secrets
+.env
+.env.*
+secrets.json
+
+# Logs
+logs/
+*.log
+
+# Uploaded/runtime files
+uploads/
+wwwroot/uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
+
+# VS Code local settings
+.vscode/
+
+# Local base configuration
+appsettings.json
+
+# Local base configuration
+appsettings.json

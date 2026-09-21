@@ -1,0 +1,6 @@
+@ASK.Group.Api_HostAddress = http://localhost:5208
+
+GET {{ASK.Group.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
