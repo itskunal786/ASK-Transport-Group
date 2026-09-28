@@ -49,3 +49,4 @@ appsettings.json
 ASK.Transport.Web/node_modules/
 ASK.Transport.Web/dist/
 ASK.Transport.Web/*-backup-*/
+ASK.Transport.Web/**/*.backup
