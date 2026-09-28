@@ -1,0 +1,11 @@
+﻿import { get } from './api';
+
+import type {
+  ClientBookingResponse
+} from '../types/booking';
+
+export function getClientBookings() {
+  return get<ClientBookingResponse>(
+    '/client/bookings?page=1&pageSize=50'
+  );
+}

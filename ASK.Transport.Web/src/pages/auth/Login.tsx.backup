@@ -1,0 +1,170 @@
+﻿import { useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
+export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    setError('');
+    setLoading(true);
+
+    try {
+      const user = await login(email, password);
+
+      if (user.role === 'Admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to sign in. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-left">
+        <div className="brand">
+          <div className="brand-logo">A</div>
+
+          <div>
+            <strong>ASK TRANSPORT</strong>
+            <span>LOGISTICS & SUPPLY CHAIN</span>
+          </div>
+        </div>
+
+        <div className="auth-hero">
+          <div className="eyebrow">
+            SMARTER LOGISTICS. STRONGER BUSINESS.
+          </div>
+
+          <h1>
+            Move your business
+            <br />
+            <span>forward.</span>
+          </h1>
+
+          <p>
+            Book shipments, track deliveries, manage invoices
+            and stay connected with your logistics operations.
+          </p>
+
+          <div className="truck-art">
+            <div className="road-line" />
+
+            <div className="truck">
+              <div className="truck-box">
+                <span>ASK</span>
+              </div>
+
+              <div className="truck-cabin" />
+
+              <div className="wheel wheel-one" />
+              <div className="wheel wheel-two" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="auth-right">
+        <div className="mobile-brand">
+          <div className="brand-logo">A</div>
+
+          <div>
+            <strong>ASK TRANSPORT</strong>
+          </div>
+        </div>
+
+        <form className="login-card" onSubmit={handleSubmit}>
+          <div className="login-heading">
+            <span>WELCOME BACK</span>
+
+            <h2>Sign in to your account</h2>
+
+            <p>
+              Enter your registered email and password to continue.
+            </p>
+          </div>
+
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="email">
+              Email Address
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <div className="password-label">
+              <label htmlFor="password">
+                Password
+              </label>
+
+              <Link to="/forgot-password">
+                Forgot Password?
+              </Link>
+            </div>
+
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <button
+            className="login-button"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+
+          <div className="register-link">
+            New to ASK Transport?{' '}
+            <Link to="/register">
+              Create an account
+            </Link>
+          </div>
+
+          <div className="secure-text">
+            Secure login powered by ASK Transport
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

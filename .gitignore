@@ -44,3 +44,8 @@ appsettings.json
 
 # Local base configuration
 appsettings.json
+
+# React Frontend
+ASK.Transport.Web/node_modules/
+ASK.Transport.Web/dist/
+ASK.Transport.Web/*-backup-*/

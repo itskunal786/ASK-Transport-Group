@@ -1,0 +1,1118 @@
+﻿* {
+  box-sizing: border-box;
+}
+
+.transport-login {
+  width: 100%;
+  min-height: 100vh;
+
+  display: grid;
+  grid-template-columns: 52% 48%;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  overflow: hidden;
+
+  background: #ffffff;
+}
+
+
+/* ==========================================
+   LEFT PANEL
+========================================== */
+
+.transport-hero {
+  position: relative;
+
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  padding: 48px 70px;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 92% 34%,
+      rgba(24, 139, 255, 0.42),
+      transparent 37%
+    ),
+    linear-gradient(
+      135deg,
+      #031c35 0%,
+      #073c72 56%,
+      #0877d9 100%
+    );
+}
+
+
+/* decorative circles */
+
+.transport-hero::before {
+  content: "";
+
+  position: absolute;
+
+  width: 620px;
+  height: 620px;
+
+  top: -300px;
+  right: -300px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.08);
+
+  border-radius: 50%;
+}
+
+.transport-hero::after {
+  content: "";
+
+  position: absolute;
+
+  width: 500px;
+  height: 500px;
+
+  right: -300px;
+  bottom: -280px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.08);
+
+  border-radius: 50%;
+}
+
+
+/* LOGO */
+
+.transport-brand {
+  position: relative;
+
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+
+  position: relative;
+
+  flex-shrink: 0;
+}
+
+.brand-mark span {
+  position: absolute;
+
+  display: block;
+
+  height: 5px;
+
+  border-radius: 10px;
+
+  background: #168dff;
+
+  transform: skewX(-35deg);
+}
+
+.brand-mark span:nth-child(1) {
+  width: 27px;
+
+  top: 7px;
+  left: 2px;
+}
+
+.brand-mark span:nth-child(2) {
+  width: 22px;
+
+  top: 16px;
+  left: 8px;
+
+  background: #ffffff;
+}
+
+.brand-mark span:nth-child(3) {
+  width: 17px;
+
+  top: 25px;
+  left: 14px;
+
+  background: #54b5ff;
+}
+
+.transport-brand strong {
+  display: block;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  letter-spacing: 0.3px;
+}
+
+.transport-brand small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #83c5ff;
+
+  font-size: 9px;
+
+  letter-spacing: 0.8px;
+}
+
+
+/* HERO */
+
+.hero-content {
+  position: relative;
+
+  z-index: 5;
+
+  max-width: 600px;
+
+  margin-top: 95px;
+}
+
+.hero-tag {
+  color: #d8eaff;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  letter-spacing: 0.5px;
+}
+
+.hero-content h1 {
+  margin: 23px 0 20px;
+
+  color: #ffffff;
+
+  font-size: 59px;
+  font-weight: 800;
+
+  line-height: 1.02;
+
+  letter-spacing: -2px;
+}
+
+.hero-content h1 span {
+  color: #ffffff;
+}
+
+.hero-content > p {
+  width: 100%;
+  max-width: 475px;
+
+  margin: 0;
+
+  color: #c8dff3;
+
+  font-size: 14px;
+
+  line-height: 1.7;
+}
+
+
+/* SERVICES */
+
+.hero-services {
+  display: flex;
+  align-items: center;
+
+  gap: 31px;
+
+  margin-top: 31px;
+}
+
+.service {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+.service-icon {
+  position: relative;
+
+  width: 39px;
+  height: 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border:
+    1px solid rgba(74, 177, 255, 0.8);
+
+  border-radius: 50%;
+
+  background:
+    rgba(0, 100, 195, 0.25);
+}
+
+.service strong {
+  display: block;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.service small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #bcd9f3;
+
+  font-size: 9px;
+}
+
+
+/* PACKAGE ICON */
+
+.box-icon {
+  width: 13px;
+  height: 13px;
+
+  border: 2px solid #ffffff;
+
+  border-radius: 2px;
+}
+
+.box-icon::after {
+  content: "";
+
+  position: absolute;
+
+  width: 7px;
+  height: 2px;
+
+  margin:
+    3px 0 0 1px;
+
+  background: #ffffff;
+}
+
+
+/* TRACK ICON */
+
+.track-icon {
+  width: 14px;
+  height: 14px;
+
+  border:
+    2px solid #ffffff;
+
+  border-radius: 50%;
+}
+
+.track-icon::after {
+  content: "";
+
+  position: absolute;
+
+  width: 4px;
+  height: 4px;
+
+  top: 16px;
+  left: 16px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+
+/* INVOICE ICON */
+
+.invoice-icon {
+  position: relative;
+
+  width: 12px;
+  height: 15px;
+
+  border:
+    2px solid #ffffff;
+
+  border-radius: 1px;
+}
+
+.invoice-icon::before,
+.invoice-icon::after {
+  content: "";
+
+  position: absolute;
+
+  left: 2px;
+
+  width: 6px;
+  height: 1px;
+
+  background: #ffffff;
+}
+
+.invoice-icon::before {
+  top: 4px;
+}
+
+.invoice-icon::after {
+  top: 8px;
+}
+
+
+/* ==========================================
+   NETWORK MAP
+========================================== */
+
+.network-map {
+  position: absolute;
+
+  z-index: 2;
+
+  width: 240px;
+  height: 130px;
+
+  right: 45px;
+  bottom: 120px;
+
+  opacity: 0.30;
+
+  transform: rotate(4deg);
+}
+
+.network-map i {
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #75c6ff;
+
+  box-shadow:
+    15px 5px 0 #75c6ff,
+    30px -2px 0 #75c6ff,
+    45px 7px 0 #75c6ff;
+}
+
+.network-map i:nth-child(1) {
+  top: 10px;
+  left: 15px;
+}
+
+.network-map i:nth-child(2) {
+  top: 28px;
+  left: 35px;
+}
+
+.network-map i:nth-child(3) {
+  top: 48px;
+  left: 12px;
+}
+
+.network-map i:nth-child(4) {
+  top: 65px;
+  left: 48px;
+}
+
+.network-map i:nth-child(5) {
+  top: 84px;
+  left: 25px;
+}
+
+.network-map i:nth-child(6) {
+  top: 15px;
+  left: 105px;
+}
+
+.network-map i:nth-child(7) {
+  top: 35px;
+  left: 125px;
+}
+
+.network-map i:nth-child(8) {
+  top: 58px;
+  left: 145px;
+}
+
+.network-map i:nth-child(9) {
+  top: 82px;
+  left: 115px;
+}
+
+.network-map i:nth-child(10) {
+  top: 100px;
+  left: 160px;
+}
+
+.network-map i:nth-child(n+11) {
+  display: none;
+}
+
+
+/* ==========================================
+   TRUCK / ROAD
+========================================== */
+
+.truck-scene {
+  position: absolute;
+
+  z-index: 4;
+
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 105px;
+
+  overflow: hidden;
+}
+
+.truck-road {
+  position: absolute;
+
+  left: -5%;
+  bottom: -18px;
+
+  width: 110%;
+  height: 80px;
+
+  transform: rotate(-2deg);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2, 27, 51, 0.15),
+      rgba(2, 23, 45, 0.72)
+    );
+
+  border-top:
+    2px solid rgba(87, 177, 255, 0.35);
+}
+
+.truck-road span {
+  position: absolute;
+
+  top: 33px;
+
+  width: 80px;
+  height: 3px;
+
+  background:
+    rgba(255, 255, 255, 0.38);
+
+  transform: skewX(-35deg);
+}
+
+.truck-road span:nth-child(1) {
+  left: 8%;
+}
+
+.truck-road span:nth-child(2) {
+  left: 42%;
+}
+
+.truck-road span:nth-child(3) {
+  left: 77%;
+}
+
+
+/* TRUCK */
+
+.css-truck {
+  position: absolute;
+
+  right: 45px;
+  bottom: 29px;
+
+  width: 180px;
+  height: 65px;
+
+  filter:
+    drop-shadow(
+      0 10px 10px rgba(0, 0, 0, 0.25)
+    );
+}
+
+.truck-body {
+  position: absolute;
+
+  left: 0;
+  bottom: 14px;
+
+  width: 112px;
+  height: 48px;
+
+  border-radius:
+    5px 2px 2px 3px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f7fbff,
+      #dfeaf5
+    );
+}
+
+.truck-brand {
+  padding: 13px 13px;
+
+  color: #0a4d89;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.truck-brand small {
+  display: block;
+
+  margin-top: 1px;
+
+  font-size: 5px;
+
+  letter-spacing: 0.5px;
+}
+
+.truck-front {
+  position: absolute;
+
+  left: 114px;
+  bottom: 14px;
+
+  width: 52px;
+  height: 40px;
+
+  border-radius:
+    4px 12px 3px 3px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1595ff,
+      #0872d5
+    );
+}
+
+.truck-window {
+  position: absolute;
+
+  top: 7px;
+  left: 8px;
+
+  width: 26px;
+  height: 13px;
+
+  border-radius: 3px;
+
+  background: #bce4ff;
+}
+
+.truck-wheel {
+  position: absolute;
+
+  bottom: 5px;
+
+  width: 22px;
+  height: 22px;
+
+  border:
+    5px solid #071b30;
+
+  border-radius: 50%;
+
+  background: #9db3c7;
+}
+
+.wheel-left {
+  left: 23px;
+}
+
+.wheel-right {
+  left: 128px;
+}
+
+
+/* ==========================================
+   RIGHT LOGIN
+========================================== */
+
+.login-panel {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 50px 70px;
+
+  background: #ffffff;
+}
+
+.transport-form {
+  width: 100%;
+  max-width: 470px;
+}
+
+.mobile-logo {
+  display: none;
+}
+
+
+/* HEADING */
+
+.form-heading > span {
+  display: block;
+
+  margin-bottom: 14px;
+
+  color: #087cf0;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+.form-heading h2 {
+  margin: 0 0 11px;
+
+  color: #071c39;
+
+  font-size: 37px;
+  font-weight: 800;
+
+  line-height: 1.12;
+
+  letter-spacing: -1px;
+}
+
+.form-heading p {
+  margin:
+    0 0 35px;
+
+  color: #7a899e;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* FIELD */
+
+.login-field {
+  margin-bottom: 20px;
+}
+
+.login-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #102b48;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.password-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.password-row a {
+  margin-bottom: 8px;
+
+  color: #087cf0;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+
+/* INPUT */
+
+.field-control {
+  position: relative;
+}
+
+.field-control input {
+  width: 100%;
+  height: 55px;
+
+  padding:
+    0 16px 0 48px;
+
+  border:
+    1px solid #d8e2ed;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background: #fbfcfe;
+
+  color: #10233e;
+
+  font-size: 14px;
+
+  transition: 0.2s;
+}
+
+.field-control input::placeholder {
+  color: #9aa9bb;
+}
+
+.field-control input:focus {
+  border-color: #1388f5;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(19, 136, 245, 0.09);
+}
+
+
+/* EMAIL ICON */
+
+.mail-icon {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 17px;
+  top: 50%;
+
+  width: 14px;
+  height: 11px;
+
+  transform: translateY(-50%);
+
+  border:
+    1.5px solid #8da1b8;
+
+  border-radius: 2px;
+}
+
+.mail-icon::after {
+  content: "";
+
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  top: -2px;
+  left: 2px;
+
+  border-right:
+    1px solid #8da1b8;
+
+  border-bottom:
+    1px solid #8da1b8;
+
+  transform:
+    rotate(45deg);
+}
+
+
+/* LOCK ICON */
+
+.lock-icon {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 18px;
+  top: 28px;
+
+  width: 12px;
+  height: 10px;
+
+  border:
+    1.5px solid #8da1b8;
+
+  border-radius: 2px;
+
+  transform:
+    translateY(-25%);
+}
+
+.lock-icon::before {
+  content: "";
+
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  left: 1px;
+  top: -7px;
+
+  border:
+    1.5px solid #8da1b8;
+
+  border-bottom: 0;
+
+  border-radius:
+    6px 6px 0 0;
+}
+
+
+/* BUTTON */
+
+.signin-btn {
+  width: 100%;
+  height: 55px;
+
+  margin-top: 6px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #0870d9,
+      #1595ff
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 11px 27px
+    rgba(12, 125, 236, 0.22);
+
+  transition: 0.2s;
+}
+
+.signin-btn:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 14px 30px
+    rgba(12, 125, 236, 0.28);
+}
+
+.signin-btn:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+}
+
+
+/* ERROR */
+
+.login-error {
+  margin-bottom: 18px;
+
+  padding: 11px 13px;
+
+  border:
+    1px solid #ffd2d2;
+
+  border-radius: 7px;
+
+  background: #fff2f2;
+
+  color: #c0392b;
+
+  font-size: 12px;
+}
+
+
+/* REGISTER */
+
+.create-account {
+  display: flex;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 26px;
+
+  color: #7b899c;
+
+  font-size: 11px;
+}
+
+.create-account a {
+  color: #087cf0;
+
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+.create-account a:hover,
+.password-row a:hover {
+  text-decoration: underline;
+}
+
+
+/* SECURE */
+
+.secure-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 34px;
+  padding-top: 23px;
+
+  border-top:
+    1px solid #e9eef4;
+
+  color: #96a3b4;
+
+  font-size: 10px;
+}
+
+.secure-dot {
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #92a8bf;
+}
+
+
+/* ==========================================
+   LAPTOP
+========================================== */
+
+@media (max-width: 1250px) {
+
+  .transport-hero {
+    padding:
+      42px 50px;
+  }
+
+  .hero-content {
+    margin-top: 75px;
+  }
+
+  .hero-content h1 {
+    font-size: 50px;
+  }
+
+  .hero-services {
+    gap: 18px;
+  }
+
+  .login-panel {
+    padding:
+      45px 50px;
+  }
+
+  .form-heading h2 {
+    font-size: 33px;
+  }
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 900px) {
+
+  .transport-login {
+    display: block;
+  }
+
+  .transport-hero {
+    display: none;
+  }
+
+  .login-panel {
+    min-height: 100vh;
+
+    padding:
+      35px 25px;
+  }
+
+  .transport-form {
+    max-width: 450px;
+  }
+
+  .mobile-logo {
+    display: block;
+
+    margin-bottom: 48px;
+  }
+
+  .mobile-logo strong {
+    display: block;
+
+    color: #092e56;
+
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .mobile-logo small {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #1388f5;
+
+    font-size: 9px;
+
+    letter-spacing: 0.8px;
+  }
+}
+
+
+@media (max-width: 500px) {
+
+  .login-panel {
+    align-items: flex-start;
+
+    padding:
+      28px 20px;
+  }
+
+  .form-heading h2 {
+    font-size: 29px;
+  }
+
+  .form-heading p {
+    margin-bottom: 27px;
+  }
+
+  .field-control input,
+  .signin-btn {
+    height: 51px;
+  }
+
+  .create-account {
+    flex-wrap: wrap;
+  }
+}
