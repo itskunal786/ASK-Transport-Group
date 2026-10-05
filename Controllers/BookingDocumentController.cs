@@ -30,7 +30,7 @@ public class BookingDocumentController : ControllerBase
 
     [HttpPost("{bookingNumber}/upload")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(10 * 1024 * 1024)]
+    [RequestSizeLimit(5 * 1024 * 1024)]
     public async Task<IActionResult> Upload(
     string bookingNumber,
     [FromForm] UploadBookingDocumentRequest request)

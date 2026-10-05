@@ -20,14 +20,10 @@ public class NumberGeneratorService
         return Generate(prefix);
     }
 
-    public async Task<string> GenerateShipmentNumberAsync()
+    public Task<string> GenerateShipmentNumberAsync()
     {
-        var prefix =
-            await _settings.GetAsync(
-                "Numbering.ShipmentPrefix",
-                "SHP");
-
-        return Generate(prefix);
+        return Task.FromResult(
+            GenerateShipmentNumber());
     }
 
     public async Task<string> GenerateTripNumberAsync()
@@ -58,6 +54,16 @@ public class NumberGeneratorService
                 "REF");
 
         return Generate(prefix);
+    }
+
+    private static string GenerateShipmentNumber()
+    {
+        long number =
+            Random.Shared.NextInt64(
+                100000000000,
+                1000000000000);
+
+        return "SHP" + number;
     }
 
     private static string Generate(

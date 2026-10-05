@@ -372,6 +372,41 @@ public class ShipmentStatusController : ControllerBase
                 tracking);
         }
 
+        // Add movement history for customer tracking timeline
+        var movement =
+            new ShipmentMovement
+            {
+                ShipmentId =
+                    shipment.Id,
+
+                Status =
+                    status,
+
+                Location =
+                    string.IsNullOrWhiteSpace(
+                        request.Location)
+                        ? shipment.Booking != null
+                            ? GetDefaultLocation(
+                                shipment.Booking)
+                            : null
+                        : request.Location.Trim(),
+
+                Description =
+                    string.IsNullOrWhiteSpace(
+                        request.Description)
+                        ? $"Shipment status changed to {status}"
+                        : request.Description.Trim(),
+
+                MovementDate =
+                    now,
+
+                CreatedAt =
+                    now
+            };
+
+        _db.ShipmentMovements.Add(
+            movement);
+
         await _db.SaveChangesAsync(
             cancellationToken);
 

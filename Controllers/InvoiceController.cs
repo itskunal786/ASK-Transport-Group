@@ -1,4 +1,4 @@
-using ASK.Group.Api.Data;
+﻿using ASK.Group.Api.Data;
 using ASK.Group.Api.DTOs;
 using ASK.Group.Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +16,7 @@ public class InvoiceController : ControllerBase
 {
     private readonly AskTransportDbContext _db;
     private readonly InvoiceService _invoiceService;
+    private readonly InvoicePdfService _invoicePdfService;
     private readonly EmailService _emailService;
     private readonly NotificationService _notificationService;
     private readonly AuditService _auditService;
@@ -24,6 +25,7 @@ public class InvoiceController : ControllerBase
     public InvoiceController(
         AskTransportDbContext db,
         InvoiceService invoiceService,
+        InvoicePdfService invoicePdfService,
         EmailService emailService,
         NotificationService notificationService,
         AuditService auditService,
@@ -34,6 +36,9 @@ public class InvoiceController : ControllerBase
 
         _invoiceService =
             invoiceService;
+
+        _invoicePdfService =
+            invoicePdfService;
 
         _emailService =
             emailService;
@@ -323,6 +328,62 @@ public class InvoiceController : ControllerBase
             Encoding.UTF8);
     }
 
+
+    [HttpGet("{invoiceNumber}/pdf")]
+    public async Task<IActionResult> DownloadPdf(
+        string invoiceNumber)
+    {
+        var userId =
+            GetUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+
+        var invoice =
+            await _db.Invoices
+                .Include(x =>
+                    x.InvoiceItems)
+                .Include(x =>
+                    x.Booking)
+                .FirstOrDefaultAsync(x =>
+                    x.InvoiceNumber ==
+                    invoiceNumber);
+
+
+        if (invoice == null ||
+            invoice.Booking == null)
+        {
+            return NotFound(new
+            {
+                message =
+                    "Invoice not found"
+            });
+        }
+
+
+        if (!User.IsInRole("Admin") &&
+            invoice.Booking.UserId !=
+            userId.Value)
+        {
+            return Forbid();
+        }
+
+
+        var pdf =
+            _invoicePdfService.Generate(
+                invoice,
+                invoice.Booking);
+
+
+        return File(
+            pdf,
+            "application/pdf",
+            $"{invoice.InvoiceNumber}.pdf");
+    }
+
     [HttpPost("send-email")]
     public async Task<IActionResult> SendInvoiceEmail(
         SendInvoiceEmailRequest request)
@@ -427,3 +488,4 @@ public class InvoiceController : ControllerBase
         return userId;
     }
 }
+

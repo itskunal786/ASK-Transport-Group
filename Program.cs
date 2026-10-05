@@ -1,3 +1,4 @@
+﻿using QuestPDF.Infrastructure;
 using ASK.Group.Api.Authorization;
 using ASK.Group.Api.Data;
 using ASK.Group.Api.HealthChecks;
@@ -21,6 +22,9 @@ using ASK.Group.Api.Models;
 
 var builder =
     WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License =
+    LicenseType.Evaluation;
 
 var connectionString =
     builder.Configuration
@@ -215,6 +219,7 @@ builder.Services.AddScoped<ClientBookingService>();
 builder.Services.AddScoped<ClientShipmentService>();
 builder.Services.AddScoped<ClientPaymentService>();
 builder.Services.AddScoped<ClientInvoiceService>();
+builder.Services.AddScoped<InvoicePdfService>();
 builder.Services.AddScoped<ClientAddressService>();
 builder.Services.AddScoped<ClientNotificationService>();
 builder.Services.AddScoped<ClientDocumentService>();
@@ -729,6 +734,7 @@ builder.Services
         DatabaseHealthCheck>(
         "database");
 
+
 var app =
     builder.Build();
 
@@ -762,16 +768,6 @@ using (var scope =
     await db.Database
         .MigrateAsync();
 
-    if (app.Environment
-            .IsDevelopment() ||
-        app.Environment
-            .IsEnvironment(
-                "UAT"))
-    {
-        await DbInitializer
-            .SeedAsync(
-                db);
-    }
 
     await RbacSeeder
         .SeedAsync(
@@ -917,5 +913,13 @@ app.MapGet(
             });
     });
 
+
+
 app.Run();
+
+
+
+
+
+
 

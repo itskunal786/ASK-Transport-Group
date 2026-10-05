@@ -1,4 +1,4 @@
-using ASK.Group.Api.Data;
+﻿using ASK.Group.Api.Data;
 using ASK.Group.Api.DTOs;
 using ASK.Group.Api.Models;
 using ASK.Group.Api.Services;
@@ -934,21 +934,28 @@ public class AuthController : ControllerBase
         string name,
         string otp)
     {
-        var smtpHost =
-            _configuration[
-                "Smtp:Host"];
-
-        if (string.IsNullOrWhiteSpace(
-            smtpHost))
+        try
         {
-            return;
-        }
-
-        await _emailService
-            .SendOtpEmailAsync(
+            await _emailService.SendOtpEmailAsync(
                 email,
                 name,
                 otp);
+        }
+        catch (Exception ex)
+        {
+            if (_environment.IsDevelopment())
+            {
+                Console.WriteLine(
+                    $"OTP email could not be sent: {ex.Message}");
+
+                Console.WriteLine(
+                    $"Development OTP for {email}: {otp}");
+
+                return;
+            }
+
+            throw;
+        }
     }
 
     private int? GetUserId()
