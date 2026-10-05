@@ -1,4 +1,4 @@
-﻿import {
+import {
   Navigate,
   Route,
   Routes
@@ -11,10 +11,14 @@ import PaymentPage from '../pages/customer/PaymentPage';
 import Dashboard from '../pages/customer/Dashboard';
 import BookShipment from '../pages/customer/BookShipment';
 import MyBookings from '../pages/customer/MyBookings';
+import Payments from '../pages/customer/Payments';
+import Invoices from '../pages/customer/Invoices';
+import TrackShipment from '../pages/customer/TrackShipment';
 import AdminDashboard from '../pages/admin/Dashboard';
 
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
+import Documents from '../pages/customer/Documents';
 
 function ComingSoon({
   title
@@ -37,7 +41,7 @@ function ComingSoon({
           fontWeight: 600
         }}
       >
-        ← Back to Dashboard
+        ? Back to Dashboard
       </a>
 
       <div
@@ -139,30 +143,22 @@ export default function AppRoutes() {
 
         <Route
           path="/tracking"
-          element={
-            <ComingSoon title="Track Shipment" />
-          }
+          element={<TrackShipment />}
         />
 
         <Route
           path="/payments"
-          element={
-            <ComingSoon title="Payments" />
-          }
+          element={<Payments />}
         />
 
         <Route
           path="/invoices"
-          element={
-            <ComingSoon title="Invoices" />
-          }
+          element={<Invoices />}
         />
 
         <Route
           path="/documents"
-          element={
-            <ComingSoon title="Documents" />
-          }
+          element={<Documents />}
         />
 
         <Route
@@ -204,6 +200,11 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+
+
+
+
+
 
 
 

@@ -1,22 +1,12 @@
-﻿export interface CreatePaymentRequest {
-  bookingNumber: string;
-  paymentMethod: string;
-  paymentReference?: string;
-}
-
-export interface PaymentTransaction {
+﻿export interface PaymentHistoryItem {
   id: number;
+  bookingNumber: string;
   transactionId: string;
   amount: number;
   paymentMethod: string;
   paymentStatus: string;
-  paymentMessage?: string;
-  paidAt?: string;
-}
-
-export interface PaymentResponse {
-  message: string;
-  bookingNumber: string;
-  invoiceNumber: string;
-  transaction: PaymentTransaction;
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  paidAt?: string | null;
+  createdAt: string;
 }
