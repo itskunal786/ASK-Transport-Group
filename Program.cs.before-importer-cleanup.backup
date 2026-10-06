@@ -1,0 +1,958 @@
+﻿using ASK.Group.Api.Authorization;
+using ASK.Group.Api.Data;
+using ASK.Group.Api.HealthChecks;
+using ASK.Group.Api.Hubs;
+using ASK.Group.Api.Middleware;
+using ASK.Group.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Threading.RateLimiting;
+using ASK.Group.Api.Models;
+
+var builder =
+    WebApplication.CreateBuilder(args);
+
+var connectionString =
+    builder.Configuration
+        .GetConnectionString(
+            "DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(
+    connectionString))
+{
+    throw new InvalidOperationException(
+        "Database connection string is missing.");
+}
+
+var jwtKey =
+    builder.Configuration[
+        "Jwt:Key"];
+
+if (string.IsNullOrWhiteSpace(
+    jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT key is missing.");
+}
+
+var jwtIssuer =
+    builder.Configuration[
+        "Jwt:Issuer"];
+
+if (string.IsNullOrWhiteSpace(
+    jwtIssuer))
+{
+    throw new InvalidOperationException(
+        "JWT issuer is missing.");
+}
+
+var jwtAudience =
+    builder.Configuration[
+        "Jwt:Audience"];
+
+if (string.IsNullOrWhiteSpace(
+    jwtAudience))
+{
+    throw new InvalidOperationException(
+        "JWT audience is missing.");
+}
+
+builder.Services.AddDbContext<
+    AskTransportDbContext>(
+    options =>
+    {
+        options.UseSqlServer(
+            connectionString);
+    });
+
+builder.Services
+    .AddHttpContextAccessor();
+
+builder.Services.AddScoped<
+    JwtService>();
+
+builder.Services.AddScoped<
+    FreightService>();
+
+builder.Services.AddScoped<
+    InvoiceService>();
+
+builder.Services.AddScoped<
+    PaymentService>();
+
+builder.Services.AddScoped<
+    EmailService>();
+
+builder.Services.AddScoped<
+    RazorpayService>();
+
+builder.Services.AddScoped<
+    CleanupService>();
+
+builder.Services.AddScoped<
+    AuditService>();
+
+builder.Services.AddScoped<
+    LoginSecurityService>();
+
+builder.Services.AddScoped<
+    RefreshTokenService>();
+
+builder.Services.AddScoped<
+    DocumentStorageService>();
+
+builder.Services.AddScoped<
+    NotificationService>();
+
+builder.Services.AddScoped<
+    PricingService>();
+
+builder.Services.AddScoped<
+    RefundService>();
+
+builder.Services.AddScoped<
+    DeliveryService>();
+
+builder.Services.AddScoped<
+    SystemSettingService>();
+
+builder.Services.AddScoped<
+    NumberGeneratorService>();
+
+builder.Services.AddScoped<
+    ReportService>();
+
+builder.Services.AddScoped<
+    CsvExportService>();
+
+builder.Services.AddScoped<
+    TemplateService>();
+
+builder.Services.AddScoped<
+    CommunicationService>();
+
+builder.Services.AddScoped<
+    ComplianceAlertService>();
+
+builder.Services.AddScoped<
+    CurrentUserService>();
+
+builder.Services.AddScoped<
+    OwnershipService>();
+
+builder.Services.AddScoped<
+    BookingQueryService>();
+
+builder.Services.AddScoped<
+    AdminSafetyService>();
+
+builder.Services.AddScoped<
+    BackendReadinessService>();
+
+builder.Services.AddScoped<
+    PermissionService>();
+
+builder.Services.AddScoped<
+    RealtimeOperationsService>();
+
+builder.Services.AddScoped<
+    OperationsAlertService>();
+
+builder.Services.AddScoped<
+    AutoAssignmentService>();
+
+builder.Services.AddScoped<
+    SmartEtaService>();
+
+builder.Services.AddScoped<
+    WebhookService>();
+
+builder.Services.AddScoped<
+    OperationsExceptionService>();
+
+builder.Services.AddScoped<
+    AdvancedAnalyticsService>();
+
+builder.Services.AddSingleton<
+    StartupValidationService>();
+
+builder.Services.AddHostedService<
+    ComplianceBackgroundService>();
+
+builder.Services.AddHostedService<
+    BackgroundCleanupService>();
+
+builder.Services.AddHostedService<
+    OperationsAlertBackgroundService>();
+
+builder.Services.AddHostedService<
+    WebhookDeliveryBackgroundService>();
+
+builder.Services.AddHostedService<
+    OperationsExceptionBackgroundService>();
+
+builder.Services.AddScoped<RazorpayWebhookService>();
+builder.Services.AddScoped<PaymentReconciliationService>();
+builder.Services.AddScoped<BookingStatusService>();
+builder.Services.AddScoped<ShipmentStatusService>();
+builder.Services.AddScoped<TripWorkflowService>();
+builder.Services.AddScoped<DeliveryFinalizationService>();
+builder.Services.AddScoped<AdminOperationsService>();
+builder.Services.AddScoped<WorkflowSecurityService>();
+builder.Services.AddScoped<ClientContactService>();
+builder.Services.AddScoped<ClientDashboardService>();
+builder.Services.AddScoped<ClientBookingService>();
+builder.Services.AddScoped<ClientShipmentService>();
+builder.Services.AddScoped<ClientPaymentService>();
+builder.Services.AddScoped<ClientInvoiceService>();
+builder.Services.AddScoped<ClientAddressService>();
+builder.Services.AddScoped<ClientNotificationService>();
+builder.Services.AddScoped<ClientDocumentService>();
+builder.Services.AddScoped<ClientSupportTicketService>();
+builder.Services.AddScoped<NotificationPreferenceService>();
+builder.Services.AddScoped<AdminSupportTicketService>();
+builder.Services.AddScoped<ClientAccountService>();
+
+
+
+
+builder.Services.AddHttpClient(
+    "PartnerWebhookClient",
+    client =>
+    {
+        client.Timeout =
+            TimeSpan.FromSeconds(15);
+    });
+
+builder.Services.AddSignalR();
+
+builder.Services
+    .AddAuthentication(
+        JwtBearerDefaults
+            .AuthenticationScheme)
+    .AddJwtBearer(
+        options =>
+        {
+            options.TokenValidationParameters =
+                new TokenValidationParameters
+                {
+                    ValidateIssuer =
+                        true,
+
+                    ValidateAudience =
+                        true,
+
+                    ValidateLifetime =
+                        true,
+
+                    ValidateIssuerSigningKey =
+                        true,
+
+                    ValidIssuer =
+                        jwtIssuer,
+
+                    ValidAudience =
+                        jwtAudience,
+
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(
+                            Encoding.UTF8
+                                .GetBytes(
+                                    jwtKey)),
+
+                    ClockSkew =
+                        TimeSpan.Zero
+                };
+
+            options.Events =
+                new JwtBearerEvents
+                {
+                    OnMessageReceived =
+                        context =>
+                        {
+                            var accessToken =
+                                context.Request
+                                    .Query[
+                                        "access_token"];
+
+                            var path =
+                                context.HttpContext
+                                    .Request
+                                    .Path;
+
+                            if (!string
+                                    .IsNullOrWhiteSpace(
+                                        accessToken) &&
+                                path
+                                    .StartsWithSegments(
+                                        "/hubs/operations"))
+                            {
+                                context.Token =
+                                    accessToken;
+                            }
+
+                            return Task
+                                .CompletedTask;
+                        },
+
+                    OnChallenge =
+                        async context =>
+                        {
+                            context
+                                .HandleResponse();
+
+                            if (context.Response
+                                .HasStarted)
+                            {
+                                return;
+                            }
+
+                            context.Response
+                                .StatusCode =
+                                StatusCodes
+                                    .Status401Unauthorized;
+
+                            context.Response
+                                .ContentType =
+                                "application/json";
+
+                            var response =
+                                new
+                                {
+                                    success =
+                                        false,
+
+                                    message =
+                                        "Authentication is required.",
+
+                                    code =
+                                        "UNAUTHORIZED",
+
+                                    correlationId =
+                                        context
+                                            .HttpContext
+                                            .TraceIdentifier,
+
+                                    timestamp =
+                                        DateTime.UtcNow
+                                };
+
+                            await context.Response
+                                .WriteAsync(
+                                    JsonSerializer
+                                        .Serialize(
+                                            response));
+                        },
+
+                    OnForbidden =
+                        async context =>
+                        {
+                            if (context.Response
+                                .HasStarted)
+                            {
+                                return;
+                            }
+
+                            context.Response
+                                .StatusCode =
+                                StatusCodes
+                                    .Status403Forbidden;
+
+                            context.Response
+                                .ContentType =
+                                "application/json";
+
+                            var response =
+                                new
+                                {
+                                    success =
+                                        false,
+
+                                    message =
+                                        "You do not have permission to perform this action.",
+
+                                    code =
+                                        "FORBIDDEN",
+
+                                    correlationId =
+                                        context
+                                            .HttpContext
+                                            .TraceIdentifier,
+
+                                    timestamp =
+                                        DateTime.UtcNow
+                                };
+
+                            await context.Response
+                                .WriteAsync(
+                                    JsonSerializer
+                                        .Serialize(
+                                            response));
+                        }
+                };
+        });
+
+builder.Services
+    .AddAuthorization();
+
+builder.Services.AddScoped<
+    IAuthorizationHandler,
+    PermissionAuthorizationHandler>();
+builder.Services.AddScoped<DeliveryFeedbackService>();
+builder.Services.AddScoped<AdminFeedbackService>();
+
+builder.Services.AddSingleton<
+    IAuthorizationPolicyProvider,
+    PermissionPolicyProvider>();
+
+builder.Services
+    .AddControllers()
+    .ConfigureApiBehaviorOptions(
+        options =>
+        {
+            options
+                .InvalidModelStateResponseFactory =
+                context =>
+                {
+                    var errors =
+                        context.ModelState
+                            .Where(x =>
+                                x.Value != null &&
+                                x.Value.Errors.Count >
+                                0)
+                            .ToDictionary(
+                                x =>
+                                    x.Key,
+
+                                x =>
+                                    x.Value!
+                                        .Errors
+                                        .Select(
+                                            error =>
+                                                string
+                                                    .IsNullOrWhiteSpace(
+                                                        error
+                                                            .ErrorMessage)
+                                                    ? "Invalid value"
+                                                    : error
+                                                        .ErrorMessage)
+                                        .ToArray());
+
+                    return new
+                        BadRequestObjectResult(
+                            new
+                            {
+                                success =
+                                    false,
+
+                                message =
+                                    "Validation failed",
+
+                                code =
+                                    "VALIDATION_ERROR",
+
+                                errors,
+
+                                timestamp =
+                                    DateTime.UtcNow
+                            });
+                };
+        });
+
+builder.Services
+    .AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(
+    options =>
+    {
+        options.SwaggerDoc(
+            "v1",
+            new OpenApiInfo
+            {
+                Title =
+                    "ASK GROUP Transport API",
+
+                Version =
+                    "v1",
+
+                Description =
+                    "ASK GROUP Transport Booking System API"
+            });
+
+        const string schemeId =
+            "Bearer";
+
+        options
+            .AddSecurityDefinition(
+                schemeId,
+                new OpenApiSecurityScheme
+                {
+                    Type =
+                        SecuritySchemeType
+                            .Http,
+
+                    Scheme =
+                        "bearer",
+
+                    BearerFormat =
+                        "JWT",
+
+                    Description =
+                        "Enter JWT token"
+                });
+
+        options
+            .AddSecurityRequirement(
+                document =>
+                    new OpenApiSecurityRequirement
+                    {
+                        [
+                            new OpenApiSecuritySchemeReference(
+                                schemeId,
+                                document)
+                        ] = []
+                    });
+    });
+
+var allowedOrigins =
+    builder.Configuration
+        .GetSection(
+            "Cors:AllowedOrigins")
+        .Get<string[]>()
+    ?? Array.Empty<string>();
+
+builder.Services.AddCors(
+    options =>
+    {
+        options.AddPolicy(
+            "AllowFrontend",
+            policy =>
+            {
+                if (allowedOrigins.Length >
+                    0)
+                {
+                    policy
+                        .WithOrigins(
+                            allowedOrigins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+
+                    return;
+                }
+
+                if (builder.Environment
+                    .IsDevelopment())
+                {
+                    policy
+                        .SetIsOriginAllowed(
+                            _ => true)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+
+                    return;
+                }
+
+                throw new
+                    InvalidOperationException(
+                        "Cors:AllowedOrigins must be configured outside Development.");
+            });
+    });
+
+builder.Services.AddRateLimiter(
+    options =>
+    {
+        options.AddFixedWindowLimiter(
+            "auth",
+            limiterOptions =>
+            {
+                limiterOptions
+                    .PermitLimit =
+                    20;
+
+                limiterOptions
+                    .Window =
+                    TimeSpan
+                        .FromMinutes(1);
+
+                limiterOptions
+                    .QueueLimit =
+                    0;
+
+                limiterOptions
+                    .QueueProcessingOrder =
+                    QueueProcessingOrder
+                        .OldestFirst;
+
+                limiterOptions
+                    .AutoReplenishment =
+                    true;
+            });
+
+        options.GlobalLimiter =
+            PartitionedRateLimiter.Create<
+                HttpContext,
+                string>(
+                context =>
+                {
+                    var userId =
+                        context.User
+                            .FindFirstValue(
+                                ClaimTypes
+                                    .NameIdentifier);
+
+                    var remoteIp =
+                        context.Connection
+                            .RemoteIpAddress?
+                            .ToString()
+                        ?? "unknown";
+
+                    var partitionKey =
+                        !string
+                            .IsNullOrWhiteSpace(
+                                userId)
+                            ? $"user:{userId}"
+                            : $"ip:{remoteIp}";
+
+                    return RateLimitPartition
+                        .GetFixedWindowLimiter(
+                            partitionKey,
+                            _ =>
+                                new
+                                    FixedWindowRateLimiterOptions
+                                {
+                                    PermitLimit =
+                                            300,
+
+                                    Window =
+                                            TimeSpan
+                                                .FromMinutes(1),
+
+                                    QueueLimit =
+                                            0,
+
+                                    AutoReplenishment =
+                                            true,
+
+                                    QueueProcessingOrder =
+                                            QueueProcessingOrder
+                                                .OldestFirst
+                                });
+                });
+
+        options.RejectionStatusCode =
+            StatusCodes
+                .Status429TooManyRequests;
+
+        options.OnRejected =
+            async (
+                context,
+                cancellationToken) =>
+            {
+                context.HttpContext
+                    .Response
+                    .ContentType =
+                    "application/json";
+
+                var response =
+                    new
+                    {
+                        success =
+                            false,
+
+                        message =
+                            "Too many requests. Please try again later.",
+
+                        code =
+                            "RATE_LIMIT_EXCEEDED",
+
+                        correlationId =
+                            context.HttpContext
+                                .TraceIdentifier,
+
+                        timestamp =
+                            DateTime.UtcNow
+                    };
+
+                await context.HttpContext
+                    .Response
+                    .WriteAsync(
+                        JsonSerializer
+                            .Serialize(
+                                response),
+                        cancellationToken);
+            };
+    });
+
+builder.Services.Configure<
+    ForwardedHeadersOptions>(
+    options =>
+    {
+        options.ForwardedHeaders =
+            ForwardedHeaders
+                .XForwardedFor |
+            ForwardedHeaders
+                .XForwardedProto;
+
+        options.ForwardLimit =
+            1;
+    });
+
+builder.Services.AddHsts(
+    options =>
+    {
+        options.Preload =
+            true;
+
+        options.IncludeSubDomains =
+            true;
+
+        options.MaxAge =
+            TimeSpan.FromDays(
+                365);
+    });
+
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<
+        DatabaseHealthCheck>(
+        "database");
+
+builder.Services.AddScoped<PinCodePdfImporter>();
+
+var app =
+    builder.Build();
+
+app.Services
+    .GetRequiredService<
+        StartupValidationService>()
+    .Validate();
+
+app.UseForwardedHeaders();
+
+app.UseMiddleware<
+    CorrelationIdMiddleware>();
+
+app.UseMiddleware<
+    GlobalExceptionMiddleware>();
+
+app.UseMiddleware<
+    RequestLoggingMiddleware>();
+
+app.UseMiddleware<
+    SecurityHeadersMiddleware>();
+
+using (var scope =
+       app.Services.CreateScope())
+{
+    var db =
+        scope.ServiceProvider
+            .GetRequiredService<
+                AskTransportDbContext>();
+
+    await db.Database
+        .MigrateAsync();
+
+    if (app.Environment
+            .IsDevelopment() ||
+        app.Environment
+            .IsEnvironment(
+                "UAT"))
+    {
+        await DbInitializer
+            .SeedAsync(
+                db);
+    }
+
+    await RbacSeeder
+        .SeedAsync(
+            db);
+}
+
+var swaggerEnabled =
+    builder.Configuration
+        .GetValue<bool>(
+            "Swagger:Enabled");
+
+if (!app.Environment
+    .IsDevelopment())
+{
+    app.UseHsts();
+}
+
+if (swaggerEnabled &&
+    (
+        app.Environment
+            .IsDevelopment() ||
+        app.Environment
+            .IsEnvironment(
+                "UAT")
+    ))
+{
+    app.UseSwagger();
+
+    app.UseSwaggerUI(
+        options =>
+        {
+            options.SwaggerEndpoint(
+                "/swagger/v1/swagger.json",
+                "ASK GROUP Transport API v1");
+
+            options.DocumentTitle =
+                "ASK GROUP Transport API";
+        });
+}
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors(
+    "AllowFrontend");
+
+app.UseAuthentication();
+
+app.UseRateLimiter();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.MapHub<
+    OperationsHub>(
+    "/hubs/operations");
+
+app.MapHealthChecks(
+    "/health",
+    new HealthCheckOptions
+    {
+        ResponseWriter =
+            async (
+                context,
+                report) =>
+            {
+                context.Response
+                    .ContentType =
+                    "application/json";
+
+                var response =
+                    new
+                    {
+                        status =
+                            report.Status
+                                .ToString(),
+
+                        checks =
+                            report.Entries
+                                .Select(
+                                    x =>
+                                        new
+                                        {
+                                            name =
+                                                x.Key,
+
+                                            status =
+                                                x.Value
+                                                    .Status
+                                                    .ToString(),
+
+                                            description =
+                                                x.Value
+                                                    .Description,
+
+                                            durationMs =
+                                                x.Value
+                                                    .Duration
+                                                    .TotalMilliseconds
+                                        }),
+
+                        totalDurationMs =
+                            report
+                                .TotalDuration
+                                .TotalMilliseconds,
+
+                        timestamp =
+                            DateTime.UtcNow
+                    };
+
+                await context.Response
+                    .WriteAsync(
+                        JsonSerializer
+                            .Serialize(
+                                response));
+            }
+    });
+
+app.MapGet(
+    "/",
+    () =>
+    {
+        return Results.Ok(
+            new
+            {
+                application =
+                    "ASK GROUP Transport API",
+
+                status =
+                    "Running",
+
+                environment =
+                    app.Environment
+                        .EnvironmentName,
+
+                version =
+                    "1.0.0",
+
+                timestamp =
+                    DateTime.UtcNow
+            });
+    });
+
+if (app.Environment.IsDevelopment())
+{
+    using var pinScope =
+        app.Services.CreateScope();
+
+    var pinImporter =
+        pinScope.ServiceProvider
+            .GetRequiredService<PinCodePdfImporter>();
+
+    var pinPdfPath =
+        Path.Combine(
+            app.Environment.ContentRootPath,
+            "Data",
+            "Import",
+            "458185243.pdf");
+
+    try
+    {
+        var imported =
+            await pinImporter.ImportAsync(
+                pinPdfPath);
+
+        Console.WriteLine(
+            $"PIN import complete. New PINs: {imported}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(
+            $"PIN import skipped: {ex.Message}");
+    }
+}
+
+
+app.Run();
+
+
+

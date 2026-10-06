@@ -1,4 +1,4 @@
-﻿namespace ASK.Group.Api.DTOs;
+namespace ASK.Group.Api.DTOs;
 
 public sealed class ClientNotificationDto
 {
@@ -8,19 +8,9 @@ public sealed class ClientNotificationDto
 
     public string Message { get; set; } = string.Empty;
 
-    public string Type { get; set; } = "General";
-
-    public int? BookingId { get; set; }
-
-    public string? BookingNumber { get; set; }
-
-    public string? ShipmentNumber { get; set; }
-
     public bool IsRead { get; set; }
 
     public DateTime CreatedAt { get; set; }
-
-    public DateTime? ReadAt { get; set; }
 }
 
 
@@ -38,4 +28,3 @@ public sealed class ClientNotificationListDto
 
     public List<ClientNotificationDto> Data { get; set; } = new();
 }
-

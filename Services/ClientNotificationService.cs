@@ -1,4 +1,4 @@
-using ASK.Group.Api.Data;
+﻿using ASK.Group.Api.Data;
 using ASK.Group.Api.DTOs;
 using Microsoft.EntityFrameworkCore;
 
@@ -76,8 +76,25 @@ public sealed class ClientNotificationService
                         Id = x.Id,
                         Title = x.Title,
                         Message = x.Message,
+                        Type = x.Type,
+                        BookingId = x.BookingId,
+
+                        BookingNumber =
+                            x.Booking != null
+                                ? x.Booking.BookingNumber
+                                : null,
+
+                        ShipmentNumber =
+                            _db.Shipments
+                                .Where(s =>
+                                    s.BookingId == x.BookingId)
+                                .Select(s =>
+                                    s.ShipmentNumber)
+                                .FirstOrDefault(),
+
                         IsRead = x.IsRead,
-                        CreatedAt = x.CreatedAt
+                        CreatedAt = x.CreatedAt,
+                        ReadAt = x.ReadAt
                     })
                 .ToListAsync(cancellationToken);
 
@@ -116,8 +133,25 @@ public sealed class ClientNotificationService
                     Id = x.Id,
                     Title = x.Title,
                     Message = x.Message,
+                    Type = x.Type,
+                    BookingId = x.BookingId,
+
+                    BookingNumber =
+                        x.Booking != null
+                            ? x.Booking.BookingNumber
+                            : null,
+
+                    ShipmentNumber =
+                        _db.Shipments
+                            .Where(s =>
+                                s.BookingId == x.BookingId)
+                            .Select(s =>
+                                s.ShipmentNumber)
+                            .FirstOrDefault(),
+
                     IsRead = x.IsRead,
-                    CreatedAt = x.CreatedAt
+                    CreatedAt = x.CreatedAt,
+                    ReadAt = x.ReadAt
                 })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -146,8 +180,7 @@ public sealed class ClientNotificationService
         if (!notification.IsRead)
         {
             notification.IsRead = true;
-
-            
+            notification.ReadAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync(
                 cancellationToken);
@@ -179,7 +212,8 @@ public sealed class ClientNotificationService
         foreach (var notification in notifications)
         {
             notification.IsRead = true;
-}
+            notification.ReadAt = DateTime.UtcNow;
+        }
 
 
         await _db.SaveChangesAsync(
@@ -187,5 +221,61 @@ public sealed class ClientNotificationService
 
         return notifications.Count;
     }
-}
 
+
+    public async Task<bool> DeleteAsync(
+        int userId,
+        int notificationId,
+        CancellationToken cancellationToken = default)
+    {
+        var notification =
+            await _db.Notifications
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.Id == notificationId &&
+                        x.UserId == userId,
+                    cancellationToken);
+
+
+        if (notification == null)
+        {
+            return false;
+        }
+
+
+        _db.Notifications.Remove(notification);
+
+        await _db.SaveChangesAsync(
+            cancellationToken);
+
+        return true;
+    }
+
+
+    public async Task<int> ClearReadAsync(
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        var notifications =
+            await _db.Notifications
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.IsRead)
+                .ToListAsync(cancellationToken);
+
+
+        if (notifications.Count == 0)
+        {
+            return 0;
+        }
+
+
+        _db.Notifications.RemoveRange(
+            notifications);
+
+        await _db.SaveChangesAsync(
+            cancellationToken);
+
+        return notifications.Count;
+    }
+}

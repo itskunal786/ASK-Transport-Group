@@ -1,4 +1,4 @@
-using ASK.Group.Api.Services;
+﻿using ASK.Group.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -158,6 +158,68 @@ public sealed class ClientNotificationController : ControllerBase
         });
     }
 
+
+    [HttpDelete("{notificationId:int}")]
+    public async Task<IActionResult> Delete(
+        int notificationId,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+        {
+            return InvalidUser();
+        }
+
+        var success =
+            await _service.DeleteAsync(
+                userId.Value,
+                notificationId,
+                cancellationToken);
+
+        if (!success)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Notification not found."
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = "Notification deleted successfully."
+        });
+    }
+
+
+    [HttpDelete("read")]
+    public async Task<IActionResult> ClearRead(
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+        {
+            return InvalidUser();
+        }
+
+        var count =
+            await _service.ClearReadAsync(
+                userId.Value,
+                cancellationToken);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Read notifications cleared successfully.",
+            data = new
+            {
+                deletedCount = count
+            }
+        });
+    }
 
     private int? GetUserId()
     {

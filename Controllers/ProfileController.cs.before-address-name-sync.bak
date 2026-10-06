@@ -1,4 +1,4 @@
-﻿using ASK.Group.Api.Data;
+using ASK.Group.Api.Data;
 using ASK.Group.Api.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -86,21 +86,8 @@ public class ProfileController : ControllerBase
             });
         }
 
-        var oldName = user.Name;
-
         user.Name = request.Name.Trim();
         user.Phone = request.Phone.Trim();
-
-        var addresses = await _db.ClientAddresses
-            .Where(x =>
-                x.UserId == userId &&
-                x.ContactName.ToLower() == oldName.ToLower())
-            .ToListAsync();
-
-        foreach (var address in addresses)
-        {
-            address.ContactName = user.Name;
-        }
 
         await _db.SaveChangesAsync();
 
