@@ -380,6 +380,45 @@ body.dark {
 }
 
 /* PROFILE IN DARK MODE */
+[data-theme="dark"] .profile-hero h1 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .profile-hero p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .profile-banner {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .profile-banner-info h2 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .profile-meta-row {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .profile-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .profile-card-head h2 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .profile-card-head p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .profile-card-head {
+  border-bottom-color: #1e2c47 !important;
+}
+
 [data-theme="dark"] .user-identity-box {
   background: #0c1527 !important;
 }
@@ -388,7 +427,279 @@ body.dark {
   border-bottom-color: #1e2c47 !important;
 }
 
+[data-theme="dark"] .profile-info-label {
+  color: #94a3b8 !important;
+}
+
 [data-theme="dark"] .profile-info-value {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .form-group label,
+[data-theme="dark"] .profile-form label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .profile-form input {
+  background: #091122 !important;
+  border-color: #1e3355 !important;
+  color: #f8fafc !important;
+}
+
+/* DOCUMENTS IN DARK MODE */
+[data-theme="dark"] .client-documents {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .doc-hero h1 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .doc-hero p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .doc-summary-card,
+[data-theme="dark"] .doc-filter-card,
+[data-theme="dark"] .doc-table-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="dark"] .doc-summary-card strong,
+[data-theme="dark"] .doc-filter-card h2,
+[data-theme="dark"] .doc-file-info strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .doc-summary-card small,
+[data-theme="dark"] .doc-filter-card p,
+[data-theme="dark"] .doc-file-info small {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .doc-booking {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .doc-filter-field label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .doc-filter-field input,
+[data-theme="dark"] .doc-filter-field select {
+  background: #091122 !important;
+  border-color: #1e3355 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .doc-refresh-btn,
+[data-theme="dark"] .doc-reset-btn {
+  background: #1a2640 !important;
+  border-color: #2b456f !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .doc-table th {
+  background: #0c1527 !important;
+  color: #94a3b8 !important;
+  border-bottom-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .doc-table td {
+  border-bottom-color: #17243c !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .doc-table tr:hover td {
+  background: #14223d !important;
+}
+
+/* INVOICES IN DARK MODE */
+[data-theme="dark"] .invoices-page {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .invoices-top h2 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .invoices-top p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .invoices-history,
+[data-theme="dark"] .invoice-summary-card,
+[data-theme="dark"] .invoice-stat-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="dark"] .invoices-history h3,
+[data-theme="dark"] .invoice-summary-number strong,
+[data-theme="dark"] .invoice-stat-number strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .invoice-summary-number span,
+[data-theme="dark"] .invoice-stat-number span {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .invoice-table th {
+  background: #0c1527 !important;
+  color: #94a3b8 !important;
+  border-bottom-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .invoice-table td {
+  border-bottom-color: #17243c !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .invoice-table tr:hover td {
+  background: #14223d !important;
+}
+
+[data-theme="dark"] .invoice-number {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .invoice-booking {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .invoice-refresh {
+  background: #1a2640 !important;
+  border-color: #2b456f !important;
+  color: #f8fafc !important;
+}
+
+/* MY BOOKINGS IN DARK MODE */
+[data-theme="dark"] .my-bookings-page {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .bookings-header h1 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .bookings-header p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .bookings-filter-bar,
+[data-theme="dark"] .bookings-table-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="dark"] .bookings-search input,
+[data-theme="dark"] .bookings-filter select {
+  background: #091122 !important;
+  border-color: #1e3355 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .bookings-table th {
+  background: #0c1527 !important;
+  color: #94a3b8 !important;
+  border-bottom-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .bookings-table td {
+  border-bottom-color: #17243c !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .bookings-table tr:hover td {
+  background: #14223d !important;
+}
+
+[data-theme="dark"] .booking-number {
+  color: #38bdf8 !important;
+}
+
+/* BOOK SHIPMENT IN DARK MODE */
+[data-theme="dark"] .booking-page {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .booking-heading h1,
+[data-theme="dark"] .booking-heading strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .booking-heading p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .address-card,
+[data-theme="dark"] .goods-card,
+[data-theme="dark"] .service-card,
+[data-theme="dark"] .summary-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="dark"] .address-card-title strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .booking-field label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .booking-field input,
+[data-theme="dark"] .booking-field select,
+[data-theme="dark"] .booking-field textarea {
+  background: #091122 !important;
+  border-color: #1e3355 !important;
+  color: #f8fafc !important;
+}
+
+/* TRACKING & PAYMENTS IN DARK MODE */
+[data-theme="dark"] .tracking-page,
+[data-theme="dark"] .payments-page {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .payments-header h1,
+[data-theme="dark"] .tracking-search-card h2 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .payments-header p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .tracking-search-card,
+[data-theme="dark"] .tracking-result-card,
+[data-theme="dark"] .timeline-card,
+[data-theme="dark"] .payments-table-card,
+[data-theme="dark"] .payment-summary-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="dark"] .tracking-input input {
+  background: #091122 !important;
+  border-color: #1e3355 !important;
+  color: #f8fafc !important;
+}
+
+/* UNIVERSAL HIGH-CONTRAST HEADINGS OVERRIDE */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3 {
   color: #f8fafc !important;
 }
 
