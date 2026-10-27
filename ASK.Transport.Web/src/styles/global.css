@@ -36,6 +36,17 @@ button {
   cursor: pointer;
 }
 
+/* Unified Navbar Links Global Reset */
+.landing-nav-links a,
+.landing-nav-links button,
+.landing-nav-link {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 
 /* =========================================
    AUTH LAYOUT

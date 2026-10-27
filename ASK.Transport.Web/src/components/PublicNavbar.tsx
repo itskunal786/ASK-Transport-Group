@@ -58,42 +58,56 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
           </div>
         </Link>
 
-        {/* UNIFIED NAV LINKS - CLEAN, NO BUTTON BOXES */}
+        {/* UNIFIED NAV LINKS - 100% COMMON ANCHORS, ZERO BUTTON BOXES */}
         <nav className="landing-nav-links">
           <Link
             to="/services"
-            className={`pub-nav-item ${location.pathname === '/services' ? 'active' : ''}`}
+            className={`landing-nav-link ${location.pathname === '/services' ? 'active' : ''}`}
+            style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
           >
             Services
           </Link>
 
-          <button
-            type="button"
-            className="pub-nav-item pub-nav-btn"
-            onClick={handleRateCalcClick}
+          <a
+            href="#calculator"
+            className="landing-nav-link"
+            style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
+            onClick={(e) => {
+              e.preventDefault();
+              handleRateCalcClick();
+            }}
           >
             Rate Calculator
-          </button>
+          </a>
 
-          <button
-            type="button"
-            className="pub-nav-item pub-nav-btn"
-            onClick={handleNetworkClick}
+          <a
+            href="#network"
+            className="landing-nav-link"
+            style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNetworkClick();
+            }}
           >
             Pan-India Network
-          </button>
+          </a>
 
-          <button
-            type="button"
-            className="pub-nav-item pub-nav-btn"
-            onClick={handleTrackClick}
+          <a
+            href="#tracking"
+            className="landing-nav-link"
+            style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
+            onClick={(e) => {
+              e.preventDefault();
+              handleTrackClick();
+            }}
           >
             Track Consignment
-          </button>
+          </a>
 
           <Link
             to="/about"
-            className={`pub-nav-item ${location.pathname === '/about' ? 'active' : ''}`}
+            className={`landing-nav-link ${location.pathname === '/about' ? 'active' : ''}`}
+            style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
           >
             About Us
           </Link>
