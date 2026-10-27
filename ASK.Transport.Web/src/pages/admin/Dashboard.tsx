@@ -2272,31 +2272,35 @@ export default function Dashboard() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th>User &amp; ID</th>
-                    <th>Email Address</th>
-                    <th>Mobile Phone</th>
-                    <th>Assigned Role</th>
-                    <th>Account Status</th>
-                    <th>Actions &amp; Updation</th>
+                    <th style={{ width: '18%' }}>User &amp; ID</th>
+                    <th style={{ width: '22%' }}>Email Address</th>
+                    <th style={{ width: '14%' }}>Mobile Phone</th>
+                    <th style={{ width: '14%' }}>Assigned Role</th>
+                    <th style={{ width: '10%' }}>Account Status</th>
+                    <th style={{ width: '22%', whiteSpace: 'nowrap', minWidth: '310px' }}>Actions &amp; Updation</th>
                   </tr>
                 </thead>
                 <tbody>
                   {adminUsers.length > 0 ? (
                     adminUsers.map(u => (
                       <tr key={u.id}>
-                        <td>
-                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{u.name}</div>
+                        <td style={{ verticalAlign: 'middle' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{u.name}</div>
                           <small style={{ color: '#94a3b8', fontSize: '11px' }}>ID: #{u.id}</small>
                         </td>
-                        <td style={{ color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
-                        <td style={{ color: '#475569' }}>{u.phone || '—'}</td>
-                        <td>
+                        <td style={{ verticalAlign: 'middle', color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
+                        <td style={{ verticalAlign: 'middle', color: 'var(--text-secondary, #94a3b8)' }}>{u.phone || '—'}</td>
+                        <td style={{ verticalAlign: 'middle' }}>
                           <span
                             style={{
                               padding: '3px 10px',
                               borderRadius: '12px',
                               fontSize: '11px',
                               fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
                               background:
                                 u.role === 'SuperAdmin'
                                   ? '#fef3c7'
@@ -2314,13 +2318,16 @@ export default function Dashboard() {
                             {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Admin' : '👤 User'}
                           </span>
                         </td>
-                        <td>
+                        <td style={{ verticalAlign: 'middle' }}>
                           <span
                             style={{
                               padding: '3px 10px',
                               borderRadius: '12px',
                               fontSize: '11px',
                               fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
                               background: u.isActive ? '#edfdf4' : '#fee2e2',
                               color: u.isActive ? '#10b981' : '#dc2626'
                             }}
@@ -2328,11 +2335,11 @@ export default function Dashboard() {
                             {u.isActive ? 'Active' : 'Suspended'}
                           </span>
                         </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <div className="admin-table-action-row">
                             <button
                               type="button"
-                              className="admin-btn-view"
+                              className="admin-btn-action-edit"
                               onClick={() => handleOpenEditUser(u)}
                               title="Edit user details"
                             >
@@ -2341,17 +2348,8 @@ export default function Dashboard() {
 
                             <button
                               type="button"
+                              className={`admin-btn-action-status ${u.isActive ? 'suspend' : 'activate'}`}
                               onClick={() => handleToggleUserStatus(u)}
-                              style={{
-                                padding: '4px 8px',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '6px',
-                                background: u.isActive ? '#fff1f2' : '#f0fdf4',
-                                color: u.isActive ? '#e11d48' : '#16a34a',
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                              }}
                               title={u.isActive ? 'Suspend User' : 'Activate User'}
                             >
                               {u.isActive ? 'Suspend' : 'Activate'}
@@ -2361,17 +2359,8 @@ export default function Dashboard() {
                               <>
                                 <button
                                   type="button"
+                                  className="admin-btn-action-role"
                                   onClick={() => handleOpenRoleModal(u)}
-                                  style={{
-                                    padding: '4px 8px',
-                                    border: '1px solid #fde68a',
-                                    borderRadius: '6px',
-                                    background: '#fffbeb',
-                                    color: '#b45309',
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer'
-                                  }}
                                   title="Change User Role (SuperAdmin Only)"
                                 >
                                   👑 Role
@@ -2379,17 +2368,8 @@ export default function Dashboard() {
 
                                 <button
                                   type="button"
+                                  className="admin-btn-action-rights"
                                   onClick={() => handleOpenRightsModal(u)}
-                                  style={{
-                                    padding: '4px 8px',
-                                    border: '1px solid #c7d2fe',
-                                    borderRadius: '6px',
-                                    background: '#eef2ff',
-                                    color: '#4338ca',
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer'
-                                  }}
                                   title="Delegate or Revoke Specific Rights (SuperAdmin Only)"
                                 >
                                   🛡️ Rights

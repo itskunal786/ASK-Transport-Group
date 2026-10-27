@@ -1450,3 +1450,114 @@
   background: rgba(245, 158, 11, 0.3);
   border-color: #f59e0b;
 }
+
+/* ========================================================
+   USER DIRECTORY COMPACT TABLE ACTIONS (SINGLE-LINE TOOLBAR)
+   ======================================================== */
+.admin-table-action-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.admin-btn-action-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.admin-btn-action-edit:hover {
+  background: #dbeafe;
+  border-color: #3b82f6;
+}
+
+[data-theme='dark'] .admin-btn-action-edit {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .admin-btn-action-edit:hover {
+  background: rgba(59, 130, 246, 0.28);
+  border-color: #60a5fa;
+}
+
+.admin-btn-action-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.admin-btn-action-status.suspend {
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.admin-btn-action-status.suspend:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+[data-theme='dark'] .admin-btn-action-status.suspend {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+[data-theme='dark'] .admin-btn-action-status.suspend:hover {
+  background: rgba(239, 68, 68, 0.28);
+  border-color: #f87171;
+}
+
+.admin-btn-action-status.activate {
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.admin-btn-action-status.activate:hover {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+[data-theme='dark'] .admin-btn-action-status.activate {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+}
+
+[data-theme='dark'] .admin-btn-action-status.activate:hover {
+  background: rgba(34, 197, 94, 0.28);
+  border-color: #4ade80;
+}
+
+.admin-table-action-row .admin-btn-action-role,
+.admin-table-action-row .admin-btn-action-rights {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+  border-radius: 6px;
+}
