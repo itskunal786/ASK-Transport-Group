@@ -7,6 +7,7 @@ import {
 import {
   Link
 } from 'react-router-dom';
+import CustomerLayout from '../../layouts/CustomerLayout';
 
 import {
   createBooking,
@@ -591,45 +592,10 @@ export default function BookShipment() {
 
 
   if (result) {
-
     return (
-      <div className="booking-page">
-
-        <header className="booking-topbar">
-
-          <Link
-            className="booking-brand"
-            to="/"
-          >
-            <div className="booking-brand-logo">
-              <span />
-              <span />
-              <span />
-            </div>
-
-            <div>
-              <strong>
-                ASK TRANSPORT
-              </strong>
-
-              <small>
-                LOGISTICS
-              </small>
-            </div>
-          </Link>
-
-
-          <Link
-            className="back-dashboard"
-            to="/"
-          >
-            Dashboard
-          </Link>
-
-        </header>
-
-
-        <main className="booking-success">
+      <CustomerLayout>
+        <div className="booking-page">
+          <main className="booking-success">
 
           <div className="success-check">
             OK
@@ -827,51 +793,15 @@ export default function BookShipment() {
             </Link>
 
           </div>
-
         </main>
-
       </div>
-    );
-  }
+    </CustomerLayout>
+  );
+}
 
-
-  return (
+return (
+  <CustomerLayout>
     <div className="booking-page">
-
-      <header className="booking-topbar">
-
-        <Link
-          className="booking-brand"
-          to="/"
-        >
-          <div className="booking-brand-logo">
-            <span />
-            <span />
-            <span />
-          </div>
-
-          <div>
-            <strong>
-              ASK TRANSPORT
-            </strong>
-
-            <small>
-              LOGISTICS
-            </small>
-          </div>
-        </Link>
-
-
-        <Link
-          className="back-dashboard"
-          to="/"
-        >
-          Back to Dashboard
-        </Link>
-
-      </header>
-
-
       <main className="booking-container">
 
         <div className="booking-heading">
@@ -1733,11 +1663,10 @@ export default function BookShipment() {
           </div>
 
         </form>
-
       </main>
-
     </div>
-  );
+  </CustomerLayout>
+);
 }
 
 

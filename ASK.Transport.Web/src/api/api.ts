@@ -1,4 +1,4 @@
-﻿const API_ROOT =
+const API_ROOT =
   import.meta.env.VITE_API_ROOT || 'http://localhost:5208/api';
 
 export async function request<T>(
@@ -42,6 +42,17 @@ export async function request<T>(
   const responseText = await response.text();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login?expired=1';
+      }
+      throw new Error('Your session has expired. Please sign in again.');
+    }
+
     let message = `Request failed (${response.status})`;
 
     if (

@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomerLayout from '../../layouts/CustomerLayout';
 
 import { getClientBookings } from '../../api/bookingApi';
 import type { ClientBooking } from '../../types/booking';
@@ -117,7 +118,8 @@ export default function MyBookings() {
 
 
   return (
-    <div className="my-bookings-page">
+    <CustomerLayout>
+      <div className="my-bookings-page">
 
       <div className="bookings-header">
 
@@ -443,6 +445,7 @@ export default function MyBookings() {
 
       )}
 
-    </div>
+      </div>
+    </CustomerLayout>
   );
 }

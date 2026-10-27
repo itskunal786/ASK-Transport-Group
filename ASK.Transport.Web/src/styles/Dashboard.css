@@ -19,13 +19,14 @@
   top: 0;
   left: 0;
   bottom: 0;
+  height: 100vh;
 
   width: 235px;
 
   display: flex;
   flex-direction: column;
 
-  padding: 28px 18px 20px;
+  padding: 20px 14px 14px;
 
   box-sizing: border-box;
 
@@ -37,6 +38,8 @@
     );
 
   color: #ffffff;
+  z-index: 100;
+  overflow: hidden;
 }
 
 
@@ -131,9 +134,23 @@
   display: flex;
   flex-direction: column;
 
-  gap: 4px;
+  gap: 3px;
 
-  margin-top: 25px;
+  margin-top: 15px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.dashboard-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dashboard-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
 }
 
 
@@ -1152,3 +1169,94 @@
 .customer-content-area {
   width: 100%;
 }
+
+/* TOPBAR LOGOUT & ADMIN SHORTCUTS */
+.topbar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 4px;
+}
+
+.topbar-logout-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.topbar-admin-badge {
+  padding: 5px 12px;
+  background: #0284c7;
+  color: #ffffff !important;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.topbar-admin-badge:hover {
+  background: #0369a1;
+}
+
+.sidebar-admin-link {
+  background: rgba(2, 132, 199, 0.15) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  margin-top: 8px;
+  font-weight: 700 !important;
+}
+
+.sidebar-admin-link:hover {
+  background: rgba(2, 132, 199, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.sidebar-logout-link {
+  display: flex !important;
+  align-items: center;
+  gap: 11px;
+  color: #fca5a5 !important;
+  font-size: 12px !important;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 12px !important;
+  width: 100%;
+  margin-top: 4px;
+  transition: all 0.15s ease;
+}
+
+.sidebar-logout-link:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+.sidebar-compact-help {
+  font-size: 11px;
+  color: #94a3b8;
+  padding: 8px 4px 0;
+  text-align: center;
+}
+
+.sidebar-compact-help a {
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline !important;
+  padding: 0 !important;
+  width: auto !important;
+}
+

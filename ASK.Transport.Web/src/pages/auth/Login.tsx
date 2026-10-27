@@ -1,4 +1,4 @@
-﻿import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Login.css';
@@ -9,7 +9,12 @@ export default function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('expired=1')) {
+      return 'Your session has expired. Please sign in again to continue.';
+    }
+    return '';
+  });
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -181,6 +186,49 @@ export default function Login() {
               {error}
             </div>
           )}
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@askgroup.com');
+                setPassword('Admin@123');
+              }}
+              style={{
+                flex: 1,
+                padding: '7px 10px',
+                background: '#f1f5f9',
+                border: '1px solid #cbd5e1',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#334155',
+                cursor: 'pointer'
+              }}
+            >
+              Demo Admin (Click)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('user@askgroup.com');
+                setPassword('User@123');
+              }}
+              style={{
+                flex: 1,
+                padding: '7px 10px',
+                background: '#f1f5f9',
+                border: '1px solid #cbd5e1',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#334155',
+                cursor: 'pointer'
+              }}
+            >
+              Demo User (Click)
+            </button>
+          </div>
 
           <div className="login-field">
 

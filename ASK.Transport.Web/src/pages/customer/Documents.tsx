@@ -1,4 +1,5 @@
 import './Documents.css';
+import CustomerLayout from '../../layouts/CustomerLayout';
 
 import {
   useEffect,
@@ -389,8 +390,8 @@ export default function Documents() {
 
 
   return (
-
-    <div className="client-documents">
+    <CustomerLayout>
+      <div className="client-documents">
 
       <section className="doc-hero">
 
@@ -1149,8 +1150,8 @@ export default function Documents() {
 
       )}
 
-    </div>
-
+      </div>
+    </CustomerLayout>
   );
 }
 
