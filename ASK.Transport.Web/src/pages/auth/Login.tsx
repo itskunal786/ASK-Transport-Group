@@ -5,7 +5,7 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('portal=admin')) {
@@ -32,10 +32,26 @@ export default function Login() {
     try {
       const user = await login(email, password);
 
-      if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-        navigate('/admin');
-      } else {
+      // Strict role-portal enforcement
+      if (loginRole === 'customer') {
+        if (user.role === 'Admin' || user.role === 'SuperAdmin') {
+          await logout();
+          setError(
+            '⚠️ Yeh Customer Portal hai. Admin ya Super Admin accounts yahan login nahi kar sakte. Kripya upar "Admin / Super Admin" tab select karke login karein.'
+          );
+          return;
+        }
         navigate('/dashboard');
+      } else {
+        // loginRole === 'admin'
+        if (user.role !== 'Admin' && user.role !== 'SuperAdmin') {
+          await logout();
+          setError(
+            '⛔ Access Denied: Yeh Administrative Portal hai. Customer / Shipper accounts yahan se login nahi kar sakte. Kripya upar "Customer Login" tab select karein.'
+          );
+          return;
+        }
+        navigate('/admin');
       }
     } catch (err) {
       setError(
@@ -226,8 +242,8 @@ export default function Login() {
 
             <p>
               {loginRole === 'admin'
-                ? 'Enter administrator credentials to access the central operations control deck.'
-                : 'Enter your registered email and password to book, track and manage shipments.'}
+                ? 'Enter administrator credentials to access central operations deck. (Customer accounts cannot login here).'
+                : 'Enter your registered customer email and password. (Admin & Super Admin accounts cannot login here).'}
             </p>
 
           </div>
