@@ -692,3 +692,112 @@
   color: #ffffff;
   border-color: #0b72e7;
 }
+
+/* ========================================================
+   ADDITIONAL ADMIN STYLING FOR NEW TABS & DISPATCH
+   ======================================================== */
+
+.admin-btn-primary {
+  padding: 9px 18px;
+  background: #0b72e7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(11, 114, 231, 0.2);
+}
+
+.admin-btn-primary:hover {
+  background: #095ec0;
+  transform: translateY(-1px);
+}
+
+.admin-btn-export {
+  padding: 9px 16px;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-btn-export:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.admin-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.admin-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar-search input {
+  padding: 8px 14px;
+  width: 280px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+
+.admin-toolbar-search input:focus {
+  border-color: #0b72e7;
+}
+
+.admin-toolbar-filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-filter-pill {
+  padding: 6px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-filter-pill:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.admin-filter-pill.active {
+  background: #0b72e7;
+  color: #ffffff;
+  border-color: #0b72e7;
+}
+
+.admin-badge-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+

@@ -4,6 +4,43 @@ import { useAuth } from '../../context/AuthContext';
 import { changePassword, deactivateAccount } from '../../api/accountApi';
 import './Profile.css';
 
+interface SavedAddress {
+  id: string;
+  tag: 'Warehouse' | 'Office' | 'Factory' | 'Home';
+  title: string;
+  contactPerson: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+const INITIAL_ADDRESSES: SavedAddress[] = [
+  {
+    id: 'ADDR-1',
+    tag: 'Warehouse',
+    title: 'Central Logistics Hub (Gurugram)',
+    contactPerson: 'Rajesh Sharma',
+    phone: '9876543210',
+    addressLine: 'Plot 42, Sector 18, Electronic City',
+    city: 'Gurugram',
+    state: 'Haryana',
+    pincode: '122015'
+  },
+  {
+    id: 'ADDR-2',
+    tag: 'Office',
+    title: 'Regional Terminal (Mumbai)',
+    contactPerson: 'Amit Verma',
+    phone: '9820011223',
+    addressLine: 'Unit 12B, JNPT Port Logistics Park, Nhava Sheva',
+    city: 'Navi Mumbai',
+    state: 'Maharashtra',
+    pincode: '400707'
+  }
+];
+
 export default function Profile() {
   const { user, logout } = useAuth();
 
@@ -20,6 +57,24 @@ export default function Profile() {
   const [deactivatePassword, setDeactivatePassword] = useState('');
   const [deactivating, setDeactivating] = useState(false);
   const [deactivateError, setDeactivateError] = useState('');
+
+  // Address Book State
+  const [addresses, setAddresses] = useState<SavedAddress[]>(() => {
+    const saved = localStorage.getItem('ask_saved_addresses');
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return INITIAL_ADDRESSES;
+  });
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [newAddrTitle, setNewAddrTitle] = useState('');
+  const [newAddrTag, setNewAddrTag] = useState<'Warehouse' | 'Office' | 'Factory' | 'Home'>('Warehouse');
+  const [newAddrPerson, setNewAddrPerson] = useState('');
+  const [newAddrPhone, setNewAddrPhone] = useState('');
+  const [newAddrLine, setNewAddrLine] = useState('');
+  const [newAddrCity, setNewAddrCity] = useState('');
+  const [newAddrState, setNewAddrState] = useState('');
+  const [newAddrPincode, setNewAddrPincode] = useState('');
 
   async function handleChangePassword(e: FormEvent) {
     e.preventDefault();
@@ -58,7 +113,7 @@ export default function Profile() {
         window.location.href = '/login';
       }, 2500);
     } catch (err) {
-      setPasswordError(err instanceof Error ? err.message : 'Could not change password.');
+      setPasswordError((err as Error).message || 'Failed to update password.');
     } finally {
       setPasswordLoading(false);
     }
@@ -69,53 +124,93 @@ export default function Profile() {
     setDeactivateError('');
 
     if (!deactivatePassword) {
-      setDeactivateError('Please enter your password to confirm account deactivation.');
+      setDeactivateError('Please enter your password to confirm deactivation.');
       return;
     }
 
     try {
       setDeactivating(true);
       await deactivateAccount({ password: deactivatePassword });
-      alert('Your account has been deactivated. You will now be redirected to the login page.');
-      await logout();
+      logout();
       window.location.href = '/login';
     } catch (err) {
-      setDeactivateError(err instanceof Error ? err.message : 'Failed to deactivate account.');
-    } finally {
+      setDeactivateError((err as Error).message || 'Failed to deactivate account.');
       setDeactivating(false);
     }
+  }
+
+  function handleSaveAddress(e: FormEvent) {
+    e.preventDefault();
+    if (!newAddrTitle.trim() || !newAddrLine.trim() || !newAddrPincode.trim()) return;
+
+    const newAddr: SavedAddress = {
+      id: `ADDR-${Date.now()}`,
+      title: newAddrTitle.trim(),
+      tag: newAddrTag,
+      contactPerson: newAddrPerson.trim() || user?.name || 'Authorized Contact',
+      phone: newAddrPhone.trim() || '9876543210',
+      addressLine: newAddrLine.trim(),
+      city: newAddrCity.trim(),
+      state: newAddrState.trim(),
+      pincode: newAddrPincode.trim()
+    };
+
+    const updated = [newAddr, ...addresses];
+    setAddresses(updated);
+    localStorage.setItem('ask_saved_addresses', JSON.stringify(updated));
+
+    setShowAddAddressModal(false);
+    setNewAddrTitle('');
+    setNewAddrPerson('');
+    setNewAddrPhone('');
+    setNewAddrLine('');
+    setNewAddrCity('');
+    setNewAddrState('');
+    setNewAddrPincode('');
+  }
+
+  function handleDeleteAddress(id: string) {
+    const updated = addresses.filter(a => a.id !== id);
+    setAddresses(updated);
+    localStorage.setItem('ask_saved_addresses', JSON.stringify(updated));
   }
 
   return (
     <CustomerLayout>
       <div className="profile-page">
-        {/* HERO */}
+        {/* HEADER HERO */}
         <div className="profile-hero">
-          <span className="profile-eyebrow">Account Settings</span>
-          <h1>My Profile &amp; Security</h1>
-          <p>
-            Manage your personal profile, credentials, and account authentication settings for ASK Transport.
-          </p>
+          <span className="profile-eyebrow">Enterprise Account</span>
+          <h1>Profile &amp; Security Settings</h1>
+          <p>Manage your account credentials, security preferences, and saved logistics hubs.</p>
         </div>
 
+        {/* TOP PROFILE BANNER */}
+        <div className="profile-banner">
+          <div className="profile-avatar-large">
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <div className="profile-banner-info">
+            <h2>{user?.name || 'Valued Shipper'}</h2>
+            <div className="profile-meta-row">
+              <span>{user?.email}</span>
+              <span className="bullet-sep">•</span>
+              <span className="role-tag">{user?.role || 'Customer'}</span>
+              <span className="bullet-sep">•</span>
+              <span className="status-indicator">Active Account</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2-COLUMN GRID */}
         <div className="profile-grid">
-          {/* USER INFO CARD */}
+          {/* PERSONAL & ORG DETAILS */}
           <div className="profile-card">
             <div className="profile-card-head">
-              <div className="profile-card-icon">👤</div>
+              <div className="profile-card-icon">🏢</div>
               <div>
-                <h2>Account Profile</h2>
-                <p>Personal identification and contact details</p>
-              </div>
-            </div>
-
-            <div className="user-identity-box">
-              <div className="user-identity-avatar">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              <div className="user-identity-details">
-                <h3>{user?.name || 'Customer'}</h3>
-                <p>{user?.email}</p>
+                <h2>Personal &amp; Company Details</h2>
+                <p>Verified information linked to your logistics account</p>
               </div>
             </div>
 
@@ -192,7 +287,7 @@ export default function Profile() {
                 <label>Confirm New Password</label>
                 <input
                   type="password"
-                  placeholder="Re-enter new password"
+                  placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   disabled={passwordLoading}
@@ -210,7 +305,88 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* DANGER ZONE: DEACTIVATE ACCOUNT */}
+        {/* 3. SAVED ADDRESS BOOK (NEW) */}
+        <div style={{ marginTop: '28px' }}>
+          <div className="profile-card">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+              <div className="profile-card-head" style={{ marginBottom: 0 }}>
+                <div className="profile-card-icon">📍</div>
+                <div>
+                  <h2>Saved Addresses &amp; Hubs</h2>
+                  <p>Frequently used pickup and delivery locations for 1-click booking</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="profile-submit-btn"
+                style={{ width: 'auto', padding: '9px 18px', marginTop: 0 }}
+                onClick={() => setShowAddAddressModal(true)}
+              >
+                + Add Address
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              {addresses.map(addr => (
+                <div
+                  key={addr.id}
+                  style={{
+                    background: 'var(--color-bg-secondary, #f8fafc)',
+                    border: '1px solid var(--color-border, #e2e8f0)',
+                    borderRadius: '12px',
+                    padding: '18px',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span
+                      style={{
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        background: addr.tag === 'Warehouse' ? '#e0f2fe' : addr.tag === 'Office' ? '#dcfce7' : '#fef3c7',
+                        color: addr.tag === 'Warehouse' ? '#0369a1' : addr.tag === 'Office' ? '#15803d' : '#b45309'
+                      }}
+                    >
+                      {addr.tag}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteAddress(addr.id)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600
+                      }}
+                      title="Delete Address"
+                    >
+                      ✕ Remove
+                    </button>
+                  </div>
+
+                  <h3 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: 700, color: 'var(--color-text-primary, #0f172a)' }}>
+                    {addr.title}
+                  </h3>
+                  <p style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--color-text-secondary, #64748b)', lineHeight: 1.4 }}>
+                    {addr.addressLine}, {addr.city}, {addr.state} - <strong>{addr.pincode}</strong>
+                  </p>
+
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary, #475569)', borderTop: '1px dashed #cbd5e1', paddingTop: '8px' }}>
+                    Contact: <strong>{addr.contactPerson}</strong> ({addr.phone})
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 4. DANGER ZONE: DEACTIVATE ACCOUNT */}
         <div style={{ marginTop: '28px' }}>
           <div className="profile-card danger">
             <div className="profile-card-head">
@@ -239,6 +415,135 @@ export default function Profile() {
             </div>
           </div>
         </div>
+
+        {/* ADD ADDRESS MODAL */}
+        {showAddAddressModal && (
+          <div className="st-modal-overlay" onClick={() => setShowAddAddressModal(false)}>
+            <div className="st-drawer-box" onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2>Add New Location</h2>
+                  <p>Save a pickup or delivery facility</p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowAddAddressModal(false)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveAddress}>
+                <div className="st-drawer-body">
+                  <div className="st-form-field">
+                    <label>Facility Name / Label *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Surat Textile Factory or Delhi Main Office"
+                      value={newAddrTitle}
+                      onChange={e => setNewAddrTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Location Type</label>
+                    <select
+                      value={newAddrTag}
+                      onChange={e => setNewAddrTag(e.target.value as any)}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }}
+                    >
+                      <option value="Warehouse">Warehouse</option>
+                      <option value="Office">Office</option>
+                      <option value="Factory">Factory</option>
+                      <option value="Home">Home</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <label>Contact Person</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Manoj Kumar"
+                        value={newAddrPerson}
+                        onChange={e => setNewAddrPerson(e.target.value)}
+                      />
+                    </div>
+                    <div className="st-form-field">
+                      <label>Phone Number</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., 9876543210"
+                        value={newAddrPhone}
+                        onChange={e => setNewAddrPhone(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Address Line *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Plot 108, Industrial GIDC Phase 2"
+                      value={newAddrLine}
+                      onChange={e => setNewAddrLine(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                    <div className="st-form-field">
+                      <label>City *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Surat"
+                        value={newAddrCity}
+                        onChange={e => setNewAddrCity(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="st-form-field">
+                      <label>State *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Gujarat"
+                        value={newAddrState}
+                        onChange={e => setNewAddrState(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="st-form-field">
+                      <label>PinCode *</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="395002"
+                        value={newAddrPincode}
+                        onChange={e => setNewAddrPincode(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowAddAddressModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit">
+                    Save Facility
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* DEACTIVATE CONFIRMATION MODAL */}
         {showDeactivateModal && (

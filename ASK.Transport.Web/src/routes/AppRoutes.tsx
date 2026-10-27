@@ -4,6 +4,8 @@ import {
   Routes
 } from 'react-router-dom';
 
+import { useAuth } from '../context/AuthContext';
+import LandingPage from '../pages/public/LandingPage';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import VerifyOtp from '../pages/auth/VerifyOtp';
@@ -23,13 +25,22 @@ import Support from '../pages/customer/Support';
 import Profile from '../pages/customer/Profile';
 import Notifications from '../pages/customer/Notifications';
 
-
-
 export default function AppRoutes() {
+  const { user } = useAuth();
+
   return (
     <Routes>
 
-      {/* PUBLIC ROUTES */}
+      {/* PUBLIC & MARKETING ROUTES */}
+      <Route
+        path="/"
+        element={user ? <Dashboard /> : <LandingPage />}
+      />
+
+      <Route
+        path="/landing"
+        element={<LandingPage />}
+      />
 
       <Route
         path="/login"
@@ -46,13 +57,11 @@ export default function AppRoutes() {
         element={<VerifyOtp />}
       />
 
-
       {/* CUSTOMER PROTECTED ROUTES */}
-
       <Route element={<ProtectedRoute />}>
 
         <Route
-          path="/"
+          path="/dashboard"
           element={<Dashboard />}
         />
 
@@ -108,9 +117,7 @@ export default function AppRoutes() {
 
       </Route>
 
-
       {/* ADMIN ROUTES */}
-
       <Route element={<AdminRoute />}>
 
         <Route
@@ -120,9 +127,7 @@ export default function AppRoutes() {
 
       </Route>
 
-
       {/* UNKNOWN ROUTE */}
-
       <Route
         path="*"
         element={<Navigate to="/" replace />}
@@ -131,11 +136,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-
-
-
-
-
-
-
-
