@@ -341,7 +341,8 @@
 }
 
 /* 5. CHARTS ROW (Image 1) */
-.admin-charts-row {
+.admin-charts-row,
+.admin-charts-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 20px;
@@ -349,7 +350,8 @@
 }
 
 @media (max-width: 1100px) {
-  .admin-charts-row {
+  .admin-charts-row,
+  .admin-charts-grid {
     grid-template-columns: 1fr;
   }
 }

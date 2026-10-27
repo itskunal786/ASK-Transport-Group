@@ -686,73 +686,77 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* KPI STATS ROW */}
-            <div className="admin-kpi-row">
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#e0f2fe', color: '#0b72e7' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                  </svg>
-                </div>
-                <div className="admin-kpi-content">
-                  <span className="admin-kpi-title">Total Bookings</span>
-                  <div className="admin-kpi-val-row">
-                    <h2>{summary?.totalBookings ?? 1284}</h2>
-                    <span className="admin-kpi-trend up">↑ 12.5%</span>
+            {/* 4 TOP METRIC BOXES */}
+            <div className="admin-metrics-grid">
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon bookings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
                   </div>
-                  <small>vs previous 30 days</small>
+                  <div className="admin-box-content">
+                    <strong>{summary?.totalBookings ?? 1284}</strong>
+                    <span>Total Bookings</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  ↑ 12.5% vs previous 30 days
                 </div>
               </div>
 
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#fef3c7', color: '#d97706' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <circle cx="12" cy="12" r="6" />
-                  </svg>
-                </div>
-                <div className="admin-kpi-content">
-                  <span className="admin-kpi-title">Active In-Transit</span>
-                  <div className="admin-kpi-val-row">
-                    <h2>{summary?.inTransitShipments ?? 184}</h2>
-                    <span className="admin-kpi-trend up">↑ 5.2%</span>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon transit">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                    </svg>
                   </div>
-                  <small>Real-time on highways</small>
+                  <div className="admin-box-content">
+                    <strong>{summary?.inTransitShipments ?? 184}</strong>
+                    <span>Active In-Transit</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  ↑ 5.2% on highways
                 </div>
               </div>
 
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#edfdf4', color: '#10b981' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
-                </div>
-                <div className="admin-kpi-content">
-                  <span className="admin-kpi-title">Delivered (Month)</span>
-                  <div className="admin-kpi-val-row">
-                    <h2>{summary?.deliveredBookings ?? 1032}</h2>
-                    <span className="admin-kpi-trend up">99.4% on-time</span>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon delivered">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                      <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
                   </div>
-                  <small>Zero cargo loss SLA</small>
+                  <div className="admin-box-content">
+                    <strong>{summary?.deliveredBookings ?? 1032}</strong>
+                    <span>Delivered (Month)</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  99.4% on-time SLA
                 </div>
               </div>
 
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#f3e8ff', color: '#7c3aed' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </div>
-                <div className="admin-kpi-content">
-                  <span className="admin-kpi-title">Gross Revenue</span>
-                  <div className="admin-kpi-val-row">
-                    <h2>₹{(summary?.successfulPaymentAmount ?? 4250000).toLocaleString('en-IN')}</h2>
-                    <span className="admin-kpi-trend up">↑ 18.2%</span>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon pending">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="12" y1="1" x2="12" y2="23" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
                   </div>
-                  <small>GST Invoiced Total</small>
+                  <div className="admin-box-content">
+                    <strong>₹{(summary?.successfulPaymentAmount ?? 4250000).toLocaleString('en-IN')}</strong>
+                    <span>Gross Revenue</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  ↑ 18.2% GST Invoiced
                 </div>
               </div>
             </div>
