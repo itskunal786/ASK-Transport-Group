@@ -4,7 +4,6 @@ import {
   Routes
 } from 'react-router-dom';
 
-import { useAuth } from '../context/AuthContext';
 import LandingPage from '../pages/public/LandingPage';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
@@ -26,15 +25,13 @@ import Profile from '../pages/customer/Profile';
 import Notifications from '../pages/customer/Notifications';
 
 export default function AppRoutes() {
-  const { user } = useAuth();
-
   return (
     <Routes>
 
       {/* PUBLIC & MARKETING ROUTES */}
       <Route
         path="/"
-        element={user ? <Dashboard /> : <LandingPage />}
+        element={<LandingPage />}
       />
 
       <Route
