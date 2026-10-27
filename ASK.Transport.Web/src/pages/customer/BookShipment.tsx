@@ -41,11 +41,96 @@ export interface PackageItem {
   quantity: number;
 }
 
+export interface SavedAddressItem {
+  id: string;
+  label: string;
+  contactName: string;
+  phone: string;
+  address: string;
+  pinCode: string;
+  type: 'pickup' | 'delivery';
+}
+
+const DEFAULT_PICKUP_GODOWNS: SavedAddressItem[] = [
+  {
+    id: 'pg-1',
+    label: 'Delhi Central Godown (110042)',
+    contactName: 'Apex Industries Central Godown',
+    phone: '9811022334',
+    address: 'Plot 42, Sanjay Gandhi Transport Nagar, GT Karnal Road',
+    pinCode: '110042',
+    type: 'pickup'
+  },
+  {
+    id: 'pg-2',
+    label: 'Okhla Phase-III (110020)',
+    contactName: 'Apex Logistics Okhla Depot',
+    phone: '9876543210',
+    address: 'Phase III, Okhla Industrial Estate',
+    pinCode: '110020',
+    type: 'pickup'
+  }
+];
+
+const DEFAULT_DELIVERY_CONSIGNEES: SavedAddressItem[] = [
+  {
+    id: 'dc-1',
+    label: 'Mumbai Bhiwandi DC (421302)',
+    contactName: 'Shreenath Logistics Hub Bhiwandi',
+    phone: '9822114477',
+    address: 'Gala #14, Building B2, Arihant Commercial Complex, Purna',
+    pinCode: '421302',
+    type: 'delivery'
+  },
+  {
+    id: 'dc-2',
+    label: 'Bangalore Electronic City (560100)',
+    contactName: 'Karnataka Tech Distribution Depot',
+    phone: '9845012345',
+    address: 'Plot 88, Electronic City Phase-I',
+    pinCode: '560100',
+    type: 'delivery'
+  }
+];
+
 export default function BookShipment() {
 
   const isMaintenance = localStorage.getItem('ask_system_maintenance') === 'true';
   const [bookingMode, setBookingMode] = useState<'single' | 'bulk'>('single');
   const [step, setStep] = useState(1);
+
+  // Saved Address Book State
+  const [savedPickupGodowns, setSavedPickupGodowns] = useState<SavedAddressItem[]>(() => {
+    try {
+      const raw = localStorage.getItem('ask_saved_pickup_godowns');
+      return raw ? JSON.parse(raw) : DEFAULT_PICKUP_GODOWNS;
+    } catch {
+      return DEFAULT_PICKUP_GODOWNS;
+    }
+  });
+
+  const [savedDeliveryConsignees, setSavedDeliveryConsignees] = useState<SavedAddressItem[]>(() => {
+    try {
+      const raw = localStorage.getItem('ask_saved_delivery_consignees');
+      return raw ? JSON.parse(raw) : DEFAULT_DELIVERY_CONSIGNEES;
+    } catch {
+      return DEFAULT_DELIVERY_CONSIGNEES;
+    }
+  });
+
+  // Modal State for adding new Address Book item
+  const [showAddAddressModal, setShowAddAddressModal] = useState<'pickup' | 'delivery' | null>(null);
+  const [newAddrLabel, setNewAddrLabel] = useState('');
+  const [newAddrName, setNewAddrName] = useState('');
+  const [newAddrPhone, setNewAddrPhone] = useState('');
+  const [newAddrAddress, setNewAddrAddress] = useState('');
+  const [newAddrPin, setNewAddrPin] = useState('');
+
+  // Inline "Save this address" toggle state
+  const [saveCurrentPickupToBook, setSaveCurrentPickupToBook] = useState(false);
+  const [currentPickupLabel, setCurrentPickupLabel] = useState('');
+  const [saveCurrentDeliveryToBook, setSaveCurrentDeliveryToBook] = useState(false);
+  const [currentDeliveryLabel, setCurrentDeliveryLabel] = useState('');
 
   // Multi-Box / Multi-Item Consignment State
   const [packagesList, setPackagesList] = useState<PackageItem[]>([
@@ -235,6 +320,125 @@ export default function BookShipment() {
     } finally {
       setDeliveryPinLoading(false);
     }
+  }
+
+  function handleSelectPickupGodown(item: SavedAddressItem) {
+    setSenderName(item.contactName);
+    setSenderPhone(item.phone);
+    setFromAddress(item.address);
+    setFromPinCode(item.pinCode);
+    checkPickupPin(item.pinCode);
+  }
+
+  function handleSelectDeliveryConsignee(item: SavedAddressItem) {
+    setReceiverName(item.contactName);
+    setReceiverPhone(item.phone);
+    setToAddress(item.address);
+    setToPinCode(item.pinCode);
+    checkDeliveryPin(item.pinCode);
+  }
+
+  function handleDeletePickupGodown(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    const updated = savedPickupGodowns.filter(g => g.id !== id);
+    setSavedPickupGodowns(updated);
+    localStorage.setItem('ask_saved_pickup_godowns', JSON.stringify(updated));
+  }
+
+  function handleDeleteDeliveryConsignee(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    const updated = savedDeliveryConsignees.filter(c => c.id !== id);
+    setSavedDeliveryConsignees(updated);
+    localStorage.setItem('ask_saved_delivery_consignees', JSON.stringify(updated));
+  }
+
+  function handleSaveCurrentPickupAddress() {
+    if (!fromAddress.trim() || !fromPinCode.trim()) {
+      alert('Please enter Address and PIN code first to save this godown.');
+      return;
+    }
+    const label = currentPickupLabel.trim() || `${fromAddress.slice(0, 24)} (${fromPinCode})`;
+    const newItem: SavedAddressItem = {
+      id: `pg-${Date.now()}`,
+      label,
+      contactName: senderName.trim() || 'Godown Manager',
+      phone: senderPhone.trim() || '9800000000',
+      address: fromAddress.trim(),
+      pinCode: fromPinCode.trim(),
+      type: 'pickup'
+    };
+    const updated = [newItem, ...savedPickupGodowns];
+    setSavedPickupGodowns(updated);
+    localStorage.setItem('ask_saved_pickup_godowns', JSON.stringify(updated));
+    setCurrentPickupLabel('');
+    setSaveCurrentPickupToBook(false);
+    alert(`✓ "${label}" saved to your Saved Godowns Book!`);
+  }
+
+  function handleSaveCurrentDeliveryAddress() {
+    if (!toAddress.trim() || !toPinCode.trim()) {
+      alert('Please enter Address and PIN code first to save this consignee.');
+      return;
+    }
+    const label = currentDeliveryLabel.trim() || `${toAddress.slice(0, 24)} (${toPinCode})`;
+    const newItem: SavedAddressItem = {
+      id: `dc-${Date.now()}`,
+      label,
+      contactName: receiverName.trim() || 'Receiving Store Manager',
+      phone: receiverPhone.trim() || '9800000000',
+      address: toAddress.trim(),
+      pinCode: toPinCode.trim(),
+      type: 'delivery'
+    };
+    const updated = [newItem, ...savedDeliveryConsignees];
+    setSavedDeliveryConsignees(updated);
+    localStorage.setItem('ask_saved_delivery_consignees', JSON.stringify(updated));
+    setCurrentDeliveryLabel('');
+    setSaveCurrentDeliveryToBook(false);
+    alert(`✓ "${label}" saved to your Saved Consignees Book!`);
+  }
+
+  function handleModalSaveAddress(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newAddrLabel.trim() || !newAddrAddress.trim() || !newAddrPin.trim()) {
+      alert('Please enter Label, Address, and 6-digit PIN code.');
+      return;
+    }
+    if (showAddAddressModal === 'pickup') {
+      const newItem: SavedAddressItem = {
+        id: `pg-${Date.now()}`,
+        label: newAddrLabel.trim(),
+        contactName: newAddrName.trim() || 'Godown Manager',
+        phone: newAddrPhone.trim() || '9800000000',
+        address: newAddrAddress.trim(),
+        pinCode: newAddrPin.trim(),
+        type: 'pickup'
+      };
+      const updated = [newItem, ...savedPickupGodowns];
+      setSavedPickupGodowns(updated);
+      localStorage.setItem('ask_saved_pickup_godowns', JSON.stringify(updated));
+      handleSelectPickupGodown(newItem);
+    } else {
+      const newItem: SavedAddressItem = {
+        id: `dc-${Date.now()}`,
+        label: newAddrLabel.trim(),
+        contactName: newAddrName.trim() || 'Receiving Store Manager',
+        phone: newAddrPhone.trim() || '9800000000',
+        address: newAddrAddress.trim(),
+        pinCode: newAddrPin.trim(),
+        type: 'delivery'
+      };
+      const updated = [newItem, ...savedDeliveryConsignees];
+      setSavedDeliveryConsignees(updated);
+      localStorage.setItem('ask_saved_delivery_consignees', JSON.stringify(updated));
+      handleSelectDeliveryConsignee(newItem);
+    }
+    setShowAddAddressModal(null);
+    setNewAddrLabel('');
+    setNewAddrName('');
+    setNewAddrPhone('');
+    setNewAddrAddress('');
+    setNewAddrPin('');
   }
 
   function validateStep1() {
@@ -1061,37 +1265,79 @@ return (
                   </div>
 
                   {/* SAVED PICKUP GODOWNS CHIPS */}
-                  <div style={{ background: '#f0f9ff', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bae6fd', marginBottom: '14px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#0369a1', marginBottom: '6px' }}>
-                      📖 Saved Pickup Godowns:
+                  <div style={{
+                    background: 'var(--surface-color, #f0f9ff)',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-color, #bae6fd)',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary, #0369a1)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                        📖 Saved Pickup Godowns ({savedPickupGodowns.length})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewAddrLabel('');
+                          setNewAddrName(senderName || '');
+                          setNewAddrPhone(senderPhone || '');
+                          setNewAddrAddress(fromAddress || '');
+                          setNewAddrPin(fromPinCode || '');
+                          setShowAddAddressModal('pickup');
+                        }}
+                        style={{
+                          background: '#0284c7',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                        title="Add and save a new pickup godown"
+                      >
+                        + Add / Save Godown
+                      </button>
                     </div>
+
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSenderName('Apex Industries Central Godown');
-                          setSenderPhone('9811022334');
-                          setFromAddress('Plot 42, Sanjay Gandhi Transport Nagar, GT Karnal Road');
-                          setFromPinCode('110042');
-                          checkPickupPin('110042');
-                        }}
-                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #7dd3fc', borderRadius: '4px', cursor: 'pointer', color: '#0369a1', fontWeight: 600 }}
-                      >
-                        🏭 Delhi Central Godown (110042)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSenderName('Apex Logistics Okhla Depot');
-                          setSenderPhone('9876543210');
-                          setFromAddress('Phase III, Okhla Industrial Estate');
-                          setFromPinCode('110020');
-                          checkPickupPin('110020');
-                        }}
-                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #7dd3fc', borderRadius: '4px', cursor: 'pointer', color: '#0369a1', fontWeight: 600 }}
-                      >
-                        🏢 Okhla Phase-III (110020)
-                      </button>
+                      {savedPickupGodowns.map(g => (
+                        <div
+                          key={g.id}
+                          onClick={() => handleSelectPickupGodown(g)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 9px',
+                            fontSize: '11px',
+                            background: fromPinCode === g.pinCode ? '#0284c7' : 'var(--input-bg, #ffffff)',
+                            color: fromPinCode === g.pinCode ? '#ffffff' : 'var(--text-primary, #0369a1)',
+                            border: '1px solid #7dd3fc',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            transition: 'all 0.15s'
+                          }}
+                          title={`Click to fill: ${g.address}`}
+                        >
+                          <span>🏭 {g.label}</span>
+                          <span
+                            onClick={(e) => handleDeletePickupGodown(g.id, e)}
+                            style={{
+                              marginLeft: '2px',
+                              opacity: 0.7,
+                              fontSize: '12px',
+                              cursor: 'pointer'
+                            }}
+                            title="Remove from saved godowns"
+                          >
+                            &times;
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1226,6 +1472,42 @@ return (
                     )}
                   </div>
 
+                  {/* INLINE SAVE TO ADDRESS BOOK OPTION */}
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '10px 12px',
+                    background: 'rgba(2, 132, 199, 0.08)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(2, 132, 199, 0.2)'
+                  }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                      <input
+                        type="checkbox"
+                        checked={saveCurrentPickupToBook}
+                        onChange={(e) => setSaveCurrentPickupToBook(e.target.checked)}
+                      />
+                      <span>💾 Save this address to Saved Godowns Book (for 1-click future bookings)</span>
+                    </label>
+                    {saveCurrentPickupToBook && (
+                      <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+                        <input
+                          type="text"
+                          placeholder="Enter godown nickname (e.g. Okhla Depot #2)"
+                          value={currentPickupLabel}
+                          onChange={(e) => setCurrentPickupLabel(e.target.value)}
+                          style={{ flex: 1, padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveCurrentPickupAddress}
+                          style={{ padding: '6px 12px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        >
+                          Save Godown
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                 </section>
 
 
@@ -1246,37 +1528,79 @@ return (
                   </div>
 
                   {/* SAVED DELIVERY CONSIGNEES CHIPS */}
-                  <div style={{ background: '#f0fdf4', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '14px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#166534', marginBottom: '6px' }}>
-                      📖 Saved Delivery Consignees:
+                  <div style={{
+                    background: 'var(--surface-color, #f0fdf4)',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-color, #bbf7d0)',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary, #166534)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                        📖 Saved Delivery Consignees ({savedDeliveryConsignees.length})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewAddrLabel('');
+                          setNewAddrName(receiverName || '');
+                          setNewAddrPhone(receiverPhone || '');
+                          setNewAddrAddress(toAddress || '');
+                          setNewAddrPin(toPinCode || '');
+                          setShowAddAddressModal('delivery');
+                        }}
+                        style={{
+                          background: '#16a34a',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                        title="Add and save a new delivery consignee"
+                      >
+                        + Add / Save Consignee
+                      </button>
                     </div>
+
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReceiverName('Shreenath Logistics Hub Bhiwandi');
-                          setReceiverPhone('9822114477');
-                          setToAddress('Gala #14, Building B2, Arihant Commercial Complex, Purna');
-                          setToPinCode('421302');
-                          checkDeliveryPin('421302');
-                        }}
-                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #86efac', borderRadius: '4px', cursor: 'pointer', color: '#166534', fontWeight: 600 }}
-                      >
-                        🏬 Mumbai Bhiwandi DC (421302)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReceiverName('Karnataka Tech Distribution Depot');
-                          setReceiverPhone('9845012345');
-                          setToAddress('Plot 88, Electronic City Phase-I');
-                          setToPinCode('560100');
-                          checkDeliveryPin('560100');
-                        }}
-                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #86efac', borderRadius: '4px', cursor: 'pointer', color: '#166534', fontWeight: 600 }}
-                      >
-                        🏪 Bangalore Electronic City (560100)
-                      </button>
+                      {savedDeliveryConsignees.map(c => (
+                        <div
+                          key={c.id}
+                          onClick={() => handleSelectDeliveryConsignee(c)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 9px',
+                            fontSize: '11px',
+                            background: toPinCode === c.pinCode ? '#16a34a' : 'var(--input-bg, #ffffff)',
+                            color: toPinCode === c.pinCode ? '#ffffff' : 'var(--text-primary, #166534)',
+                            border: '1px solid #86efac',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            transition: 'all 0.15s'
+                          }}
+                          title={`Click to fill: ${c.address}`}
+                        >
+                          <span>🏪 {c.label}</span>
+                          <span
+                            onClick={(e) => handleDeleteDeliveryConsignee(c.id, e)}
+                            style={{
+                              marginLeft: '2px',
+                              opacity: 0.7,
+                              fontSize: '12px',
+                              cursor: 'pointer'
+                            }}
+                            title="Remove from saved consignees"
+                          >
+                            &times;
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1407,6 +1731,42 @@ return (
                     {deliveryPinError && (
                       <div className="pin-error">
                         {deliveryPinError}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* INLINE SAVE DELIVERY CONSIGNEE OPTION */}
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '10px 12px',
+                    background: 'rgba(34, 197, 94, 0.08)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(34, 197, 94, 0.2)'
+                  }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                      <input
+                        type="checkbox"
+                        checked={saveCurrentDeliveryToBook}
+                        onChange={(e) => setSaveCurrentDeliveryToBook(e.target.checked)}
+                      />
+                      <span>💾 Save this address to Saved Consignees Book (for 1-click future bookings)</span>
+                    </label>
+                    {saveCurrentDeliveryToBook && (
+                      <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+                        <input
+                          type="text"
+                          placeholder="Enter consignee nickname (e.g. Bhiwandi DC #3)"
+                          value={currentDeliveryLabel}
+                          onChange={(e) => setCurrentDeliveryLabel(e.target.value)}
+                          style={{ flex: 1, padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveCurrentDeliveryAddress}
+                          style={{ padding: '6px 12px', background: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        >
+                          Save Consignee
+                        </button>
                       </div>
                     )}
                   </div>
@@ -2124,6 +2484,143 @@ return (
         data={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
       />
+    )}
+
+    {showAddAddressModal && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.75)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '20px'
+      }} onClick={() => setShowAddAddressModal(null)}>
+        <div style={{
+          background: 'var(--surface-color, #ffffff)',
+          color: 'var(--text-primary, #0f172a)',
+          width: '100%',
+          maxWidth: '520px',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+          border: '1px solid var(--border-color, #e2e8f0)'
+        }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                {showAddAddressModal === 'pickup' ? '🏭 Add New Saved Pickup Godown' : '🏪 Add New Saved Delivery Consignee'}
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                Save your warehouse / consignee address for 1-click auto-fill in future bookings
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAddAddressModal(null)}
+              style={{ background: 'transparent', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#64748b' }}
+            >
+              &times;
+            </button>
+          </div>
+
+          <form onSubmit={handleModalSaveAddress}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                  Label / Nickname *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={showAddAddressModal === 'pickup' ? 'e.g. Delhi Central Hub (110042)' : 'e.g. Bhiwandi DC Unit 4'}
+                  value={newAddrLabel}
+                  onChange={e => setNewAddrLabel(e.target.value)}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                    Contact Person Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Ramesh Kumar"
+                    value={newAddrName}
+                    onChange={e => setNewAddrName(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                    Mobile Number
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={10}
+                    placeholder="10-digit number"
+                    value={newAddrPhone}
+                    onChange={e => setNewAddrPhone(e.target.value.replace(/\D/g, ''))}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                  Complete Street / Building Address *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Plot / Gala / House number, Street, Industrial Area"
+                  value={newAddrAddress}
+                  onChange={e => setNewAddrAddress(e.target.value)}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', resize: 'vertical' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                  6-Digit Postal PIN Code *
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={6}
+                  placeholder="e.g. 110042"
+                  value={newAddrPin}
+                  onChange={e => setNewAddrPin(e.target.value.replace(/\D/g, ''))}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddAddressModal(null)}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f1f5f9', color: '#475569', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: showAddAddressModal === 'pickup' ? '#0284c7' : '#16a34a', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  💾 Save &amp; Auto-Fill Form
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     )}
   </CustomerLayout>
 );
