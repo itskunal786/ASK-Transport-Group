@@ -1,4 +1,8 @@
 import './Documents.css';
+import CustomerLayout from '../../layouts/CustomerLayout';
+import { useAuth } from '../../context/AuthContext';
+import { isUserApproved } from '../../utils/accessControl';
+import AccessRestrictedNotice from '../../components/AccessRestrictedNotice';
 
 import {
   useEffect,
@@ -15,6 +19,8 @@ import {
 } from '../../api/documentApi';
 
 export default function Documents() {
+  const { user } = useAuth();
+  const isApproved = isUserApproved(user);
 
   const [documents, setDocuments] =
     useState<ClientDocument[]>([]);
@@ -388,9 +394,20 @@ export default function Documents() {
     ).length;
 
 
-  return (
+  if (!isApproved) {
+    return (
+      <CustomerLayout>
+        <AccessRestrictedNotice
+          moduleName="Regulatory Documents & POD Proof"
+          moduleDesc="Consignment note uploads, E-way bill compliance docs, and signed Proof of Delivery archives"
+        />
+      </CustomerLayout>
+    );
+  }
 
-    <div className="client-documents">
+  return (
+    <CustomerLayout>
+      <div className="client-documents">
 
       <section className="doc-hero">
 
@@ -1149,8 +1166,8 @@ export default function Documents() {
 
       )}
 
-    </div>
-
+      </div>
+    </CustomerLayout>
   );
 }
 

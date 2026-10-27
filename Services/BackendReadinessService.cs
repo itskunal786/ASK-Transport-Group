@@ -58,8 +58,7 @@ public class BackendReadinessService
                 .AsNoTracking()
                 .AnyAsync(
                     x =>
-                        x.Role ==
-                            UserRole.Admin &&
+                        (x.Role == UserRole.Admin || x.Role == UserRole.SuperAdmin) &&
                         x.IsActive,
                     cancellationToken);
 

@@ -6,7 +6,7 @@ namespace ASK.Group.Api.Controllers;
 
 [ApiController]
 [Route("api/admin/feedback")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 public sealed class AdminFeedbackController : ControllerBase
 {
     private readonly AdminFeedbackService _service;

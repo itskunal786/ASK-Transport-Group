@@ -1,4 +1,4 @@
-﻿.register-page {
+.register-page {
   width: 100%;
   min-height: 100vh;
 
@@ -345,7 +345,7 @@
 .register-heading h2 {
   margin: 0 0 7px;
 
-  color: #071d3b;
+  color: #071d3b !important;
 
   font-size: 31px;
   font-weight: 800;

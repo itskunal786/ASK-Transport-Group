@@ -1,4 +1,4 @@
-﻿import {
+import {
   useEffect,
   useState
 } from 'react';
@@ -7,6 +7,7 @@ import {
   useLocation,
   useNavigate
 } from 'react-router-dom';
+import CustomerLayout from '../../layouts/CustomerLayout';
 
 import {
   createRazorpayOrder,
@@ -276,7 +277,8 @@ export default function PaymentPage() {
 
 
   return (
-    <div className="payment-page">
+    <CustomerLayout>
+      <div className="payment-page">
 
       <div className="payment-top">
 
@@ -468,9 +470,8 @@ export default function PaymentPage() {
           )}
 
         </div>
-
       </div>
-
     </div>
-  );
+  </CustomerLayout>
+);
 }

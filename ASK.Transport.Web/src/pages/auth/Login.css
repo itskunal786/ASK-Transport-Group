@@ -1,4 +1,4 @@
-﻿* {
+* {
   box-sizing: border-box;
 }
 
@@ -687,7 +687,7 @@
 .form-heading h2 {
   margin: 0 0 11px;
 
-  color: #071c39;
+  color: #071c39 !important;
 
   font-size: 37px;
   font-weight: 800;

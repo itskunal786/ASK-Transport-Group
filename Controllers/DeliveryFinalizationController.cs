@@ -26,7 +26,7 @@ public class DeliveryFinalizationController
     }
 
     [HttpPost("{shipmentId:int}/complete")]
-    [Authorize(Roles = "Admin,Driver")]
+    [Authorize(Roles = "Admin,SuperAdmin,Driver")]
     public async Task<IActionResult> Complete(
         int shipmentId,
         FinalizeDeliveryRequest request)

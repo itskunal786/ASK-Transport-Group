@@ -1,4 +1,4 @@
-﻿.verify-page {
+.verify-page {
   width: 100%;
   min-height: 100vh;
 
@@ -317,7 +317,7 @@
 .verify-heading h2 {
   margin: 0 0 10px;
 
-  color: #071d3b;
+  color: #071d3b !important;
 
   font-size: 34px;
   font-weight: 800;
