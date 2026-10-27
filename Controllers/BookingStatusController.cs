@@ -29,7 +29,7 @@ public class BookingStatusController
     }
 
     [HttpPut("{bookingNumber}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public async Task<IActionResult>
         ChangeStatus(
             string bookingNumber,

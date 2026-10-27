@@ -5,7 +5,8 @@ namespace ASK.Group.Api.Models;
 public enum UserRole
 {
     User = 1,
-    Admin = 2
+    Admin = 2,
+    SuperAdmin = 3
 }
 
 public class AppUser

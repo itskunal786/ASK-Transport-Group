@@ -4,7 +4,16 @@ import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
 import {
   getAdminOperationsSummary,
-  type AdminOperationsSummary
+  getAdminUsers,
+  updateAdminUser,
+  updateAdminUserRole,
+  changeUserStatus,
+  getAllRights,
+  getUserRights,
+  updateUserRights,
+  type AdminOperationsSummary,
+  type AdminUserData,
+  type SystemPermissionItem
 } from '../../api/adminApi';
 import './AdminDashboard.css';
 
@@ -14,13 +23,6 @@ interface BookingRow {
   route: string;
   date: string;
   status: 'In Transit' | 'Delivered' | 'Pending' | 'Cancelled';
-}
-
-interface CustomerRow {
-  name: string;
-  email: string;
-  mobile: string;
-  status: 'Active' | 'Inactive';
 }
 
 interface ShipmentRow {
@@ -65,14 +67,6 @@ const INITIAL_BOOKINGS: BookingRow[] = [
   { bookingNo: 'ASKB00120', customer: 'Neha Jain', route: 'Delhi → Jaipur', date: '12 Sep 2026', status: 'Cancelled' },
   { bookingNo: 'ASKB00119', customer: 'Suresh Reddy', route: 'Kolkata → Patna', date: '10 Sep 2026', status: 'In Transit' },
   { bookingNo: 'ASKB00118', customer: 'Vikram Mehta', route: 'Ahmedabad → Surat', date: '08 Sep 2026', status: 'Delivered' },
-];
-
-const INITIAL_CUSTOMERS: CustomerRow[] = [
-  { name: 'Rajesh Kumar', email: 'rajesh@example.com', mobile: '9876543210', status: 'Active' },
-  { name: 'Priya Singh', email: 'priya@example.com', mobile: '9876543211', status: 'Active' },
-  { name: 'Amit Patel', email: 'amit@example.com', mobile: '9876543212', status: 'Inactive' },
-  { name: 'Neha Jain', email: 'neha@example.com', mobile: '9876543213', status: 'Active' },
-  { name: 'Suresh Reddy', email: 'suresh@example.com', mobile: '9876543214', status: 'Active' },
 ];
 
 const INITIAL_SHIPMENTS: ShipmentRow[] = [
@@ -156,7 +150,7 @@ const INITIAL_VEHICLES: VehicleRow[] = [
   { plateNo: 'HR-26-LM-4321', model: 'Mahindra Blazo X 35', type: '32ft Multi-Axle (MXL)', capacityTons: 22.0, currentHub: 'Delhi Hub', status: 'Maintenance', fuelLevel: '45%' }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'reports';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'reports' | 'access';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -173,13 +167,38 @@ export default function Dashboard() {
   const [bookingFilterStatus, setBookingFilterStatus] = useState('All');
   const [bookingSearch, setBookingSearch] = useState('');
 
-  // Customer state
-  const [customerList, setCustomerList] = useState<CustomerRow[]>(INITIAL_CUSTOMERS);
+  // Live Users & Customer Management State
+  const [adminUsers, setAdminUsers] = useState<AdminUserData[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [newCustName, setNewCustName] = useState('');
   const [newCustEmail, setNewCustEmail] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
+
+  // Edit User State
+  const [editingUser, setEditingUser] = useState<AdminUserData | null>(null);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editUserName, setEditUserName] = useState('');
+  const [editUserPhone, setEditUserPhone] = useState('');
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserActive, setEditUserActive] = useState(true);
+  const [editUserLoading, setEditUserLoading] = useState(false);
+
+  // Role Assignment State (SuperAdmin Only)
+  const [roleModalUser, setRoleModalUser] = useState<AdminUserData | null>(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [targetRole, setTargetRole] = useState<'User' | 'Admin' | 'SuperAdmin'>('User');
+  const [roleUpdating, setRoleUpdating] = useState(false);
+
+  // Rights Delegation State (SuperAdmin Only)
+  const [rightsModalUser, setRightsModalUser] = useState<AdminUserData | null>(null);
+  const [showRightsModal, setShowRightsModal] = useState(false);
+  const [allSystemRights, setAllSystemRights] = useState<SystemPermissionItem[]>([]);
+  const [grantedIds, setGrantedIds] = useState<number[]>([]);
+  const [revokedIds, setRevokedIds] = useState<number[]>([]);
+  const [rightsLoading, setRightsLoading] = useState(false);
+  const [rightsSaving, setRightsSaving] = useState(false);
 
   // Shipments state
   const [shipmentsList, setShipmentsList] = useState<ShipmentRow[]>(INITIAL_SHIPMENTS);
@@ -229,7 +248,121 @@ export default function Dashboard() {
       }
     }
     loadData();
+    loadUsers();
   }, []);
+
+  async function loadUsers() {
+    try {
+      setUsersLoading(true);
+      const res = await getAdminUsers({ search: customerSearch });
+      if (res && res.data) {
+        setAdminUsers(res.data);
+      }
+    } catch (err) {
+      console.warn('Backend users load error:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  }
+
+  function handleOpenEditUser(u: AdminUserData) {
+    setEditingUser(u);
+    setEditUserName(u.name);
+    setEditUserPhone(u.phone);
+    setEditUserEmail(u.email);
+    setEditUserActive(u.isActive);
+    setShowEditUserModal(true);
+  }
+
+  async function handleSaveUserEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingUser) return;
+    try {
+      setEditUserLoading(true);
+      const res = await updateAdminUser(editingUser.id, {
+        name: editUserName,
+        phone: editUserPhone,
+        email: editUserEmail,
+        isActive: editUserActive
+      });
+      showToast(res.message || 'User data updated successfully!');
+      setShowEditUserModal(false);
+      loadUsers();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update user');
+    } finally {
+      setEditUserLoading(false);
+    }
+  }
+
+  function handleOpenRoleModal(u: AdminUserData) {
+    setRoleModalUser(u);
+    setTargetRole(u.role);
+    setShowRoleModal(true);
+  }
+
+  async function handleSaveRole(e: React.FormEvent) {
+    e.preventDefault();
+    if (!roleModalUser) return;
+    try {
+      setRoleUpdating(true);
+      const res = await updateAdminUserRole(roleModalUser.id, targetRole);
+      showToast(res.message || `Role updated to ${targetRole}!`);
+      setShowRoleModal(false);
+      loadUsers();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update role');
+    } finally {
+      setRoleUpdating(false);
+    }
+  }
+
+  async function handleOpenRightsModal(u: AdminUserData) {
+    setRightsModalUser(u);
+    setShowRightsModal(true);
+    setRightsLoading(true);
+    try {
+      const [allRights, userRights] = await Promise.all([
+        getAllRights(),
+        getUserRights(u.id)
+      ]);
+      setAllSystemRights(allRights);
+      setGrantedIds(userRights.grantedPermissionIds || []);
+      setRevokedIds(userRights.revokedPermissionIds || []);
+    } catch (err: any) {
+      showToast('Failed to load user permissions');
+    } finally {
+      setRightsLoading(false);
+    }
+  }
+
+  async function handleSaveRights() {
+    if (!rightsModalUser) return;
+    try {
+      setRightsSaving(true);
+      const res = await updateUserRights(rightsModalUser.id, {
+        grantedPermissionIds: grantedIds,
+        revokedPermissionIds: revokedIds
+      });
+      showToast(res.message || 'Rights successfully updated!');
+      setShowRightsModal(false);
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update rights');
+    } finally {
+      setRightsSaving(false);
+    }
+  }
+
+  async function handleToggleUserStatus(u: AdminUserData) {
+    try {
+      const newStatus = !u.isActive;
+      await changeUserStatus(u.id, newStatus);
+      showToast(`User ${u.name} ${newStatus ? 'activated' : 'suspended'}!`);
+      loadUsers();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update status');
+    }
+  }
 
   // CSV Exporters
   function exportBookingsToCSV() {
@@ -286,14 +419,18 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newCustName.trim() || !newCustEmail.trim()) return;
 
-    const newCust: CustomerRow = {
+    const newCust: AdminUserData = {
+      id: Date.now(),
       name: newCustName.trim(),
       email: newCustEmail.trim(),
-      mobile: newCustPhone.trim() || '9876543210',
-      status: 'Active'
+      phone: newCustPhone.trim() || '9876543210',
+      role: 'User',
+      isVerified: true,
+      isActive: true,
+      createdAt: new Date().toISOString()
     };
 
-    setCustomerList(prev => [newCust, ...prev]);
+    setAdminUsers(prev => [newCust, ...prev]);
     setShowAddCustomerModal(false);
     setNewCustName('');
     setNewCustEmail('');
@@ -407,18 +544,6 @@ export default function Dashboard() {
         b.bookingNo.toLowerCase().includes(q) ||
         b.customer.toLowerCase().includes(q) ||
         b.route.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
-
-  const filteredCustomers = customerList.filter(c => {
-    if (customerSearch.trim()) {
-      const q = customerSearch.toLowerCase();
-      return (
-        c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        c.mobile.includes(q)
       );
     }
     return true;
@@ -538,7 +663,7 @@ export default function Dashboard() {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            Customers
+            User Management
           </button>
 
           <button
@@ -592,6 +717,18 @@ export default function Dashboard() {
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
             Reports &amp; Export
+          </button>
+
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === 'access' ? 'active' : ''}`}
+            onClick={() => setActiveTab('access')}
+            style={user?.role === 'SuperAdmin' ? { borderLeft: '3px solid #f59e0b', color: '#fef3c7' } : {}}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            {user?.role === 'SuperAdmin' ? '👑 Rights & Delegation' : 'Staff Access'}
           </button>
         </nav>
 
@@ -650,12 +787,17 @@ export default function Dashboard() {
             <ThemeToggle />
 
             <div className="admin-profile-pill">
-              <div className="admin-user-avatar">
+              <div
+                className="admin-user-avatar"
+                style={user?.role === 'SuperAdmin' ? { background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' } : {}}
+              >
                 {user?.name?.charAt(0).toUpperCase() || 'A'}
               </div>
               <div className="admin-user-names">
                 <strong>{user?.name || 'Administrator'}</strong>
-                <small>{user?.role || 'Admin'} • Super Access</small>
+                <small style={user?.role === 'SuperAdmin' ? { color: '#f59e0b', fontWeight: 700 } : {}}>
+                  {user?.role === 'SuperAdmin' ? '👑 Super Admin • Full Rights' : 'Admin • Operations Access'}
+                </small>
               </div>
             </div>
           </div>
@@ -984,23 +1126,31 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 3: CUSTOMERS TAB */}
+        {/* VIEW 3: USER MANAGEMENT & UPDATION TAB */}
         {/* ============================================================== */}
         {activeTab === 'customers' && (
           <div className="admin-content-pad">
             <div className="admin-page-title-row">
               <div>
-                <h1>Client Accounts Directory</h1>
-                <p>Manage corporate shippers and enterprise accounts</p>
+                <h1>User Directory &amp; Data Management</h1>
+                <p>Manage user profiles, edit contact information, toggle account status, and delegate administrative roles</p>
               </div>
 
               <div className="admin-title-actions">
                 <button
                   type="button"
+                  className="admin-btn-export"
+                  onClick={loadUsers}
+                  disabled={usersLoading}
+                >
+                  {usersLoading ? 'Refreshing...' : '🔄 Refresh Users'}
+                </button>
+                <button
+                  type="button"
                   className="admin-btn-primary"
                   onClick={() => setShowAddCustomerModal(true)}
                 >
-                  + Add Customer
+                  + Add User
                 </button>
               </div>
             </div>
@@ -1009,44 +1159,141 @@ export default function Dashboard() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th>Customer Name</th>
+                    <th>User &amp; ID</th>
                     <th>Email Address</th>
                     <th>Mobile Phone</th>
+                    <th>Assigned Role</th>
                     <th>Account Status</th>
-                    <th>Action</th>
+                    <th>Actions &amp; Updation</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCustomers.map((c, i) => (
-                    <tr key={i}>
-                      <td style={{ fontWeight: 600 }}>{c.name}</td>
-                      <td style={{ color: '#0b72e7' }}>{c.email}</td>
-                      <td style={{ color: '#64748b' }}>{c.mobile}</td>
-                      <td>
-                        <span
-                          style={{
-                            padding: '3px 10px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            background: c.status === 'Active' ? '#edfdf4' : '#fee2e2',
-                            color: c.status === 'Active' ? '#10b981' : '#dc2626'
-                          }}
-                        >
-                          {c.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="admin-btn-view"
-                          onClick={() => alert(`Client Profile:\nName: ${c.name}\nEmail: ${c.email}\nPhone: ${c.mobile}\nStatus: ${c.status}`)}
-                        >
-                          View Profile
-                        </button>
+                  {adminUsers.length > 0 ? (
+                    adminUsers.map(u => (
+                      <tr key={u.id}>
+                        <td>
+                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{u.name}</div>
+                          <small style={{ color: '#94a3b8', fontSize: '11px' }}>ID: #{u.id}</small>
+                        </td>
+                        <td style={{ color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
+                        <td style={{ color: '#475569' }}>{u.phone || '—'}</td>
+                        <td>
+                          <span
+                            style={{
+                              padding: '3px 10px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background:
+                                u.role === 'SuperAdmin'
+                                  ? '#fef3c7'
+                                  : u.role === 'Admin'
+                                  ? '#ede9fe'
+                                  : '#e0f2fe',
+                              color:
+                                u.role === 'SuperAdmin'
+                                  ? '#b45309'
+                                  : u.role === 'Admin'
+                                  ? '#6d28d9'
+                                  : '#0284c7'
+                            }}
+                          >
+                            {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Admin' : '👤 User'}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              padding: '3px 10px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: u.isActive ? '#edfdf4' : '#fee2e2',
+                              color: u.isActive ? '#10b981' : '#dc2626'
+                            }}
+                          >
+                            {u.isActive ? 'Active' : 'Suspended'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="admin-btn-view"
+                              onClick={() => handleOpenEditUser(u)}
+                              title="Edit user details"
+                            >
+                              ✏️ Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleUserStatus(u)}
+                              style={{
+                                padding: '4px 8px',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '6px',
+                                background: u.isActive ? '#fff1f2' : '#f0fdf4',
+                                color: u.isActive ? '#e11d48' : '#16a34a',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                              title={u.isActive ? 'Suspend User' : 'Activate User'}
+                            >
+                              {u.isActive ? 'Suspend' : 'Activate'}
+                            </button>
+
+                            {user?.role === 'SuperAdmin' && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenRoleModal(u)}
+                                  style={{
+                                    padding: '4px 8px',
+                                    border: '1px solid #fde68a',
+                                    borderRadius: '6px',
+                                    background: '#fffbeb',
+                                    color: '#b45309',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Change User Role (SuperAdmin Only)"
+                                >
+                                  👑 Role
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenRightsModal(u)}
+                                  style={{
+                                    padding: '4px 8px',
+                                    border: '1px solid #c7d2fe',
+                                    borderRadius: '6px',
+                                    background: '#eef2ff',
+                                    color: '#4338ca',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Delegate or Revoke Specific Rights (SuperAdmin Only)"
+                                >
+                                  🛡️ Rights
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                        {usersLoading ? 'Loading users...' : 'No users found matching your query.'}
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1393,6 +1640,193 @@ export default function Dashboard() {
                   Download Vehicles CSV
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 8: SUPER ADMIN CONTROL & RIGHTS DELEGATION TAB */}
+        {/* ============================================================== */}
+        {activeTab === 'access' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>👑 Super Admin Control Center &amp; Rights Delegation</h1>
+                <p>Governing role assignments, administrative privileges, and granular module access control</p>
+              </div>
+
+              {user?.role === 'SuperAdmin' && (
+                <div className="admin-title-actions">
+                  <span style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    background: '#fef3c7',
+                    border: '1px solid #fde68a',
+                    color: '#92400e',
+                    fontSize: '13px',
+                    fontWeight: 700
+                  }}>
+                    👑 Super Admin Master Mode Active
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* SUPER ADMIN NOTICE */}
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderLeft: '4px solid #f59e0b',
+              borderRadius: '12px',
+              padding: '18px 22px',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{ margin: '0 0 6px', color: '#0f172a', fontSize: '15px', fontWeight: 700 }}>
+                Hierarchical Security Architecture:
+              </h3>
+              <p style={{ margin: 0, color: '#475569', fontSize: '13px', lineHeight: 1.6 }}>
+                1. <strong>Super Admin</strong>: Holds unrestricted master permissions across all backend APIs, database tables, financial reconciliations, and security settings. Only the Super Admin can promote users to Admin or grant/revoke specific rights.<br />
+                2. <strong>Admin</strong>: Manages day-to-day user data, shipment tracking, consignments, drivers, and operations strictly based on rights delegated by the Super Admin.<br />
+                3. <strong>User / Customer</strong>: Accesses their personal shipper panel to book cargo, track consignments, and update their account credentials.
+              </p>
+            </div>
+
+            {/* KPI STATS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div className="admin-kpi-card">
+                <div className="admin-kpi-icon-wrap" style={{ background: '#fef3c7', color: '#b45309' }}>👑</div>
+                <div className="admin-kpi-text">
+                  <span>Super Admins</span>
+                  <strong>{adminUsers.filter(u => u.role === 'SuperAdmin').length || 1}</strong>
+                </div>
+              </div>
+
+              <div className="admin-kpi-card">
+                <div className="admin-kpi-icon-wrap" style={{ background: '#ede9fe', color: '#6d28d9' }}>⚡</div>
+                <div className="admin-kpi-text">
+                  <span>Operational Admins</span>
+                  <strong>{adminUsers.filter(u => u.role === 'Admin').length}</strong>
+                </div>
+              </div>
+
+              <div className="admin-kpi-card">
+                <div className="admin-kpi-icon-wrap" style={{ background: '#e0f2fe', color: '#0284c7' }}>👥</div>
+                <div className="admin-kpi-text">
+                  <span>Registered Users</span>
+                  <strong>{adminUsers.filter(u => u.role === 'User').length}</strong>
+                </div>
+              </div>
+
+              <div className="admin-kpi-card">
+                <div className="admin-kpi-icon-wrap" style={{ background: '#edfdf4', color: '#16a34a' }}>🛡️</div>
+                <div className="admin-kpi-text">
+                  <span>Delegable Modules</span>
+                  <strong>8 Core Modules</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* STAFF TABLE */}
+            <div className="admin-table-card">
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+                <h2 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>System Staff &amp; Administrative Personnel</h2>
+              </div>
+
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Personnel</th>
+                    <th>Email Address</th>
+                    <th>Role Privilege</th>
+                    <th>Status</th>
+                    <th>Super Admin Rights Delegation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminUsers
+                    .filter(u => u.role === 'Admin' || u.role === 'SuperAdmin')
+                    .map(staff => (
+                      <tr key={staff.id}>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{staff.name}</div>
+                          <small style={{ color: '#64748b' }}>Staff ID: #{staff.id}</small>
+                        </td>
+                        <td style={{ color: '#0b72e7' }}>{staff.email}</td>
+                        <td>
+                          <span
+                            style={{
+                              padding: '3px 10px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: staff.role === 'SuperAdmin' ? '#fef3c7' : '#ede9fe',
+                              color: staff.role === 'SuperAdmin' ? '#b45309' : '#6d28d9'
+                            }}
+                          >
+                            {staff.role === 'SuperAdmin' ? '👑 Super Admin' : '⚡ Operational Admin'}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              padding: '3px 10px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: staff.isActive ? '#edfdf4' : '#fee2e2',
+                              color: staff.isActive ? '#10b981' : '#dc2626'
+                            }}
+                          >
+                            {staff.isActive ? 'Active' : 'Suspended'}
+                          </span>
+                        </td>
+                        <td>
+                          {user?.role === 'SuperAdmin' ? (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenRightsModal(staff)}
+                                style={{
+                                  padding: '5px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #c7d2fe',
+                                  background: '#eef2ff',
+                                  color: '#4338ca',
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🛡️ Manage Rights
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenRoleModal(staff)}
+                                style={{
+                                  padding: '5px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #fde68a',
+                                  background: '#fffbeb',
+                                  color: '#b45309',
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                👑 Change Role
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                              Governed by Super Admin
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -1769,6 +2203,281 @@ export default function Dashboard() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL 5: EDIT USER DATA MODAL */}
+        {/* ============================================================== */}
+        {showEditUserModal && editingUser && (
+          <div className="st-modal-overlay" onClick={() => setShowEditUserModal(false)}>
+            <div className="st-drawer-box" onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2>Edit User Profile Data</h2>
+                  <p>User #{editingUser.id} ({editingUser.email})</p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowEditUserModal(false)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveUserEdit}>
+                <div className="st-drawer-body">
+                  <div className="st-form-field">
+                    <label>Full Name *</label>
+                    <input
+                      type="text"
+                      value={editUserName}
+                      onChange={e => setEditUserName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Phone Number *</label>
+                    <input
+                      type="tel"
+                      value={editUserPhone}
+                      onChange={e => setEditUserPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Email Address</label>
+                    <input
+                      type="email"
+                      value={editUserEmail}
+                      onChange={e => setEditUserEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Account Status</label>
+                    <select
+                      value={editUserActive ? 'active' : 'suspended'}
+                      onChange={e => setEditUserActive(e.target.value === 'active')}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }}
+                    >
+                      <option value="active">Active (Access Allowed)</option>
+                      <option value="suspended">Suspended (Access Blocked)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowEditUserModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit" disabled={editUserLoading}>
+                    {editUserLoading ? 'Saving...' : 'Save User Updates'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL 6: ROLE ASSIGNMENT MODAL (SUPERADMIN ONLY) */}
+        {/* ============================================================== */}
+        {showRoleModal && roleModalUser && (
+          <div className="st-modal-overlay" onClick={() => setShowRoleModal(false)}>
+            <div className="st-drawer-box" onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2 style={{ color: '#b45309' }}>👑 Assign System Role</h2>
+                  <p>Target User: {roleModalUser.name} ({roleModalUser.email})</p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowRoleModal(false)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveRole}>
+                <div className="st-drawer-body">
+                  <div style={{ background: '#fef3c7', padding: '12px 14px', borderRadius: '8px', border: '1px solid #fde68a', color: '#92400e', fontSize: '12px', marginBottom: '16px' }}>
+                    Super Admin Privilege: Promoting a user to <strong>Admin</strong> grants them operational dashboard access. Promoting to <strong>SuperAdmin</strong> grants master rights.
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Select Role *</label>
+                    <select
+                      value={targetRole}
+                      onChange={e => setTargetRole(e.target.value as any)}
+                      style={{ width: '100%', padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '15px', fontWeight: 600 }}
+                    >
+                      <option value="User">👤 Customer / Standard User (Shipping &amp; Tracking)</option>
+                      <option value="Admin">⚡ Administrator (Operations, Bookings, Fleet &amp; Users)</option>
+                      <option value="SuperAdmin">👑 Super Admin (Full Unrestricted Master Rights &amp; Delegation)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowRoleModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit" disabled={roleUpdating}>
+                    {roleUpdating ? 'Assigning...' : 'Confirm Role Update'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL 7: RIGHTS DELEGATION MODAL (SUPERADMIN ONLY) */}
+        {/* ============================================================== */}
+        {showRightsModal && rightsModalUser && (
+          <div className="st-modal-overlay" onClick={() => setShowRightsModal(false)}>
+            <div className="st-drawer-box" style={{ maxWidth: '620px' }} onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2 style={{ color: '#4338ca' }}>🛡️ Super Admin Rights Delegation</h2>
+                  <p>Assign specific permissions for: {rightsModalUser.name} ({rightsModalUser.role})</p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowRightsModal(false)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="st-drawer-body">
+                {rightsLoading ? (
+                  <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                    Loading permissions registry...
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '14px' }}>
+                      Toggle individual rights to grant or revoke access to specific subsystems:
+                    </p>
+
+                    <div style={{ maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '6px' }}>
+                      {allSystemRights.map(perm => {
+                        const isRevoked = revokedIds.includes(perm.id);
+                        const isExplicitlyGranted = grantedIds.includes(perm.id);
+
+                        return (
+                          <div
+                            key={perm.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 14px',
+                              background: '#f8fafc',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '8px'
+                            }}
+                          >
+                            <div>
+                              <strong style={{ fontSize: '13px', color: '#0f172a' }}>{perm.code}</strong>
+                              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                                [{perm.module}] {perm.description || perm.action}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  // Toggle grant
+                                  if (isExplicitlyGranted) {
+                                    setGrantedIds(prev => prev.filter(x => x !== perm.id));
+                                  } else {
+                                    setGrantedIds(prev => [...prev, perm.id]);
+                                    setRevokedIds(prev => prev.filter(x => x !== perm.id));
+                                  }
+                                }}
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  border: '1px solid #10b981',
+                                  background: isExplicitlyGranted ? '#10b981' : '#ffffff',
+                                  color: isExplicitlyGranted ? '#ffffff' : '#10b981'
+                                }}
+                              >
+                                {isExplicitlyGranted ? '✓ Granted' : 'Grant'}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  // Toggle revoke
+                                  if (isRevoked) {
+                                    setRevokedIds(prev => prev.filter(x => x !== perm.id));
+                                  } else {
+                                    setRevokedIds(prev => [...prev, perm.id]);
+                                    setGrantedIds(prev => prev.filter(x => x !== perm.id));
+                                  }
+                                }}
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  border: '1px solid #ef4444',
+                                  background: isRevoked ? '#ef4444' : '#ffffff',
+                                  color: isRevoked ? '#ffffff' : '#ef4444'
+                                }}
+                              >
+                                {isRevoked ? '✕ Revoked' : 'Revoke'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="st-drawer-actions">
+                <button
+                  type="button"
+                  className="st-btn-cancel"
+                  onClick={() => setShowRightsModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="st-btn-submit"
+                  onClick={handleSaveRights}
+                  disabled={rightsSaving}
+                >
+                  {rightsSaving ? 'Saving Rights...' : 'Save Rights Delegation'}
+                </button>
+              </div>
             </div>
           </div>
         )}

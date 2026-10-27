@@ -365,6 +365,45 @@ public static class DbInitializer
         if (!await db.Users.AnyAsync(
                 x =>
                     x.Email ==
+                    "superadmin@askgroup.com"))
+        {
+            var superAdmin =
+                new AppUser
+                {
+                    Name =
+                        "ASK Super Admin",
+
+                    Email =
+                        "superadmin@askgroup.com",
+
+                    Phone =
+                        "9999999990",
+
+                    PasswordHash =
+                        BCrypt.Net.BCrypt
+                            .HashPassword(
+                                "SuperAdmin@123"),
+
+                    Role =
+                        UserRole.SuperAdmin,
+
+                    IsVerified =
+                        true,
+
+                    IsActive =
+                        true,
+
+                    CreatedAt =
+                        DateTime.UtcNow
+                };
+
+            await db.Users.AddAsync(superAdmin);
+            await db.SaveChangesAsync();
+        }
+
+        if (!await db.Users.AnyAsync(
+                x =>
+                    x.Email ==
                     "admin@askgroup.com"))
         {
             var admin =

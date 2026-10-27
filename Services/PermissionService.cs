@@ -30,8 +30,8 @@ public class PermissionService
             return false;
         }
 
-        if (user.Role ==
-            UserRole.Admin)
+        // SuperAdmin has full unrestricted access to all permissions
+        if (user.Role == UserRole.SuperAdmin)
         {
             return true;
         }
@@ -62,6 +62,12 @@ public class PermissionService
         {
             return userPermission
                 .IsGranted;
+        }
+
+        // If user is Admin and permission was not explicitly revoked by SuperAdmin, grant access
+        if (user.Role == UserRole.Admin)
+        {
+            return true;
         }
 
         var allowedByRole =

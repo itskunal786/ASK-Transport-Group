@@ -22,7 +22,7 @@ public class OwnershipService
             .AnyAsync(x =>
                 x.Id == userId &&
                 x.IsActive &&
-                x.Role == UserRole.Admin);
+                (x.Role == UserRole.Admin || x.Role == UserRole.SuperAdmin));
     }
 
     public async Task<bool> CanAccessBookingAsync(

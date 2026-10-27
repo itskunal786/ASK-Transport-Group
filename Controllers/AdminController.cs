@@ -10,7 +10,7 @@ namespace ASK.Group.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class AdminController : ControllerBase
 {
     private readonly AskTransportDbContext _db;
@@ -582,14 +582,15 @@ public class AdminController : ControllerBase
             });
         }
 
-        if (user.Role ==
-            UserRole.Admin)
+        if (user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin)
         {
-            return BadRequest(new
+            if (!User.IsInRole("SuperAdmin"))
             {
-                message =
-                    "Admin account cannot be disabled from this endpoint"
-            });
+                return BadRequest(new
+                {
+                    message = "Admin and SuperAdmin accounts can only be managed by a SuperAdmin"
+                });
+            }
         }
 
         if (user.IsActive ==
@@ -644,4 +645,228 @@ public class AdminController : ControllerBase
             user.IsActive
         });
     }
+
+    [HttpPut("users/{id:int}")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] AdminUpdateUserDto request)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var isCallerSuperAdmin = User.IsInRole("SuperAdmin");
+        if ((user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin) && !isCallerSuperAdmin)
+        {
+            return StatusCode(403, new { message = "Only Super Admin can modify administrative accounts." });
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Name)) user.Name = request.Name.Trim();
+        if (!string.IsNullOrWhiteSpace(request.Phone)) user.Phone = request.Phone.Trim();
+        if (!string.IsNullOrWhiteSpace(request.Email) && request.Email.Contains('@')) user.Email = request.Email.Trim().ToLowerInvariant();
+        if (request.IsActive.HasValue) user.IsActive = request.IsActive.Value;
+
+        await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            "USER_UPDATED_BY_ADMIN",
+            $"User {user.Email} updated by admin",
+            user.Id,
+            user.Email);
+
+        return Ok(new
+        {
+            message = "User updated successfully",
+            user = new
+            {
+                user.Id,
+                user.Name,
+                user.Email,
+                user.Phone,
+                role = user.Role.ToString(),
+                user.IsActive,
+                user.IsVerified
+            }
+        });
+    }
+
+    [HttpPut("users/{id:int}/role")]
+    public async Task<IActionResult> UpdateUserRole(int id, [FromBody] AdminUpdateRoleDto request)
+    {
+        if (!User.IsInRole("SuperAdmin"))
+        {
+            return StatusCode(403, new { message = "Forbidden: Only Super Admin can assign or change roles." });
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        if (!Enum.TryParse<UserRole>(request.Role, true, out var parsedRole))
+        {
+            return BadRequest(new { message = "Invalid role. Allowed values: User, Admin, SuperAdmin." });
+        }
+
+        if (user.Role == UserRole.SuperAdmin && parsedRole != UserRole.SuperAdmin)
+        {
+            var superAdminCount = await _db.Users.CountAsync(x => x.Role == UserRole.SuperAdmin && x.IsActive);
+            if (superAdminCount <= 1)
+            {
+                return BadRequest(new { message = "Cannot demote the last active Super Admin." });
+            }
+        }
+
+        var oldRole = user.Role;
+        user.Role = parsedRole;
+        await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            "USER_ROLE_CHANGED",
+            $"SuperAdmin changed role of {user.Email} from {oldRole} to {parsedRole}",
+            user.Id,
+            user.Email);
+
+        return Ok(new
+        {
+            message = $"User role successfully changed to {parsedRole}",
+            userId = user.Id,
+            role = user.Role.ToString()
+        });
+    }
+
+    [HttpGet("rights")]
+    public async Task<IActionResult> GetAllRights()
+    {
+        var permissions = await _db.Permissions
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Module)
+            .ThenBy(x => x.Action)
+            .Select(x => new
+            {
+                x.Id,
+                x.Code,
+                x.Module,
+                x.Action,
+                x.Description
+            })
+            .ToListAsync();
+
+        return Ok(permissions);
+    }
+
+    [HttpGet("users/{id:int}/rights")]
+    public async Task<IActionResult> GetUserRights(int id)
+    {
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var grantedPermissionIds = await _db.UserPermissions
+            .AsNoTracking()
+            .Where(x => x.UserId == id && x.IsGranted)
+            .Select(x => x.PermissionId)
+            .ToListAsync();
+
+        var revokedPermissionIds = await _db.UserPermissions
+            .AsNoTracking()
+            .Where(x => x.UserId == id && !x.IsGranted)
+            .Select(x => x.PermissionId)
+            .ToListAsync();
+
+        return Ok(new
+        {
+            userId = user.Id,
+            userName = user.Name,
+            userRole = user.Role.ToString(),
+            grantedPermissionIds,
+            revokedPermissionIds
+        });
+    }
+
+    [HttpPut("users/{id:int}/rights")]
+    public async Task<IActionResult> UpdateUserRights(int id, [FromBody] AdminUpdateUserRightsDto request)
+    {
+        if (!User.IsInRole("SuperAdmin"))
+        {
+            return StatusCode(403, new { message = "Forbidden: Only Super Admin can delegate or revoke rights." });
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var existing = await _db.UserPermissions.Where(x => x.UserId == id).ToListAsync();
+        _db.UserPermissions.RemoveRange(existing);
+
+        if (request.GrantedPermissionIds != null)
+        {
+            foreach (var pid in request.GrantedPermissionIds.Distinct())
+            {
+                _db.UserPermissions.Add(new UserPermission
+                {
+                    UserId = id,
+                    PermissionId = pid,
+                    IsGranted = true,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        if (request.RevokedPermissionIds != null)
+        {
+            foreach (var pid in request.RevokedPermissionIds.Distinct())
+            {
+                if (request.GrantedPermissionIds != null && request.GrantedPermissionIds.Contains(pid)) continue;
+                _db.UserPermissions.Add(new UserPermission
+                {
+                    UserId = id,
+                    PermissionId = pid,
+                    IsGranted = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            "USER_RIGHTS_UPDATED",
+            $"SuperAdmin updated rights for {user.Email}",
+            user.Id,
+            user.Email);
+
+        return Ok(new
+        {
+            message = $"Rights successfully updated for {user.Name}",
+            userId = user.Id,
+            grantedCount = request.GrantedPermissionIds?.Count ?? 0,
+            revokedCount = request.RevokedPermissionIds?.Count ?? 0
+        });
+    }
+}
+
+public class AdminUpdateUserDto
+{
+    public string? Name { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public bool? IsActive { get; set; }
+}
+
+public class AdminUpdateRoleDto
+{
+    public string Role { get; set; } = string.Empty;
+}
+
+public class AdminUpdateUserRightsDto
+{
+    public List<int> GrantedPermissionIds { get; set; } = new();
+    public List<int> RevokedPermissionIds { get; set; } = new();
 }

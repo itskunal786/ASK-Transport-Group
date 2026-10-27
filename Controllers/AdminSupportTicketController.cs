@@ -8,7 +8,7 @@ namespace ASK.Group.Api.Controllers;
 
 [ApiController]
 [Route("api/admin/support")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 public sealed class AdminSupportTicketController
     : ControllerBase
 {

@@ -21,7 +21,7 @@ public class AdminSafetyService
             .AsNoTracking()
             .AnyAsync(x =>
                 x.Id == userId &&
-                x.Role == UserRole.Admin &&
+                (x.Role == UserRole.Admin || x.Role == UserRole.SuperAdmin) &&
                 x.IsActive);
     }
 
@@ -30,7 +30,7 @@ public class AdminSafetyService
         return await _db.Users
             .AsNoTracking()
             .CountAsync(x =>
-                x.Role == UserRole.Admin &&
+                (x.Role == UserRole.Admin || x.Role == UserRole.SuperAdmin) &&
                 x.IsActive);
     }
 

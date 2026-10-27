@@ -6,7 +6,7 @@ namespace ASK.Group.Api.Controllers;
 
 [ApiController]
 [Route("api/admin/operations")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class AdminOperationsController
     : ControllerBase
 {
