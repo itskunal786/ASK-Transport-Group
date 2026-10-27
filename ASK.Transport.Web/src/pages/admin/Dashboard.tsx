@@ -24,6 +24,12 @@ import {
   type SystemSettingItem
 } from '../../api/adminApi';
 import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
+import DispatchChallanModal, { type DispatchChallanData } from '../../components/DispatchChallanModal';
+import ManualBiltyModal from '../../components/ManualBiltyModal';
+import DigitalPodVerifyModal from '../../components/DigitalPodVerifyModal';
+import ElectronicPodModal, { type PodData } from '../../components/ElectronicPodModal';
+import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
+import type { Shipment } from '../../api/trackingApi';
 import './AdminDashboard.css';
 
 interface BookingRow {
@@ -32,6 +38,61 @@ interface BookingRow {
   route: string;
   date: string;
   status: 'In Transit' | 'Delivered' | 'Pending' | 'Cancelled';
+  assignedVehicle?: string;
+  assignedDriver?: string;
+  driverPhone?: string;
+  driverLicense?: string;
+  dispatchChallanNo?: string;
+  ewayBillNo?: string;
+  podVerified?: boolean;
+  podPhotoUrl?: string;
+  podData?: PodData;
+}
+
+export interface SupportTicket {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  consignmentNo: string;
+  category: string;
+  subject: string;
+  priority: 'Critical' | 'High' | 'Medium' | 'Low';
+  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
+  createdAt: string;
+  assignedTo: string;
+  resolutionNotes?: string;
+}
+
+export interface EwayBillRecord {
+  ewbNo: string;
+  supplierGstin: string;
+  supplierName: string;
+  recipientGstin: string;
+  recipientName: string;
+  validFrom: string;
+  validUntil: string;
+  status: 'VALID' | 'EXPIRING_SOON' | 'EXPIRED';
+  vehicleNo: string;
+  hsnCode: string;
+  cargoValue: number;
+  docNo: string;
+  distanceKm: number;
+}
+
+export interface TelematicsVehicle {
+  plateNo: string;
+  driverName: string;
+  driverPhone: string;
+  speedKmH: number;
+  locationName: string;
+  lat: number;
+  lng: number;
+  engineStatus: 'Running' | 'Idling' | 'Stopped';
+  geofenceStatus: 'Within Corridor' | 'Route Deviation';
+  haltDurationMinutes: number;
+  fuelPercent: number;
+  lastPing: string;
+  routeCorridor: string;
 }
 
 interface ShipmentRow {
@@ -70,12 +131,83 @@ interface VehicleRow {
 }
 
 const INITIAL_BOOKINGS: BookingRow[] = [
-  { bookingNo: 'ASKB00123', customer: 'Rajesh Kumar', route: 'Delhi → Mumbai', date: '21 Sep 2026', status: 'In Transit' },
-  { bookingNo: 'ASKB00122', customer: 'Priya Singh', route: 'Bangalore → Chennai', date: '18 Sep 2026', status: 'Delivered' },
-  { bookingNo: 'ASKB00121', customer: 'Amit Patel', route: 'Pune → Hyderabad', date: '15 Sep 2026', status: 'Pending' },
-  { bookingNo: 'ASKB00120', customer: 'Neha Jain', route: 'Delhi → Jaipur', date: '12 Sep 2026', status: 'Cancelled' },
-  { bookingNo: 'ASKB00119', customer: 'Suresh Reddy', route: 'Kolkata → Patna', date: '10 Sep 2026', status: 'In Transit' },
-  { bookingNo: 'ASKB00118', customer: 'Vikram Mehta', route: 'Ahmedabad → Surat', date: '08 Sep 2026', status: 'Delivered' },
+  {
+    bookingNo: 'ASKB00123',
+    customer: 'Rajesh Kumar',
+    route: 'Delhi → Mumbai',
+    date: '21 Sep 2026',
+    status: 'In Transit',
+    assignedVehicle: 'DL-01-AB-1234',
+    assignedDriver: 'Ramesh Yadav',
+    driverPhone: '9811223344',
+    driverLicense: 'DL-042018001234',
+    dispatchChallanNo: 'CHLN-2026-9021',
+    ewayBillNo: '2410-9876-5432'
+  },
+  {
+    bookingNo: 'ASKB00122',
+    customer: 'Priya Singh',
+    route: 'Bangalore → Chennai',
+    date: '18 Sep 2026',
+    status: 'Delivered',
+    assignedVehicle: 'KA-05-CD-5678',
+    assignedDriver: 'Murugan Swamy',
+    driverPhone: '9840112233',
+    driverLicense: 'TN-012019005678',
+    dispatchChallanNo: 'CHLN-2026-8840',
+    podVerified: true,
+    podData: {
+      bookingNumber: 'ASKB00122',
+      shipmentNumber: 'SHP-9902',
+      deliveredDate: '18 Sep 2026, 03:30 PM',
+      receiverName: 'Priya Singh',
+      receiverPhone: '9840112233',
+      deliveredLocation: 'Chennai Port Container Hub',
+      otpVerified: true,
+      notes: 'Delivered intact, seal verified.',
+      driverName: 'Murugan Swamy'
+    }
+  },
+  {
+    bookingNo: 'ASKB00121',
+    customer: 'Amit Patel',
+    route: 'Pune → Hyderabad',
+    date: '15 Sep 2026',
+    status: 'Pending'
+  },
+  {
+    bookingNo: 'ASKB00120',
+    customer: 'Neha Jain',
+    route: 'Delhi → Jaipur',
+    date: '12 Sep 2026',
+    status: 'Cancelled'
+  },
+  {
+    bookingNo: 'ASKB00119',
+    customer: 'Suresh Reddy',
+    route: 'Kolkata → Patna',
+    date: '10 Sep 2026',
+    status: 'In Transit',
+    assignedVehicle: 'WB-02-GH-3456',
+    assignedDriver: 'Bijoy Das',
+    driverPhone: '9833445566',
+    driverLicense: 'WB-022017003456',
+    dispatchChallanNo: 'CHLN-2026-7719',
+    ewayBillNo: '1009-8877-6655'
+  },
+  {
+    bookingNo: 'ASKB00118',
+    customer: 'Vikram Mehta',
+    route: 'Ahmedabad → Surat',
+    date: '08 Sep 2026',
+    status: 'Delivered',
+    assignedVehicle: 'GJ-01-JK-7890',
+    assignedDriver: 'Harish Bhai',
+    driverPhone: '9879556677',
+    driverLicense: 'GJ-012021007890',
+    dispatchChallanNo: 'CHLN-2026-6618',
+    podVerified: false // Ready for POD verification
+  },
 ];
 
 const INITIAL_SHIPMENTS: ShipmentRow[] = [
@@ -159,13 +291,229 @@ const INITIAL_VEHICLES: VehicleRow[] = [
   { plateNo: 'HR-26-LM-4321', model: 'Mahindra Blazo X 35', type: '32ft Multi-Axle (MXL)', capacityTons: 22.0, currentHub: 'Delhi Hub', status: 'Maintenance', fuelLevel: '45%' }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'audit' | 'settings' | 'reports' | 'access';
+const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
+  {
+    id: 'TCK-8091',
+    customerName: 'Reliance Retail Logistics',
+    customerPhone: '+91 98200 12345',
+    consignmentNo: 'ASKB00123',
+    category: 'Delay in Transit',
+    subject: 'Truck delayed at Jaipur Toll bypass, urgent update requested',
+    priority: 'Critical',
+    status: 'In Progress',
+    createdAt: '27 Oct 2026, 09:15 AM',
+    assignedTo: 'Dispatch Control - North',
+    resolutionNotes: 'Driver contacted; clear of toll congestion now moving at 58 km/h.'
+  },
+  {
+    id: 'TCK-8092',
+    customerName: 'Tata Motors Fleet Operations',
+    customerPhone: '+91 98223 99887',
+    consignmentNo: 'ASKB00122',
+    category: 'POD Certificate',
+    subject: 'Need stamped e-POD certificate copy for accounting clearance',
+    priority: 'Medium',
+    status: 'Resolved',
+    createdAt: '26 Oct 2026, 05:40 PM',
+    assignedTo: 'Finance Operations',
+    resolutionNotes: 'Electronic POD generated and mailed to accounting.'
+  },
+  {
+    id: 'TCK-8093',
+    customerName: 'Sun Pharma Distribution',
+    customerPhone: '+91 98980 44332',
+    consignmentNo: 'ASKB00118',
+    category: 'Temperature / Speed Telematics',
+    subject: 'Verify continuous transit without unscheduled halts in Rajasthan',
+    priority: 'High',
+    status: 'Open',
+    createdAt: '27 Oct 2026, 11:30 AM',
+    assignedTo: 'Fleet Radar Team'
+  },
+  {
+    id: 'TCK-8094',
+    customerName: 'Havells India Lighting',
+    customerPhone: '+91 98110 55667',
+    consignmentNo: 'ASKB00120',
+    category: 'Billing / Freight Surcharge',
+    subject: 'Request fuel surcharge breakdown for October corridor dispatch',
+    priority: 'Low',
+    status: 'Resolved',
+    createdAt: '25 Oct 2026, 02:20 PM',
+    assignedTo: 'Tariff Billing Desk',
+    resolutionNotes: 'Standard 11.5% diesel surcharge invoice breakdown shared.'
+  }
+];
+
+const INITIAL_EWAY_BILLS: EwayBillRecord[] = [
+  {
+    ewbNo: '2410-9876-5432',
+    supplierGstin: '07AABCA1234F1Z5',
+    supplierName: 'Reliance Retail Ltd - Delhi DC',
+    recipientGstin: '27AABCT9988D1Z2',
+    recipientName: 'Reliance Retail Hub - Mumbai Bhiwandi',
+    validFrom: '26-Oct-2026 10:00 AM',
+    validUntil: '29-Oct-2026 11:59 PM',
+    status: 'VALID',
+    vehicleNo: 'DL-01-AB-1234',
+    hsnCode: '8528 - Consumer Electronics',
+    cargoValue: 1485000,
+    docNo: 'INV/DEL/26/9021',
+    distanceKm: 1420
+  },
+  {
+    ewbNo: '1812-4321-9988',
+    supplierGstin: '24AABCS7766K1Z9',
+    supplierName: 'Sun Pharmaceutical Industries Ltd, Ahmedabad',
+    recipientGstin: '07AABCS3322P1Z4',
+    recipientName: 'Sun Pharma Central Depot, Okhla Delhi',
+    validFrom: '25-Oct-2026 08:30 AM',
+    validUntil: '28-Oct-2026 08:30 PM',
+    status: 'EXPIRING_SOON',
+    vehicleNo: 'GJ-01-JK-7890',
+    hsnCode: '3004 - Medicaments & Formulations',
+    cargoValue: 2850000,
+    docNo: 'SPI/AHM/1089',
+    distanceKm: 940
+  },
+  {
+    ewbNo: '1009-8877-6655',
+    supplierGstin: '19AABCF4433H1Z1',
+    supplierName: 'Kolkata Heavy Foundry Works',
+    recipientGstin: '10AABCB5544J1Z8',
+    recipientName: 'Patna Infrastructure Grid Ltd',
+    validFrom: '20-Oct-2026 06:00 AM',
+    validUntil: '23-Oct-2026 11:59 PM',
+    status: 'EXPIRED',
+    vehicleNo: 'WB-02-GH-3456',
+    hsnCode: '7308 - Steel Structures',
+    cargoValue: 650000,
+    docNo: 'KHF/2026/410',
+    distanceKm: 580
+  }
+];
+
+const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
+  {
+    plateNo: 'DL-01-AB-1234',
+    driverName: 'Ramesh Yadav',
+    driverPhone: '+91 98112 23344',
+    speedKmH: 68,
+    locationName: 'NH-48 Near Shahpura Toll, Rajasthan',
+    lat: 27.3892,
+    lng: 75.9587,
+    engineStatus: 'Running',
+    geofenceStatus: 'Within Corridor',
+    haltDurationMinutes: 0,
+    fuelPercent: 82,
+    lastPing: '15 seconds ago',
+    routeCorridor: 'Delhi ⇄ Mumbai High-Speed Freight Corridor'
+  },
+  {
+    plateNo: 'WB-02-GH-3456',
+    driverName: 'Bijoy Das',
+    driverPhone: '+91 98334 45566',
+    speedKmH: 54,
+    locationName: 'NH-19 Near Durgapur Expressway',
+    lat: 23.5204,
+    lng: 87.3119,
+    engineStatus: 'Running',
+    geofenceStatus: 'Within Corridor',
+    haltDurationMinutes: 0,
+    fuelPercent: 74,
+    lastPing: '45 seconds ago',
+    routeCorridor: 'Kolkata ⇄ Patna Corridor'
+  },
+  {
+    plateNo: 'GJ-01-JK-7890',
+    driverName: 'Harish Bhai',
+    driverPhone: '+91 98795 56677',
+    speedKmH: 0,
+    locationName: 'NH-48 Near Himatnagar Bypass ढाबा (Rest Stop)',
+    lat: 23.5977,
+    lng: 72.9698,
+    engineStatus: 'Idling',
+    geofenceStatus: 'Within Corridor',
+    haltDurationMinutes: 52,
+    fuelPercent: 88,
+    lastPing: '1 min ago',
+    routeCorridor: 'Ahmedabad ⇄ Delhi Express Route'
+  },
+  {
+    plateNo: 'HR-26-LM-4321',
+    driverName: 'Gurpreet Singh',
+    driverPhone: '+91 98150 01122',
+    speedKmH: 48,
+    locationName: 'State Highway 26, Haryana Rural Link (Off Corridor)',
+    lat: 28.4595,
+    lng: 77.0266,
+    engineStatus: 'Running',
+    geofenceStatus: 'Route Deviation',
+    haltDurationMinutes: 0,
+    fuelPercent: 45,
+    lastPing: '20 seconds ago',
+    routeCorridor: 'Delhi Hub Local Distribution'
+  },
+  {
+    plateNo: 'KA-05-CD-5678',
+    driverName: 'Murugan Swamy',
+    driverPhone: '+91 98401 12233',
+    speedKmH: 0,
+    locationName: 'Bangalore Hub Dock Bay #4 (Unloading)',
+    lat: 12.9716,
+    lng: 77.5946,
+    engineStatus: 'Stopped',
+    geofenceStatus: 'Within Corridor',
+    haltDurationMinutes: 0,
+    fuelPercent: 95,
+    lastPing: '2 mins ago',
+    routeCorridor: 'Bangalore Regional Logistics'
+  }
+];
+
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+
+  // OPERATIONAL CONTROL (ADMIN / FLEET MANAGERS) STATE
+  // 1. Dispatch Fleet State
+  const [showDispatchModal, setShowDispatchModal] = useState(false);
+  const [dispatchBookingTarget, setDispatchBookingTarget] = useState<BookingRow | null>(null);
+  const [selectedDispatchVehicle, setSelectedDispatchVehicle] = useState('DL-01-AB-1234');
+  const [selectedDispatchDriver, setSelectedDispatchDriver] = useState('DRV-101');
+  const [dispatchEwayBill, setDispatchEwayBill] = useState('2410-9876-5432');
+  const [selectedChallanModalData, setSelectedChallanModalData] = useState<DispatchChallanData | null>(null);
+
+  // 2. Manual Bilty (Counter Booking) Modal
+  const [showManualBiltyModal, setShowManualBiltyModal] = useState(false);
+
+  // 3. Digital POD Verification Modal State
+  const [podVerifyBooking, setPodVerifyBooking] = useState<BookingRow | null>(null);
+  const [viewingElectronicPod, setViewingElectronicPod] = useState<PodData | null>(null);
+
+  // 4. Support Desk & Escalation State
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>(INITIAL_SUPPORT_TICKETS);
+  const [ticketFilterStatus, setTicketFilterStatus] = useState('All');
+  const [ticketFilterPriority, setTicketFilterPriority] = useState('All');
+  const [ticketSearch, setTicketSearch] = useState('');
+  const [editingTicket, setEditingTicket] = useState<SupportTicket | null>(null);
+  const [ticketResolutionNote, setTicketResolutionNote] = useState('');
+
+  // 5. E-Way Bill Auto Verification Engine State
+  const [ewayBillsList, setEwayBillsList] = useState<EwayBillRecord[]>(INITIAL_EWAY_BILLS);
+  const [ewbSearchInput, setEwbSearchInput] = useState('');
+  const [ewbVerificationResult, setEwbVerificationResult] = useState<EwayBillRecord | null>(null);
+  const [ewbVerifying, setEwbVerifying] = useState(false);
+
+  // 6. Telematics & GPS Radar State
+  const [telematicsFleet, setTelematicsFleet] = useState<TelematicsVehicle[]>(INITIAL_TELEMATICS_FLEET);
+  const [telematicsFilter, setTelematicsFilter] = useState<'All' | 'Alerts' | 'Moving' | 'Stationary'>('All');
+  const [telematicsSearch, setTelematicsSearch] = useState('');
+  const [selectedRadarShipment, setSelectedRadarShipment] = useState<Shipment | null>(null);
 
   // Emergency Maintenance Switch
   const [isMaintenanceActive, setIsMaintenanceActive] = useState<boolean>(() => {
@@ -298,6 +646,186 @@ export default function Dashboard() {
   function showToast(msg: string) {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3000);
+  }
+
+  // ================================================================
+  // OPERATIONAL CONTROL HANDLERS (ADMIN / FLEET MANAGERS)
+  // ================================================================
+
+  // 1. Dispatch Fleet & Driver Allocation
+  function handleOpenDispatchModal(booking: BookingRow) {
+    setDispatchBookingTarget(booking);
+    const availVeh = INITIAL_VEHICLES.find(v => v.status === 'Available') || INITIAL_VEHICLES[0];
+    const availDrv = INITIAL_DRIVERS.find(d => d.status === 'Active') || INITIAL_DRIVERS[0];
+    setSelectedDispatchVehicle(availVeh?.plateNo || 'DL-01-AB-1234');
+    setSelectedDispatchDriver(availDrv?.id || 'DRV-101');
+    setDispatchEwayBill(`2410-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`);
+    setShowDispatchModal(true);
+  }
+
+  function handleConfirmDispatch() {
+    if (!dispatchBookingTarget) return;
+
+    const matchedVeh = INITIAL_VEHICLES.find(v => v.plateNo === selectedDispatchVehicle) || INITIAL_VEHICLES[0];
+    const matchedDrv = INITIAL_DRIVERS.find(d => d.id === selectedDispatchDriver) || INITIAL_DRIVERS[0];
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const challanNo = `CHLN-2026-${randomSuffix}`;
+
+    const updatedBooking: BookingRow = {
+      ...dispatchBookingTarget,
+      status: 'In Transit',
+      assignedVehicle: matchedVeh.plateNo,
+      assignedDriver: matchedDrv.name,
+      driverPhone: matchedDrv.phone,
+      driverLicense: matchedDrv.licenseNo,
+      dispatchChallanNo: challanNo,
+      ewayBillNo: dispatchEwayBill
+    };
+
+    setBookingsList(prev => prev.map(b => b.bookingNo === dispatchBookingTarget.bookingNo ? updatedBooking : b));
+    setShowDispatchModal(false);
+
+    const challanData: DispatchChallanData = {
+      challanNumber: challanNo,
+      bookingNumber: dispatchBookingTarget.bookingNo,
+      dispatchDate: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      originHub: dispatchBookingTarget.route.split('→')[0]?.trim() || 'Origin Hub',
+      destinationHub: dispatchBookingTarget.route.split('→')[1]?.trim() || 'Destination Hub',
+      consignorName: dispatchBookingTarget.customer,
+      consigneeName: `${dispatchBookingTarget.customer} Consignee Hub`,
+      vehicleNumber: matchedVeh.plateNo,
+      vehicleModel: matchedVeh.model,
+      driverName: matchedDrv.name,
+      driverPhone: matchedDrv.phone,
+      driverLicense: matchedDrv.licenseNo,
+      ewayBillNumber: dispatchEwayBill,
+      dispatcherName: user?.name || 'Shift Fleet Operations Manager'
+    };
+
+    setSelectedChallanModalData(challanData);
+    showToast(`✓ Allotted! Driver ${matchedDrv.name} & Truck ${matchedVeh.plateNo} dispatched`);
+  }
+
+  function handleOpenChallan(b: BookingRow) {
+    const challanData: DispatchChallanData = {
+      challanNumber: b.dispatchChallanNo || `CHLN-${b.bookingNo}`,
+      bookingNumber: b.bookingNo,
+      dispatchDate: b.date,
+      originHub: b.route.split('→')[0]?.trim() || 'Delhi Hub',
+      destinationHub: b.route.split('→')[1]?.trim() || 'Destination Terminal',
+      consignorName: b.customer,
+      consigneeName: `${b.customer} Receiver Depot`,
+      vehicleNumber: b.assignedVehicle || 'DL-01-AB-1234',
+      vehicleModel: '32ft Multi-Axle (MXL)',
+      driverName: b.assignedDriver || 'Ramesh Yadav',
+      driverPhone: b.driverPhone || '9811223344',
+      driverLicense: b.driverLicense || 'DL-042018001234',
+      ewayBillNumber: b.ewayBillNo || '2410-9876-5432',
+      dispatcherName: user?.name || 'Operations Controller'
+    };
+    setSelectedChallanModalData(challanData);
+  }
+
+  // 2. Manual Bilty (Counter Booking) Handler
+  function handleManualBiltySubmit(lrData: ConsignmentLRData) {
+    const newBooking: BookingRow = {
+      bookingNo: lrData.bookingNumber,
+      customer: `[Walk-in] ${lrData.senderName}`,
+      route: `${lrData.fromCity} → ${lrData.toCity}`,
+      date: lrData.bookingDate || new Date().toISOString().slice(0, 10),
+      status: 'In Transit',
+      assignedVehicle: 'DL-01-AB-1234',
+      assignedDriver: 'Ramesh Yadav',
+      driverPhone: '9811223344',
+      driverLicense: 'DL-042018001234',
+      dispatchChallanNo: `CHLN-2026-M${Math.floor(1000 + Math.random() * 9000)}`,
+      ewayBillNo: `2410-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`
+    };
+
+    setBookingsList(prev => [newBooking, ...prev]);
+    setShowManualBiltyModal(false);
+    setSelectedLr(lrData);
+    showToast(`✓ Counter Booking created! LR ${lrData.consignmentNumber} generated`);
+  }
+
+  // 3. Digital POD Verification Handlers
+  function handleApprovePod(pod: PodData) {
+    if (!podVerifyBooking) return;
+    setBookingsList(prev => prev.map(b => b.bookingNo === podVerifyBooking.bookingNo ? {
+      ...b,
+      status: 'Delivered',
+      podVerified: true,
+      podData: pod
+    } : b));
+    setPodVerifyBooking(null);
+    showToast(`✓ POD Verified & Sealed for ${pod.bookingNumber}! Proof of Delivery archived`);
+  }
+
+  function handleRejectPod(reason: string) {
+    if (!podVerifyBooking) return;
+    const newTicket: SupportTicket = {
+      id: `TCK-${Math.floor(8100 + Math.random() * 900)}`,
+      customerName: podVerifyBooking.customer,
+      customerPhone: '+91 98765 00000',
+      consignmentNo: podVerifyBooking.bookingNo,
+      category: 'POD Missing / Rejected',
+      subject: `POD Rejected: ${reason}`,
+      priority: 'High',
+      status: 'Open',
+      createdAt: 'Just now',
+      assignedTo: 'Claims & Verification Desk'
+    };
+    setSupportTickets(prev => [newTicket, ...prev]);
+    setPodVerifyBooking(null);
+    showToast(`⚠️ POD Rejected! Incident ticket ${newTicket.id} escalated to Support Desk`);
+  }
+
+  // 4. E-Way Bill Auto Verification Engine Handler
+  function handleVerifyEwayBill(query?: string) {
+    const target = (query || ewbSearchInput).trim();
+    if (!target) {
+      showToast('Please enter an E-Way Bill Number');
+      return;
+    }
+    setEwbVerifying(true);
+    setTimeout(() => {
+      const existing = ewayBillsList.find(e => e.ewbNo.includes(target) || target.includes(e.ewbNo));
+      if (existing) {
+        setEwbVerificationResult(existing);
+      } else {
+        const fetched: EwayBillRecord = {
+          ewbNo: target,
+          supplierGstin: '07AABCA4567K1Z8',
+          supplierName: 'National Logistics Partner Delhi',
+          recipientGstin: '27AABCT1234L1Z3',
+          recipientName: 'Maharashtra Freight Consignee',
+          validFrom: new Date(Date.now() - 3600000 * 12).toLocaleString('en-IN'),
+          validUntil: new Date(Date.now() + 3600000 * 48).toLocaleString('en-IN'),
+          status: 'VALID',
+          vehicleNo: 'DL-01-AB-1234',
+          hsnCode: '8471 - Computing Machinery',
+          cargoValue: 980000,
+          docNo: `INV/2026/${Math.floor(1000 + Math.random() * 9000)}`,
+          distanceKm: 1350
+        };
+        setEwayBillsList(prev => [fetched, ...prev]);
+        setEwbVerificationResult(fetched);
+      }
+      setEwbVerifying(false);
+      showToast(`✓ E-Way Bill ${target} verified from National GST System!`);
+    }, 600);
+  }
+
+  // 5. Support Desk Handlers
+  function handleUpdateTicketStatus(ticketId: string, newStatus: SupportTicket['status']) {
+    setSupportTickets(prev => prev.map(t => t.id === ticketId ? {
+      ...t,
+      status: newStatus,
+      resolutionNotes: ticketResolutionNote || (newStatus === 'Resolved' ? 'Issue resolved after driver confirmation.' : t.resolutionNotes)
+    } : t));
+    setEditingTicket(null);
+    setTicketResolutionNote('');
+    showToast(`✓ Ticket ${ticketId} status updated to ${newStatus}`);
   }
 
   useEffect(() => {
@@ -1039,6 +1567,21 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'telematics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('telematics')}
+            style={{ borderLeft: activeTab === 'telematics' ? '3px solid #22c55e' : undefined }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+              <line x1="12" y1="2" x2="12" y2="5" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+            </svg>
+            🛰️ Fleet Telematics (GPS)
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'hubs' ? 'active' : ''}`}
             onClick={() => setActiveTab('hubs')}
           >
@@ -1069,6 +1612,19 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'ewaybill' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ewaybill')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+            </svg>
+            ⚡ E-Way Bill Engine
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'audit' ? 'active' : ''}`}
             onClick={() => setActiveTab('audit')}
           >
@@ -1077,6 +1633,17 @@ export default function Dashboard() {
               <path d="M9 12l2 2 4-4" />
             </svg>
             Security &amp; Audit Trail
+          </button>
+
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === 'support' ? 'active' : ''}`}
+            onClick={() => setActiveTab('support')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            🎧 Support &amp; Escalations
           </button>
 
           <button
@@ -1439,6 +2006,14 @@ export default function Dashboard() {
               </div>
 
               <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  style={{ background: '#0284c7' }}
+                  onClick={() => setShowManualBiltyModal(true)}
+                >
+                  + Manual Bilty (Counter Booking)
+                </button>
                 <button type="button" className="admin-btn-export" onClick={exportBookingsToCSV}>
                   Export CSV
                 </button>
@@ -1506,10 +2081,103 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {/* 1. FLEET & DRIVER ALLOCATION (DISPATCH) */}
+                          {!b.assignedVehicle ? (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDispatchModal(b)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid #10b981',
+                                background: '#ecfdf5',
+                                color: '#059669',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              ⚡ Allot Fleet
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenChallan(b)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid #c7d2fe',
+                                background: '#eef2ff',
+                                color: '#4338ca',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                              title={`Vehicle: ${b.assignedVehicle} | Driver: ${b.assignedDriver}`}
+                            >
+                              🚛 Challan
+                            </button>
+                          )}
+
+                          {/* 2. DIGITAL POD VERIFICATION */}
+                          {b.status === 'Delivered' && (
+                            b.podVerified ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (b.podData) {
+                                    setViewingElectronicPod(b.podData);
+                                  } else {
+                                    setViewingElectronicPod({
+                                      bookingNumber: b.bookingNo,
+                                      deliveredDate: `${b.date}, 04:00 PM`,
+                                      receiverName: b.customer,
+                                      receiverPhone: '9876543210',
+                                      deliveredLocation: b.route.split('→')[1]?.trim() || 'Destination Hub',
+                                      otpVerified: true,
+                                      notes: 'Delivered in good condition with receiver sign verified.',
+                                      driverName: b.assignedDriver || 'Commercial Driver'
+                                    });
+                                  }
+                                }}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #86efac',
+                                  background: '#f0fdf4',
+                                  color: '#166534',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ✓ POD Verified
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setPodVerifyBooking(b)}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #fde68a',
+                                  background: '#fffbeb',
+                                  color: '#b45309',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                📸 Verify POD
+                              </button>
+                            )
+                          )}
+
                           <button
                             type="button"
                             className="admin-btn-view"
+                            style={{ padding: '4px 8px', fontSize: '11px' }}
                             onClick={() => {
                               const foundShip = shipmentsList.find(s => s.bookingNo === b.bookingNo);
                               if (foundShip) {
@@ -1519,8 +2187,9 @@ export default function Dashboard() {
                               }
                             }}
                           >
-                            Update Status
+                            Status
                           </button>
+
                           <button
                             type="button"
                             onClick={() => {
@@ -1544,20 +2213,20 @@ export default function Dashboard() {
                               });
                             }}
                             style={{
-                              padding: '5px 10px',
+                              padding: '4px 8px',
                               borderRadius: '6px',
                               border: '1px solid #bfdbfe',
                               background: '#eff6ff',
                               color: '#1d4ed8',
-                              fontSize: '12px',
+                              fontSize: '11px',
                               fontWeight: 600,
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px'
+                              gap: '2px'
                             }}
                           >
-                            📄 View LR
+                            📄 LR
                           </button>
                         </div>
                       </td>
@@ -2765,6 +3434,685 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
+        {/* VIEW: FLEET TELEMATICS & GPS RADAR */}
+        {/* ============================================================== */}
+        {activeTab === 'telematics' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>🛰️ Vehicle Tracking Telematics &amp; Fleet Radar</h1>
+                <p>Live satellite GPS sync, speed monitoring, automated halt alerts (&gt;45m stop), and geo-fencing route deviation alerts</p>
+              </div>
+              <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-export"
+                  onClick={() => {
+                    setTelematicsFleet(prev => prev.map(t => ({
+                      ...t,
+                      lastPing: 'Just now'
+                    })));
+                    showToast('📡 GPS Telematics pings refreshed from satellite feed');
+                  }}
+                >
+                  🔄 Ping Satellite Feeds
+                </button>
+              </div>
+            </div>
+
+            {/* TELEMATICS KPI GRID */}
+            <div className="admin-metrics-grid" style={{ marginBottom: '20px' }}>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+                    🛰️
+                  </div>
+                  <div className="admin-box-content">
+                    <strong>{telematicsFleet.length} Trucks</strong>
+                    <span>Live Telematics Sync</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">100% Sat-Com Connected</div>
+              </div>
+
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                    🚛
+                  </div>
+                  <div className="admin-box-content">
+                    <strong>{telematicsFleet.filter(t => t.speedKmH > 0).length} Moving</strong>
+                    <span>Active on Corridors</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">Avg Speed: 56.6 km/h</div>
+              </div>
+
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#fee2e2', color: '#dc2626' }}>
+                    ⚡
+                  </div>
+                  <div className="admin-box-content">
+                    <strong style={{ color: '#dc2626' }}>{telematicsFleet.filter(t => t.speedKmH > 65).length} Alert</strong>
+                    <span>Over-Speed (&gt;65 km/h)</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta" style={{ color: '#dc2626' }}>DL-01-AB-1234 flagged</div>
+              </div>
+
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#fef3c7', color: '#b45309' }}>
+                    🛑
+                  </div>
+                  <div className="admin-box-content">
+                    <strong style={{ color: '#b45309' }}>{telematicsFleet.filter(t => t.haltDurationMinutes > 45).length} Stop</strong>
+                    <span>Halt Alert (&gt;45 mins)</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta" style={{ color: '#b45309' }}>GJ-01-JK-7890 (52m Stop)</div>
+              </div>
+            </div>
+
+            {/* TELEMATICS TOOLBAR */}
+            <div className="admin-table-card">
+              <div className="admin-table-toolbar">
+                <div className="admin-toolbar-search">
+                  <input
+                    type="text"
+                    placeholder="Search by Plate Number, Driver, or Corridor..."
+                    value={telematicsSearch}
+                    onChange={e => setTelematicsSearch(e.target.value)}
+                  />
+                </div>
+                <div className="admin-toolbar-filter">
+                  {(['All', 'Alerts', 'Moving', 'Stationary'] as const).map(flt => (
+                    <button
+                      key={flt}
+                      type="button"
+                      className={`admin-filter-pill ${telematicsFilter === flt ? 'active' : ''}`}
+                      onClick={() => setTelematicsFilter(flt)}
+                    >
+                      {flt === 'Alerts' ? '⚠️ Alerts Only' : flt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* TELEMATICS FLEET CARDS */}
+              <div className="telematics-grid" style={{ padding: '16px' }}>
+                {telematicsFleet
+                  .filter(v => {
+                    const matchSearch =
+                      v.plateNo.toLowerCase().includes(telematicsSearch.toLowerCase()) ||
+                      v.driverName.toLowerCase().includes(telematicsSearch.toLowerCase()) ||
+                      v.locationName.toLowerCase().includes(telematicsSearch.toLowerCase());
+                    if (!matchSearch) return false;
+                    if (telematicsFilter === 'Alerts') {
+                      return v.speedKmH > 65 || v.haltDurationMinutes > 45 || v.geofenceStatus === 'Route Deviation';
+                    }
+                    if (telematicsFilter === 'Moving') return v.speedKmH > 0;
+                    if (telematicsFilter === 'Stationary') return v.speedKmH === 0;
+                    return true;
+                  })
+                  .map(v => {
+                    const isOverSpeed = v.speedKmH > 65;
+                    const isHalted = v.haltDurationMinutes > 45;
+                    const isDeviated = v.geofenceStatus === 'Route Deviation';
+
+                    return (
+                      <div key={v.plateNo} className="telematics-card">
+                        <div className="telematics-card-head">
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <span
+                                className="radar-ping-dot"
+                                style={{ background: v.speedKmH > 0 ? '#10b981' : '#f59e0b' }}
+                              />
+                              <strong style={{ fontSize: '15px', color: '#0f172a' }}>{v.plateNo}</strong>
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                              {v.routeCorridor}
+                            </div>
+                          </div>
+
+                          <div>
+                            {isOverSpeed ? (
+                              <span className="speed-badge speed-alert">⚡ {v.speedKmH} km/h (OVER-SPEED)</span>
+                            ) : v.speedKmH > 0 ? (
+                              <span className="speed-badge speed-normal">🟢 {v.speedKmH} km/h</span>
+                            ) : (
+                              <span className="speed-badge speed-idle">🛑 0 km/h ({v.engineStatus})</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* ALERTS BADGE IF TRIGGERED */}
+                        {(isHalted || isDeviated) && (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {isHalted && (
+                              <span className="halt-alert-tag">
+                                🛑 Halt Alert: Highway stop for {v.haltDurationMinutes} mins
+                              </span>
+                            )}
+                            {isDeviated && (
+                              <span className="halt-alert-tag" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>
+                                ⚠️ Geofence Route Deviation Detected (+14km)
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* PARTICULARS */}
+                        <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ color: '#334155' }}>
+                            <strong>📍 Checkpoint:</strong> {v.locationName}
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
+                            <span>Driver: <strong style={{ color: '#0f172a' }}>{v.driverName}</strong></span>
+                            <span>Tel: {v.driverPhone}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ color: '#64748b' }}>
+                              Fuel: <strong>{v.fuelPercent}%</strong> | Ping: {v.lastPing}
+                            </span>
+                            <span className={`geofence-tag ${isDeviated ? 'geofence-dev' : 'geofence-ok'}`}>
+                              {isDeviated ? '⚠️ Route Deviation' : '✓ In Corridor'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* ACTION */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedRadarShipment({
+                              id: 991,
+                              trackingNumber: `TRK-${v.plateNo}`,
+                              bookingNumber: `BK-${v.plateNo}`,
+                              status: v.speedKmH > 0 ? 'In Transit' : 'Halted at Highway Checkpoint',
+                              currentHubId: 1,
+                              createdAt: new Date().toISOString()
+                            });
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '6px',
+                            border: '1px solid #bfdbfe',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            marginTop: 'auto'
+                          }}
+                        >
+                          📡 View Live Satellite GPS Radar &rarr;
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: E-WAY BILL AUTO VERIFICATION ENGINE */}
+        {/* ============================================================== */}
+        {activeTab === 'ewaybill' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>⚡ Govt E-Way Bill Auto Verification Engine</h1>
+                <p>Direct GST portal sync, GSTIN validation, vehicle validity cross-check, and zero RTO penalty guarantee</p>
+              </div>
+            </div>
+
+            {/* VERIFY SEARCH BOX */}
+            <div className="ewb-box">
+              <h3 style={{ margin: '0 0 10px', fontSize: '15px', color: '#0f172a' }}>
+                🔍 Instant E-Way Bill Auto-Fetch
+              </h3>
+              <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>
+                Enter a 12-digit Government E-Way Bill number to auto-verify transporter allotment, supplier/recipient GSTINs, and RTO transit validity.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  placeholder="Enter 12-Digit E-Way Bill # (e.g. 2410-9876-5432)"
+                  value={ewbSearchInput}
+                  onChange={e => setEwbSearchInput(e.target.value)}
+                  style={{ flex: 1, minWidth: '280px', padding: '10px 14px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', fontWeight: 600 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleVerifyEwayBill()}
+                  disabled={ewbVerifying}
+                  style={{
+                    padding: '10px 24px',
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {ewbVerifying ? 'Verifying with GST...' : '🔍 Auto-Fetch Govt Portal Data'}
+                </button>
+              </div>
+
+              {/* DEMO CHIPS */}
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Quick Demos:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEwbSearchInput('2410-9876-5432');
+                    handleVerifyEwayBill('2410-9876-5432');
+                  }}
+                  style={{ padding: '4px 10px', fontSize: '11px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  🟢 2410-9876-5432 (Valid FTL)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEwbSearchInput('1812-4321-9988');
+                    handleVerifyEwayBill('1812-4321-9988');
+                  }}
+                  style={{ padding: '4px 10px', fontSize: '11px', background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  🟡 1812-4321-9988 (Expiring Soon)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEwbSearchInput('1009-8877-6655');
+                    handleVerifyEwayBill('1009-8877-6655');
+                  }}
+                  style={{ padding: '4px 10px', fontSize: '11px', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  🔴 1009-8877-6655 (Expired)
+                </button>
+              </div>
+
+              {/* ACTIVE VERIFICATION CARD */}
+              {ewbVerificationResult && (
+                <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                  <div
+                    className={`ewb-status-banner ${
+                      ewbVerificationResult.status === 'VALID'
+                        ? 'valid'
+                        : ewbVerificationResult.status === 'EXPIRING_SOON'
+                        ? 'expiring'
+                        : 'expired'
+                    }`}
+                  >
+                    <div>
+                      {ewbVerificationResult.status === 'VALID' && (
+                        <span>✓ GOVERNMENT E-WAY BILL VALID &amp; ACTIVE — ZERO RTO PENALTY RISK</span>
+                      )}
+                      {ewbVerificationResult.status === 'EXPIRING_SOON' && (
+                        <span>⚠️ ATTENTION: E-WAY BILL EXPIRES IN &lt;4 HOURS — REQUEST VEHICLE VALIDITY EXTENSION</span>
+                      )}
+                      {ewbVerificationResult.status === 'EXPIRED' && (
+                        <span>❌ EXPIRED E-WAY BILL — TRANSIT PROHIBITED UNDER GST SECTION 129</span>
+                      )}
+                    </div>
+                    <div>
+                      Valid Until: <strong>{ewbVerificationResult.validUntil}</strong>
+                    </div>
+                  </div>
+
+                  <div className="ewb-party-grid">
+                    <div className="ewb-party-card">
+                      <small style={{ color: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700 }}>
+                        Supplier / Consignor Details
+                      </small>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
+                        {ewbVerificationResult.supplierName}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, marginTop: '2px' }}>
+                        GSTIN: {ewbVerificationResult.supplierGstin}
+                      </div>
+                    </div>
+
+                    <div className="ewb-party-card">
+                      <small style={{ color: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700 }}>
+                        Recipient / Consignee Details
+                      </small>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
+                        {ewbVerificationResult.recipientName}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, marginTop: '2px' }}>
+                        GSTIN: {ewbVerificationResult.recipientGstin}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '16px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', fontSize: '12px' }}>
+                    <div>
+                      <span style={{ color: '#64748b' }}>Assigned Vehicle Plate:</span>
+                      <div style={{ fontWeight: 800, color: '#0b72e7', fontSize: '13px' }}>{ewbVerificationResult.vehicleNo}</div>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748b' }}>Invoice / Doc Ref:</span>
+                      <div style={{ fontWeight: 700 }}>{ewbVerificationResult.docNo}</div>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748b' }}>HSN Code &amp; Goods:</span>
+                      <div style={{ fontWeight: 700 }}>{ewbVerificationResult.hsnCode}</div>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748b' }}>Declared Consignment Value:</span>
+                      <div style={{ fontWeight: 800, color: '#059669' }}>₹{ewbVerificationResult.cargoValue.toLocaleString('en-IN')}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* RECENT E-WAY BILLS TABLE */}
+            <div className="admin-table-card">
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800 }}>
+                  Recently Verified E-Way Bills Registry
+                </h3>
+              </div>
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>EWB Number</th>
+                    <th>Supplier / Consignor</th>
+                    <th>Recipient</th>
+                    <th>Vehicle Plate</th>
+                    <th>Cargo Value</th>
+                    <th>Validity Expiry</th>
+                    <th>RTO Compliance Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ewayBillsList.map(e => (
+                    <tr key={e.ewbNo}>
+                      <td><strong style={{ color: '#0b72e7' }}>{e.ewbNo}</strong></td>
+                      <td>{e.supplierName}</td>
+                      <td>{e.recipientName}</td>
+                      <td><strong style={{ color: '#0f172a' }}>{e.vehicleNo}</strong></td>
+                      <td>₹{e.cargoValue.toLocaleString('en-IN')}</td>
+                      <td style={{ fontSize: '12px', color: '#64748b' }}>{e.validUntil}</td>
+                      <td>
+                        <span
+                          className="admin-badge-status"
+                          style={{
+                            background:
+                              e.status === 'VALID' ? '#ecfdf5' : e.status === 'EXPIRING_SOON' ? '#fffbeb' : '#fef2f2',
+                            color:
+                              e.status === 'VALID' ? '#059669' : e.status === 'EXPIRING_SOON' ? '#b45309' : '#dc2626'
+                          }}
+                        >
+                          {e.status === 'VALID' ? '✓ Valid & Compliant' : e.status === 'EXPIRING_SOON' ? '⚠️ Expiring Soon' : '❌ Expired'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: SUPPORT DESK & LIVE ESCALATION MATRIX */}
+        {/* ============================================================== */}
+        {activeTab === 'support' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>🎧 Support Desk &amp; Live Escalation Matrix</h1>
+                <p>Manage customer complaint tickets, transit delays, claim disputes, and consignee escalations</p>
+              </div>
+            </div>
+
+            {/* SUPPORT KPI GRID */}
+            <div className="support-kpi-grid">
+              <div className="support-kpi-card">
+                <small>Total Open Tickets</small>
+                <strong>{supportTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length} Active</strong>
+              </div>
+              <div className="support-kpi-card" style={{ borderColor: '#fca5a5' }}>
+                <small style={{ color: '#dc2626' }}>Critical Escalations</small>
+                <strong style={{ color: '#dc2626' }}>{supportTickets.filter(t => t.priority === 'Critical' && t.status !== 'Resolved').length} High Priority</strong>
+              </div>
+              <div className="support-kpi-card">
+                <small>In Progress</small>
+                <strong style={{ color: '#0284c7' }}>{supportTickets.filter(t => t.status === 'In Progress').length} Assigned</strong>
+              </div>
+              <div className="support-kpi-card">
+                <small>Resolved Today</small>
+                <strong style={{ color: '#059669' }}>{supportTickets.filter(t => t.status === 'Resolved').length} Solved</strong>
+              </div>
+              <div className="support-kpi-card">
+                <small>Average Resolution SLA</small>
+                <strong style={{ color: '#4338ca' }}>28 Mins</strong>
+              </div>
+            </div>
+
+            {/* TICKETS TABLE CARD */}
+            <div className="admin-table-card">
+              <div className="admin-table-toolbar">
+                <div className="admin-toolbar-search">
+                  <input
+                    type="text"
+                    placeholder="Search by Ticket ID, Customer, or Consignment Ref..."
+                    value={ticketSearch}
+                    onChange={e => setTicketSearch(e.target.value)}
+                  />
+                </div>
+                <div className="admin-toolbar-filter">
+                  {(['All', 'Open', 'In Progress', 'Resolved'] as const).map(st => (
+                    <button
+                      key={st}
+                      type="button"
+                      className={`admin-filter-pill ${ticketFilterStatus === st ? 'active' : ''}`}
+                      onClick={() => setTicketFilterStatus(st)}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                  {(['Critical', 'High'] as const).map(prio => (
+                    <button
+                      key={prio}
+                      type="button"
+                      className={`admin-filter-pill ${ticketFilterPriority === prio ? 'active' : ''}`}
+                      onClick={() => setTicketFilterPriority(ticketFilterPriority === prio ? 'All' : prio)}
+                      style={{ color: prio === 'Critical' ? '#dc2626' : '#ea580c' }}
+                    >
+                      {prio === 'Critical' ? '🔴 Critical' : '🟠 High'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Ticket ID</th>
+                    <th>Customer Particulars</th>
+                    <th>Consignment Ref</th>
+                    <th>Category &amp; Subject</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {supportTickets
+                    .filter(t => {
+                      const matchSearch =
+                        t.id.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                        t.customerName.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                        t.consignmentNo.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                        t.subject.toLowerCase().includes(ticketSearch.toLowerCase());
+                      if (!matchSearch) return false;
+                      if (ticketFilterStatus !== 'All' && t.status !== ticketFilterStatus) return false;
+                      if (ticketFilterPriority !== 'All' && t.priority !== ticketFilterPriority) return false;
+                      return true;
+                    })
+                    .map(t => (
+                      <tr key={t.id}>
+                        <td><strong style={{ color: '#0b72e7' }}>{t.id}</strong></td>
+                        <td>
+                          <strong>{t.customerName}</strong>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>{t.customerPhone}</div>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 700, color: '#4338ca' }}>{t.consignmentNo}</span>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{t.subject}</div>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>[{t.category}] • {t.createdAt}</div>
+                        </td>
+                        <td>
+                          <span
+                            className={
+                              t.priority === 'Critical'
+                                ? 'ticket-prio-critical'
+                                : t.priority === 'High'
+                                ? 'ticket-prio-high'
+                                : t.priority === 'Medium'
+                                ? 'ticket-prio-medium'
+                                : 'ticket-prio-low'
+                            }
+                          >
+                            {t.priority}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className="admin-badge-status"
+                            style={{
+                              background:
+                                t.status === 'Resolved' ? '#ecfdf5' : t.status === 'In Progress' ? '#eff6ff' : '#fffbeb',
+                              color:
+                                t.status === 'Resolved' ? '#059669' : t.status === 'In Progress' ? '#2563eb' : '#b45309'
+                            }}
+                          >
+                            {t.status}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="admin-btn-view"
+                            onClick={() => {
+                              setEditingTicket(t);
+                              setTicketResolutionNote(t.resolutionNotes || '');
+                            }}
+                          >
+                            Manage Ticket
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* EDIT / RESOLVE TICKET MODAL */}
+            {editingTicket && (
+              <div className="st-modal-overlay" onClick={() => setEditingTicket(null)}>
+                <div className="st-drawer-box" style={{ maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
+                  <div className="st-drawer-head">
+                    <div>
+                      <h2>🎧 Manage Ticket: {editingTicket.id}</h2>
+                      <p>Client: {editingTicket.customerName} | Ref: {editingTicket.consignmentNo}</p>
+                    </div>
+                    <button type="button" className="st-drawer-close" onClick={() => setEditingTicket(null)}>
+                      &times;
+                    </button>
+                  </div>
+
+                  <div className="st-drawer-body">
+                    <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Issue Summary</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>{editingTicket.subject}</div>
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                        Category: {editingTicket.category} | Logged: {editingTicket.createdAt}
+                      </div>
+                    </div>
+
+                    <div className="st-form-field">
+                      <label>Update Ticket Lifecycle Status</label>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                        {(['Open', 'In Progress', 'Resolved', 'Closed'] as const).map(st => (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => handleUpdateTicketStatus(editingTicket.id, st)}
+                            style={{
+                              flex: 1,
+                              padding: '8px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: '1px solid',
+                              borderColor: editingTicket.status === st ? '#2563eb' : '#cbd5e1',
+                              background: editingTicket.status === st ? '#2563eb' : '#ffffff',
+                              color: editingTicket.status === st ? '#ffffff' : '#475569'
+                            }}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="st-form-field" style={{ marginTop: '16px' }}>
+                      <label>Internal Resolution Notes &amp; Dispatcher Comments</label>
+                      <textarea
+                        rows={3}
+                        placeholder="e.g. Spoke with consignee; truck arrived at bay #2, unsealed under driver supervision."
+                        value={ticketResolutionNote}
+                        onChange={e => setTicketResolutionNote(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', resize: 'vertical' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-drawer-actions">
+                    <button
+                      type="button"
+                      className="st-btn-cancel"
+                      onClick={() => setEditingTicket(null)}
+                    >
+                      Close
+                    </button>
+                    <button
+                      type="button"
+                      className="st-btn-submit"
+                      onClick={() => handleUpdateTicketStatus(editingTicket.id, 'Resolved')}
+                    >
+                      ✓ Mark Ticket as Resolved
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================== */}
         {/* VIEW 10: SECURITY AUDIT TRAIL & ACCESS CONTROLS */}
         {/* ============================================================== */}
         {activeTab === 'audit' && (
@@ -3818,6 +5166,142 @@ export default function Dashboard() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* OPERATIONAL CONTROL MODALS */}
+        {/* ============================================================== */}
+
+        {/* 1. DISPATCH FLEET & DRIVER ALLOTMENT MODAL */}
+        {showDispatchModal && dispatchBookingTarget && (
+          <div className="st-modal-overlay" onClick={() => setShowDispatchModal(false)}>
+            <div className="st-drawer-box" style={{ maxWidth: '540px' }} onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2 style={{ color: '#059669' }}>🚛 Allot Fleet &amp; Driver (Dispatch)</h2>
+                  <p>Consignment #{dispatchBookingTarget.bookingNo} • {dispatchBookingTarget.route}</p>
+                </div>
+                <button type="button" className="st-drawer-close" onClick={() => setShowDispatchModal(false)}>
+                  &times;
+                </button>
+              </div>
+
+              <div className="st-drawer-body">
+                <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '8px', border: '1px solid #a7f3d0', color: '#065f46', fontSize: '12px', marginBottom: '14px' }}>
+                  Allotting a vehicle and driver automatically shifts booking status to <strong>In Transit</strong> and generates an official printable <strong>Dispatch Challan &amp; Gate Pass</strong>.
+                </div>
+
+                <div className="st-form-field">
+                  <label>Select Commercial Vehicle *</label>
+                  <select
+                    value={selectedDispatchVehicle}
+                    onChange={e => setSelectedDispatchVehicle(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
+                  >
+                    {INITIAL_VEHICLES.map(v => (
+                      <option key={v.plateNo} value={v.plateNo}>
+                        {v.plateNo} - {v.model} ({v.type}) [{v.status}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="st-form-field" style={{ marginTop: '12px' }}>
+                  <label>Assign Commercial Driver *</label>
+                  <select
+                    value={selectedDispatchDriver}
+                    onChange={e => setSelectedDispatchDriver(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
+                  >
+                    {INITIAL_DRIVERS.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.phone}) • DL: {d.licenseNo} [{d.status}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="st-form-field" style={{ marginTop: '12px' }}>
+                  <label>Govt E-Way Bill Number (Auto-linked)</label>
+                  <input
+                    type="text"
+                    value={dispatchEwayBill}
+                    onChange={e => setDispatchEwayBill(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#059669' }}
+                  />
+                </div>
+              </div>
+
+              <div className="st-drawer-actions">
+                <button type="button" className="st-btn-cancel" onClick={() => setShowDispatchModal(false)}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="st-btn-submit"
+                  style={{ background: '#059669' }}
+                  onClick={handleConfirmDispatch}
+                >
+                  ✓ Confirm Allotment &amp; Generate Challan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. PRINTABLE DISPATCH CHALLAN MODAL */}
+        {selectedChallanModalData && (
+          <DispatchChallanModal
+            data={selectedChallanModalData}
+            onClose={() => setSelectedChallanModalData(null)}
+          />
+        )}
+
+        {/* 3. MANUAL BILTY ENTRY MODAL */}
+        {showManualBiltyModal && (
+          <ManualBiltyModal
+            onClose={() => setShowManualBiltyModal(false)}
+            onSubmit={handleManualBiltySubmit}
+          />
+        )}
+
+        {/* 4. DIGITAL POD VERIFICATION MODAL */}
+        {podVerifyBooking && (
+          <DigitalPodVerifyModal
+            bookingNumber={podVerifyBooking.bookingNo}
+            customer={podVerifyBooking.customer}
+            route={podVerifyBooking.route}
+            initialPod={podVerifyBooking.podData}
+            onClose={() => setPodVerifyBooking(null)}
+            onApprove={handleApprovePod}
+            onReject={handleRejectPod}
+          />
+        )}
+
+        {/* 5. VIEWING ELECTRONIC POD CERTIFICATE */}
+        {viewingElectronicPod && (
+          <ElectronicPodModal
+            data={viewingElectronicPod}
+            onClose={() => setViewingElectronicPod(null)}
+          />
+        )}
+
+        {/* 6. TELEMATICS LIVE GPS ROUTE RADAR MODAL */}
+        {selectedRadarShipment && (
+          <div className="lr-modal-overlay" onClick={() => setSelectedRadarShipment(null)}>
+            <div style={{ maxWidth: '850px', width: '100%' }} onClick={e => e.stopPropagation()}>
+              <LiveGpsRouteMap shipment={selectedRadarShipment} />
+              <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                <button
+                  type="button"
+                  style={{ padding: '8px 24px', background: '#334155', color: '#ffffff', borderRadius: '6px', cursor: 'pointer', border: 'none', fontWeight: 700 }}
+                  onClick={() => setSelectedRadarShipment(null)}
+                >
+                  ✕ Close Live Telematics Map
+                </button>
+              </div>
             </div>
           </div>
         )}
