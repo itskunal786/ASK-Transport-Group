@@ -187,49 +187,6 @@ export default function Login() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin@askgroup.com');
-                setPassword('Admin@123');
-              }}
-              style={{
-                flex: 1,
-                padding: '7px 10px',
-                background: '#f1f5f9',
-                border: '1px solid #cbd5e1',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 600,
-                color: '#334155',
-                cursor: 'pointer'
-              }}
-            >
-              Demo Admin (Click)
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('user@askgroup.com');
-                setPassword('User@123');
-              }}
-              style={{
-                flex: 1,
-                padding: '7px 10px',
-                background: '#f1f5f9',
-                border: '1px solid #cbd5e1',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 600,
-                color: '#334155',
-                cursor: 'pointer'
-              }}
-            >
-              Demo User (Click)
-            </button>
-          </div>
-
           <div className="login-field">
 
             <label htmlFor="email">

@@ -1216,57 +1216,67 @@ body.dark {
 
 /* --------------------------------------------------------
    14. AUTHENTICATION PAGES (/login, /register, /verify-otp)
+   High-contrast split screen: Right form panel is always
+   crisp white with bold dark navy headings & labels.
    -------------------------------------------------------- */
-[data-theme="dark"] .transport-login,
-[data-theme="dark"] .login-panel,
-[data-theme="dark"] .register-container,
-[data-theme="dark"] .verify-otp-container {
-  background: #090f1d !important;
-  color: #cbd5e1 !important;
-}
-
+.form-heading h2,
 [data-theme="dark"] .form-heading h2,
+body.dark .form-heading h2 {
+  color: #071c39 !important;
+}
+
+.register-heading h2,
 [data-theme="dark"] .register-heading h2,
-[data-theme="dark"] .verify-otp-heading h2 {
-  color: #f8fafc !important;
+body.dark .register-heading h2 {
+  color: #071d3b !important;
 }
 
+.verify-heading h2,
+[data-theme="dark"] .verify-heading h2,
+body.dark .verify-heading h2 {
+  color: #071d3b !important;
+}
+
+.form-heading p,
 [data-theme="dark"] .form-heading p,
+body.dark .form-heading p {
+  color: #7a899e !important;
+}
+
+.register-heading p,
 [data-theme="dark"] .register-heading p,
-[data-theme="dark"] .verify-otp-heading p {
-  color: #94a3b8 !important;
+body.dark .register-heading p {
+  color: #7d8c9e !important;
 }
 
-[data-theme="dark"] .login-field input,
-[data-theme="dark"] .register-field input,
-[data-theme="dark"] .verify-otp-input {
-  background: #091122 !important;
-  border: 1px solid #1e3355 !important;
-  color: #f8fafc !important;
+.verify-heading p,
+[data-theme="dark"] .verify-heading p,
+body.dark .verify-heading p {
+  color: #7d8c9e !important;
 }
 
+.login-field label,
 [data-theme="dark"] .login-field label,
-[data-theme="dark"] .register-field label {
-  color: #cbd5e1 !important;
+body.dark .login-field label,
+.register-field label,
+[data-theme="dark"] .register-field label,
+body.dark .register-field label,
+.verify-field label,
+[data-theme="dark"] .verify-field label,
+body.dark .verify-field label {
+  color: #1a2f4c !important;
 }
 
-[data-theme="dark"] .demo-cred-card {
-  background: #0c1527 !important;
-  border: 1px solid #1e2c47 !important;
-}
-
-[data-theme="dark"] .demo-cred-title {
-  color: #38bdf8 !important;
-}
-
-[data-theme="dark"] .demo-cred-btn {
-  background: #111a2e !important;
-  border: 1px solid #1e2c47 !important;
-  color: #cbd5e1 !important;
-}
-
-[data-theme="dark"] .demo-cred-btn:hover {
-  background: #14223d !important;
-  color: #38bdf8 !important;
-  border-color: #38bdf8 !important;
+.login-field input,
+[data-theme="dark"] .login-field input,
+body.dark .login-field input,
+.register-field input,
+[data-theme="dark"] .register-field input,
+body.dark .register-field input,
+.verify-field input,
+[data-theme="dark"] .verify-field input,
+body.dark .verify-field input {
+  color: #1a2f4c !important;
+  background: #ffffff !important;
+  border-color: #dbe4ef !important;
 }
