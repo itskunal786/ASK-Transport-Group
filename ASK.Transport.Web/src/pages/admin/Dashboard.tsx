@@ -11,10 +11,19 @@ import {
   getAllRights,
   getUserRights,
   updateUserRights,
+  getAuditLogs,
+  forceLogoutUser,
+  getHubs,
+  getSystemSettings,
+  updateSystemSetting,
   type AdminOperationsSummary,
   type AdminUserData,
-  type SystemPermissionItem
+  type SystemPermissionItem,
+  type AuditLogItem,
+  type HubItem,
+  type SystemSettingItem
 } from '../../api/adminApi';
+import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
 import './AdminDashboard.css';
 
 interface BookingRow {
@@ -150,13 +159,32 @@ const INITIAL_VEHICLES: VehicleRow[] = [
   { plateNo: 'HR-26-LM-4321', model: 'Mahindra Blazo X 35', type: '32ft Multi-Axle (MXL)', capacityTons: 22.0, currentHub: 'Delhi Hub', status: 'Maintenance', fuelLevel: '45%' }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'reports' | 'access';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'audit' | 'settings' | 'reports' | 'access';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+
+  // Digital LR Modal Preview
+  const [selectedLr, setSelectedLr] = useState<ConsignmentLRData | null>(null);
+
+  // Hubs State
+  const [hubsList, setHubsList] = useState<HubItem[]>([]);
+  const [hubsLoading, setHubsLoading] = useState(false);
+
+  // Security & Audit Logs State
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditSearch, setAuditSearch] = useState('');
+  const [forceLoggingOutId, setForceLoggingOutId] = useState<number | null>(null);
+
+  // Dynamic System Settings State
+  const [settingsList, setSettingsList] = useState<SystemSettingItem[]>([]);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [editingSettings, setEditingSettings] = useState<{ [key: string]: string }>({});
+  const [savingKey, setSavingKey] = useState<string | null>(null);
 
   // Dashboard API data
   const [summary, setSummary] = useState<AdminOperationsSummary | null>(null);
@@ -250,6 +278,89 @@ export default function Dashboard() {
     loadData();
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'hubs') loadHubs();
+    if (activeTab === 'audit') loadAuditLogs();
+    if (activeTab === 'settings') loadSettings();
+  }, [activeTab]);
+
+  async function loadHubs() {
+    try {
+      setHubsLoading(true);
+      const data = await getHubs();
+      setHubsList(data);
+    } catch (err) {
+      console.warn('Backend hubs load error:', err);
+    } finally {
+      setHubsLoading(false);
+    }
+  }
+
+  async function loadAuditLogs() {
+    try {
+      setAuditLoading(true);
+      const data = await getAuditLogs({ search: auditSearch });
+      if (data && data.data) {
+        setAuditLogs(data.data);
+      }
+    } catch (err) {
+      console.warn('Backend audit load error:', err);
+    } finally {
+      setAuditLoading(false);
+    }
+  }
+
+  async function handleForceLogout(userId: number, email?: string) {
+    if (!window.confirm(`Emergency Kill Switch: Revoke all active bearer tokens and session cookies for user #${userId} (${email || 'Account'}) immediately?`)) {
+      return;
+    }
+    try {
+      setForceLoggingOutId(userId);
+      const res = await forceLogoutUser(userId);
+      showToast(res.message || `Session revoked for user #${userId}`);
+      loadAuditLogs();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to revoke session');
+    } finally {
+      setForceLoggingOutId(null);
+    }
+  }
+
+  async function loadSettings() {
+    try {
+      setSettingsLoading(true);
+      const data = await getSystemSettings();
+      setSettingsList(data);
+      const mapped: { [key: string]: string } = {};
+      data.forEach(s => { mapped[s.key] = s.value; });
+      setEditingSettings(mapped);
+    } catch (err) {
+      console.warn('Backend settings load error:', err);
+    } finally {
+      setSettingsLoading(false);
+    }
+  }
+
+  async function handleSaveSetting(item: SystemSettingItem) {
+    try {
+      setSavingKey(item.key);
+      const newVal = editingSettings[item.key] ?? item.value;
+      const res = await updateSystemSetting({
+        key: item.key,
+        value: newVal,
+        group: item.group,
+        description: item.description,
+        isPublic: item.isPublic,
+      });
+      showToast(res.message || `System setting "${item.key}" updated to "${newVal}"`);
+      loadSettings();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update setting');
+    } finally {
+      setSavingKey(null);
+    }
+  }
 
   async function loadUsers() {
     try {
@@ -707,6 +818,42 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'hubs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('hubs')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Hubs &amp; Terminals
+          </button>
+
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === 'audit' ? 'active' : ''}`}
+            onClick={() => setActiveTab('audit')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            Security &amp; Audit Trail
+          </button>
+
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            System Settings
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'reports' ? 'active' : ''}`}
             onClick={() => setActiveTab('reports')}
           >
@@ -1102,20 +1249,60 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="admin-btn-view"
-                          onClick={() => {
-                            const foundShip = shipmentsList.find(s => s.bookingNo === b.bookingNo);
-                            if (foundShip) {
-                              openUpdateShipmentModal(foundShip);
-                            } else {
-                              alert(`Booking: ${b.bookingNo}\nCustomer: ${b.customer}\nRoute: ${b.route}\nStatus: ${b.status}`);
-                            }
-                          }}
-                        >
-                          Update Status
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className="admin-btn-view"
+                            onClick={() => {
+                              const foundShip = shipmentsList.find(s => s.bookingNo === b.bookingNo);
+                              if (foundShip) {
+                                openUpdateShipmentModal(foundShip);
+                              } else {
+                                alert(`Booking: ${b.bookingNo}\nCustomer: ${b.customer}\nRoute: ${b.route}\nStatus: ${b.status}`);
+                              }
+                            }}
+                          >
+                            Update Status
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedLr({
+                                bookingNumber: b.bookingNo,
+                                consignmentNumber: `LR-${b.bookingNo}`,
+                                bookingDate: b.date,
+                                fromCity: b.route.split('→')[0]?.trim() || 'Origin Hub',
+                                toCity: b.route.split('→')[1]?.trim() || 'Destination Terminal',
+                                senderName: b.customer,
+                                senderPhone: '9876543210',
+                                receiverName: 'Authorized Consignee',
+                                receiverPhone: '9812345678',
+                                goodsType: 'Commercial Goods',
+                                weight: 450,
+                                quantity: 10,
+                                freightAmount: 8500,
+                                gstAmount: 1530,
+                                totalAmount: 10030,
+                                status: b.status,
+                              });
+                            }}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #bfdbfe',
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            📄 View LR
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1832,6 +2019,317 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
+        {/* VIEW 9: MULTI-CITY HUBS & TERMINALS */}
+        {/* ============================================================== */}
+        {activeTab === 'hubs' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>Multi-City Logistics Hubs &amp; Terminals</h1>
+                <p>National hub infrastructure, sorting centers, cargo throughput, and operational status</p>
+              </div>
+              <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-export"
+                  onClick={loadHubs}
+                  disabled={hubsLoading}
+                >
+                  {hubsLoading ? 'Refreshing...' : '🔄 Refresh Hubs'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+              {hubsList.map(h => (
+                <div
+                  key={h.id}
+                  style={{
+                    background: 'var(--bg-card, #ffffff)',
+                    border: '1px solid var(--border, #e2e8f0)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                      <span style={{
+                        background: 'rgba(37, 99, 235, 0.1)',
+                        color: '#2563eb',
+                        fontFamily: 'monospace',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                        padding: '4px 8px',
+                        borderRadius: '6px'
+                      }}>
+                        {h.code}
+                      </span>
+                      <span style={{
+                        background: h.isActive ? '#edfdf4' : '#fee2e2',
+                        color: h.isActive ? '#10b981' : '#dc2626',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: '12px'
+                      }}>
+                        {h.isActive ? '● Operational' : '○ Standby'}
+                      </span>
+                    </div>
+
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                      {h.name}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
+                      📍 {h.city}, {h.state}
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border, #f1f5f9)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'block' }}>DAILY THROUGHPUT</span>
+                      <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>{h.capacity?.toLocaleString('en-IN') || 2500} MT / Day</strong>
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#0b72e7', fontWeight: 600 }}>Active Gate ➔</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 10: SECURITY AUDIT TRAIL & ACCESS CONTROLS */}
+        {/* ============================================================== */}
+        {activeTab === 'audit' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>Security Audit Trail &amp; Access Controls</h1>
+                <p>Live immutable event log of all administrative actions, authentication attempts, and emergency kill-switch controls</p>
+              </div>
+              <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-export"
+                  onClick={loadAuditLogs}
+                  disabled={auditLoading}
+                >
+                  {auditLoading ? 'Refreshing...' : '🔄 Refresh Trail'}
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-table-card">
+              <div className="admin-table-toolbar">
+                <div className="admin-toolbar-search">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search action, actor email, or IP address..."
+                    value={auditSearch}
+                    onChange={e => setAuditSearch(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') loadAuditLogs(); }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={loadAuditLogs}
+                >
+                  Filter Logs
+                </button>
+              </div>
+
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Log ID</th>
+                    <th>Timestamp</th>
+                    <th>Action Event</th>
+                    <th>Actor / User</th>
+                    <th>IP / Origin</th>
+                    <th>Details / Metadata</th>
+                    <th>Emergency Kill-Switch</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>
+                        No audit events recorded for current query.
+                      </td>
+                    </tr>
+                  ) : (
+                    auditLogs.map(log => (
+                      <tr key={log.id}>
+                        <td><code style={{ fontSize: '11px', color: '#64748b' }}>#{log.id}</code></td>
+                        <td style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                          {new Date(log.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'medium' })}
+                        </td>
+                        <td>
+                          <span style={{
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            background: log.action.includes('Delete') || log.action.includes('Force') ? '#fee2e2' :
+                                        log.action.includes('Role') || log.action.includes('Rights') ? '#fef3c7' : '#e0f2fe',
+                            color: log.action.includes('Delete') || log.action.includes('Force') ? '#b91c1c' :
+                                   log.action.includes('Role') || log.action.includes('Rights') ? '#b45309' : '#0369a1'
+                          }}>
+                            {log.action}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600, fontSize: '12px' }}>{log.userEmail || `User #${log.userId || '-'}`}</div>
+                        </td>
+                        <td>
+                          <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#64748b' }}>
+                            {log.ipAddress || '127.0.0.1'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '12px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {log.details || '-'}
+                        </td>
+                        <td>
+                          {log.userId ? (
+                            <button
+                              type="button"
+                              onClick={() => handleForceLogout(log.userId!, log.userEmail)}
+                              disabled={forceLoggingOutId === log.userId}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #fecaca',
+                                background: '#fef2f2',
+                                color: '#dc2626',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap'
+                              }}
+                              title="Instantly revoke all active sessions for this user"
+                            >
+                              {forceLoggingOutId === log.userId ? 'Revoking...' : '⚡ Force Logout'}
+                            </button>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '11px' }}>System Event</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 11: DYNAMIC SYSTEM SETTINGS */}
+        {/* ============================================================== */}
+        {activeTab === 'settings' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>Dynamic System Settings &amp; Platform Controls</h1>
+                <p>Configure live tariffs, fuel surcharges, taxation rates, and platform maintenance status without redeploying</p>
+              </div>
+              <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-export"
+                  onClick={loadSettings}
+                  disabled={settingsLoading}
+                >
+                  {settingsLoading ? 'Refreshing...' : '🔄 Refresh Settings'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+              {settingsList.map(item => (
+                <div
+                  key={item.key}
+                  style={{
+                    background: 'var(--bg-card, #ffffff)',
+                    border: '1px solid var(--border, #e2e8f0)',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{
+                      background: 'rgba(37, 99, 235, 0.08)',
+                      color: '#2563eb',
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      borderRadius: '4px'
+                    }}>
+                      {item.group}
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
+                      {item.key}
+                    </span>
+                  </div>
+
+                  <p style={{ margin: '8px 0 16px 0', fontSize: '13px', color: 'var(--text-secondary, #475569)', minHeight: '38px' }}>
+                    {item.description || item.key}
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {item.key === 'SYSTEM_MAINTENANCE_MODE' ? (
+                      <select
+                        value={editingSettings[item.key] ?? item.value}
+                        onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
+                        style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border, #cbd5e1)', background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0f172a)' }}
+                      >
+                        <option value="false">🟢 Operational (Normal Booking Active)</option>
+                        <option value="true">🔴 Maintenance Mode (Freeze Bookings)</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={editingSettings[item.key] ?? item.value}
+                        onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
+                        style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border, #cbd5e1)', background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0f172a)' }}
+                      />
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleSaveSetting(item)}
+                      disabled={savingKey === item.key}
+                      style={{
+                        padding: '8px 16px',
+                        background: '#2563eb',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 700,
+                        fontSize: '12px',
+                        cursor: savingKey === item.key ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {savingKey === item.key ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
         {/* MODAL 1: ADD CUSTOMER MODAL */}
         {/* ============================================================== */}
         {showAddCustomerModal && (
@@ -2480,6 +2978,12 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        )}
+        {selectedLr && (
+          <ConsignmentLRModal
+            data={selectedLr}
+            onClose={() => setSelectedLr(null)}
+          />
         )}
       </main>
     </div>

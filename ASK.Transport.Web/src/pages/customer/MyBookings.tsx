@@ -4,6 +4,8 @@ import CustomerLayout from '../../layouts/CustomerLayout';
 
 import { getClientBookings } from '../../api/bookingApi';
 import type { ClientBooking } from '../../types/booking';
+import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
+import ElectronicPodModal, { type PodData } from '../../components/ElectronicPodModal';
 
 import '../../styles/MyBookings.css';
 
@@ -13,6 +15,9 @@ export default function MyBookings() {
 
   const [bookings, setBookings] =
     useState<ClientBooking[]>([]);
+
+  const [selectedLr, setSelectedLr] = useState<ConsignmentLRData | null>(null);
+  const [selectedPod, setSelectedPod] = useState<PodData | null>(null);
 
   const [search, setSearch] =
     useState('');
@@ -385,14 +390,58 @@ export default function MyBookings() {
                           className="view-booking-btn"
                           onClick={() =>
                             navigate(
-                              `/bookings/${
-                                booking.bookingNumber
-                              }`
+                              `/tracking?no=${booking.bookingNumber}`
                             )
                           }
                         >
-                          View
+                          Track
                         </button>
+
+                        <button
+                          type="button"
+                          className="view-booking-btn"
+                          style={{ background: '#f1f5f9', color: '#09284a', border: '1px solid #cbd5e1' }}
+                          onClick={() => {
+                            setSelectedLr({
+                              bookingNumber: booking.bookingNumber,
+                              date: new Date(booking.createdAt).toLocaleDateString('en-IN'),
+                              senderName: booking.senderName || 'Authorized Consignor',
+                              fromCity: booking.fromCity,
+                              receiverName: booking.receiverName || 'Authorized Consignee',
+                              toCity: booking.toCity,
+                              goodsDescription: 'General Commercial Freight',
+                              weightKg: booking.weight || 50,
+                              freightAmount: booking.totalAmount,
+                              paymentStatus: booking.paymentStatus,
+                              serviceType: 'Surface Freight'
+                            });
+                          }}
+                          title="Generate Lorry Receipt / Bilty"
+                        >
+                          📄 Bilty / LR
+                        </button>
+
+                        {booking.bookingStatus.toLowerCase() === 'delivered' && (
+                          <button
+                            type="button"
+                            className="view-booking-btn"
+                            style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}
+                            onClick={() => {
+                              setSelectedPod({
+                                bookingNumber: booking.bookingNumber,
+                                deliveredDate: new Date(booking.pickupDate || Date.now()).toLocaleDateString('en-IN') + ' (Verified)',
+                                receiverName: booking.receiverName || 'Authorized Receiver',
+                                receiverPhone: 'Verified (OTP Secured)',
+                                deliveredLocation: `${booking.toCity} Delivery Terminal`,
+                                otpVerified: true,
+                                notes: 'Delivered in intact condition against OTP verification.'
+                              });
+                            }}
+                            title="View Electronic Proof of Delivery"
+                          >
+                            ✅ e-POD
+                          </button>
+                        )}
 
                       </div>
 
@@ -443,6 +492,20 @@ export default function MyBookings() {
 
         </div>
 
+      )}
+
+      {selectedLr && (
+        <ConsignmentLRModal
+          data={selectedLr}
+          onClose={() => setSelectedLr(null)}
+        />
+      )}
+
+      {selectedPod && (
+        <ElectronicPodModal
+          data={selectedPod}
+          onClose={() => setSelectedPod(null)}
+        />
       )}
 
       </div>

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import CustomerLayout from '../../layouts/CustomerLayout';
 
 import {
@@ -9,6 +9,7 @@ import {
   type TrackingEvent,
   type Eta
 } from '../../api/trackingApi';
+import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
 
 import '../../styles/Tracking.css';
 
@@ -240,6 +241,11 @@ export default function TrackShipment() {
 
             </section>
 
+            <LiveGpsRouteMap
+              shipment={shipment}
+              timeline={timeline}
+              eta={eta}
+            />
 
             <div className="tracking-content">
 

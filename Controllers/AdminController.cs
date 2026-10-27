@@ -850,6 +850,81 @@ public class AdminController : ControllerBase
             revokedCount = request.RevokedPermissionIds?.Count ?? 0
         });
     }
+
+    [HttpPost("force-logout/{userId:int}")]
+    public async Task<IActionResult> ForceLogout(int userId)
+    {
+        if (!User.IsInRole("SuperAdmin"))
+        {
+            return StatusCode(403, new { message = "Only Super Admin can force logout sessions." });
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null) return NotFound(new { message = "User not found" });
+
+        await _adminSafetyService.RevokeSessionsAsync(userId);
+
+        await _auditService.LogAsync(
+            "FORCE_LOGOUT",
+            $"SuperAdmin terminated all active sessions for {user.Email}",
+            user.Id,
+            user.Email);
+
+        return Ok(new { message = $"All active sessions for {user.Name} ({user.Email}) have been terminated." });
+    }
+
+    [HttpGet("audit-logs")]
+    public async Task<IActionResult> GetAuditLogs(
+        [FromQuery] string? search,
+        [FromQuery] string? action,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 30)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 5, 100);
+
+        var query = _db.AuditLogs.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim().ToLower();
+            query = query.Where(x =>
+                x.Action.ToLower().Contains(search) ||
+                (x.Description != null && x.Description.ToLower().Contains(search)) ||
+                (x.UserEmail != null && x.UserEmail.ToLower().Contains(search)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(action) && action != "All")
+        {
+            query = query.Where(x => x.Action == action);
+        }
+
+        var total = await query.CountAsync();
+        var logs = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new
+            {
+                x.Id,
+                x.Action,
+                Details = x.Description,
+                x.UserId,
+                x.UserEmail,
+                x.IpAddress,
+                x.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            page,
+            pageSize,
+            total,
+            totalPages = (int)Math.Ceiling(total / (double)pageSize),
+            data = logs
+        });
+    }
 }
 
 public class AdminUpdateUserDto

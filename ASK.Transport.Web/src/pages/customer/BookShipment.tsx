@@ -27,9 +27,11 @@ import {
 import type {
   PinCodeDetails
 } from '../../types/pinCode';
+import BulkBookingUpload from '../../components/BulkBookingUpload';
 
 export default function BookShipment() {
 
+  const [bookingMode, setBookingMode] = useState<'single' | 'bulk'>('single');
   const [step, setStep] = useState(1);
 
   const [services, setServices] =
@@ -765,7 +767,48 @@ return (
 
         </div>
 
+        {/* Mode Selector Tabs */}
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '28px' }}>
+          <button
+            type="button"
+            onClick={() => setBookingMode('single')}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '24px',
+              border: bookingMode === 'single' ? '2px solid #2563eb' : '1px solid var(--border, #cbd5e1)',
+              background: bookingMode === 'single' ? 'rgba(37, 99, 235, 0.12)' : 'var(--bg-card, #ffffff)',
+              color: bookingMode === 'single' ? '#2563eb' : 'var(--text-secondary, #64748b)',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontSize: '0.92rem',
+              transition: 'all 0.2s',
+            }}
+          >
+            📦 Single Consignment Form
+          </button>
+          <button
+            type="button"
+            onClick={() => setBookingMode('bulk')}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '24px',
+              border: bookingMode === 'bulk' ? '2px solid #2563eb' : '1px solid var(--border, #cbd5e1)',
+              background: bookingMode === 'bulk' ? 'rgba(37, 99, 235, 0.12)' : 'var(--bg-card, #ffffff)',
+              color: bookingMode === 'bulk' ? '#2563eb' : 'var(--text-secondary, #64748b)',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontSize: '0.92rem',
+              transition: 'all 0.2s',
+            }}
+          >
+            📑 B2B Bulk Excel / CSV Upload
+          </button>
+        </div>
 
+        {bookingMode === 'bulk' ? (
+          <BulkBookingUpload services={services} />
+        ) : (
+          <>
         <div className="booking-progress">
 
           {[1, 2, 3, 4].map(
@@ -1547,6 +1590,8 @@ return (
           </div>
 
         </form>
+        </>
+        )}
       </main>
     </div>
   </CustomerLayout>
