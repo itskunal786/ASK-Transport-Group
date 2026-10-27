@@ -1,7 +1,10 @@
-﻿import {
+import {
   useEffect,
   useState
 } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { isUserApproved } from '../../utils/accessControl';
+import AccessRestrictedNotice from '../../components/AccessRestrictedNotice';
 
 import {
   getMyInvoices,
@@ -19,6 +22,8 @@ import '../../styles/Invoices.css';
 
 
 export default function Invoices() {
+  const { user } = useAuth();
+  const isApproved = isUserApproved(user);
 
   const [invoices, setInvoices] =
     useState<InvoiceItem[]>([]);
@@ -251,6 +256,17 @@ export default function Invoices() {
       0
     );
 
+
+  if (!isApproved) {
+    return (
+      <CustomerLayout>
+        <AccessRestrictedNotice
+          moduleName="GST Tax Invoices & Bilty Archive"
+          moduleDesc="Official GST tax invoices, consignment bills, and downloadable PDF receipts"
+        />
+      </CustomerLayout>
+    );
+  }
 
   return (
     <CustomerLayout>

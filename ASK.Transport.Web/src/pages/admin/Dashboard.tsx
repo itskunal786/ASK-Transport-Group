@@ -30,6 +30,7 @@ import DigitalPodVerifyModal from '../../components/DigitalPodVerifyModal';
 import ElectronicPodModal, { type PodData } from '../../components/ElectronicPodModal';
 import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
 import type { Shipment } from '../../api/trackingApi';
+import { isUserApproved, setUserApproved } from '../../utils/accessControl';
 import './AdminDashboard.css';
 
 interface BookingRow {
@@ -585,6 +586,7 @@ export default function Dashboard() {
   const [newCustName, setNewCustName] = useState('');
   const [newCustEmail, setNewCustEmail] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
+  const [newCustAccess, setNewCustAccess] = useState<'Restricted' | 'Approved'>('Restricted');
 
   // Edit User State
   const [editingUser, setEditingUser] = useState<AdminUserData | null>(null);
@@ -1197,6 +1199,16 @@ export default function Dashboard() {
     }
   }
 
+  function handleToggleUserApproval(u: AdminUserData, approved: boolean) {
+    setUserApproved(u.id, u.email, approved);
+    showToast(
+      approved
+        ? `✓ Granted Full Access to ${u.name}! (Payments, Invoices & Documents Unlocked)`
+        : `🔒 Restricted ${u.name} to Book & Track only.`
+    );
+    setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: approved } : x)));
+  }
+
   // CSV Exporters
   function exportBookingsToCSV() {
     const headers = 'BookingNo,Customer,Route,Date,Status';
@@ -1268,7 +1280,15 @@ export default function Dashboard() {
     setNewCustName('');
     setNewCustEmail('');
     setNewCustPhone('');
-    showToast(`Customer "${newCust.name}" added successfully!`);
+    const isApprovedSelected = newCustAccess === 'Approved';
+    setUserApproved(newCust.id, newCust.email, isApprovedSelected);
+    (newCust as any).isApproved = isApprovedSelected;
+    setNewCustAccess('Restricted');
+    showToast(
+      isApprovedSelected
+        ? `✓ Customer "${newCust.name}" added with Full Access!`
+        : `✓ Customer "${newCust.name}" registered (Restricted to Book & Track only)`
+    );
   }
 
   // Handle Shipment Status Update
@@ -2269,117 +2289,213 @@ export default function Dashboard() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '18%' }}>User &amp; ID</th>
-                    <th style={{ width: '22%' }}>Email Address</th>
-                    <th style={{ width: '14%' }}>Mobile Phone</th>
-                    <th style={{ width: '14%' }}>Assigned Role</th>
-                    <th style={{ width: '10%' }}>Account Status</th>
-                    <th style={{ width: '22%', whiteSpace: 'nowrap', minWidth: '310px' }}>Actions &amp; Updation</th>
+                    <th style={{ width: '16%' }}>User &amp; ID</th>
+                    <th style={{ width: '18%' }}>Email Address</th>
+                    <th style={{ width: '12%' }}>Mobile Phone</th>
+                    <th style={{ width: '12%' }}>Assigned Role</th>
+                    <th style={{ width: '15%' }}>Access Clearance</th>
+                    <th style={{ width: '9%' }}>Status</th>
+                    <th style={{ width: '18%', whiteSpace: 'nowrap', minWidth: '340px' }}>Actions &amp; Delegation</th>
                   </tr>
                 </thead>
                 <tbody>
                   {adminUsers.length > 0 ? (
-                    adminUsers.map(u => (
-                      <tr key={u.id}>
-                        <td style={{ verticalAlign: 'middle' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{u.name}</div>
-                          <small style={{ color: '#94a3b8', fontSize: '11px' }}>ID: #{u.id}</small>
-                        </td>
-                        <td style={{ verticalAlign: 'middle', color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
-                        <td style={{ verticalAlign: 'middle', color: 'var(--text-secondary, #94a3b8)' }}>{u.phone || '—'}</td>
-                        <td style={{ verticalAlign: 'middle' }}>
-                          <span
-                            style={{
-                              padding: '3px 10px',
-                              borderRadius: '12px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              whiteSpace: 'nowrap',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              background:
-                                u.role === 'SuperAdmin'
-                                  ? '#fef3c7'
-                                  : u.role === 'Admin'
-                                  ? '#ede9fe'
-                                  : '#e0f2fe',
-                              color:
-                                u.role === 'SuperAdmin'
-                                  ? '#b45309'
-                                  : u.role === 'Admin'
-                                  ? '#6d28d9'
-                                  : '#0284c7'
-                            }}
-                          >
-                            {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Admin' : '👤 User'}
-                          </span>
-                        </td>
-                        <td style={{ verticalAlign: 'middle' }}>
-                          <span
-                            style={{
-                              padding: '3px 10px',
-                              borderRadius: '12px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              whiteSpace: 'nowrap',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              background: u.isActive ? '#edfdf4' : '#fee2e2',
-                              color: u.isActive ? '#10b981' : '#dc2626'
-                            }}
-                          >
-                            {u.isActive ? 'Active' : 'Suspended'}
-                          </span>
-                        </td>
-                        <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <div className="admin-table-action-row">
-                            <button
-                              type="button"
-                              className="admin-btn-action-edit"
-                              onClick={() => handleOpenEditUser(u)}
-                              title="Edit user details"
+                    adminUsers.map(u => {
+                      const userApproved = isUserApproved(u);
+                      return (
+                        <tr key={u.id}>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{u.name}</div>
+                            <small style={{ color: '#94a3b8', fontSize: '11px' }}>ID: #{u.id}</small>
+                          </td>
+                          <td style={{ verticalAlign: 'middle', color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
+                          <td style={{ verticalAlign: 'middle', color: 'var(--text-secondary, #94a3b8)' }}>{u.phone || '—'}</td>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            <span
+                              style={{
+                                padding: '3px 10px',
+                                borderRadius: '12px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                whiteSpace: 'nowrap',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                background:
+                                  u.role === 'SuperAdmin'
+                                    ? '#fef3c7'
+                                    : u.role === 'Admin'
+                                    ? '#ede9fe'
+                                    : '#e0f2fe',
+                                color:
+                                  u.role === 'SuperAdmin'
+                                    ? '#b45309'
+                                    : u.role === 'Admin'
+                                    ? '#6d28d9'
+                                    : '#0284c7'
+                              }}
                             >
-                              ✏️ Edit
-                            </button>
-
-                            <button
-                              type="button"
-                              className={`admin-btn-action-status ${u.isActive ? 'suspend' : 'activate'}`}
-                              onClick={() => handleToggleUserStatus(u)}
-                              title={u.isActive ? 'Suspend User' : 'Activate User'}
-                            >
-                              {u.isActive ? 'Suspend' : 'Activate'}
-                            </button>
-
-                            {user?.role === 'SuperAdmin' && (
-                              <>
-                                <button
-                                  type="button"
-                                  className="admin-btn-action-role"
-                                  onClick={() => handleOpenRoleModal(u)}
-                                  title="Change User Role (SuperAdmin Only)"
-                                >
-                                  👑 Role
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="admin-btn-action-rights"
-                                  onClick={() => handleOpenRightsModal(u)}
-                                  title="Delegate or Revoke Specific Rights (SuperAdmin Only)"
-                                >
-                                  🛡️ Rights
-                                </button>
-                              </>
+                              {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Admin' : '👤 User'}
+                            </span>
+                          </td>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            {u.role === 'SuperAdmin' ? (
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: '#fef3c7',
+                                  color: '#b45309',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                👑 Full Master
+                              </span>
+                            ) : u.role === 'Admin' ? (
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: '#ede9fe',
+                                  color: '#6d28d9',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                ⚡ Admin Cleared
+                              </span>
+                            ) : userApproved ? (
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: '#edfdf4',
+                                  color: '#16a34a',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                                title="Payments, Invoices &amp; Documents Unlocked"
+                              >
+                                🟢 Full Access (Approved)
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: '#fef3c7',
+                                  color: '#b45309',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                                title="New User Restricted to Book &amp; Track only"
+                              >
+                                🟡 Book &amp; Track Only
+                              </span>
                             )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                          </td>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            <span
+                              style={{
+                                padding: '3px 10px',
+                                borderRadius: '12px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                whiteSpace: 'nowrap',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                background: u.isActive ? '#edfdf4' : '#fee2e2',
+                                color: u.isActive ? '#10b981' : '#dc2626'
+                              }}
+                            >
+                              {u.isActive ? 'Active' : 'Suspended'}
+                            </span>
+                          </td>
+                          <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            <div className="admin-table-action-row">
+                              {/* Quick Approval / Restriction Action for Regular Users */}
+                              {u.role === 'User' && (
+                                !userApproved ? (
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-approve"
+                                    onClick={() => handleToggleUserApproval(u, true)}
+                                    title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
+                                  >
+                                    🔓 Grant Full Access
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-restrict"
+                                    onClick={() => handleToggleUserApproval(u, false)}
+                                    title="Restrict user back to Book &amp; Track only"
+                                  >
+                                    🔒 Restrict Access
+                                  </button>
+                                )
+                              )}
+
+                              <button
+                                type="button"
+                                className="admin-btn-action-edit"
+                                onClick={() => handleOpenEditUser(u)}
+                                title="Edit user details"
+                              >
+                                ✏️ Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                className={`admin-btn-action-status ${u.isActive ? 'suspend' : 'activate'}`}
+                                onClick={() => handleToggleUserStatus(u)}
+                                title={u.isActive ? 'Suspend User' : 'Activate User'}
+                              >
+                                {u.isActive ? 'Suspend' : 'Activate'}
+                              </button>
+
+                              {user?.role === 'SuperAdmin' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-role"
+                                    onClick={() => handleOpenRoleModal(u)}
+                                    title="Change User Role (SuperAdmin Only)"
+                                  >
+                                    👑 Role
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-rights"
+                                    onClick={() => handleOpenRightsModal(u)}
+                                    title="Delegate or Revoke Specific Rights (SuperAdmin Only)"
+                                  >
+                                    🛡️ Rights
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
                         {usersLoading ? 'Loading users...' : 'No users found matching your query.'}
                       </td>
                     </tr>
@@ -3055,6 +3171,139 @@ export default function Dashboard() {
                         </td>
                       </tr>
                     ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* NEW USER RESTRICTION & ACCESS CLEARANCE GOVERNANCE */}
+            <div className="admin-table-card" style={{ marginTop: '24px' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color, #e2e8f0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                    Customer Clearance &amp; New User Access Approval
+                  </h2>
+                  <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
+                    Policy Enforcement: Newly registered users default to <strong>Book &amp; Track Only</strong>. Grant full access here to unlock Payments, Invoices, and Legal Documents.
+                  </p>
+                </div>
+              </div>
+
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Email</th>
+                    <th>Clearance State</th>
+                    <th>Account Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminUsers.filter(u => u.role === 'User').length > 0 ? (
+                    adminUsers
+                      .filter(u => u.role === 'User')
+                      .map(cust => {
+                        const approved = isUserApproved(cust);
+                        return (
+                          <tr key={cust.id}>
+                            <td>
+                              <div style={{ fontWeight: 600 }}>{cust.name}</div>
+                              <small style={{ color: '#94a3b8' }}>ID: #{cust.id}</small>
+                            </td>
+                            <td style={{ color: '#0b72e7' }}>{cust.email}</td>
+                            <td>
+                              {approved ? (
+                                <span
+                                  style={{
+                                    padding: '3px 10px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    background: '#edfdf4',
+                                    color: '#16a34a',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  🟢 Full Access Granted
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    padding: '3px 10px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    background: '#fef3c7',
+                                    color: '#b45309',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  🟡 Restricted (Book &amp; Track Only)
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: cust.isActive ? '#edfdf4' : '#fee2e2',
+                                  color: cust.isActive ? '#10b981' : '#dc2626'
+                                }}
+                              >
+                                {cust.isActive ? 'Active' : 'Suspended'}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                {!approved ? (
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-approve"
+                                    onClick={() => handleToggleUserApproval(cust, true)}
+                                    title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
+                                  >
+                                    🔓 Approve Full Access
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-restrict"
+                                    onClick={() => handleToggleUserApproval(cust, false)}
+                                    title="Restrict User to Book &amp; Track Only"
+                                  >
+                                    🔒 Restrict Access
+                                  </button>
+                                )}
+
+                                {user?.role === 'SuperAdmin' && (
+                                  <button
+                                    type="button"
+                                    className="admin-btn-action-role"
+                                    onClick={() => handleOpenRoleModal(cust)}
+                                    title="Promote directly to Admin or SuperAdmin"
+                                  >
+                                    👑 Promote Role
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                  ) : (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                        No regular customer accounts registered.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -4405,6 +4654,33 @@ export default function Dashboard() {
                       onChange={e => setNewCustPhone(e.target.value)}
                       required
                     />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Account Access Clearance *</label>
+                    <select
+                      value={newCustAccess}
+                      onChange={e => setNewCustAccess(e.target.value as 'Restricted' | 'Approved')}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color, #cbd5e1)',
+                        background: 'var(--bg-surface, #ffffff)',
+                        color: 'var(--text-primary, #0f172a)',
+                        fontSize: '13px'
+                      }}
+                    >
+                      <option value="Restricted">
+                        🟡 Restricted (Book &amp; Track Only) — Default for new users
+                      </option>
+                      <option value="Approved">
+                        🟢 Full Access Granted (Payments, Invoices &amp; Documents Unlocked)
+                      </option>
+                    </select>
+                    <small style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '11px' }}>
+                      Restricted users can only Book shipments and Track live consignments.
+                    </small>
                   </div>
                 </div>
 

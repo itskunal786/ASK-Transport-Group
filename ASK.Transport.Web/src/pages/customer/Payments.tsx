@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { isUserApproved } from '../../utils/accessControl';
+import AccessRestrictedNotice from '../../components/AccessRestrictedNotice';
 
 import {
   getMyPayments
@@ -12,8 +15,9 @@ import CustomerLayout from '../../layouts/CustomerLayout';
 
 import '../../styles/payments.css';
 
-
 export default function Payments() {
+  const { user } = useAuth();
+  const isApproved = isUserApproved(user);
 
   const [payments, setPayments] =
     useState<PaymentHistoryItem[]>([]);
@@ -125,6 +129,17 @@ export default function Payments() {
       .replaceAll(' ', '-');
   }
 
+
+  if (!isApproved) {
+    return (
+      <CustomerLayout>
+        <AccessRestrictedNotice
+          moduleName="Payments & Financial Ledgers"
+          moduleDesc="Payment transaction logs, instant UPI wallet top-ups, and B2B 15-day credit billing"
+        />
+      </CustomerLayout>
+    );
+  }
 
   return (
     <CustomerLayout>

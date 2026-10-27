@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import CustomerLayout from '../../layouts/CustomerLayout';
 import { getClientBookings } from '../../api/bookingApi';
 import { useAuth } from '../../context/AuthContext';
+import { isUserApproved } from '../../utils/accessControl';
 import type { ClientBooking } from '../../types/booking';
 import '../../styles/DashboardHome.css';
 
@@ -124,6 +125,97 @@ export default function Dashboard() {
             <small>— ASK Transport</small>
           </div>
         </div>
+
+        {/* ACCOUNT STATUS NOTIFICATION FOR RESTRICTED / NEW USERS */}
+        {!isUserApproved(user) && (
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '14px',
+              padding: '18px 24px',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              flexWrap: 'wrap'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  background: '#fef3c7',
+                  color: '#b45309',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px',
+                  flexShrink: 0
+                }}
+              >
+                🔒
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                  <strong style={{ fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
+                    Basic Shipper Account (Book &amp; Track Only)
+                  </strong>
+                  <span
+                    style={{
+                      background: '#fef3c7',
+                      color: '#92400e',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: 700
+                    }}
+                  >
+                    Verification Pending
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)', lineHeight: '1.4' }}>
+                  Naye accounts ke liye abhi sirf <strong>Shipment Booking</strong> aur <strong>Tracking</strong> open hain. Admin dwara account approval ke baad Payments, GST Invoices aur Documents activate ho jayenge.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <Link
+                to="/book"
+                style={{
+                  background: '#0b72e7',
+                  color: '#ffffff',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none'
+                }}
+              >
+                📦 Book Now
+              </Link>
+              <Link
+                to="/tracking"
+                style={{
+                  background: 'var(--bg-surface, #ffffff)',
+                  border: '1px solid var(--border-color, #cbd5e1)',
+                  color: 'var(--text-primary, #0f172a)',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none'
+                }}
+              >
+                🔍 Track Cargo
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* 2. STATS CARDS (4 Cards matching Image 1) */}
         <section className="db-stats-grid">

@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isUserApproved } from '../utils/accessControl';
 import ThemeToggle from '../components/ThemeToggle';
 import '../styles/Dashboard.css';
 
@@ -11,6 +12,21 @@ interface CustomerLayoutProps {
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
+
+  const [approved, setApproved] = useState(() => isUserApproved(user));
+
+  useEffect(() => {
+    setApproved(isUserApproved(user));
+
+    function handleAccessChange() {
+      setApproved(isUserApproved(user));
+    }
+
+    window.addEventListener('ask_access_control_change', handleAccessChange);
+    return () => {
+      window.removeEventListener('ask_access_control_change', handleAccessChange);
+    };
+  }, [user]);
 
   function active(path: string) {
     return location.pathname === path ? 'active' : '';
@@ -85,6 +101,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               <line x1="2" y1="10" x2="22" y2="10" />
             </svg>
             Payments
+            {!approved && <span className="sidebar-lock-badge" title="Admin Approval Required">🔒 Locked</span>}
           </Link>
 
           <Link className={active('/invoices')} to="/invoices">
@@ -96,6 +113,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               <polyline points="10 9 9 9 8 9" />
             </svg>
             Invoices
+            {!approved && <span className="sidebar-lock-badge" title="Admin Approval Required">🔒 Locked</span>}
           </Link>
 
           <Link className={active('/documents')} to="/documents">
@@ -103,6 +121,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
             Documents
+            {!approved && <span className="sidebar-lock-badge" title="Admin Approval Required">🔒 Locked</span>}
           </Link>
 
           <Link className={active('/notifications')} to="/notifications">
@@ -218,6 +237,21 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             </button>
           </div>
         </header>
+
+        {/* RESTRICTED ACCOUNT CLEARANCE NOTICE FOR NEW UNAPPROVED USERS */}
+        {!approved && (
+          <div className="customer-access-ribbon">
+            <div className="ribbon-content">
+              <span className="ribbon-pill">🟡 Basic Shipper Access</span>
+              <span>
+                Naye accounts ke liye abhi sirf <strong>Book Shipment</strong> aur <strong>Track Shipment</strong> unlocked hain. Admin dwara account verification ke baad Payments, Invoices aur Documents activate ho jayenge.
+              </span>
+            </div>
+            <Link to="/support" className="ribbon-action-btn">
+              Request Approval →
+            </Link>
+          </div>
+        )}
 
         {/* CONTENT */}
         <div className="customer-content-area">
