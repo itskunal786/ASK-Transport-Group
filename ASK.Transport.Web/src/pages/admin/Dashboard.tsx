@@ -570,7 +570,7 @@ export default function Dashboard() {
 
   // Dashboard API data
   const [summary, setSummary] = useState<AdminOperationsSummary | null>(null);
-  const [activeMonthHover, setActiveMonthHover] = useState<number | null>(7); // Aug default
+  const [activeMonthHover, setActiveMonthHover] = useState<number | null>(null);
 
   // Bookings list state
   const [bookingsList, setBookingsList] = useState<BookingRow[]>(INITIAL_BOOKINGS);
@@ -1686,12 +1686,8 @@ export default function Dashboard() {
         </nav>
 
         <div className="admin-sidebar-footer">
-          <Link to="/landing" className="admin-switch-link" style={{ marginBottom: '8px' }}>
+          <Link to="/landing" className="admin-switch-link">
             🌐 Public Website
-          </Link>
-
-          <Link to="/dashboard" className="admin-switch-link">
-            ← Switch to Customer Portal
           </Link>
 
           <button type="button" onClick={logout} className="admin-logout-btn">
@@ -1893,10 +1889,11 @@ export default function Dashboard() {
                         key={idx}
                         className="admin-bar-col"
                         onMouseEnter={() => setActiveMonthHover(idx)}
+                        onMouseLeave={() => setActiveMonthHover(null)}
                       >
                         {isHovered && (
                           <div className="admin-bar-tooltip">
-                            <strong>{item.count}</strong>
+                            <strong>{item.count} </strong>
                             <span>bookings</span>
                           </div>
                         )}
