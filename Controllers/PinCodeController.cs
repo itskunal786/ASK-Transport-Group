@@ -2,6 +2,7 @@ using ASK.Group.Api.Data;
 using ASK.Group.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace ASK.Group.Api.Controllers;
@@ -11,6 +12,7 @@ namespace ASK.Group.Api.Controllers;
 public class PinCodeController : ControllerBase
 {
     private readonly AskTransportDbContext _db;
+    private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(4) };
 
     public PinCodeController(AskTransportDbContext db)
     {
@@ -25,32 +27,116 @@ public class PinCodeController : ControllerBase
             return BadRequest(new { message = "Invalid 6-digit Indian PIN code." });
         }
 
-        var result = await _db.PinCodes
+        // 1. Check local database cache first
+        var cached = await _db.PinCodes
             .FirstOrDefaultAsync(x => x.Pin == pin);
 
-        if (result != null)
+        if (cached != null)
         {
             return Ok(new
             {
-                result.Pin,
-                result.City,
-                result.District,
-                result.State,
-                result.DeliveryDays,
-                result.Serviceable
+                cached.Pin,
+                cached.City,
+                cached.District,
+                cached.State,
+                cached.DeliveryDays,
+                cached.Serviceable
             });
         }
 
-        // Auto-resolve city, district, and state based on Indian Postal circles
-        var (city, district, state, days) = ResolvePinCodeLocation(pin);
+        // 2. Query official India Post API for exact post office, district, and state
+        string city = "";
+        string district = "";
+        string state = "";
+        int deliveryDays = 3;
+        bool apiResponded = false;
+        bool pinExists = false;
 
+        try
+        {
+            var response = await _httpClient.GetStringAsync($"https://api.postalpincode.in/pincode/{pin}");
+            using var doc = JsonDocument.Parse(response);
+            var root = doc.RootElement;
+            if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
+            {
+                apiResponded = true;
+                var first = root[0];
+                if (first.TryGetProperty("Status", out var status))
+                {
+                    if (status.GetString() == "Success")
+                    {
+                        pinExists = true;
+                        if (first.TryGetProperty("PostOffice", out var poArray) && poArray.ValueKind == JsonValueKind.Array && poArray.GetArrayLength() > 0)
+                        {
+                            var po = poArray[0];
+                            district = po.TryGetProperty("District", out var d) ? d.GetString() ?? "" : "";
+                            state = po.TryGetProperty("State", out var s) ? s.GetString() ?? "" : "";
+                            var poName = po.TryGetProperty("Name", out var n) ? n.GetString() ?? "" : "";
+                            var division = po.TryGetProperty("Division", out var div) ? div.GetString() ?? "" : "";
+
+                            // Clean up district name (e.g., "Raigarh(MH)" -> "Navi Mumbai", "Gurgaon" -> "Gurugram", "Bangalore" -> "Bengaluru")
+                            if (!string.IsNullOrEmpty(district))
+                            {
+                                district = Regex.Replace(district, @"\s*\(.*?\)", "").Trim();
+                                if (district.Equals("Gurgaon", StringComparison.OrdinalIgnoreCase)) district = "Gurugram";
+                                if (district.Equals("Bangalore", StringComparison.OrdinalIgnoreCase)) district = "Bengaluru";
+                                if (district.Equals("Raigarh", StringComparison.OrdinalIgnoreCase) && state.Equals("Maharashtra", StringComparison.OrdinalIgnoreCase)) district = "Navi Mumbai";
+                                city = district;
+                            }
+                            else if (!string.IsNullOrEmpty(division))
+                            {
+                                city = division;
+                                district = division;
+                            }
+                            else
+                            {
+                                city = poName;
+                                district = poName;
+                            }
+
+                            if (!string.IsNullOrEmpty(poName))
+                            {
+                                var cleanPo = Regex.Replace(poName, @"\s*\(.*?\)", "").Trim();
+                                if (cleanPo.Equals("Noida", StringComparison.OrdinalIgnoreCase)) city = "Noida";
+                            }
+                        }
+                    }
+                    else if (status.GetString() == "Error")
+                    {
+                        pinExists = false;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"India Post API lookup failed for {pin}: {ex.Message}");
+        }
+
+        // If India Post definitely answered and said the PIN does not exist, return 404
+        if (apiResponded && !pinExists)
+        {
+            return NotFound(new { message = $"PIN code {pin} was not found in the official Indian postal registry." });
+        }
+
+        // 3. Fallback to Indian postal circle resolution ONLY if remote postal API was unreachable (offline mode)
+        if (string.IsNullOrEmpty(city) || string.IsNullOrEmpty(state))
+        {
+            var fallback = ResolveFallback(pin);
+            city = fallback.City;
+            district = fallback.District;
+            state = fallback.State;
+            deliveryDays = fallback.Days;
+        }
+
+        // 4. Save to database cache for instant future lookups
         var newPin = new PinCode
         {
             Pin = pin,
             City = city,
             District = district,
             State = state,
-            DeliveryDays = days,
+            DeliveryDays = deliveryDays,
             Serviceable = true
         };
 
@@ -61,7 +147,7 @@ public class PinCodeController : ControllerBase
         }
         catch
         {
-            // If parallel insert or DB transient, proceed with newPin
+            // Ignore DB concurrency or unique key duplicate
         }
 
         return Ok(new
@@ -75,13 +161,13 @@ public class PinCodeController : ControllerBase
         });
     }
 
-    private static (string City, string District, string State, int Days) ResolvePinCodeLocation(string pin)
+    private static (string City, string District, string State, int Days) ResolveFallback(string pin)
     {
         string p2 = pin.Substring(0, 2);
 
         if (p2 == "11") return ("New Delhi", "Central Delhi", "Delhi", 2);
         if (p2 is "12" or "13") return (pin.StartsWith("122") ? "Gurugram" : "Faridabad", "NCR Region", "Haryana", 2);
-        if (p2 is "14" or "15" or "16") return ("Ludhiana / Chandigarh", "Ludhiana", "Punjab", 3);
+        if (p2 is "14" or "15" or "16") return ("Ludhiana", "Ludhiana", "Punjab", 3);
         if (p2 == "17") return ("Shimla", "Shimla", "Himachal Pradesh", 3);
         if (p2 is "18" or "19") return ("Jammu", "Jammu", "Jammu & Kashmir", 4);
         if (p2 is "20" or "21" or "22" or "23" or "24" or "25" or "26" or "27" or "28")
@@ -97,7 +183,7 @@ public class PinCodeController : ControllerBase
         }
         if (p2 is "40" or "41" or "42" or "43" or "44")
         {
-            string city = pin.StartsWith("400") ? "Mumbai / Navi Mumbai" : pin.StartsWith("411") ? "Pune" : "Nagpur";
+            string city = pin.StartsWith("400") ? "Mumbai" : pin.StartsWith("411") ? "Pune" : "Nagpur";
             return (city, city, "Maharashtra", 3);
         }
         if (p2 is "45" or "46" or "47" or "48" or "49")

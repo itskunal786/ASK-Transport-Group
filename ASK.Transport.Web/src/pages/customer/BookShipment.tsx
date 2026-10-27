@@ -21,7 +21,7 @@ import type {
 
 
 import {
-  getPinCode
+  lookupPinCode
 } from '../../api/pinCodeApi';
 
 import type {
@@ -146,156 +146,56 @@ export default function BookShipment() {
   }
 
 
-  function resolveIndianPinCode(pin: string): PinCodeDetails {
-    const p2 = pin.substring(0, 2);
-    let state = 'India';
-    let city = 'Commercial Hub';
-    let district = 'Logistics Zone';
-
-    if (p2 === '11') {
-      state = 'Delhi';
-      city = 'New Delhi';
-      district = 'Central Delhi';
-    } else if (p2 === '12' || p2 === '13') {
-      state = 'Haryana';
-      city = pin.startsWith('122') ? 'Gurugram' : 'Faridabad';
-      district = city;
-    } else if (['14', '15', '16'].includes(p2)) {
-      state = 'Punjab';
-      city = 'Ludhiana / Chandigarh';
-      district = 'Punjab Central';
-    } else if (p2 === '17') {
-      state = 'Himachal Pradesh';
-      city = 'Shimla';
-      district = 'Shimla';
-    } else if (['18', '19'].includes(p2)) {
-      state = 'Jammu & Kashmir';
-      city = 'Jammu';
-      district = 'Jammu';
-    } else if (['20', '21', '22', '23', '24', '25', '26', '27', '28'].includes(p2)) {
-      state = 'Uttar Pradesh';
-      city = pin.startsWith('201') ? 'Noida' : pin.startsWith('226') ? 'Lucknow' : 'Kanpur';
-      district = city;
-    } else if (['30', '31', '32', '33', '34'].includes(p2)) {
-      state = 'Rajasthan';
-      city = 'Jaipur';
-      district = 'Jaipur';
-    } else if (['36', '37', '38', '39'].includes(p2)) {
-      state = 'Gujarat';
-      city = pin.startsWith('380') ? 'Ahmedabad' : 'Surat';
-      district = city;
-    } else if (['40', '41', '42', '43', '44'].includes(p2)) {
-      state = 'Maharashtra';
-      city = pin.startsWith('400') ? 'Mumbai / Navi Mumbai' : pin.startsWith('411') ? 'Pune' : 'Nagpur';
-      district = city;
-    } else if (['45', '46', '47', '48', '49'].includes(p2)) {
-      state = 'Madhya Pradesh';
-      city = pin.startsWith('462') ? 'Bhopal' : pin.startsWith('452') ? 'Indore' : 'Jabalpur';
-      district = city;
-    } else if (['50', '51', '52', '53'].includes(p2)) {
-      state = 'Telangana';
-      city = 'Hyderabad';
-      district = 'Hyderabad';
-    } else if (['56', '57', '58', '59'].includes(p2)) {
-      state = 'Karnataka';
-      city = 'Bengaluru';
-      district = 'Bengaluru Urban';
-    } else if (['60', '61', '62', '63', '64'].includes(p2)) {
-      state = 'Tamil Nadu';
-      city = 'Chennai';
-      district = 'Chennai';
-    } else if (['67', '68', '69'].includes(p2)) {
-      state = 'Kerala';
-      city = 'Kochi';
-      district = 'Ernakulam';
-    } else if (['70', '71', '72', '73', '74'].includes(p2)) {
-      state = 'West Bengal';
-      city = 'Kolkata';
-      district = 'Kolkata';
-    } else if (['75', '76', '77'].includes(p2)) {
-      state = 'Odisha';
-      city = 'Bhubaneswar';
-      district = 'Khordha';
-    } else if (['78', '79'].includes(p2)) {
-      state = 'Assam';
-      city = 'Guwahati';
-      district = 'Kamrup';
-    } else if (['80', '81', '82', '83', '84', '85'].includes(p2)) {
-      state = 'Bihar';
-      city = 'Patna';
-      district = 'Patna';
-    }
-
-    return {
-      pin,
-      city,
-      district,
-      state,
-      deliveryDays: 3,
-      serviceable: true
-    };
-  }
-
   async function checkPickupPin(pin: string) {
     setPickupLocation(null);
     setPickupPinError('');
 
-    if (pin.length !== 6) {
+    const clean = pin.trim();
+    if (clean.length !== 6) {
       return;
     }
 
-    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+    if (!/^[1-9][0-9]{5}$/.test(clean)) {
       setPickupPinError('Please enter a valid 6-digit Indian PIN code.');
       return;
     }
 
     try {
       setPickupPinLoading(true);
-      const data = await getPinCode(pin);
-      if (data && data.serviceable) {
-        setPickupLocation(data);
-        return;
-      }
-    } catch {
-      // Backend not yet populated, use Indian Postal circle resolution
+      const data = await lookupPinCode(clean);
+      setPickupLocation(data);
+    } catch (err: any) {
+      setPickupLocation(null);
+      setPickupPinError(err?.message || 'Invalid Indian PIN code.');
     } finally {
       setPickupPinLoading(false);
     }
-
-    // Auto-resolve valid 6-digit Indian PIN code
-    const resolved = resolveIndianPinCode(pin);
-    setPickupLocation(resolved);
   }
 
   async function checkDeliveryPin(pin: string) {
     setDeliveryLocation(null);
     setDeliveryPinError('');
 
-    if (pin.length !== 6) {
+    const clean = pin.trim();
+    if (clean.length !== 6) {
       return;
     }
 
-    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+    if (!/^[1-9][0-9]{5}$/.test(clean)) {
       setDeliveryPinError('Please enter a valid 6-digit Indian PIN code.');
       return;
     }
 
     try {
       setDeliveryPinLoading(true);
-      const data = await getPinCode(pin);
-      if (data && data.serviceable) {
-        setDeliveryLocation(data);
-        return;
-      }
-    } catch {
-      // Backend not yet populated, use Indian Postal circle resolution
+      const data = await lookupPinCode(clean);
+      setDeliveryLocation(data);
+    } catch (err: any) {
+      setDeliveryLocation(null);
+      setDeliveryPinError(err?.message || 'Invalid Indian PIN code.');
     } finally {
       setDeliveryPinLoading(false);
     }
-
-    // Auto-resolve valid 6-digit Indian PIN code
-    const resolved = resolveIndianPinCode(pin);
-    setDeliveryLocation(resolved);
   }
 
   function validateStep1() {
