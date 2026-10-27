@@ -237,24 +237,6 @@ export default function LandingPage() {
                         {trackLoading ? 'Searching...' : 'Track Now →'}
                       </button>
                     </div>
-
-                    {/* Quick Demo Pills */}
-                    <div className="quick-demo-pills">
-                      <span>Quick Demo:</span>
-                      {['ASKB00123', 'ASKB00122', 'ASKB00121'].map((num) => (
-                        <button
-                          key={num}
-                          type="button"
-                          className="demo-pill-btn"
-                          onClick={() => {
-                            setTrackNumber(num);
-                            handleQuickTrack(undefined, num);
-                          }}
-                        >
-                          {num}
-                        </button>
-                      ))}
-                    </div>
                   </form>
 
                   {trackError && <div className="widget-alert-error">{trackError}</div>}
