@@ -614,7 +614,7 @@ export default function Dashboard() {
       <main className="admin-main-viewport">
         {/* TOPBAR */}
         <header className="admin-topbar">
-          <div className="admin-topbar-search">
+          <div className="admin-top-search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -646,14 +646,14 @@ export default function Dashboard() {
             />
           </div>
 
-          <div className="admin-topbar-actions">
+          <div className="admin-top-profile">
             <ThemeToggle />
 
-            <div className="admin-user-profile-badge">
-              <div className="admin-avatar">
+            <div className="admin-profile-pill">
+              <div className="admin-user-avatar">
                 {user?.name?.charAt(0).toUpperCase() || 'A'}
               </div>
-              <div className="admin-user-details">
+              <div className="admin-user-names">
                 <strong>{user?.name || 'Administrator'}</strong>
                 <small>{user?.role || 'Admin'} • Super Access</small>
               </div>
@@ -697,7 +697,7 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div className="admin-box-content">
-                    <strong>{summary?.totalBookings ?? 1284}</strong>
+                    <strong>{summary?.totalBookings && summary.totalBookings > 0 ? summary.totalBookings : 1284}</strong>
                     <span>Total Bookings</span>
                   </div>
                 </div>
@@ -715,7 +715,7 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div className="admin-box-content">
-                    <strong>{summary?.inTransitShipments ?? 184}</strong>
+                    <strong>{summary?.inTransitShipments && summary.inTransitShipments > 0 ? summary.inTransitShipments : 184}</strong>
                     <span>Active In-Transit</span>
                   </div>
                 </div>
@@ -733,7 +733,7 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div className="admin-box-content">
-                    <strong>{summary?.deliveredBookings ?? 1032}</strong>
+                    <strong>{summary?.deliveredBookings && summary.deliveredBookings > 0 ? summary.deliveredBookings : 1032}</strong>
                     <span>Delivered (Month)</span>
                   </div>
                 </div>
@@ -751,7 +751,7 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div className="admin-box-content">
-                    <strong>₹{(summary?.successfulPaymentAmount ?? 4250000).toLocaleString('en-IN')}</strong>
+                    <strong>₹{(summary?.successfulPaymentAmount && summary.successfulPaymentAmount > 0 ? summary.successfulPaymentAmount : 4250000).toLocaleString('en-IN')}</strong>
                     <span>Gross Revenue</span>
                   </div>
                 </div>

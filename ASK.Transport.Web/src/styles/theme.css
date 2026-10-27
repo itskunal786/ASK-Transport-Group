@@ -135,6 +135,11 @@ body.dark {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
+[data-theme="dark"] .admin-top-search {
+  background: #091122 !important;
+  border: 1px solid #1e3355 !important;
+}
+
 [data-theme="dark"] .topbar-search-wrap input,
 [data-theme="dark"] .admin-top-search input {
   background: transparent !important;
@@ -144,6 +149,11 @@ body.dark {
 [data-theme="dark"] .topbar-search-wrap input::placeholder,
 [data-theme="dark"] .admin-top-search input::placeholder {
   color: #64748b !important;
+}
+
+[data-theme="dark"] .admin-user-avatar {
+  background: #0b72e7 !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .topbar-user-info strong,
