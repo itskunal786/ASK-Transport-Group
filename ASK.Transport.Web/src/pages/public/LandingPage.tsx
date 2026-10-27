@@ -43,9 +43,10 @@ export default function LandingPage() {
   } | null>(null);
 
   // Quick Tracking submit
-  function handleQuickTrack(e: FormEvent) {
-    e.preventDefault();
-    if (!trackNumber.trim()) {
+  function handleQuickTrack(e?: FormEvent, overrideNumber?: string) {
+    if (e) e.preventDefault();
+    const queryNum = overrideNumber || trackNumber;
+    if (!queryNum.trim()) {
       setTrackError('Please enter a valid Booking or Tracking Number');
       return;
     }
@@ -57,18 +58,18 @@ export default function LandingPage() {
     // Simulate / fetch tracking details
     setTimeout(() => {
       setTrackLoading(false);
-      const q = trackNumber.trim().toUpperCase();
+      const q = queryNum.trim().toUpperCase();
 
       // Demo result matching realistic consignment data
       setTrackResult({
         bookingNo: q.startsWith('ASK') ? q : `ASKB-${q}`,
-        sender: 'ASK Logistics Client',
-        receiver: 'Destination Consignee',
+        sender: 'ASK Logistics Client (Delhi Hub)',
+        receiver: 'Destination Consignee (Mumbai Hub)',
         origin: 'Delhi Central Hub (110001)',
         destination: 'Mumbai Nhava Sheva (400707)',
         status: 'In Transit',
         eta: 'Tomorrow, 5:30 PM',
-        currentLocation: 'Jaipur Logistics Hub - Checkpoint Passed',
+        currentLocation: 'Jaipur Logistics Hub - Checkpoint Passed (Speed: 62 km/h)',
         milestones: [
           { step: 'Order Booked & Picked Up', location: 'Delhi Hub', time: '26 Oct, 10:30 AM', completed: true },
           { step: 'Departed Origin Hub', location: 'Delhi Hub', time: '26 Oct, 04:00 PM', completed: true },
@@ -77,7 +78,7 @@ export default function LandingPage() {
           { step: 'Out for Delivery & Handover', location: 'Consignee Doorstep', time: 'Expected 28 Oct, 05:30 PM', completed: false }
         ]
       });
-    }, 600);
+    }, 500);
   }
 
   // Rate Calculator submit
@@ -115,7 +116,7 @@ export default function LandingPage() {
       {/* 1. TOP NAVBAR */}
       <header className="landing-header">
         <div className="landing-nav-container">
-          <div className="landing-brand">
+          <Link to="/" className="landing-brand">
             <div className="landing-brand-logo">
               <span />
               <span />
@@ -125,13 +126,31 @@ export default function LandingPage() {
               <strong>ASK TRANSPORT</strong>
               <small>LOGISTICS &amp; SUPPLY CHAIN</small>
             </div>
-          </div>
+          </Link>
 
           <nav className="landing-nav-links">
             <a href="#services">Services</a>
-            <a href="#calculator">Rate Calculator</a>
+            <button
+              type="button"
+              className="landing-nav-link-btn"
+              onClick={() => {
+                setActiveHeroTab('quote');
+                document.getElementById('tracking')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Rate Calculator
+            </button>
             <a href="#network">Pan-India Network</a>
-            <a href="#tracking">Track Consignment</a>
+            <button
+              type="button"
+              className="landing-nav-link-btn"
+              onClick={() => {
+                setActiveHeroTab('track');
+                document.getElementById('tracking')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Track Consignment
+            </button>
             <a href="#about">About Us</a>
           </nav>
 
@@ -140,7 +159,7 @@ export default function LandingPage() {
 
             {user ? (
               <Link to="/" className="landing-btn-dashboard">
-                Go to Portal â†’
+                Go to Portal &rarr;
               </Link>
             ) : (
               <>
@@ -173,6 +192,22 @@ export default function LandingPage() {
               Fast, secure, and digitally tracked freight transportation. Full Truckload (FTL),
               Part Truckload (PTL), and Express Cargo across 19,000+ PinCodes with real-time GPS tracking.
             </p>
+
+            <div className="hero-cta-buttons">
+              <Link to={user ? "/book" : "/login"} className="hero-btn-primary">
+                📦 Book a Shipment &rarr;
+              </Link>
+              <button
+                type="button"
+                className="hero-btn-secondary"
+                onClick={() => {
+                  setActiveHeroTab('quote');
+                  document.getElementById('tracking')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                ⚡ Calculate Tariff &rarr;
+              </button>
+            </div>
 
             <div className="landing-hero-stats">
               <div className="hero-stat-item">
@@ -241,8 +276,26 @@ export default function LandingPage() {
                         required
                       />
                       <button type="submit" className="quick-track-submit-btn" disabled={trackLoading}>
-                        {trackLoading ? 'Searching...' : 'Track Now â†’'}
+                        {trackLoading ? 'Searching...' : 'Track Now →'}
                       </button>
+                    </div>
+
+                    {/* Quick Demo Pills */}
+                    <div className="quick-demo-pills">
+                      <span>Quick Demo:</span>
+                      {['ASKB00123', 'ASKB00122', 'ASKB00121'].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          className="demo-pill-btn"
+                          onClick={() => {
+                            setTrackNumber(num);
+                            handleQuickTrack(undefined, num);
+                          }}
+                        >
+                          {num}
+                        </button>
+                      ))}
                     </div>
                   </form>
 
@@ -263,7 +316,7 @@ export default function LandingPage() {
                           <small>ORIGIN</small>
                           <strong>{trackResult.origin}</strong>
                         </div>
-                        <div className="track-arrow">âž</div>
+                        <div className="track-arrow">➔</div>
                         <div className="track-point">
                           <small>DESTINATION</small>
                           <strong>{trackResult.destination}</strong>
@@ -284,7 +337,7 @@ export default function LandingPage() {
                             <div className="milestone-dot" />
                             <div className="milestone-text">
                               <span className="milestone-title">{m.step}</span>
-                              <span className="milestone-sub">{m.location} â€¢ {m.time}</span>
+                              <span className="milestone-sub">{m.location} • {m.time}</span>
                             </div>
                           </div>
                         ))}
@@ -343,7 +396,7 @@ export default function LandingPage() {
                     </div>
 
                     <button type="submit" className="quick-quote-submit-btn">
-                      Calculate Instant Estimate â†’
+                      Calculate Instant Estimate &rarr;
                     </button>
                   </form>
 
@@ -351,20 +404,20 @@ export default function LandingPage() {
                     <div className="widget-quote-result-card">
                       <div className="quote-res-row">
                         <span>Base Freight ({weightKg} kg):</span>
-                        <strong>â‚¹{calcResult.baseFreight.toLocaleString('en-IN')}</strong>
+                        <strong>₹{calcResult.baseFreight.toLocaleString('en-IN')}</strong>
                       </div>
                       <div className="quote-res-row">
                         <span>Fuel Surcharge &amp; Handling:</span>
-                        <strong>â‚¹{calcResult.fuelSurcharge.toLocaleString('en-IN')}</strong>
+                        <strong>₹{calcResult.fuelSurcharge.toLocaleString('en-IN')}</strong>
                       </div>
                       <div className="quote-res-row">
                         <span>GST (18%):</span>
-                        <strong>â‚¹{calcResult.gst.toLocaleString('en-IN')}</strong>
+                        <strong>₹{calcResult.gst.toLocaleString('en-IN')}</strong>
                       </div>
                       <div className="quote-res-total">
                         <div>
                           <span>Estimated Cost</span>
-                          <h3>â‚¹{calcResult.totalAmount.toLocaleString('en-IN')}</h3>
+                          <h3>₹{calcResult.totalAmount.toLocaleString('en-IN')}</h3>
                         </div>
                         <div className="quote-eta-badge">
                           <span>Transit Time</span>
@@ -377,7 +430,7 @@ export default function LandingPage() {
                         className="quote-book-cta-btn"
                         onClick={() => navigate(user ? '/book' : '/login')}
                       >
-                        {user ? 'Proceed to Book Now â†’' : 'Sign In to Book with this Rate â†’'}
+                        {user ? 'Proceed to Book Now →' : 'Sign In to Book with this Rate →'}
                       </button>
                     </div>
                   )}
@@ -402,7 +455,7 @@ export default function LandingPage() {
               <div className="service-icon-wrap icon-ftl">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="1" y="3" width="15" height="13" />
-                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 8" />
                   <circle cx="5.5" cy="18.5" r="2.5" />
                   <circle cx="18.5" cy="18.5" r="2.5" />
                 </svg>
@@ -410,9 +463,9 @@ export default function LandingPage() {
               <h3>Full Truckload (FTL)</h3>
               <p>Dedicated direct point-to-point vehicles for high-volume commercial shipments. Zero handling transshipments.</p>
               <ul className="service-perks">
-                <li>âœ“ 32ft MXL, 24ft, 14ft &amp; 19ft Available</li>
-                <li>âœ“ Dedicated GPS Tracking &amp; Seal Locks</li>
-                <li>âœ“ Direct Transit without En-route Offloading</li>
+                <li>✓ 32ft MXL, 24ft, 14ft &amp; 19ft Available</li>
+                <li>✓ Dedicated GPS Tracking &amp; Seal Locks</li>
+                <li>✓ Direct Transit without En-route Offloading</li>
               </ul>
             </div>
 
@@ -428,9 +481,9 @@ export default function LandingPage() {
               <h3>Part Truckload (PTL / LTL)</h3>
               <p>Cost-effective consolidation for small to medium cargo. Pay only for the space and weight your goods occupy.</p>
               <ul className="service-perks">
-                <li>âœ“ Regular Scheduled Departures</li>
-                <li>âœ“ Automated Barcode &amp; Consignment Tracking</li>
-                <li>âœ“ Safe Hub Consolidation &amp; Delivery</li>
+                <li>✓ Regular Scheduled Departures</li>
+                <li>✓ Automated Barcode &amp; Consignment Tracking</li>
+                <li>✓ Safe Hub Consolidation &amp; Delivery</li>
               </ul>
             </div>
 
@@ -443,9 +496,9 @@ export default function LandingPage() {
               <h3>Express Air &amp; Surface Cargo</h3>
               <p>Time-critical deliveries with guaranteed dispatch windows and priority hub clearance for urgent consignments.</p>
               <ul className="service-perks">
-                <li>âœ“ 24-48 Hours Express Delivery to Metros</li>
-                <li>âœ“ Priority Handling &amp; SMS/Email Alerts</li>
-                <li>âœ“ Fragile &amp; High-Value Freight Security</li>
+                <li>✓ 24-48 Hours Express Delivery to Metros</li>
+                <li>✓ Priority Handling &amp; SMS/Email Alerts</li>
+                <li>✓ Fragile &amp; High-Value Freight Security</li>
               </ul>
             </div>
 
@@ -458,9 +511,9 @@ export default function LandingPage() {
               <h3>Warehousing &amp; 3PL Solutions</h3>
               <p>Grade-A modern storage, inventory management, palletizing, order fulfillment, and last-mile distribution.</p>
               <ul className="service-perks">
-                <li>âœ“ 24/7 CCTV &amp; Temperature Controlled</li>
-                <li>âœ“ Barcode Inventory Management</li>
-                <li>âœ“ Reverse Logistics &amp; Return Processing</li>
+                <li>✓ 24/7 CCTV &amp; Temperature Controlled</li>
+                <li>✓ Barcode Inventory Management</li>
+                <li>✓ Reverse Logistics &amp; Return Processing</li>
               </ul>
             </div>
           </div>
@@ -542,7 +595,7 @@ export default function LandingPage() {
 
               <div className="why-features-list">
                 <div className="why-feature-item">
-                  <div className="why-icon">ðŸ“¡</div>
+                  <div className="why-icon">📡</div>
                   <div>
                     <h4>Live GPS Telematics on Every Truck</h4>
                     <p>Track your truck's real-time coordinates, average speed, and estimated time of arrival 24/7.</p>
@@ -550,7 +603,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="why-feature-item">
-                  <div className="why-icon">ðŸ“„</div>
+                  <div className="why-icon">📄</div>
                   <div>
                     <h4>Instant Digital POD &amp; E-Invoices</h4>
                     <p>Proof of Delivery (POD) uploaded within 2 hours of delivery with instant GST-compliant PDF invoices.</p>
@@ -558,7 +611,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="why-feature-item">
-                  <div className="why-icon">ðŸ›¡ï¸</div>
+                  <div className="why-icon">🛡️</div>
                   <div>
                     <h4>Comprehensive Transit Insurance</h4>
                     <p>All consignments backed by comprehensive carrier risk cover and verified background-checked drivers.</p>
@@ -573,7 +626,7 @@ export default function LandingPage() {
                 <p>Open an enterprise account today or talk to our logistics coordinator for bulk contract pricing.</p>
                 <div className="why-cta-actions">
                   <Link to="/register" className="why-cta-primary">
-                    Create Free Account â†’
+                    Create Free Account &rarr;
                   </Link>
                   <a href="tel:+919876543210" className="why-cta-secondary">
                     Call: +91 98765 43210
@@ -644,10 +697,10 @@ export default function LandingPage() {
         </div>
 
         <div className="footer-bottom-bar">
-          <p>Â© {new Date().getFullYear()} ASK Transport Group. All Rights Reserved. Move Together. Grow Further.</p>
+          <p>© {new Date().getFullYear()} ASK Transport Group. All Rights Reserved. Move Together. Grow Further.</p>
           <div className="footer-bottom-links">
             <span>ISO 9001:2015 Certified</span>
-            <span>â€¢</span>
+            <span>•</span>
             <span>IBA Approved Carrier</span>
           </div>
         </div>
