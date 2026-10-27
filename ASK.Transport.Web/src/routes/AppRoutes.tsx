@@ -5,6 +5,8 @@ import {
 } from 'react-router-dom';
 
 import LandingPage from '../pages/public/LandingPage';
+import AboutPage from '../pages/public/AboutPage';
+import ServicesPage from '../pages/public/ServicesPage';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import VerifyOtp from '../pages/auth/VerifyOtp';
@@ -37,6 +39,16 @@ export default function AppRoutes() {
       <Route
         path="/landing"
         element={<LandingPage />}
+      />
+
+      <Route
+        path="/about"
+        element={<AboutPage />}
+      />
+
+      <Route
+        path="/services"
+        element={<ServicesPage />}
       />
 
       <Route

@@ -77,19 +77,80 @@
 .landing-nav-links {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 12px;
 }
 
+/* UNIFIED PUBLIC NAVBAR LINKS & BUTTONS - ELIMINATE DEFAULT BUTTON BOXES */
+.pub-nav-item,
+.pub-nav-btn,
+.landing-nav-link-btn,
 .landing-nav-links a {
-  text-decoration: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--color-text-secondary, #64748b) !important;
+  font-family: inherit;
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--color-text-secondary, #64748b);
-  transition: color 0.15s ease;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+  transition: all 0.15s ease;
 }
 
+.pub-nav-item:hover,
+.pub-nav-btn:hover,
+.landing-nav-link-btn:hover,
 .landing-nav-links a:hover {
-  color: #0284c7;
+  color: #0284c7 !important;
+  background: rgba(2, 132, 199, 0.08) !important;
+}
+
+.pub-nav-item.active,
+.landing-nav-links a.active {
+  color: #0284c7 !important;
+  background: rgba(2, 132, 199, 0.12) !important;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .pub-nav-item,
+[data-theme="dark"] .pub-nav-btn,
+[data-theme="dark"] .landing-nav-link-btn,
+[data-theme="dark"] .landing-nav-links a {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .pub-nav-item:hover,
+[data-theme="dark"] .pub-nav-btn:hover,
+[data-theme="dark"] .landing-nav-link-btn:hover,
+[data-theme="dark"] .landing-nav-links a:hover {
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+}
+
+[data-theme="dark"] .pub-nav-item.active,
+[data-theme="dark"] .landing-nav-links a.active {
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.18) !important;
+}
+
+#network,
+#services,
+#about,
+#tracking,
+#calculator,
+.landing-services-section,
+.landing-network-section,
+.landing-why-section,
+.landing-hero-widget-box {
+  scroll-margin-top: 85px;
 }
 
 .landing-header-actions {
