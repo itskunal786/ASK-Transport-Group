@@ -66,6 +66,12 @@ export default function AppRoutes() {
         element={<VerifyOtp />}
       />
 
+      {/* PUBLIC LIVE CONSIGNEE TRACKING (NO LOGIN REQUIRED) */}
+      <Route
+        path="/track"
+        element={<TrackShipment />}
+      />
+
       {/* CUSTOMER PROTECTED ROUTES */}
       <Route element={<ProtectedRoute />}>
 

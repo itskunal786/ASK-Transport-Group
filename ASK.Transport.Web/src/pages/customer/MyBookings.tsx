@@ -6,6 +6,7 @@ import { getClientBookings } from '../../api/bookingApi';
 import type { ClientBooking } from '../../types/booking';
 import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
 import ElectronicPodModal, { type PodData } from '../../components/ElectronicPodModal';
+import GstTaxInvoiceModal, { type GstInvoiceData } from '../../components/GstTaxInvoiceModal';
 
 import '../../styles/MyBookings.css';
 
@@ -18,6 +19,8 @@ export default function MyBookings() {
 
   const [selectedLr, setSelectedLr] = useState<ConsignmentLRData | null>(null);
   const [selectedPod, setSelectedPod] = useState<PodData | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<GstInvoiceData | null>(null);
+  const [copiedBookingNo, setCopiedBookingNo] = useState<string | null>(null);
 
   const [search, setSearch] =
     useState('');
@@ -421,6 +424,61 @@ export default function MyBookings() {
                           📄 Bilty / LR
                         </button>
 
+                        <button
+                          type="button"
+                          className="view-booking-btn"
+                          style={{ background: '#f0fdf4', color: '#047857', border: '1px solid #a7f3d0' }}
+                          onClick={() => {
+                            setSelectedInvoice({
+                              invoiceNumber: `INV-2026-${booking.bookingNumber.replace(/\D/g, '') || '9021'}`,
+                              invoiceDate: new Date(booking.createdAt).toLocaleDateString('en-IN'),
+                              bookingNumber: booking.bookingNumber,
+                              lrNumber: `LR-${booking.bookingNumber}`,
+                              shipperName: booking.senderName || 'Authorized Consignor Ltd',
+                              originCity: booking.fromCity,
+                              consigneeName: booking.receiverName || 'Authorized Consignee',
+                              destinationCity: booking.toCity,
+                              weightKg: booking.weight || 100,
+                              basicFreight: Math.round(booking.totalAmount * 0.80),
+                              fuelSurcharge: Math.round(booking.totalAmount * 0.08),
+                              handlingCharge: 250,
+                              cgstAmount: Math.round(booking.totalAmount * 0.06),
+                              sgstAmount: Math.round(booking.totalAmount * 0.06),
+                              totalInvoiceAmount: booking.totalAmount,
+                              paymentStatus: booking.paymentStatus
+                            });
+                          }}
+                          title="Download GST Tax Invoice"
+                        >
+                          🧾 Tax Invoice
+                        </button>
+
+                        <button
+                          type="button"
+                          className="view-booking-btn"
+                          style={{ background: '#fdf4ff', color: '#7e22ce', border: '1px solid #f0abfc' }}
+                          onClick={() => {
+                            const link = `${window.location.origin}/track?num=${booking.bookingNumber}`;
+                            navigator.clipboard?.writeText(link);
+                            setCopiedBookingNo(booking.bookingNumber);
+                            setTimeout(() => setCopiedBookingNo(null), 2500);
+                          }}
+                          title="Share tracking link with Consignee"
+                        >
+                          {copiedBookingNo === booking.bookingNumber ? '✓ Copied' : '🔗 Link'}
+                        </button>
+
+                        <a
+                          href={`https://wa.me/?text=${encodeURIComponent(`🚛 ASK Transport Group Live Update:\nConsignment ${booking.bookingNumber} (${booking.fromCity} ➔ ${booking.toCity}) is ${booking.bookingStatus.toUpperCase()}.\nTrack live without login: ${window.location.origin}/track?num=${booking.bookingNumber}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="view-booking-btn"
+                          style={{ background: '#ecfdf5', color: '#15803d', border: '1px solid #86efac', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                          title="Share WhatsApp Live Alert to Receiver"
+                        >
+                          📲 WhatsApp
+                        </a>
+
                         {booking.bookingStatus.toLowerCase() === 'delivered' && (
                           <button
                             type="button"
@@ -505,6 +563,13 @@ export default function MyBookings() {
         <ElectronicPodModal
           data={selectedPod}
           onClose={() => setSelectedPod(null)}
+        />
+      )}
+
+      {selectedInvoice && (
+        <GstTaxInvoiceModal
+          data={selectedInvoice}
+          onClose={() => setSelectedInvoice(null)}
         />
       )}
 

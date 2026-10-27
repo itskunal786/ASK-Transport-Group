@@ -28,12 +28,48 @@ import type {
   PinCodeDetails
 } from '../../types/pinCode';
 import BulkBookingUpload from '../../components/BulkBookingUpload';
+import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
+import GstTaxInvoiceModal, { type GstInvoiceData } from '../../components/GstTaxInvoiceModal';
+
+export interface PackageItem {
+  id: string;
+  label: string;
+  lengthCm: number;
+  widthCm: number;
+  heightCm: number;
+  deadWeightKg: number;
+  quantity: number;
+}
 
 export default function BookShipment() {
 
   const isMaintenance = localStorage.getItem('ask_system_maintenance') === 'true';
   const [bookingMode, setBookingMode] = useState<'single' | 'bulk'>('single');
   const [step, setStep] = useState(1);
+
+  // Multi-Box / Multi-Item Consignment State
+  const [packagesList, setPackagesList] = useState<PackageItem[]>([
+    {
+      id: 'PKG-1',
+      label: 'Box #1: Commercial Cargo',
+      lengthCm: 50,
+      widthCm: 40,
+      heightCm: 30,
+      deadWeightKg: 25,
+      quantity: 1
+    }
+  ]);
+
+  // Payment Method: Wallet, 15-Day Corporate Credit, or Online Gateway
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'credit' | 'online'>('wallet');
+
+  // WhatsApp & SMS Live Alerts Opt-in
+  const [whatsappAlerts, setWhatsappAlerts] = useState(true);
+
+  // Document Modals on Completion
+  const [selectedLr, setSelectedLr] = useState<ConsignmentLRData | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<GstInvoiceData | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const [services, setServices] =
     useState<TransportService[]>([]);
@@ -714,7 +750,90 @@ export default function BookShipment() {
           </div>
 
 
-          <div className="success-actions">
+          <div className="success-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              type="button"
+              className="success-secondary"
+              style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 700 }}
+              onClick={() => {
+                setSelectedLr({
+                  bookingNumber: result.bookingNumber,
+                  consignmentNumber: `LR-${result.bookingNumber}`,
+                  bookingDate: new Date().toLocaleDateString('en-IN'),
+                  senderName: senderName || 'Authorized Consignor',
+                  senderPhone: senderPhone || '9876543210',
+                  fromCity: result.fromCity,
+                  receiverName: receiverName || 'Authorized Consignee',
+                  receiverPhone: receiverPhone || '9812345678',
+                  toCity: result.toCity,
+                  goodsDescription: goodsDescription || 'Commercial Freight',
+                  weightKg: result.weight,
+                  quantity: result.quantity,
+                  freightAmount: result.freightAmount,
+                  gstAmount: result.gstAmount,
+                  totalAmount: result.totalAmount,
+                  paymentStatus: paymentMethod === 'wallet' ? 'Paid via Wallet' : paymentMethod === 'credit' ? 'B2B 15-Day Credit' : 'Payment Pending',
+                  serviceType: result.service
+                });
+              }}
+            >
+              📄 Download Bilty (LR)
+            </button>
+
+            <button
+              type="button"
+              className="success-secondary"
+              style={{ background: '#f0fdf4', color: '#047857', border: '1px solid #a7f3d0', fontWeight: 700 }}
+              onClick={() => {
+                setSelectedInvoice({
+                  invoiceNumber: `INV-2026-${result.bookingNumber.replace(/\D/g, '') || '9021'}`,
+                  invoiceDate: new Date().toLocaleDateString('en-IN'),
+                  bookingNumber: result.bookingNumber,
+                  lrNumber: `LR-${result.bookingNumber}`,
+                  shipperName: senderName || 'Authorized Shipper Ltd',
+                  shipperAddress: fromAddress || `${result.fromCity} Industrial Area`,
+                  consigneeName: receiverName || 'Authorized Consignee',
+                  consigneeAddress: toAddress || `${result.toCity} Delivery Depot`,
+                  originCity: result.fromCity,
+                  destinationCity: result.toCity,
+                  weightKg: result.weight,
+                  packagesCount: result.quantity,
+                  basicFreight: result.freightAmount,
+                  fuelSurcharge: Math.round(result.freightAmount * 0.10),
+                  handlingCharge: 250,
+                  cgstAmount: Math.round(result.gstAmount / 2),
+                  sgstAmount: Math.round(result.gstAmount / 2),
+                  totalInvoiceAmount: result.totalAmount,
+                  paymentStatus: paymentMethod === 'wallet' ? 'Paid via Wallet' : paymentMethod === 'credit' ? '15-Day Credit Ledger' : 'Pending'
+                });
+              }}
+            >
+              🧾 Download GST Invoice
+            </button>
+
+            <button
+              type="button"
+              className="success-secondary"
+              style={{ background: '#fdf4ff', color: '#7e22ce', border: '1px solid #f0abfc', fontWeight: 700 }}
+              onClick={() => {
+                const link = `${window.location.origin}/track?num=${result.bookingNumber}`;
+                navigator.clipboard?.writeText(link);
+                setCopiedLink(true);
+                setTimeout(() => setCopiedLink(false), 3000);
+              }}
+            >
+              {copiedLink ? '✓ Copied Link!' : '🔗 Share Consignee Link'}
+            </button>
+
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`🚛 ASK Transport Group Alert:\nYour shipment ${result.bookingNumber} (${result.fromCity} ➔ ${result.toCity}) is confirmed.\nTrack live without login: ${window.location.origin}/track?num=${result.bookingNumber}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="success-secondary"
+              style={{ background: '#ecfdf5', color: '#15803d', border: '1px solid #86efac', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              📲 Send WhatsApp to Receiver
+            </a>
 
             <Link
               className="success-primary"
@@ -734,7 +853,7 @@ export default function BookShipment() {
               className="success-secondary"
               to="/bookings"
             >
-              Pay Later
+              My Bookings
             </Link>
 
             <Link
@@ -747,6 +866,20 @@ export default function BookShipment() {
           </div>
         </main>
       </div>
+
+      {selectedLr && (
+        <ConsignmentLRModal
+          data={selectedLr}
+          onClose={() => setSelectedLr(null)}
+        />
+      )}
+
+      {selectedInvoice && (
+        <GstTaxInvoiceModal
+          data={selectedInvoice}
+          onClose={() => setSelectedInvoice(null)}
+        />
+      )}
     </CustomerLayout>
   );
 }
@@ -927,6 +1060,41 @@ return (
                     </div>
                   </div>
 
+                  {/* SAVED PICKUP GODOWNS CHIPS */}
+                  <div style={{ background: '#f0f9ff', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bae6fd', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#0369a1', marginBottom: '6px' }}>
+                      📖 Saved Pickup Godowns:
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSenderName('Apex Industries Central Godown');
+                          setSenderPhone('9811022334');
+                          setFromAddress('Plot 42, Sanjay Gandhi Transport Nagar, GT Karnal Road');
+                          setFromPinCode('110042');
+                          checkPickupPin('110042');
+                        }}
+                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #7dd3fc', borderRadius: '4px', cursor: 'pointer', color: '#0369a1', fontWeight: 600 }}
+                      >
+                        🏭 Delhi Central Godown (110042)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSenderName('Apex Logistics Okhla Depot');
+                          setSenderPhone('9876543210');
+                          setFromAddress('Phase III, Okhla Industrial Estate');
+                          setFromPinCode('110020');
+                          checkPickupPin('110020');
+                        }}
+                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #7dd3fc', borderRadius: '4px', cursor: 'pointer', color: '#0369a1', fontWeight: 600 }}
+                      >
+                        🏢 Okhla Phase-III (110020)
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="booking-field">
                     <label>
                       Sender Name *
@@ -1074,6 +1242,41 @@ return (
                       <small>
                         Receiver information
                       </small>
+                    </div>
+                  </div>
+
+                  {/* SAVED DELIVERY CONSIGNEES CHIPS */}
+                  <div style={{ background: '#f0fdf4', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#166534', marginBottom: '6px' }}>
+                      📖 Saved Delivery Consignees:
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiverName('Shreenath Logistics Hub Bhiwandi');
+                          setReceiverPhone('9822114477');
+                          setToAddress('Gala #14, Building B2, Arihant Commercial Complex, Purna');
+                          setToPinCode('421302');
+                          checkDeliveryPin('421302');
+                        }}
+                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #86efac', borderRadius: '4px', cursor: 'pointer', color: '#166534', fontWeight: 600 }}
+                      >
+                        🏬 Mumbai Bhiwandi DC (421302)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiverName('Karnataka Tech Distribution Depot');
+                          setReceiverPhone('9845012345');
+                          setToAddress('Plot 88, Electronic City Phase-I');
+                          setToPinCode('560100');
+                          checkDeliveryPin('560100');
+                        }}
+                        style={{ padding: '3px 8px', fontSize: '11px', background: '#ffffff', border: '1px solid #86efac', borderRadius: '4px', cursor: 'pointer', color: '#166534', fontWeight: 600 }}
+                      >
+                        🏪 Bangalore Electronic City (560100)
+                      </button>
                     </div>
                   </div>
 
@@ -1344,6 +1547,191 @@ return (
                   />
                 </div>
 
+                {/* MULTI-BOX / MULTI-ITEM CONSIGNMENT BUILDER */}
+                <div style={{ gridColumn: 'span 2', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '14px', marginTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div>
+                      <strong style={{ fontSize: '13px', color: '#0f172a' }}>📦 Multi-Box / Multi-Package Consignment Slabs</strong>
+                      <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>
+                        Specify multiple cartons with custom dimensions (L × W × H) for B2B volumetric CFT &amp; dead weight billing.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = `PKG-${packagesList.length + 1}`;
+                        setPackagesList(prev => [
+                          ...prev,
+                          {
+                            id: newId,
+                            label: `Box #${prev.length + 1}: Commercial Carton`,
+                            lengthCm: 40,
+                            widthCm: 30,
+                            heightCm: 25,
+                            deadWeightKg: 15,
+                            quantity: 1
+                          }
+                        ]);
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        background: '#eff6ff',
+                        color: '#2563eb',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      + Add Box Slab
+                    </button>
+                  </div>
+
+                  {/* PACKAGE LIST TABLE */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {packagesList.map((pkg) => {
+                      const volWeight = Math.round(((pkg.lengthCm * pkg.widthCm * pkg.heightCm) / 5000) * 10) / 10;
+
+                      return (
+                        <div
+                          key={pkg.id}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1.4fr 1.6fr 1fr 0.8fr auto',
+                            gap: '8px',
+                            alignItems: 'center',
+                            background: '#ffffff',
+                            padding: '10px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            fontSize: '12px'
+                          }}
+                        >
+                          <div>
+                            <input
+                              type="text"
+                              value={pkg.label}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setPackagesList(prev => prev.map(p => p.id === pkg.id ? { ...p, label: val } : p));
+                              }}
+                              style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }}
+                            />
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                            <input
+                              type="number"
+                              title="Length (cm)"
+                              placeholder="L"
+                              value={pkg.lengthCm}
+                              onChange={e => {
+                                const val = parseFloat(e.target.value) || 1;
+                                setPackagesList(prev => prev.map(p => p.id === pkg.id ? { ...p, lengthCm: val } : p));
+                              }}
+                              style={{ width: '45px', padding: '6px 4px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '11px', textAlign: 'center' }}
+                            />
+                            <span>×</span>
+                            <input
+                              type="number"
+                              title="Width (cm)"
+                              placeholder="W"
+                              value={pkg.widthCm}
+                              onChange={e => {
+                                const val = parseFloat(e.target.value) || 1;
+                                setPackagesList(prev => prev.map(p => p.id === pkg.id ? { ...p, widthCm: val } : p));
+                              }}
+                              style={{ width: '45px', padding: '6px 4px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '11px', textAlign: 'center' }}
+                            />
+                            <span>×</span>
+                            <input
+                              type="number"
+                              title="Height (cm)"
+                              placeholder="H"
+                              value={pkg.heightCm}
+                              onChange={e => {
+                                const val = parseFloat(e.target.value) || 1;
+                                setPackagesList(prev => prev.map(p => p.id === pkg.id ? { ...p, heightCm: val } : p));
+                              }}
+                              style={{ width: '45px', padding: '6px 4px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '11px', textAlign: 'center' }}
+                            />
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>(cm)</span>
+                          </div>
+
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <input
+                                type="number"
+                                title="Dead Weight (kg)"
+                                value={pkg.deadWeightKg}
+                                onChange={e => {
+                                  const val = parseFloat(e.target.value) || 1;
+                                  setPackagesList(prev => prev.map(p => p.id === pkg.id ? { ...p, deadWeightKg: val } : p));
+                                }}
+                                style={{ width: '60px', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                              />
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>KG</span>
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#0369a1' }}>
+                              Vol: {volWeight} kg
+                            </div>
+                          </div>
+
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>Qty:</span>
+                              <input
+                                type="number"
+                                min={1}
+                                value={pkg.quantity}
+                                onChange={e => {
+                                  const val = parseInt(e.target.value) || 1;
+                                  setPackagesList(prev => prev.map(p => p.id === pkg.id ? { ...p, quantity: val } : p));
+                                }}
+                                style={{ width: '45px', padding: '6px 4px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }}
+                              />
+                            </div>
+                          </div>
+
+                          {packagesList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setPackagesList(prev => prev.filter(p => p.id !== pkg.id))}
+                              style={{ border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer', fontSize: '16px' }}
+                              title="Delete Box Slab"
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ecfdf5', padding: '8px 12px', borderRadius: '6px', border: '1px solid #a7f3d0', fontSize: '12px' }}>
+                    <span style={{ color: '#065f46', fontWeight: 700 }}>
+                      ✓ Multi-Box Total: {packagesList.reduce((acc, p) => acc + p.quantity, 0)} Packages
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const totalKg = packagesList.reduce((acc, p) => {
+                          const volWeight = (p.lengthCm * p.widthCm * p.heightCm) / 5000;
+                          return acc + (Math.max(volWeight, p.deadWeightKg) * p.quantity);
+                        }, 0);
+                        const totalQty = packagesList.reduce((acc, p) => acc + p.quantity, 0);
+                        setWeight(Math.round(totalKg).toString());
+                        setQuantity(totalQty.toString());
+                        setGoodsDescription(packagesList.map(p => `${p.quantity}x ${p.label} (${p.lengthCm}x${p.widthCm}x${p.heightCm}cm, ${p.deadWeightKg}kg)`).join('; '));
+                      }}
+                      style={{ padding: '4px 10px', background: '#059669', color: '#ffffff', borderRadius: '4px', border: 'none', fontWeight: 700, fontSize: '11px', cursor: 'pointer' }}
+                    >
+                      Sync Weight &amp; Quantity ({Math.round(packagesList.reduce((acc, p) => acc + (Math.max((p.lengthCm * p.widthCm * p.heightCm) / 5000, p.deadWeightKg) * p.quantity), 0))} KG)
+                    </button>
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -1444,6 +1832,105 @@ return (
                     }
                     placeholder="Optional instructions"
                   />
+                </div>
+
+                {/* 1. WHATSAPP & SMS LIVE ALERTS OPT-IN */}
+                <div style={{ gridColumn: 'span 2', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '12px 14px', marginTop: '6px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 700, color: '#166534', fontSize: '13px' }}>
+                    <input
+                      type="checkbox"
+                      checked={whatsappAlerts}
+                      onChange={e => setWhatsappAlerts(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#16a34a' }}
+                    />
+                    <span>📲 Send Real-Time Automated WhatsApp &amp; SMS Milestone Alerts to Consignor &amp; Consignee</span>
+                  </label>
+                  <p style={{ margin: '4px 0 0 28px', fontSize: '11px', color: '#15803d' }}>
+                    Automated push notifications triggered on: Consignment Pickup, In-Transit Highway Tracking, Out for Delivery, and Delivery Sealed.
+                  </p>
+                </div>
+
+                {/* 2. SHIPPER WALLET & 15-DAY CORPORATE CREDIT LINE */}
+                <div style={{ gridColumn: 'span 2', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '14px', marginTop: '10px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+                    💳 Commercial Payment &amp; Credit Ledger Mode
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+                    <label style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '2px solid',
+                      borderColor: paymentMethod === 'wallet' ? '#0b72e7' : '#cbd5e1',
+                      background: paymentMethod === 'wallet' ? '#eff6ff' : '#ffffff',
+                      cursor: 'pointer'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="radio"
+                          name="payMethod"
+                          value="wallet"
+                          checked={paymentMethod === 'wallet'}
+                          onChange={() => setPaymentMethod('wallet')}
+                        />
+                        <strong style={{ fontSize: '13px', color: '#0f172a' }}>Shipper Prepaid Wallet</strong>
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#059669', fontWeight: 700, marginTop: '4px', marginLeft: '24px' }}>
+                        Available Balance: ₹24,500.00 (Instant 0-Fee)
+                      </span>
+                    </label>
+
+                    <label style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '2px solid',
+                      borderColor: paymentMethod === 'credit' ? '#0b72e7' : '#cbd5e1',
+                      background: paymentMethod === 'credit' ? '#eff6ff' : '#ffffff',
+                      cursor: 'pointer'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="radio"
+                          name="payMethod"
+                          value="credit"
+                          checked={paymentMethod === 'credit'}
+                          onChange={() => setPaymentMethod('credit')}
+                        />
+                        <strong style={{ fontSize: '13px', color: '#0f172a' }}>15-Day Corporate Credit Line</strong>
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#4338ca', fontWeight: 700, marginTop: '4px', marginLeft: '24px' }}>
+                        Available Credit: ₹1,04,800.00 (Monthly Ledger)
+                      </span>
+                    </label>
+
+                    <label style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '2px solid',
+                      borderColor: paymentMethod === 'online' ? '#0b72e7' : '#cbd5e1',
+                      background: paymentMethod === 'online' ? '#eff6ff' : '#ffffff',
+                      cursor: 'pointer'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="radio"
+                          name="payMethod"
+                          value="online"
+                          checked={paymentMethod === 'online'}
+                          onChange={() => setPaymentMethod('online')}
+                        />
+                        <strong style={{ fontSize: '13px', color: '#0f172a' }}>UPI / NetBanking / Gateway</strong>
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', marginLeft: '24px' }}>
+                        Standard Payment Gateway
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
               </div>
@@ -1624,6 +2111,20 @@ return (
         )}
       </main>
     </div>
+
+    {selectedLr && (
+      <ConsignmentLRModal
+        data={selectedLr}
+        onClose={() => setSelectedLr(null)}
+      />
+    )}
+
+    {selectedInvoice && (
+      <GstTaxInvoiceModal
+        data={selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
+      />
+    )}
   </CustomerLayout>
 );
 }
