@@ -26,7 +26,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
       {/* SIDEBAR */}
       <aside className="customer-sidebar">
         {/* BRAND */}
-        <div className="dashboard-brand">
+        <Link to="/dashboard" className="dashboard-brand" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="dashboard-logo">
             <span />
             <span />
@@ -37,11 +37,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             <small>LOGISTICS</small>
             <div className="sidebar-tagline">Move Together. Grow Further.</div>
           </div>
-        </div>
+        </Link>
 
         {/* NAVIGATION */}
         <nav className="dashboard-nav">
-          <Link className={active('/')} to="/">
+          <Link className={active('/dashboard')} to="/dashboard">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />

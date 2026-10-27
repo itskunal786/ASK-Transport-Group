@@ -733,7 +733,7 @@ export default function BookShipment() {
 
             <Link
               className="success-secondary"
-              to="/"
+              to="/dashboard"
             >
               Back to Dashboard
             </Link>
@@ -1554,7 +1554,7 @@ return (
             <div className="booking-action-right">
 
               <Link
-                to="/"
+                to="/dashboard"
                 className="booking-cancel"
               >
                 Cancel

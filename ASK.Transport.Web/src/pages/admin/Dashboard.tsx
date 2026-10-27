@@ -884,7 +884,7 @@ export default function Dashboard() {
             🌐 Public Website
           </Link>
 
-          <Link to="/" className="admin-switch-link">
+          <Link to="/dashboard" className="admin-switch-link">
             ← Switch to Customer Portal
           </Link>
 
