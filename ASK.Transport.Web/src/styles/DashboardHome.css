@@ -1,0 +1,577 @@
+/* ========================================================
+   ASK Transport - Pixel-Perfect Customer Dashboard (Image 1)
+   ======================================================== */
+
+.db-home-screen {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+/* 1. GREETING BANNER */
+.db-greeting-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.db-greeting-titles h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #09284a;
+  letter-spacing: -0.5px;
+}
+
+.db-greeting-titles p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.db-greeting-quote {
+  font-style: italic;
+  font-size: 13px;
+  color: #64748b;
+  text-align: right;
+}
+
+.db-greeting-quote small {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  color: #0b72e7;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* 2. TOP STATS CARDS (4 Cards) */
+.db-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 992px) {
+  .db-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .db-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.db-stat-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.db-stat-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.db-stat-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.db-stat-avatar.bookings {
+  background: #eff6ff;
+  color: #0b72e7;
+}
+
+.db-stat-avatar.in-transit {
+  background: #f3e8ff;
+  color: #8b5cf6;
+}
+
+.db-stat-avatar.delivered {
+  background: #edfdf4;
+  color: #10b981;
+}
+
+.db-stat-avatar.pending {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.db-stat-numbers strong {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.db-stat-numbers span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.db-stat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.db-delta-tag {
+  font-weight: 600;
+}
+
+.db-delta-tag.green {
+  color: #10b981;
+}
+
+.db-delta-tag.amber {
+  color: #f59e0b;
+}
+
+.db-sparkline {
+  width: 48px;
+  height: 16px;
+}
+
+/* 3. MAIN DASHBOARD CONTENT SPLIT */
+.db-main-split {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .db-main-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LEFT SECTION: RECENT SHIPMENTS + LIVE TRACKING */
+.db-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.db-section-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.db-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.db-card-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #09284a;
+}
+
+.db-link-btn {
+  color: #0b72e7;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.db-link-btn:hover {
+  text-decoration: underline;
+}
+
+/* RECENT SHIPMENTS TABLE */
+.db-table-scroll {
+  overflow-x: auto;
+}
+
+.db-shipments-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.db-shipments-table th {
+  background: #f8fafc;
+  padding: 12px 14px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.db-shipments-table td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.db-shipments-table tr:hover td {
+  background: #f8fafc;
+}
+
+.db-bk-id {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0b72e7;
+}
+
+.db-status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.db-status-pill.in-transit {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.db-status-pill.delivered {
+  background: #edfdf4;
+  color: #10b981;
+}
+
+.db-status-pill.pending {
+  background: #eff6ff;
+  color: #0284c7;
+}
+
+.db-status-pill.cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.db-btn-action {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0b72e7;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.db-btn-action.primary {
+  background: #0b72e7;
+  color: #ffffff;
+  border-color: #0b72e7;
+}
+
+/* LIVE TRACKING MAP CARD */
+.db-tracking-map-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.db-map-route {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+}
+
+.db-route-point {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.db-pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.db-pin-dot.delhi {
+  background: #10b981;
+}
+
+.db-pin-dot.mumbai {
+  background: #ef4444;
+}
+
+.db-point-name {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.db-route-line-wrap {
+  position: absolute;
+  top: 27px;
+  left: 60px;
+  right: 60px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.db-route-line-progress {
+  height: 100%;
+  width: 58%;
+  background: #0b72e7;
+  border-radius: 2px;
+}
+
+.db-truck-marker {
+  position: absolute;
+  top: -16px;
+  left: 58%;
+  transform: translateX(-50%);
+  background: #09284a;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(9, 40, 74, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.db-map-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* RIGHT SECTION: QUICK ACTIONS + PROMO CARD */
+.db-right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.db-quick-actions-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.db-quick-actions-card h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #09284a;
+}
+
+.db-qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.db-qa-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+  background: #f8fafc;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.db-qa-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
+}
+
+.db-qa-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.db-qa-icon.book {
+  background: #eff6ff;
+  color: #0b72e7;
+}
+
+.db-qa-icon.track {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.db-qa-icon.pay {
+  background: #edfdf4;
+  color: #10b981;
+}
+
+.db-qa-icon.invoice {
+  background: #f3e8ff;
+  color: #8b5cf6;
+}
+
+.db-qa-icon.doc {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.db-qa-texts strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.db-qa-texts span {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* PROMOTIONAL CARD ("Delivering India A Stronger Tomorrow") */
+.db-promo-card {
+  background: linear-gradient(135deg, #09284a 0%, #031427 100%);
+  border-radius: 16px;
+  padding: 24px;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(9, 40, 74, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.db-promo-card::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(11, 114, 231, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.db-promo-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.db-promo-sub {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.db-promo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #09284a;
+  padding: 9px 18px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  margin-bottom: 22px;
+  transition: all 0.2s ease;
+}
+
+.db-promo-btn:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+}
+
+.db-promo-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 18px;
+}
+
+.db-promo-metric-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.db-promo-metric-item strong {
+  color: #ffffff;
+  font-weight: 700;
+}

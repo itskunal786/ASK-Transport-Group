@@ -1,4 +1,4 @@
-﻿using QuestPDF.Infrastructure;
+using QuestPDF.Infrastructure;
 using ASK.Group.Api.Authorization;
 using ASK.Group.Api.Data;
 using ASK.Group.Api.HealthChecks;
@@ -768,6 +768,10 @@ using (var scope =
     await db.Database
         .MigrateAsync();
 
+
+    await DbInitializer
+        .SeedAsync(
+            db);
 
     await RbacSeeder
         .SeedAsync(
