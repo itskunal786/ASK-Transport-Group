@@ -115,36 +115,7 @@ export default function BookShipment() {
   const [notes, setNotes] =
     useState('');
 
-  const [savedAddresses] = useState<any[]>(() => {
-    const saved = localStorage.getItem('ask_saved_addresses');
-    if (saved) {
-      try { return JSON.parse(saved); } catch { /* ignore */ }
-    }
-    return [
-      {
-        id: 'ADDR-1',
-        tag: 'Warehouse',
-        title: 'Central Logistics Hub (Gurugram)',
-        contactPerson: 'Rajesh Sharma',
-        phone: '9876543210',
-        addressLine: 'Plot 42, Sector 18, Electronic City',
-        city: 'Gurugram',
-        state: 'Haryana',
-        pincode: '122015'
-      },
-      {
-        id: 'ADDR-2',
-        tag: 'Office',
-        title: 'Regional Terminal (Mumbai)',
-        contactPerson: 'Amit Verma',
-        phone: '9820011223',
-        addressLine: 'Unit 12B, JNPT Port Logistics Park, Nhava Sheva',
-        city: 'Navi Mumbai',
-        state: 'Maharashtra',
-        pincode: '400707'
-      }
-    ];
-  });
+
 
 
   useEffect(() => {
@@ -986,36 +957,6 @@ return (
                     </div>
                   </div>
 
-                  {savedAddresses.length > 0 && (
-                    <div style={{ marginBottom: '16px', background: '#f0fdf4', padding: '10px 12px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#15803d', display: 'block', marginBottom: '4px' }}>
-                        ⚡ Autofill from Saved Locations:
-                      </label>
-                      <select
-                        style={{ width: '100%', padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: '1px solid #86efac', background: '#ffffff', outline: 'none' }}
-                        onChange={(e) => {
-                          const found = savedAddresses.find(a => a.id === e.target.value);
-                          if (found) {
-                            setSenderName(found.contactPerson);
-                            setSenderPhone(found.phone);
-                            setFromAddress(`${found.addressLine}, ${found.city}, ${found.state}`);
-                            setFromPinCode(found.pincode);
-                            checkPickupPin(found.pincode);
-                          }
-                        }}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>-- Select Saved Pickup Hub --</option>
-                        {savedAddresses.map(a => (
-                          <option key={a.id} value={a.id}>
-                            [{a.tag}] {a.title} ({a.pincode})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-
                   <div className="booking-field">
                     <label>
                       Sender Name *
@@ -1165,36 +1106,6 @@ return (
                       </small>
                     </div>
                   </div>
-
-                  {savedAddresses.length > 0 && (
-                    <div style={{ marginBottom: '16px', background: '#eff6ff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#1d4ed8', display: 'block', marginBottom: '4px' }}>
-                        ⚡ Autofill from Saved Locations:
-                      </label>
-                      <select
-                        style={{ width: '100%', padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: '1px solid #93c5fd', background: '#ffffff', outline: 'none' }}
-                        onChange={(e) => {
-                          const found = savedAddresses.find(a => a.id === e.target.value);
-                          if (found) {
-                            setReceiverName(found.contactPerson);
-                            setReceiverPhone(found.phone);
-                            setToAddress(`${found.addressLine}, ${found.city}, ${found.state}`);
-                            setToPinCode(found.pincode);
-                            checkDeliveryPin(found.pincode);
-                          }
-                        }}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>-- Select Saved Delivery Hub --</option>
-                        {savedAddresses.map(a => (
-                          <option key={a.id} value={a.id}>
-                            [{a.tag}] {a.title} ({a.pincode})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
 
                   <div className="booking-field">
                     <label>
