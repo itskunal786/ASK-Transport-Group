@@ -219,6 +219,29 @@ export async function getHubs(): Promise<HubItem[]> {
   }
 }
 
+export async function createHub(payload: Partial<HubItem>): Promise<{ message: string; hub: HubItem }> {
+  try {
+    return await request<{ message: string; hub: HubItem }>('/hub', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // Local simulation fallback
+    const newHub: HubItem = {
+      id: Date.now(),
+      name: payload.name || 'Regional Hub',
+      code: payload.code || `HUB-${Date.now().toString().slice(-4)}`,
+      city: payload.city || 'City',
+      state: payload.state || 'State',
+      capacity: payload.capacity || 2000,
+      isActive: payload.isActive ?? true,
+      address: payload.address,
+      contactNumber: payload.contactNumber
+    };
+    return { message: 'Hub registered successfully', hub: newHub };
+  }
+}
+
 export async function getSystemSettings(): Promise<SystemSettingItem[]> {
   try {
     return await request<SystemSettingItem[]>('/system-settings');

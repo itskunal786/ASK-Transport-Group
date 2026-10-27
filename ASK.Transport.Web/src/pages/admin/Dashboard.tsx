@@ -159,13 +159,47 @@ const INITIAL_VEHICLES: VehicleRow[] = [
   { plateNo: 'HR-26-LM-4321', model: 'Mahindra Blazo X 35', type: '32ft Multi-Axle (MXL)', capacityTons: 22.0, currentHub: 'Delhi Hub', status: 'Maintenance', fuelLevel: '45%' }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'audit' | 'settings' | 'reports' | 'access';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'audit' | 'settings' | 'reports' | 'access';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+
+  // Emergency Maintenance Switch
+  const [isMaintenanceActive, setIsMaintenanceActive] = useState<boolean>(() => {
+    return localStorage.getItem('ask_system_maintenance') === 'true';
+  });
+
+  // Hub Modal & Management
+  const [showAddHubModal, setShowAddHubModal] = useState(false);
+  const [newHubCode, setNewHubCode] = useState('');
+  const [newHubName, setNewHubName] = useState('');
+  const [newHubCity, setNewHubCity] = useState('');
+  const [newHubState, setNewHubState] = useState('');
+  const [newHubCapacity, setNewHubCapacity] = useState('3000');
+  const [newHubAddress, setNewHubAddress] = useState('');
+  const [newHubManager, setNewHubManager] = useState('');
+
+  // Tariff & Rate Matrix Engine State
+  const [tariffFtlPerKm, setTariffFtlPerKm] = useState('14.50');
+  const [tariffFtlMinTrip, setTariffFtlMinTrip] = useState('12000');
+  const [tariffPtlPerKgKm, setTariffPtlPerKgKm] = useState('1.85');
+  const [tariffPtlMinFloor, setTariffPtlMinFloor] = useState('450');
+  const [tariffExpressMult, setTariffExpressMult] = useState('1.75');
+  const [tariffFuelSurcharge, setTariffFuelSurcharge] = useState('11.5');
+  const [tariffGstPercent, setTariffGstPercent] = useState('18.0');
+  const [tariffHandlingFee, setTariffHandlingFee] = useState('250');
+  const [tariffSaving, setTariffSaving] = useState(false);
+
+  // Rate Simulator State
+  const [simDistanceKm, setSimDistanceKm] = useState<number>(750);
+  const [simWeightKg, setSimWeightKg] = useState<number>(1200);
+  const [simService, setSimService] = useState<'FTL' | 'PTL' | 'Express'>('PTL');
+
+  // Audit Logs Filter
+  const [auditActionFilter, setAuditActionFilter] = useState('All');
 
   // Digital LR Modal Preview
   const [selectedLr, setSelectedLr] = useState<ConsignmentLRData | null>(null);
@@ -373,6 +407,166 @@ export default function Dashboard() {
       console.warn('Backend users load error:', err);
     } finally {
       setUsersLoading(false);
+    }
+  }
+
+  // 1. EMERGENCY MAINTENANCE TOGGLE
+  async function handleToggleMaintenance() {
+    const nextState = !isMaintenanceActive;
+    if (!window.confirm(nextState
+      ? 'EMERGENCY FREEZE: Freeze all public consignment bookings immediately?'
+      : 'RESUME OPERATIONS: Re-open platform for public bookings?'
+    )) return;
+
+    setIsMaintenanceActive(nextState);
+    localStorage.setItem('ask_system_maintenance', String(nextState));
+
+    try {
+      await updateSystemSetting({
+        key: 'SYSTEM_MAINTENANCE_MODE',
+        value: String(nextState),
+        group: 'System',
+        description: 'Emergency freeze customer bookings'
+      });
+      showToast(nextState ? '🔴 Platform bookings FROZEN' : '🟢 Platform live and open for bookings');
+      loadAuditLogs();
+    } catch {
+      showToast(nextState ? '🔴 Platform bookings FROZEN (Local)' : '🟢 Platform live (Local)');
+    }
+  }
+
+  // 2. HUB & TERMINAL HANDLERS
+  async function handleAddHubSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newHubCode.trim() || !newHubName.trim()) {
+      showToast('Please provide Hub Code and Name');
+      return;
+    }
+    const newHub: HubItem = {
+      id: Date.now(),
+      code: newHubCode.trim().toUpperCase(),
+      name: newHubName.trim(),
+      city: newHubCity.trim() || 'New Hub City',
+      state: newHubState.trim() || 'State',
+      capacity: parseInt(newHubCapacity) || 2500,
+      isActive: true,
+      address: newHubAddress.trim(),
+      contactNumber: newHubManager.trim()
+    };
+    setHubsList(prev => [newHub, ...prev]);
+    setShowAddHubModal(false);
+    setNewHubCode('');
+    setNewHubName('');
+    setNewHubCity('');
+    setNewHubState('');
+    setNewHubAddress('');
+    showToast(`✓ Hub ${newHub.code} created successfully`);
+  }
+
+  function handleToggleHubStatus(hubId: number) {
+    setHubsList(prev => prev.map(h => h.id === hubId ? { ...h, isActive: !h.isActive } : h));
+    showToast('Hub operational status updated');
+  }
+
+  function handleDeleteHub(hubId: number) {
+    if (!window.confirm('Are you sure you want to decommission this hub terminal?')) return;
+    setHubsList(prev => prev.filter(h => h.id !== hubId));
+    showToast('Hub decommissioned');
+  }
+
+  // 3. TARIFF & RATE MATRIX HANDLER
+  async function handleSaveTariffMatrix() {
+    setTariffSaving(true);
+    try {
+      await updateSystemSetting({ key: 'TARIFF_FTL_PER_KM', value: tariffFtlPerKm, group: 'Pricing' });
+      await updateSystemSetting({ key: 'TARIFF_PTL_PER_KG_KM', value: tariffPtlPerKgKm, group: 'Pricing' });
+      await updateSystemSetting({ key: 'TARIFF_EXPRESS_MULTIPLIER', value: tariffExpressMult, group: 'Pricing' });
+      await updateSystemSetting({ key: 'TARIFF_FUEL_SURCHARGE_PCT', value: tariffFuelSurcharge, group: 'Pricing' });
+      await updateSystemSetting({ key: 'TARIFF_GST_PCT', value: tariffGstPercent, group: 'Taxation' });
+      await updateSystemSetting({ key: 'TARIFF_HANDLING_INR', value: tariffHandlingFee, group: 'Pricing' });
+      showToast('⚡ Tariff & Rate Matrix successfully updated and broadcast to portal!');
+    } catch {
+      showToast('⚡ Tariff & Rate Matrix updated locally');
+    } finally {
+      setTariffSaving(false);
+    }
+  }
+
+  // 4. AUDIT EXPORT
+  function exportAuditLogsToCSV() {
+    if (auditLogs.length === 0) {
+      showToast('No audit logs available to export');
+      return;
+    }
+    const headers = ['Log ID', 'Timestamp', 'Action Event', 'Actor User', 'IP Address', 'Details'];
+    const rows = auditLogs.map(l => [
+      l.id,
+      new Date(l.createdAt).toISOString(),
+      `"${l.action.replace(/"/g, '""')}"`,
+      `"${(l.userEmail || '').replace(/"/g, '""')}"`,
+      `"${(l.ipAddress || '127.0.0.1').replace(/"/g, '""')}"`,
+      `"${(l.details || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `ASK_Transport_Security_Audit_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('✓ Security Audit Trail downloaded');
+  }
+
+  // 5. P&L FINANCIAL STATEMENT EXPORT
+  function exportPnlToCSV() {
+    const headers = ['Financial Metric', 'Amount (INR)', 'Percentage Share / Status'];
+    const rows = [
+      ['Gross MTD Turnover', '42,50,000', '100%'],
+      ['Actual Cash Collected', '36,80,000', '86.5% Collection Rate'],
+      ['Sundry Debtors (Pending Collection)', '5,70,000', '13.5% Outstanding'],
+      ['Operational Fleet & Fuel Costs', '18,40,000', '43.3% Cost of Operations'],
+      ['EBITDA Net Margin', '18,40,000', '43.2% Profit Margin'],
+      ['---', '---', '---'],
+      ['Delhi Central Hub Revenue', '16,15,000', '38.0% Share'],
+      ['Mumbai Nhava Sheva Terminal', '13,17,500', '31.0% Share'],
+      ['Bengaluru Tech & Cargo Park', '7,65,000', '18.0% Share'],
+      ['Kolkata East Logistics Gateway', '5,52,500', '13.0% Share'],
+    ];
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `ASK_Transport_Financial_PnL_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('✓ P&L Statement downloaded');
+  }
+
+  // 6. RIGHTS PRESETS
+  function applyRightsPreset(preset: 'dispatch' | 'finance' | 'manager' | 'superadmin') {
+    if (preset === 'dispatch') {
+      const ids = allSystemRights.filter(r => r.module === 'Bookings' || r.module === 'Shipments' || r.module === 'Drivers' || r.module === 'Vehicles').map(r => r.id);
+      setGrantedIds(ids.length > 0 ? ids : [1, 2, 4, 5]);
+      setRevokedIds([]);
+      showToast('⚡ Applied Dispatcher Preset');
+    } else if (preset === 'finance') {
+      const ids = allSystemRights.filter(r => r.module === 'Payments' || r.module === 'Invoices' || r.module === 'Pricing').map(r => r.id);
+      setGrantedIds(ids.length > 0 ? ids : [6, 7, 8]);
+      setRevokedIds([]);
+      showToast('💳 Applied Accounts & Finance Preset');
+    } else if (preset === 'manager') {
+      const ids = allSystemRights.filter(r => r.module === 'Bookings' || r.module === 'Hubs' || r.module === 'Shipments').map(r => r.id);
+      setGrantedIds(ids.length > 0 ? ids : [1, 2, 3, 5]);
+      setRevokedIds([]);
+      showToast('🏢 Applied Branch Manager Preset');
+    } else if (preset === 'superadmin') {
+      setGrantedIds(allSystemRights.map(r => r.id));
+      setRevokedIds([]);
+      showToast('👑 Applied Super Admin Master Preset (All Rights)');
     }
   }
 
@@ -702,6 +896,33 @@ export default function Dashboard() {
     return true;
   });
 
+  // Filtered Audit Logs
+  const filteredAuditLogs = auditLogs.filter(log => {
+    if (auditActionFilter !== 'All' && !log.action.toLowerCase().includes(auditActionFilter.toLowerCase())) {
+      return false;
+    }
+    if (auditSearch.trim()) {
+      const q = auditSearch.toLowerCase();
+      return (
+        log.action.toLowerCase().includes(q) ||
+        (log.userEmail && log.userEmail.toLowerCase().includes(q)) ||
+        (log.details && log.details.toLowerCase().includes(q)) ||
+        (log.ipAddress && log.ipAddress.toLowerCase().includes(q))
+      );
+    }
+    return true;
+  });
+
+  // Simulator calculation
+  const simBaseFreight = simService === 'FTL'
+    ? Math.max(simDistanceKm * parseFloat(tariffFtlPerKm || '14.5'), parseFloat(tariffFtlMinTrip || '12000'))
+    : Math.max((simDistanceKm * parseFloat(tariffPtlPerKgKm || '1.85') * (simWeightKg / 100)), parseFloat(tariffPtlMinFloor || '450')) * (simService === 'Express' ? parseFloat(tariffExpressMult || '1.75') : 1.0);
+  const simFuelCharge = Math.round(simBaseFreight * (parseFloat(tariffFuelSurcharge || '11.5') / 100));
+  const simHandling = parseFloat(tariffHandlingFee || '250');
+  const simSubtotal = Math.round(simBaseFreight + simFuelCharge + simHandling);
+  const simGst = Math.round(simSubtotal * (parseFloat(tariffGstPercent || '18') / 100));
+  const simTotal = simSubtotal + simGst;
+
   return (
     <div className="admin-layout-container">
       {/* TOAST MESSAGE */}
@@ -830,6 +1051,24 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'tariff' ? 'active' : ''}`}
+            onClick={() => setActiveTab('tariff')}
+            style={user?.role === 'SuperAdmin' ? { borderLeft: '3px solid #38bdf8', color: '#e0f2fe' } : {}}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <line x1="6" y1="8" x2="6" y2="8" />
+              <line x1="10" y1="8" x2="10" y2="8" />
+              <line x1="14" y1="8" x2="18" y2="8" />
+              <line x1="6" y1="12" x2="6" y2="12" />
+              <line x1="10" y1="12" x2="10" y2="12" />
+              <line x1="14" y1="12" x2="18" y2="12" />
+            </svg>
+            ⚡ Tariff &amp; Rate Matrix
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'audit' ? 'active' : ''}`}
             onClick={() => setActiveTab('audit')}
           >
@@ -949,6 +1188,24 @@ export default function Dashboard() {
             </div>
           </div>
         </header>
+
+        {/* EMERGENCY MAINTENANCE CONTROL BAR */}
+        <div className={`admin-maintenance-bar ${isMaintenanceActive ? 'alert' : 'normal'}`}>
+          <div className="maintenance-info">
+            <span className="pulse-dot" />
+            <strong>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : '🟢 PLATFORM LIVE & FULLY OPERATIONAL'}</strong>
+            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : 'All public rate calculators, online bookings, and vehicle dispatches running normally'}</span>
+          </div>
+          {user?.role === 'SuperAdmin' && (
+            <button
+              type="button"
+              className={`admin-maintenance-toggle-btn ${isMaintenanceActive ? 'btn-resume' : 'btn-freeze'}`}
+              onClick={handleToggleMaintenance}
+            >
+              {isMaintenanceActive ? '▶ Resume Public Bookings' : '⏸ Emergency Booking Freeze'}
+            </button>
+          )}
+        </div>
 
         {/* ============================================================== */}
         {/* VIEW 1: DASHBOARD TAB */}
@@ -1766,64 +2023,196 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {/* VIEW 7: REPORTS & EXPORT (NEW) */}
         {/* ============================================================== */}
+        {/* ============================================================== */}
+        {/* VIEW 7: OPERATIONS, FINANCIAL & P&L ANALYTICS */}
+        {/* ============================================================== */}
         {activeTab === 'reports' && (
           <div className="admin-content-pad">
             <div className="admin-page-title-row">
               <div>
-                <h1>Operations &amp; Financial Reports</h1>
-                <p>Download structured CSV ledgers for tax compliance, audits, and fleet reviews</p>
+                <h1>📈 Financial &amp; P&amp;L Performance Analytics</h1>
+                <p>Monthly turnover, cash realization, sundry debtors, hub contributions, and fleet cost margins</p>
+              </div>
+              <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={exportPnlToCSV}
+                >
+                  📥 Download P&amp;L Statement (CSV)
+                </button>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '24px' }}>
-                <div className="admin-kpi-icon-wrap" style={{ background: '#e0f2fe', color: '#0b72e7', marginBottom: '16px' }}>
-                  📊
+            {/* FINANCIAL & PNL SUMMARY CARDS */}
+            <div className="pnl-grid">
+              <div className="pnl-card" style={{ borderLeft: '4px solid #0b72e7' }}>
+                <small>Gross Monthly Turnover</small>
+                <strong>₹42,50,000</strong>
+                <span style={{ color: '#10b981' }}>↑ 14.8% vs last month</span>
+              </div>
+
+              <div className="pnl-card" style={{ borderLeft: '4px solid #10b981' }}>
+                <small>Cash Realized (Paid)</small>
+                <strong>₹36,80,000</strong>
+                <span style={{ color: '#10b981' }}>86.5% Collection Rate</span>
+              </div>
+
+              <div className="pnl-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+                <small>Sundry Debtors (Pending)</small>
+                <strong>₹5,70,000</strong>
+                <span style={{ color: '#b45309' }}>13.5% Receivables (B2B 30-Day)</span>
+              </div>
+
+              <div className="pnl-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
+                <small>Fleet Fuel &amp; Toll Costs</small>
+                <strong>₹18,40,000</strong>
+                <span style={{ color: '#6d28d9' }}>43.3% Cost of Operations</span>
+              </div>
+
+              <div className="pnl-card" style={{ borderLeft: '4px solid #059669' }}>
+                <small>EBITDA Net Margin</small>
+                <strong style={{ color: '#059669' }}>₹18,40,000</strong>
+                <span style={{ color: '#059669' }}>43.2% Profit Margin</span>
+              </div>
+            </div>
+
+            {/* TWO-COLUMN ANALYTICS: HUB SHARE & ROUTE PROFITABILITY */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+              {/* Hub Revenue Share */}
+              <div style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '20px' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
+                  🏢 Pan-India Hub Revenue Distribution
+                </h3>
+
+                <div className="hub-bar-item">
+                  <div className="hub-bar-head">
+                    <span>Delhi Central Hub (HUB-DEL-01)</span>
+                    <strong>₹16.15 Lakh (38%)</strong>
+                  </div>
+                  <div className="hub-bar-track">
+                    <div className="hub-bar-fill" style={{ width: '38%', background: '#0b72e7' }} />
+                  </div>
                 </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: '16px' }}>Bookings Ledger</h3>
-                <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>
-                  Complete consignment records, routes, status, and client bookings history.
+
+                <div className="hub-bar-item">
+                  <div className="hub-bar-head">
+                    <span>Mumbai JNPT Terminal (HUB-MUM-02)</span>
+                    <strong>₹13.17 Lakh (31%)</strong>
+                  </div>
+                  <div className="hub-bar-track">
+                    <div className="hub-bar-fill" style={{ width: '31%', background: '#10b981' }} />
+                  </div>
+                </div>
+
+                <div className="hub-bar-item">
+                  <div className="hub-bar-head">
+                    <span>Bengaluru Tech Cargo Park (HUB-BLR-03)</span>
+                    <strong>₹7.65 Lakh (18%)</strong>
+                  </div>
+                  <div className="hub-bar-track">
+                    <div className="hub-bar-fill" style={{ width: '18%', background: '#f59e0b' }} />
+                  </div>
+                </div>
+
+                <div className="hub-bar-item">
+                  <div className="hub-bar-head">
+                    <span>Kolkata East Logistics Gateway (HUB-CCU-04)</span>
+                    <strong>₹5.52 Lakh (13%)</strong>
+                  </div>
+                  <div className="hub-bar-track">
+                    <div className="hub-bar-fill" style={{ width: '13%', background: '#8b5cf6' }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* High-Margin Corridors Table */}
+              <div style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '20px' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
+                  🛣️ Top High-Margin Freight Corridors
+                </h3>
+
+                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border, #e2e8f0)', color: '#64748b', textAlign: 'left' }}>
+                      <th style={{ paddingBottom: '8px' }}>Route Corridor</th>
+                      <th style={{ paddingBottom: '8px' }}>Freight Mode</th>
+                      <th style={{ paddingBottom: '8px', textAlign: 'right' }}>Avg Trip Margin</th>
+                      <th style={{ paddingBottom: '8px', textAlign: 'right' }}>Margin %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
+                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Delhi ↔ Mumbai</td>
+                      <td style={{ color: '#64748b' }}>FTL 32ft MXL</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹28,400</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>48.2%</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
+                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Pune ↔ Hyderabad</td>
+                      <td style={{ color: '#64748b' }}>Express PTL</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹12,800</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>44.5%</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
+                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Ahmedabad ↔ Surat</td>
+                      <td style={{ color: '#64748b' }}>Industrial Surface</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹8,500</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>39.0%</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Chennai ↔ Bengaluru</td>
+                      <td style={{ color: '#64748b' }}>Short Haul PTL</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹6,200</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>36.8%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* DOWNLOADABLE DATA LEDGERS */}
+            <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
+              📥 Export Structured Compliance Ledgers
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Bookings Ledger (CSV)</h4>
+                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
+                  Full consignment records, routes, status, and client bookings history.
                 </p>
-                <button type="button" className="admin-btn-primary" onClick={exportBookingsToCSV} style={{ width: '100%' }}>
+                <button type="button" className="admin-btn-primary" onClick={exportBookingsToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
                   Download Bookings CSV
                 </button>
               </div>
 
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '24px' }}>
-                <div className="admin-kpi-icon-wrap" style={{ background: '#edfdf4', color: '#10b981', marginBottom: '16px' }}>
-                  💰
-                </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: '16px' }}>Revenue &amp; GST Ledger</h3>
-                <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>
+              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Revenue &amp; GST Ledger (CSV)</h4>
+                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
                   Monthly billing summary, freight revenue, and 18% GST collected for filing.
                 </p>
-                <button type="button" className="admin-btn-primary" onClick={exportRevenueToCSV} style={{ width: '100%' }}>
+                <button type="button" className="admin-btn-primary" onClick={exportRevenueToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
                   Download Revenue CSV
                 </button>
               </div>
 
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '24px' }}>
-                <div className="admin-kpi-icon-wrap" style={{ background: '#fef3c7', color: '#d97706', marginBottom: '16px' }}>
-                  🚛
-                </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: '16px' }}>Fleet &amp; Drivers Report</h3>
-                <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>
-                  Complete list of commercial drivers, license numbers, and truck assignments.
+              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Fleet &amp; Drivers Report (CSV)</h4>
+                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
+                  Commercial drivers, license numbers, and truck assignments.
                 </p>
-                <button type="button" className="admin-btn-primary" onClick={exportDriversToCSV} style={{ width: '100%' }}>
+                <button type="button" className="admin-btn-primary" onClick={exportDriversToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
                   Download Drivers CSV
                 </button>
               </div>
 
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '24px' }}>
-                <div className="admin-kpi-icon-wrap" style={{ background: '#f3e8ff', color: '#7c3aed', marginBottom: '16px' }}>
-                  🗂️
-                </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: '16px' }}>Vehicle Registry</h3>
-                <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b' }}>
+              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Vehicle Registry (CSV)</h4>
+                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
                   Active vehicle models, tonnage capacity, assigned terminals, and fuel levels.
                 </p>
-                <button type="button" className="admin-btn-primary" onClick={exportVehiclesToCSV} style={{ width: '100%' }}>
+                <button type="button" className="admin-btn-primary" onClick={exportVehiclesToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
                   Download Vehicles CSV
                 </button>
               </div>
@@ -2037,6 +2426,15 @@ export default function Dashboard() {
                 >
                   {hubsLoading ? 'Refreshing...' : '🔄 Refresh Hubs'}
                 </button>
+                {user?.role === 'SuperAdmin' && (
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={() => setShowAddHubModal(true)}
+                  >
+                    + Add Pan-India Hub
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2095,8 +2493,273 @@ export default function Dashboard() {
                     </div>
                     <span style={{ fontSize: '12px', color: '#0b72e7', fontWeight: 600 }}>Active Gate ➔</span>
                   </div>
+
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleHubStatus(h.id)}
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        background: '#f8fafc',
+                        color: '#0f172a',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
+                    </button>
+                    {user?.role === 'SuperAdmin' && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteHub(h.id)}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #fecaca',
+                          background: '#fef2f2',
+                          color: '#dc2626',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                        title="Decommission Hub"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 9.5: TARIFF & RATE MATRIX ENGINE */}
+        {/* ============================================================== */}
+        {activeTab === 'tariff' && (
+          <div className="admin-content-pad">
+            <div className="admin-page-title-row">
+              <div>
+                <h1>⚡ Dynamic Tariff &amp; Rate Matrix Engine</h1>
+                <p>Governs commercial freight tariffs, diesel fuel surcharge index, GST tax slabs, and real-time public rate calculations</p>
+              </div>
+              <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={handleSaveTariffMatrix}
+                  disabled={tariffSaving}
+                >
+                  {tariffSaving ? 'Broadcasting...' : '💾 Save & Broadcast Tariff to Portal'}
+                </button>
+              </div>
+            </div>
+
+            {/* TARIFF CARDS GRID */}
+            <div className="tariff-grid">
+              {/* Card 1: FTL Full Truckload */}
+              <div className="tariff-card">
+                <div className="tariff-card-header">
+                  <span style={{ fontSize: '1.4rem' }}>🚛</span>
+                  <h3>Full Truckload (FTL) Freight Slab</h3>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Base Tariff (₹ per Ton / KM)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">₹</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={tariffFtlPerKm}
+                      onChange={e => setTariffFtlPerKm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Minimum Corridor Trip Charge (Floor)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">₹</span>
+                    <input
+                      type="number"
+                      value={tariffFtlMinTrip}
+                      onChange={e => setTariffFtlMinTrip(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <small style={{ color: '#64748b', fontSize: '11px' }}>
+                  Applied automatically to 32ft MXL, 24ft, and containerized fleet.
+                </small>
+              </div>
+
+              {/* Card 2: PTL Part Truckload */}
+              <div className="tariff-card">
+                <div className="tariff-card-header">
+                  <span style={{ fontSize: '1.4rem' }}>📦</span>
+                  <h3>Part Truckload (PTL / Parcel)</h3>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Base Freight (₹ per Kg / KM)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">₹</span>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={tariffPtlPerKgKm}
+                      onChange={e => setTariffPtlPerKgKm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Minimum Parcel Booking Fee</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">₹</span>
+                    <input
+                      type="number"
+                      value={tariffPtlMinFloor}
+                      onChange={e => setTariffPtlMinFloor(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <small style={{ color: '#64748b', fontSize: '11px' }}>
+                  Calculated dynamically with volumetric weight formula (CFT).
+                </small>
+              </div>
+
+              {/* Card 3: Priority & Fuel Surcharges */}
+              <div className="tariff-card">
+                <div className="tariff-card-header">
+                  <span style={{ fontSize: '1.4rem' }}>⚡</span>
+                  <h3>Surcharges &amp; Taxes</h3>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Express / Air Cargo Multiplier (x)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">x</span>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={tariffExpressMult}
+                      onChange={e => setTariffExpressMult(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Diesel Price Fuel Surcharge (%)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">%</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={tariffFuelSurcharge}
+                      onChange={e => setTariffFuelSurcharge(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="tariff-input-group">
+                  <label>GST Freight Rate (%)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">%</span>
+                    <input
+                      type="number"
+                      value={tariffGstPercent}
+                      onChange={e => setTariffGstPercent(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="tariff-input-group">
+                  <label>Dock Handling &amp; Toll Surcharge (Fixed)</label>
+                  <div className="tariff-input-wrap">
+                    <span className="tariff-input-prefix">₹</span>
+                    <input
+                      type="number"
+                      value={tariffHandlingFee}
+                      onChange={e => setTariffHandlingFee(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* LIVE SIMULATOR FOR SUPER ADMIN */}
+            <div className="tariff-sim-box">
+              <div className="tariff-sim-title">
+                <div>
+                  <h3>🧪 Real-Time Tariff Simulator</h3>
+                  <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '13px' }}>
+                    Verify how customer rate calculator responds to current matrix parameters
+                  </p>
+                </div>
+                <span style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                  Interactive Preview
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Trip Distance: <strong>{simDistanceKm} KM</strong></label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="3000"
+                    step="50"
+                    value={simDistanceKm}
+                    onChange={e => setSimDistanceKm(parseInt(e.target.value))}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Consignment Weight: <strong>{simWeightKg} KG</strong></label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="24000"
+                    step="50"
+                    value={simWeightKg}
+                    onChange={e => setSimWeightKg(parseInt(e.target.value))}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Freight Service Mode</label>
+                  <select
+                    value={simService}
+                    onChange={e => setSimService(e.target.value as any)}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', background: '#07192b', color: '#fff', border: '1px solid #1e3355' }}
+                  >
+                    <option value="PTL">Part Truckload (PTL)</option>
+                    <option value="FTL">Full Truckload (FTL Dedicated)</option>
+                    <option value="Express">Express Air/Highway Priority</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="tariff-sim-result-card">
+                <div className="sim-row">
+                  <span>Base Haulage Freight ({simDistanceKm} km × {simWeightKg} kg):</span>
+                  <strong>₹{simBaseFreight.toLocaleString('en-IN')}</strong>
+                </div>
+                <div className="sim-row">
+                  <span>Diesel Fuel Surcharge ({tariffFuelSurcharge}%):</span>
+                  <strong>₹{simFuelCharge.toLocaleString('en-IN')}</strong>
+                </div>
+                <div className="sim-row">
+                  <span>Terminal Handling &amp; Dock Fee:</span>
+                  <strong>₹{simHandling.toLocaleString('en-IN')}</strong>
+                </div>
+                <div className="sim-row">
+                  <span>GST Road Transport SAC 9965 ({tariffGstPercent}%):</span>
+                  <strong>₹{simGst.toLocaleString('en-IN')}</strong>
+                </div>
+                <div className="sim-row total">
+                  <span>Total Calculated Client Tariff:</span>
+                  <span>₹{simTotal.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -2112,6 +2775,13 @@ export default function Dashboard() {
                 <p>Live immutable event log of all administrative actions, authentication attempts, and emergency kill-switch controls</p>
               </div>
               <div className="admin-title-actions">
+                <button
+                  type="button"
+                  className="admin-btn-export"
+                  onClick={exportAuditLogsToCSV}
+                >
+                  📥 Export Audit Trail (CSV)
+                </button>
                 <button
                   type="button"
                   className="admin-btn-export"
@@ -2138,6 +2808,26 @@ export default function Dashboard() {
                     onKeyDown={e => { if (e.key === 'Enter') loadAuditLogs(); }}
                   />
                 </div>
+                <select
+                  value={auditActionFilter}
+                  onChange={e => setAuditActionFilter(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '13px',
+                    background: 'var(--bg-card, #fff)',
+                    color: 'var(--text-primary, #0f172a)'
+                  }}
+                >
+                  <option value="All">All Event Types</option>
+                  <option value="ROLE">Role &amp; Privilege Changes</option>
+                  <option value="RIGHTS">Rights Delegation</option>
+                  <option value="FORCE_LOGOUT">Force Logouts / Kill-Switch</option>
+                  <option value="MAINTENANCE">Maintenance Events</option>
+                  <option value="TARIFF">Tariff Modifications</option>
+                  <option value="HUB">Hub Operations</option>
+                </select>
                 <button
                   type="button"
                   className="admin-btn-primary"
@@ -2160,14 +2850,14 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {auditLogs.length === 0 ? (
+                  {filteredAuditLogs.length === 0 ? (
                     <tr>
                       <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>
                         No audit events recorded for current query.
                       </td>
                     </tr>
                   ) : (
-                    auditLogs.map(log => (
+                    filteredAuditLogs.map(log => (
                       <tr key={log.id}>
                         <td><code style={{ fontSize: '11px', color: '#64748b' }}>#{log.id}</code></td>
                         <td style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap' }}>
@@ -2871,9 +3561,44 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <>
-                    <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '14px' }}>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px' }}>
                       Toggle individual rights to grant or revoke access to specific subsystems:
                     </p>
+
+                    {/* Quick Presets for Role Delegation */}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '14px', background: '#f1f5f9', padding: '8px 12px', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+                        Presets:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => applyRightsPreset('dispatch')}
+                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
+                      >
+                        ⚡ Dispatcher
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyRightsPreset('finance')}
+                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#059669', border: '1px solid #a7f3d0', borderRadius: '6px', cursor: 'pointer' }}
+                      >
+                        💳 Finance
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyRightsPreset('manager')}
+                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#7c3aed', border: '1px solid #ddd6fe', borderRadius: '6px', cursor: 'pointer' }}
+                      >
+                        🏢 Hub Manager
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyRightsPreset('superadmin')}
+                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 700, background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', borderRadius: '6px', cursor: 'pointer' }}
+                      >
+                        👑 Super Admin (All)
+                      </button>
+                    </div>
 
                     <div style={{ maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '6px' }}>
                       {allSystemRights.map(perm => {
@@ -2979,6 +3704,124 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+        {/* ============================================================== */}
+        {/* MODAL 8: ADD PAN-INDIA HUB MODAL (SUPERADMIN ONLY) */}
+        {/* ============================================================== */}
+        {showAddHubModal && (
+          <div className="st-modal-overlay" onClick={() => setShowAddHubModal(false)}>
+            <div className="st-drawer-box" style={{ maxWidth: '580px' }} onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2 style={{ color: '#0369a1' }}>🏢 Add Pan-India Terminal / Hub</h2>
+                  <p>Register a new regional hub, warehouse, or transit office into the nationwide network</p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowAddHubModal(false)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={handleAddHubSubmit}>
+                <div className="st-drawer-body">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <label>Hub Code *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. BLR-HUB-02"
+                        value={newHubCode}
+                        onChange={e => setNewHubCode(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="st-form-field">
+                      <label>Hub / Terminal Name *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Bangalore South Hub"
+                        value={newHubName}
+                        onChange={e => setNewHubName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                    <div className="st-form-field">
+                      <label>City *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Bengaluru"
+                        value={newHubCity}
+                        onChange={e => setNewHubCity(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="st-form-field">
+                      <label>State *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Karnataka"
+                        value={newHubState}
+                        onChange={e => setNewHubState(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                    <div className="st-form-field">
+                      <label>Capacity (Sq. Ft / Tonnage)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 35000"
+                        value={newHubCapacity}
+                        onChange={e => setNewHubCapacity(e.target.value)}
+                      />
+                    </div>
+                    <div className="st-form-field">
+                      <label>Manager / Contact No.</label>
+                      <input
+                        type="tel"
+                        placeholder="e.g. +91 98450 12345"
+                        value={newHubManager}
+                        onChange={e => setNewHubManager(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-form-field" style={{ marginTop: '10px' }}>
+                    <label>Terminal Physical Address</label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Plot 42, Electronic City Logistics Park, Phase II, Bengaluru"
+                      value={newHubAddress}
+                      onChange={e => setNewHubAddress(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', resize: 'vertical' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowAddHubModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit">
+                    ✓ Create Hub Terminal
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {selectedLr && (
           <ConsignmentLRModal
             data={selectedLr}

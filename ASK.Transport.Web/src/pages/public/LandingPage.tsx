@@ -22,6 +22,9 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // Emergency Maintenance status set by Super Admin
+  const isMaintenanceActive = localStorage.getItem('ask_system_maintenance') === 'true';
+
   // Hero Tabs: 'track' | 'quote'
   const [activeHeroTab, setActiveHeroTab] = useState<'track' | 'quote'>('track');
 
@@ -132,6 +135,31 @@ export default function LandingPage() {
     <div className="landing-page-wrapper">
       {/* 1. TOP NAVBAR */}
       <PublicNavbar onSwitchHeroTab={(tab) => setActiveHeroTab(tab)} />
+
+      {/* EMERGENCY MAINTENANCE BANNER */}
+      {isMaintenanceActive && (
+        <div style={{
+          background: 'linear-gradient(90deg, #991b1b, #dc2626)',
+          color: '#ffffff',
+          padding: '12px 24px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontSize: '14px',
+          boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          position: 'sticky',
+          top: '72px',
+          zIndex: 99
+        }}>
+          <span style={{ fontSize: '18px' }}>⚠️</span>
+          <span>
+            <strong>Notice:</strong> Platform maintenance in progress. Online bookings temporarily paused. Urgent queries: <strong>+91 98765 43210</strong>
+          </span>
+        </div>
+      )}
 
       {/* 2. HERO SECTION */}
       <section className="landing-hero-section">

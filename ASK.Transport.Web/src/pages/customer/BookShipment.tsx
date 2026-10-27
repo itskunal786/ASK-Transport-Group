@@ -31,6 +31,7 @@ import BulkBookingUpload from '../../components/BulkBookingUpload';
 
 export default function BookShipment() {
 
+  const isMaintenance = localStorage.getItem('ask_system_maintenance') === 'true';
   const [bookingMode, setBookingMode] = useState<'single' | 'bulk'>('single');
   const [step, setStep] = useState(1);
 
@@ -434,6 +435,11 @@ export default function BookShipment() {
     e.preventDefault();
 
     setError('');
+
+    if (isMaintenance) {
+      setError('Consignment bookings are paused due to scheduled system maintenance. Please call support.');
+      return;
+    }
 
 
     if (
@@ -856,6 +862,27 @@ return (
           </div>
         )}
 
+        {isMaintenance && (
+          <div style={{
+            background: '#fee2e2',
+            border: '1px solid #ef4444',
+            color: '#991b1b',
+            borderRadius: '10px',
+            padding: '14px 18px',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '14px',
+            fontWeight: 600
+          }}>
+            <span style={{ fontSize: '20px' }}>⚠️</span>
+            <div>
+              <strong>Emergency Maintenance Active:</strong> Online consignment bookings are temporarily paused by administration.
+              Please contact central operations at <strong>+91 98765 43210</strong> or check back shortly.
+            </div>
+          </div>
+        )}
 
         <form
           className="booking-form"
@@ -1576,9 +1603,12 @@ return (
                 <button
                   type="submit"
                   className="booking-next"
-                  disabled={submitting}
+                  disabled={submitting || isMaintenance}
+                  style={isMaintenance ? { background: '#94a3b8', cursor: 'not-allowed' } : undefined}
                 >
-                  {submitting
+                  {isMaintenance
+                    ? 'Bookings Paused (Maintenance)'
+                    : submitting
                     ? 'Creating Booking...'
                     : 'Confirm Booking'}
                 </button>
