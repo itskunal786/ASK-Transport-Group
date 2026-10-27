@@ -2918,18 +2918,9 @@ export default function Dashboard() {
             </div>
 
             {/* SUPER ADMIN NOTICE */}
-            <div style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderLeft: '4px solid #f59e0b',
-              borderRadius: '12px',
-              padding: '18px 22px',
-              marginBottom: '24px'
-            }}>
-              <h3 style={{ margin: '0 0 6px', color: '#0f172a', fontSize: '15px', fontWeight: 700 }}>
-                Hierarchical Security Architecture:
-              </h3>
-              <p style={{ margin: 0, color: '#475569', fontSize: '13px', lineHeight: 1.6 }}>
+            <div className="admin-architecture-box">
+              <h3>Hierarchical Security Architecture:</h3>
+              <p>
                 1. <strong>Super Admin</strong>: Holds unrestricted master permissions across all backend APIs, database tables, financial reconciliations, and security settings. Only the Super Admin can promote users to Admin or grant/revoke specific rights.<br />
                 2. <strong>Admin</strong>: Manages day-to-day user data, shipment tracking, consignments, drivers, and operations strictly based on rights delegated by the Super Admin.<br />
                 3. <strong>User / Customer</strong>: Accesses their personal shipper panel to book cargo, track consignments, and update their account credentials.
@@ -2937,44 +2928,79 @@ export default function Dashboard() {
             </div>
 
             {/* KPI STATS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#fef3c7', color: '#b45309' }}>👑</div>
-                <div className="admin-kpi-text">
-                  <span>Super Admins</span>
-                  <strong>{adminUsers.filter(u => u.role === 'SuperAdmin').length || 1}</strong>
+            <div className="admin-metrics-grid">
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#fef3c7', color: '#b45309' }}>
+                    👑
+                  </div>
+                  <div className="admin-box-content">
+                    <strong>{adminUsers.filter(u => u.role === 'SuperAdmin').length || 1}</strong>
+                    <span>Super Admins</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  Master Ownership Access
                 </div>
               </div>
 
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#ede9fe', color: '#6d28d9' }}>⚡</div>
-                <div className="admin-kpi-text">
-                  <span>Operational Admins</span>
-                  <strong>{adminUsers.filter(u => u.role === 'Admin').length}</strong>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#ede9fe', color: '#6d28d9' }}>
+                    ⚡
+                  </div>
+                  <div className="admin-box-content">
+                    <strong>{adminUsers.filter(u => u.role === 'Admin').length}</strong>
+                    <span>Operational Admins</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  Delegated Operations Staff
                 </div>
               </div>
 
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#e0f2fe', color: '#0284c7' }}>👥</div>
-                <div className="admin-kpi-text">
-                  <span>Registered Users</span>
-                  <strong>{adminUsers.filter(u => u.role === 'User').length}</strong>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#e0f2fe', color: '#0284c7' }}>
+                    👥
+                  </div>
+                  <div className="admin-box-content">
+                    <strong>{adminUsers.filter(u => u.role === 'User').length}</strong>
+                    <span>Registered Users</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta">
+                  MSME &amp; Cargo Shippers
                 </div>
               </div>
 
-              <div className="admin-kpi-card">
-                <div className="admin-kpi-icon-wrap" style={{ background: '#edfdf4', color: '#16a34a' }}>🛡️</div>
-                <div className="admin-kpi-text">
-                  <span>Delegable Modules</span>
-                  <strong>8 Core Modules</strong>
+              <div className="admin-metric-box">
+                <div className="admin-box-top">
+                  <div className="admin-box-icon" style={{ background: '#edfdf4', color: '#16a34a' }}>
+                    🛡️
+                  </div>
+                  <div className="admin-box-content">
+                    <strong>8 Modules</strong>
+                    <span>Delegable Matrix</span>
+                  </div>
+                </div>
+                <div className="admin-box-delta green">
+                  Granular Permission Slates
                 </div>
               </div>
             </div>
 
             {/* STAFF TABLE */}
             <div className="admin-table-card">
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
-                <h2 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>System Staff &amp; Administrative Personnel</h2>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color, #e2e8f0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                    System Staff &amp; Administrative Personnel
+                  </h2>
+                  <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
+                    Personnel credentials, security clearance status, and delegation actions
+                  </p>
+                </div>
               </div>
 
               <table className="admin-data-table">
@@ -3030,34 +3056,16 @@ export default function Dashboard() {
                             <div style={{ display: 'flex', gap: '8px' }}>
                               <button
                                 type="button"
+                                className="admin-btn-action-rights"
                                 onClick={() => handleOpenRightsModal(staff)}
-                                style={{
-                                  padding: '5px 12px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #c7d2fe',
-                                  background: '#eef2ff',
-                                  color: '#4338ca',
-                                  fontSize: '12px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer'
-                                }}
                               >
                                 🛡️ Manage Rights
                               </button>
 
                               <button
                                 type="button"
+                                className="admin-btn-action-role"
                                 onClick={() => handleOpenRoleModal(staff)}
-                                style={{
-                                  padding: '5px 12px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #fde68a',
-                                  background: '#fffbeb',
-                                  color: '#b45309',
-                                  fontSize: '12px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer'
-                                }}
                               >
                                 👑 Change Role
                               </button>
