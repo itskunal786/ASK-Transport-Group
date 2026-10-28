@@ -32,6 +32,8 @@ import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
 import type { Shipment } from '../../api/trackingApi';
 import { isUserApproved, setUserApproved } from '../../utils/accessControl';
 import './AdminDashboard.css';
+import AiOperationsDeck from '../../components/AiOperationsDeck';
+import AiOcrScannerModal from '../../components/AiOcrScannerModal';
 
 interface BookingRow {
   bookingNo: string;
@@ -472,7 +474,7 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -645,7 +647,8 @@ export default function Dashboard() {
       support: { modules: ['Support'], codes: ['Support.View', 'Support.Resolve'] },
       settings: { modules: ['Settings'], codes: ['Settings.View', 'Settings.Edit'] },
       reports: { modules: ['Reports'], codes: ['Reports.View', 'Reports.Export'] },
-      access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] }
+      access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] },
+      ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -687,6 +690,8 @@ export default function Dashboard() {
   const [driversList, setDriversList] = useState<DriverRow[]>(INITIAL_DRIVERS);
   const [driverSearch, setDriverSearch] = useState('');
   const [showAddDriverModal, setShowAddDriverModal] = useState(false);
+  const [showAiScannerModal, setShowAiScannerModal] = useState(false);
+  const [aiScannerDocType, setAiScannerDocType] = useState<'driving_license' | 'vehicle_rc' | 'physical_bilty'>('driving_license');
   const [newDriverName, setNewDriverName] = useState('');
   const [newDriverPhone, setNewDriverPhone] = useState('');
   const [newDriverDL, setNewDriverDL] = useState('');
@@ -1719,6 +1724,20 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai_automation')}
+            style={{
+              borderLeft: activeTab === 'ai_automation' ? '3px solid #6366f1' : undefined,
+              background: activeTab === 'ai_automation' ? 'rgba(99, 102, 241, 0.15)' : undefined
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>🤖</span>
+            AI &amp; Automation Lab
+            <span style={{ marginLeft: 'auto', background: '#6366f1', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>NEW</span>
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'telematics' ? 'active' : ''} ${isTabRevoked('telematics').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('telematics')}
             style={{ borderLeft: activeTab === 'telematics' ? '3px solid #22c55e' : undefined }}
@@ -2156,6 +2175,33 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 0: AI & SMART AUTOMATION LAB */}
+        {/* ============================================================== */}
+        {activeTab === 'ai_automation' && (
+          <div className="admin-content-pad">
+            <AiOperationsDeck
+              onApplyOcrData={(type, extracted) => {
+                if (type === 'driving_license') {
+                  setNewDriverName(extracted.fullName || '');
+                  setNewDriverPhone(extracted.mobileNumber || '');
+                  setNewDriverDL(extracted.dlNumber || '');
+                  setShowAddDriverModal(true);
+                  showToast(`✓ Driver DL verified via MoRTH Sarathi! Opening Add Driver modal.`);
+                } else if (type === 'vehicle_rc') {
+                  setNewPlateNo(extracted.registrationNumber || '');
+                  setNewVehicleModel(extracted.makerModel || '');
+                  setNewVehicleCapacity(String(Math.round((extracted.payloadCapacityKg || 18500) / 1000)));
+                  setShowAddVehicleModal(true);
+                  showToast(`✓ Vehicle RC verified via Vahan! Opening Add Vehicle modal.`);
+                } else {
+                  showToast(`✓ Bilty LR ${extracted.biltyNumber || ''} scanned successfully!`);
+                }
+              }}
+            />
           </div>
         )}
 
@@ -4781,6 +4827,27 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
+        {/* MODAL 0: AI OCR SCANNER MODAL */}
+        {showAiScannerModal && (
+          <AiOcrScannerModal
+            initialDocType={aiScannerDocType}
+            onClose={() => setShowAiScannerModal(false)}
+            onApplyExtractedData={(type, extracted) => {
+              if (type === 'driving_license') {
+                setNewDriverName(extracted.fullName || '');
+                setNewDriverPhone(extracted.mobileNumber || '');
+                setNewDriverDL(extracted.dlNumber || '');
+                showToast('✓ Applied Driver DL: ' + (extracted.fullName || ''));
+              } else if (type === 'vehicle_rc') {
+                setNewPlateNo(extracted.registrationNumber || '');
+                setNewVehicleModel(extracted.makerModel || '');
+                setNewVehicleCapacity(String(Math.round((extracted.payloadCapacityKg || 18500) / 1000)));
+                showToast('✓ Applied Vehicle RC: ' + (extracted.registrationNumber || ''));
+              }
+            }}
+          />
+        )}
+
         {/* MODAL 1: ADD CUSTOMER MODAL */}
         {/* ============================================================== */}
         {showAddCustomerModal && (
@@ -4997,6 +5064,22 @@ export default function Dashboard() {
               </div>
 
               <form onSubmit={handleAddDriver}>
+                <div style={{ margin: '14px 24px 0', padding: '10px 14px', background: '#f5f3ff', border: '1px dashed #818cf8', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong style={{ fontSize: '12px', color: '#4338ca' }}>🤖 AI Auto-Scan Driver License</strong>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#6366f1' }}>Upload DL photo to auto-fill name, phone &amp; Sarathi status</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiScannerDocType('driving_license');
+                      setShowAiScannerModal(true);
+                    }}
+                    style={{ padding: '6px 14px', background: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Scan DL with AI
+                  </button>
+                </div>
                 <div className="st-drawer-body">
                   <div className="st-form-field">
                     <label>Driver Full Name *</label>
@@ -5099,6 +5182,22 @@ export default function Dashboard() {
               </div>
 
               <form onSubmit={handleAddVehicle}>
+                <div style={{ margin: '14px 24px 0', padding: '10px 14px', background: '#ecfdf5', border: '1px dashed #34d399', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong style={{ fontSize: '12px', color: '#065f46' }}>🤖 AI Auto-Scan Vehicle RC Book</strong>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#059669' }}>Upload RC photo to auto-fill plate no, model &amp; Vahan payload</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiScannerDocType('vehicle_rc');
+                      setShowAiScannerModal(true);
+                    }}
+                    style={{ padding: '6px 14px', background: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Scan RC with AI
+                  </button>
+                </div>
                 <div className="st-drawer-body">
                   <div className="st-form-field">
                     <label>Registration Plate Number *</label>
