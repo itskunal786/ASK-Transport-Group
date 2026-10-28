@@ -486,6 +486,7 @@ export default function Dashboard() {
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver'>('expenses');
+  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot'>('3d_load');
 
   // Hierarchical Navigation Accordion State
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
@@ -2107,7 +2108,8 @@ export default function Dashboard() {
           )}
 
           {/* GROUP 4: AI & AUTOMATION */}
-          {itemMatchesQuery('OCR, 3D Packing & Route', ['ai', 'automation', 'ocr scanner', '3d truck load visualizer', 'highway toll predictor', 'packing', 'toll']) && (
+          {(itemMatchesQuery('OCR, 3D Packing & Route', ['ai', 'automation', 'ocr scanner', '3d truck load visualizer', 'highway toll predictor', 'packing', 'toll']) ||
+            itemMatchesQuery('WhatsApp AI Logistics Bot', ['whatsapp bot', 'whatsapp ai', 'ai bot', 'tracking bot', 'quote bot', 'chat bot', 'self-service', 'consignee'])) && (
             <div className="admin-nav-group">
               <button
                 type="button"
@@ -2119,22 +2121,36 @@ export default function Dashboard() {
                   <span>AI &amp; Automation</span>
                 </div>
                 <div className="admin-nav-main-meta">
-                  <span className="admin-nav-count-badge" style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8' }}>AI ⚡</span>
+                  <span className="admin-nav-count-badge" style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8' }}>2</span>
                   <span className={`admin-nav-chevron ${openNavGroups.ai || sidebarMenuQuery ? 'open' : ''}`}>▸</span>
                 </div>
               </button>
 
               {(openNavGroups.ai || sidebarMenuQuery) && (
                 <div className="admin-nav-sub-list">
-                  <button
-                    type="button"
-                    className={`admin-nav-sub-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('ai_automation')}
-                  >
-                    <span style={{ fontSize: '14px' }}>✨</span>
-                    <span>OCR, 3D Packing &amp; Route</span>
-                    <span className="admin-nav-sub-badge" style={{ background: '#6366f1', color: '#ffffff' }}>GEMINI AI</span>
-                  </button>
+                  {itemMatchesQuery('OCR, 3D Packing & Route', ['ai', 'automation', 'ocr scanner', '3d truck load visualizer', 'highway toll predictor', 'packing', 'toll']) && (
+                    <button
+                      type="button"
+                      className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab !== 'whatsapp_bot' ? 'active' : ''}`}
+                      onClick={() => { setAiDeckSubTab('3d_load'); setActiveTab('ai_automation'); }}
+                    >
+                      <span style={{ fontSize: '14px' }}>✨</span>
+                      <span>OCR, 3D Packing &amp; Route</span>
+                      <span className="admin-nav-sub-badge" style={{ background: '#6366f1', color: '#ffffff' }}>GEMINI AI</span>
+                    </button>
+                  )}
+
+                  {itemMatchesQuery('WhatsApp AI Logistics Bot', ['whatsapp bot', 'whatsapp ai', 'ai bot', 'tracking bot', 'quote bot', 'chat bot', 'self-service', 'consignee']) && (
+                    <button
+                      type="button"
+                      className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'whatsapp_bot' ? 'active' : ''}`}
+                      onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation'); }}
+                    >
+                      <span style={{ fontSize: '14px' }}>💬</span>
+                      <span>WhatsApp AI Logistics Bot</span>
+                      <span className="admin-nav-sub-badge" style={{ background: '#075e54', color: '#ffffff' }}>24×7 BOT</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -2923,6 +2939,7 @@ export default function Dashboard() {
         {activeTab === 'ai_automation' && (
           <div className="admin-content-pad">
             <AiOperationsDeck
+              initialDeckTab={aiDeckSubTab}
               onApplyOcrData={(type, extracted) => {
                 if (type === 'driving_license') {
                   setNewDriverName(extracted.fullName || '');

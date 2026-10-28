@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import WhatsAppAiLogisticsBot from './WhatsAppAiLogisticsBot';
 import AiTruckLoadVisualizer from './AiTruckLoadVisualizer';
 import AiOcrScannerModal from './AiOcrScannerModal';
 import AiRouteCostPredictor from './AiRouteCostPredictor';
 
 export default function AiOperationsDeck({
+  initialDeckTab = '3d_load',
   onApplyOcrData
 }: {
+  initialDeckTab?: '3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot';
   onApplyOcrData?: (docType: string, data: Record<string, any>) => void;
 }) {
-  const [activeDeckTab, setActiveDeckTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor'>('3d_load');
+  const [activeDeckTab, setActiveDeckTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot'>(initialDeckTab);
+
+  useEffect(() => {
+    if (initialDeckTab) {
+      setActiveDeckTab(initialDeckTab);
+    }
+  }, [initialDeckTab]);
   const [showOcrModal, setShowOcrModal] = useState<boolean>(false);
   const [scannerType, setScannerType] = useState<'driving_license' | 'vehicle_rc' | 'physical_bilty'>('driving_license');
 
@@ -178,6 +187,26 @@ export default function AiOperationsDeck({
         >
           <span>📄</span> AI OCR Document Extraction Studio
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveDeckTab('whatsapp_bot')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeDeckTab === 'whatsapp_bot' ? '#075e54' : '#64748b',
+            borderBottom: activeDeckTab === 'whatsapp_bot' ? '3px solid #075e54' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>📲</span> WhatsApp AI Logistics Bot (24×7)
+        </button>
       </div>
 
       {/* ACTIVE TAB VIEW */}
@@ -188,6 +217,10 @@ export default function AiOperationsDeck({
 
         {activeDeckTab === 'route_predictor' && (
           <AiRouteCostPredictor />
+        )}
+
+        {activeDeckTab === 'whatsapp_bot' && (
+          <WhatsAppAiLogisticsBot />
         )}
 
         {activeDeckTab === 'ocr_scanner' && (
