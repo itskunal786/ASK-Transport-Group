@@ -5,7 +5,7 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('portal=admin')) {
@@ -23,6 +23,33 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
 
+  function handleEmailChange(val: string) {
+    setEmail(val);
+    const trimmed = val.trim().toLowerCase();
+    if (loginRole === 'customer') {
+      if (
+        trimmed === 'superadmin@askgroup.com' ||
+        trimmed === 'admin@askgroup.com' ||
+        trimmed.startsWith('superadmin@') ||
+        trimmed.startsWith('admin@')
+      ) {
+        setLoginRole('admin');
+        navigate('/login?portal=admin', { replace: true });
+        setError('');
+      }
+    } else if (loginRole === 'admin') {
+      if (
+        trimmed === 'user@askgroup.com' ||
+        trimmed.startsWith('user@') ||
+        trimmed.startsWith('customer@')
+      ) {
+        setLoginRole('customer');
+        navigate('/login', { replace: true });
+        setError('');
+      }
+    }
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -32,11 +59,32 @@ export default function Login() {
     try {
       const user = await login(email, password);
 
-      // Intelligent role-based redirection without blocking or showing error text
-      if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-        navigate('/admin');
-      } else {
+      // Strict role-portal segregation:
+      // User portal should only allow user logins.
+      // Admin portal should only allow admin/superadmin logins.
+      if (loginRole === 'customer') {
+        if (user.role === 'Admin' || user.role === 'SuperAdmin') {
+          // Immediately revoke session so admin is NOT logged in via customer portal
+          await logout();
+          // Silently redirect to Admin Login page without showing error text
+          setLoginRole('admin');
+          navigate('/login?portal=admin', { replace: true });
+          setError('');
+          return;
+        }
         navigate('/dashboard');
+      } else {
+        // loginRole === 'admin'
+        if (user.role !== 'Admin' && user.role !== 'SuperAdmin') {
+          // Immediately revoke session so customer is NOT logged in via admin portal
+          await logout();
+          // Silently redirect to Customer Login page without showing error text
+          setLoginRole('customer');
+          navigate('/login', { replace: true });
+          setError('');
+          return;
+        }
+        navigate('/admin');
       }
     } catch (err) {
       setError(
@@ -254,9 +302,8 @@ export default function Login() {
                 type="email"
                 placeholder={loginRole === 'admin' ? 'admin@asktransport.com' : 'you@company.com'}
                 value={email}
-                onChange={(e) =>
-                  setEmail(e.target.value)
-                }
+                onChange={(e) => handleEmailChange(e.target.value)}
+                onBlur={() => handleEmailChange(email)}
                 autoComplete="email"
                 required
               />

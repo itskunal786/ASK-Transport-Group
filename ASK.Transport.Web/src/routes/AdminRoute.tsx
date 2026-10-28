@@ -9,7 +9,7 @@ export default function AdminRoute() {
   }
 
   if (user.role !== 'Admin' && user.role !== 'SuperAdmin') {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;
