@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import FleetTripExpenseManager from './FleetTripExpenseManager';
 import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
 import FleetFuelAntiTheftRadar from './FleetFuelAntiTheftRadar';
+import ColdChainTemperatureRadar from './ColdChainTemperatureRadar';
 import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
-  initialTab?: 'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver';
+  initialTab?: 'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver';
 }
 
 export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOperationsDeckProps) {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver'>(initialTab);
 
   useEffect(() => {
     if (initialTab) {
@@ -115,6 +116,26 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
+          onClick={() => setActiveTab('cold_chain')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeTab === 'cold_chain' ? '#0284c7' : '#64748b',
+            borderBottom: activeTab === 'cold_chain' ? '3px solid #0284c7' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>❄️</span> IoT Cold-Chain &amp; Temp Radar
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('maintenance')}
           style={{
             padding: '10px 18px',
@@ -165,6 +186,12 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
         {activeTab === 'fuel_theft' && (
           <ErrorBoundary fallbackTitle="Diesel Anti-Theft Radar Error">
             <FleetFuelAntiTheftRadar />
+          </ErrorBoundary>
+        )}
+
+        {activeTab === 'cold_chain' && (
+          <ErrorBoundary fallbackTitle="Cold-Chain Temperature Radar Error">
+            <ColdChainTemperatureRadar />
           </ErrorBoundary>
         )}
 

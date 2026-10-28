@@ -485,7 +485,7 @@ export default function Dashboard() {
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
-  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver'>('expenses');
+  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot'>('3d_load');
 
   // Hierarchical Navigation Accordion State
@@ -1908,6 +1908,7 @@ export default function Dashboard() {
           {/* GROUP 2: FLEET & DRIVER SUITE */}
           {(itemMatchesQuery('Petty Cash & P&L', ['petty cash', 'p&l', 'diesel', 'fuel slip', 'toll', 'bhatta', 'puncture', 'expenses', 'profit']) ||
             itemMatchesQuery('Fuel Theft & Diesel Radar', ['fuel theft', 'diesel pilferage', 'theft alert', 'fuel sensor', 'fuel rod', 'diesel', 'chori', 'anti-theft', 'siren', 'mileage audit']) ||
+            itemMatchesQuery('Cold-Chain & Temp Radar', ['cold chain', 'reefer', 'temperature', 'humidity', 'pharma', 'vaccines', 'dairy', 'temp breach', 'who-gdp', 'door sensor']) ||
             itemMatchesQuery('Fitness & Radar', ['vehicle fitness', 'radar', 'insurance expiry', 'puc', 'service', 'maintenance', 'fitness']) ||
             itemMatchesQuery('Driver Mobile Mode', ['driver mobile mode', 'sarathi portal', 'pod upload', 'driver app', 'driver mode']) ||
             itemMatchesQuery('Fleet & Vehicles', ['vehicles', 'fleet', 'trucks', 'trailer', 'container', 'rto rc']) ||
@@ -1924,7 +1925,7 @@ export default function Dashboard() {
                   <span>Fleet &amp; Driver Suite</span>
                 </div>
                 <div className="admin-nav-main-meta">
-                  <span className="admin-nav-count-badge" style={{ background: 'rgba(5, 150, 105, 0.2)', color: '#34d399' }}>7</span>
+                  <span className="admin-nav-count-badge" style={{ background: 'rgba(5, 150, 105, 0.2)', color: '#34d399' }}>8</span>
                   <span className={`admin-nav-chevron ${openNavGroups.fleet || sidebarMenuQuery ? 'open' : ''}`}>▸</span>
                 </div>
               </button>
@@ -1952,6 +1953,18 @@ export default function Dashboard() {
                       <span style={{ fontSize: '14px' }}>🛡️</span>
                       <span>Diesel Theft &amp; Fuel Radar</span>
                       <span className="admin-nav-sub-badge" style={{ background: '#dc2626', color: '#ffffff' }}>ANTI-THEFT</span>
+                    </button>
+                  )}
+
+                  {itemMatchesQuery('Cold-Chain & Temp Radar', ['cold chain', 'reefer', 'temperature', 'humidity', 'pharma', 'vaccines', 'dairy', 'temp breach', 'who-gdp', 'door sensor']) && (
+                    <button
+                      type="button"
+                      className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'cold_chain' ? 'active' : ''}`}
+                      onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt'); }}
+                    >
+                      <span style={{ fontSize: '14px' }}>❄️</span>
+                      <span>Cold-Chain &amp; Temp Radar</span>
+                      <span className="admin-nav-sub-badge" style={{ background: '#0284c7', color: '#ffffff' }}>PHARMA IoT</span>
                     </button>
                   )}
 
