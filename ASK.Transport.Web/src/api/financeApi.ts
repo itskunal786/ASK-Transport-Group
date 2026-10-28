@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = '/api/finance';
+const API_ROOT = import.meta.env.VITE_API_ROOT || 'http://localhost:5208/api';
+const API_BASE = `${API_ROOT}/finance`;
 
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
