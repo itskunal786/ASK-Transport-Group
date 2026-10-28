@@ -35,6 +35,7 @@ import './AdminDashboard.css';
 import AiOperationsDeck from '../../components/AiOperationsDeck';
 import AiOcrScannerModal from '../../components/AiOcrScannerModal';
 import FleetOperationsDeck from '../../components/FleetOperationsDeck';
+import EnterpriseB2BDeck from '../../components/EnterpriseB2BDeck';
 
 interface BookingRow {
   bookingNo: string;
@@ -475,7 +476,7 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -650,7 +651,8 @@ export default function Dashboard() {
       reports: { modules: ['Reports'], codes: ['Reports.View', 'Reports.Export'] },
       access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] },
       ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] },
-      fleet_mgmt: { modules: ['Fleet', 'Expenses'], codes: ['Fleet.View', 'Expenses.Approve'] }
+      fleet_mgmt: { modules: ['Fleet', 'Expenses'], codes: ['Fleet.View', 'Expenses.Approve'] },
+    enterprise_b2b: { modules: ['Enterprise', 'Bookings'], codes: ['Enterprise.Bulk', 'Marketplace.Bid'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -1740,6 +1742,20 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'enterprise_b2b' ? 'active' : ''}`}
+            onClick={() => setActiveTab('enterprise_b2b')}
+            style={{
+              borderLeft: activeTab === 'enterprise_b2b' ? '3px solid #7c3aed' : undefined,
+              background: activeTab === 'enterprise_b2b' ? 'rgba(124, 58, 237, 0.15)' : undefined
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>🏢</span>
+            B2B Bulk, Auction &amp; RTO
+            <span style={{ marginLeft: 'auto', background: '#7c3aed', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>PRO</span>
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
             onClick={() => setActiveTab('ai_automation')}
             style={{
@@ -2200,6 +2216,15 @@ export default function Dashboard() {
         {activeTab === 'fleet_mgmt' && (
           <div className="admin-content-pad">
             <FleetOperationsDeck />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: ENTERPRISE B2B SUITE (BULK, SPOT AUCTION, RTO) */}
+        {/* ============================================================== */}
+        {activeTab === 'enterprise_b2b' && (
+          <div className="admin-content-pad">
+            <EnterpriseB2BDeck />
           </div>
         )}
 
