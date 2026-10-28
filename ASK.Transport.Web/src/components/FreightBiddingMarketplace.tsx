@@ -38,9 +38,10 @@ export default function FreightBiddingMarketplace() {
     try {
       setLoading(true);
       const data = await getMarketplaceLoads();
-      setLoads(data);
+      setLoads(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load marketplace loads:', err);
+      setLoads([]);
     } finally {
       setLoading(false);
     }
@@ -51,7 +52,7 @@ export default function FreightBiddingMarketplace() {
     // 1-second interval to tick down countdown timers
     const timer = setInterval(() => {
       setLoads(prev =>
-        prev.map(l => {
+        (Array.isArray(prev) ? prev : []).map(l => {
           if (l.status === 'ActiveAuction' && l.secondsRemaining > 0) {
             return { ...l, secondsRemaining: l.secondsRemaining - 1 };
           }
@@ -130,9 +131,10 @@ export default function FreightBiddingMarketplace() {
     return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
   }
 
-  const filteredLoads = loads.filter(l => {
+  const safeLoads = Array.isArray(loads) ? loads : [];
+  const filteredLoads = safeLoads.filter(l => {
     if (filterType === 'All') return true;
-    return l.requiredTruckType.toLowerCase().includes(filterType.toLowerCase());
+    return (l.requiredTruckType || '').toLowerCase().includes(filterType.toLowerCase());
   });
 
   return (
@@ -178,7 +180,7 @@ export default function FreightBiddingMarketplace() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>ACTIVE SPOT AUCTIONS</span>
           <strong style={{ fontSize: '24px', color: '#d97706', display: 'block', margin: '4px 0' }}>
-            {loads.filter(l => l.status === 'ActiveAuction').length} Open Loads
+            {safeLoads.filter(l => l.status === 'ActiveAuction').length} Open Loads
           </strong>
           <span style={{ fontSize: '11.5px', color: '#b45309' }}>Real-time reverse bidding live</span>
         </div>
@@ -186,7 +188,7 @@ export default function FreightBiddingMarketplace() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL COMPETING BIDS</span>
           <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-            {loads.reduce((acc, l) => acc + l.bids.length, 0)} Verified Quotes
+            {safeLoads.reduce((acc, l) => acc + (l.bids || []).length, 0)} Verified Quotes
           </strong>
           <span style={{ fontSize: '11.5px', color: '#059669' }}>From certified transporters</span>
         </div>

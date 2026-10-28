@@ -41,8 +41,8 @@ export default function FleetTripExpenseManager() {
         status: statusFilter,
         expenseType: typeFilter
       });
-      setExpenses(res.expenses);
-      setMetrics(res.metrics);
+      setExpenses(res?.expenses || []);
+      setMetrics(res?.metrics || null);
 
       // Load active trip P&L
       const pnlRes = await getTripPnL(101);
@@ -241,14 +241,14 @@ export default function FleetTripExpenseManager() {
             </tr>
           </thead>
           <tbody>
-            {expenses.length === 0 ? (
+            {(expenses || []).length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
                   No trip expenses found for the selected filters.
                 </td>
               </tr>
             ) : (
-              expenses.map(exp => (
+              (expenses || []).map(exp => (
                 <tr key={exp.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '10px 14px' }}>
                     <strong style={{ color: '#2563eb' }}>{exp.tripNumber}</strong>
