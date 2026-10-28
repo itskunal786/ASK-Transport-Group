@@ -37,6 +37,7 @@ import AiOcrScannerModal from '../../components/AiOcrScannerModal';
 import FleetOperationsDeck from '../../components/FleetOperationsDeck';
 import EnterpriseB2BDeck from '../../components/EnterpriseB2BDeck';
 import FinanceAccountingDeck from '../../components/FinanceAccountingDeck';
+import NicEwayBillAutoExtensionSuite from '../../components/NicEwayBillAutoExtensionSuite';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -352,54 +353,6 @@ const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
   }
 ];
 
-const INITIAL_EWAY_BILLS: EwayBillRecord[] = [
-  {
-    ewbNo: '2410-9876-5432',
-    supplierGstin: '07AABCA1234F1Z5',
-    supplierName: 'Reliance Retail Ltd - Delhi DC',
-    recipientGstin: '27AABCT9988D1Z2',
-    recipientName: 'Reliance Retail Hub - Mumbai Bhiwandi',
-    validFrom: '26-Oct-2026 10:00 AM',
-    validUntil: '29-Oct-2026 11:59 PM',
-    status: 'VALID',
-    vehicleNo: 'DL-01-AB-1234',
-    hsnCode: '8528 - Consumer Electronics',
-    cargoValue: 1485000,
-    docNo: 'INV/DEL/26/9021',
-    distanceKm: 1420
-  },
-  {
-    ewbNo: '1812-4321-9988',
-    supplierGstin: '24AABCS7766K1Z9',
-    supplierName: 'Sun Pharmaceutical Industries Ltd, Ahmedabad',
-    recipientGstin: '07AABCS3322P1Z4',
-    recipientName: 'Sun Pharma Central Depot, Okhla Delhi',
-    validFrom: '25-Oct-2026 08:30 AM',
-    validUntil: '28-Oct-2026 08:30 PM',
-    status: 'EXPIRING_SOON',
-    vehicleNo: 'GJ-01-JK-7890',
-    hsnCode: '3004 - Medicaments & Formulations',
-    cargoValue: 2850000,
-    docNo: 'SPI/AHM/1089',
-    distanceKm: 940
-  },
-  {
-    ewbNo: '1009-8877-6655',
-    supplierGstin: '19AABCF4433H1Z1',
-    supplierName: 'Kolkata Heavy Foundry Works',
-    recipientGstin: '10AABCB5544J1Z8',
-    recipientName: 'Patna Infrastructure Grid Ltd',
-    validFrom: '20-Oct-2026 06:00 AM',
-    validUntil: '23-Oct-2026 11:59 PM',
-    status: 'EXPIRED',
-    vehicleNo: 'WB-02-GH-3456',
-    hsnCode: '7308 - Steel Structures',
-    cargoValue: 650000,
-    docNo: 'KHF/2026/410',
-    distanceKm: 580
-  }
-];
-
 const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   {
     plateNo: 'DL-01-AB-1234',
@@ -589,12 +542,6 @@ export default function Dashboard() {
   const [ticketSearch, setTicketSearch] = useState('');
   const [editingTicket, setEditingTicket] = useState<SupportTicket | null>(null);
   const [ticketResolutionNote, setTicketResolutionNote] = useState('');
-
-  // 5. E-Way Bill Auto Verification Engine State
-  const [ewayBillsList, setEwayBillsList] = useState<EwayBillRecord[]>(INITIAL_EWAY_BILLS);
-  const [ewbSearchInput, setEwbSearchInput] = useState('');
-  const [ewbVerificationResult, setEwbVerificationResult] = useState<EwayBillRecord | null>(null);
-  const [ewbVerifying, setEwbVerifying] = useState(false);
 
   // 6. Telematics & GPS Radar State
   const [telematicsFleet, setTelematicsFleet] = useState<TelematicsVehicle[]>(INITIAL_TELEMATICS_FLEET);
@@ -932,42 +879,6 @@ export default function Dashboard() {
     setSupportTickets(prev => [newTicket, ...prev]);
     setPodVerifyBooking(null);
     showToast(`⚠️ POD Rejected! Incident ticket ${newTicket.id} escalated to Support Desk`);
-  }
-
-  // 4. E-Way Bill Auto Verification Engine Handler
-  function handleVerifyEwayBill(query?: string) {
-    const target = (query || ewbSearchInput).trim();
-    if (!target) {
-      showToast('Please enter an E-Way Bill Number');
-      return;
-    }
-    setEwbVerifying(true);
-    setTimeout(() => {
-      const existing = ewayBillsList.find(e => e.ewbNo.includes(target) || target.includes(e.ewbNo));
-      if (existing) {
-        setEwbVerificationResult(existing);
-      } else {
-        const fetched: EwayBillRecord = {
-          ewbNo: target,
-          supplierGstin: '07AABCA4567K1Z8',
-          supplierName: 'National Logistics Partner Delhi',
-          recipientGstin: '27AABCT1234L1Z3',
-          recipientName: 'Maharashtra Freight Consignee',
-          validFrom: new Date(Date.now() - 3600000 * 12).toLocaleString('en-IN'),
-          validUntil: new Date(Date.now() + 3600000 * 48).toLocaleString('en-IN'),
-          status: 'VALID',
-          vehicleNo: 'DL-01-AB-1234',
-          hsnCode: '8471 - Computing Machinery',
-          cargoValue: 980000,
-          docNo: `INV/2026/${Math.floor(1000 + Math.random() * 9000)}`,
-          distanceKm: 1350
-        };
-        setEwayBillsList(prev => [fetched, ...prev]);
-        setEwbVerificationResult(fetched);
-      }
-      setEwbVerifying(false);
-      showToast(`✓ E-Way Bill ${target} verified from National GST System!`);
-    }, 600);
   }
 
   // 5. Support Desk Handlers
@@ -1813,7 +1724,7 @@ export default function Dashboard() {
           {/* GROUP 1: OPERATIONS & DISPATCH */}
           {(itemMatchesQuery('Bookings & Bilty', ['bookings', 'bilty', 'lr', 'consignments', 'cargo', 'counter booking']) ||
             itemMatchesQuery('Shipments & Dispatch', ['shipments', 'dispatch', 'transit', 'challan', 'tracking', 'delivery']) ||
-            itemMatchesQuery('E-Way Bill Engine', ['eway', 'e-way bill', 'nic', 'gst', 'verification', 'compliance']) ||
+            itemMatchesQuery('NIC E-Way Bill & Part-B', ['eway', 'e-way bill', 'nic', 'gst', 'verification', 'compliance', 'part-b', 'auto-extend', 'extension', 'validity', 'rto', 'challan', 'transshipment']) ||
             itemMatchesQuery('Hubs & Terminals', ['hubs', 'terminals', 'warehouses', 'docks', 'branches', 'network'])) && (
             <div className="admin-nav-group">
               <button
@@ -1868,7 +1779,7 @@ export default function Dashboard() {
                     </button>
                   )}
 
-                  {itemMatchesQuery('E-Way Bill Engine', ['eway', 'e-way bill', 'nic', 'gst', 'verification', 'compliance']) && (
+                  {itemMatchesQuery('NIC E-Way Bill & Part-B', ['eway', 'e-way bill', 'nic', 'gst', 'verification', 'compliance', 'part-b', 'auto-extend', 'extension', 'validity', 'rto', 'challan', 'transshipment']) && (
                     <button
                       type="button"
                       className={`admin-nav-sub-item ${activeTab === 'ewaybill' ? 'active' : ''} ${isTabRevoked('ewaybill').revoked ? 'revoked' : ''}`}
@@ -1880,7 +1791,7 @@ export default function Dashboard() {
                         <polyline points="14 2 14 8 20 8" />
                         <line x1="16" y1="13" x2="8" y2="13" />
                       </svg>
-                      <span>E-Way Bill Engine</span>
+                      <span>NIC E-Way Bill &amp; Part-B</span>
                       {isTabRevoked('ewaybill').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
                     </button>
                   )}
@@ -5010,208 +4921,7 @@ export default function Dashboard() {
         {/* VIEW: E-WAY BILL AUTO VERIFICATION ENGINE */}
         {/* ============================================================== */}
         {activeTab === 'ewaybill' && (
-          <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>⚡ Govt E-Way Bill Auto Verification Engine</h1>
-                <p>Direct GST portal sync, GSTIN validation, vehicle validity cross-check, and zero RTO penalty guarantee</p>
-              </div>
-            </div>
-
-            {/* VERIFY SEARCH BOX */}
-            <div className="ewb-box">
-              <h3 style={{ margin: '0 0 10px', fontSize: '15px', color: '#0f172a' }}>
-                🔍 Instant E-Way Bill Auto-Fetch
-              </h3>
-              <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>
-                Enter a 12-digit Government E-Way Bill number to auto-verify transporter allotment, supplier/recipient GSTINs, and RTO transit validity.
-              </p>
-
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  placeholder="Enter 12-Digit E-Way Bill # (e.g. 2410-9876-5432)"
-                  value={ewbSearchInput}
-                  onChange={e => setEwbSearchInput(e.target.value)}
-                  style={{ flex: 1, minWidth: '280px', padding: '10px 14px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', fontWeight: 600 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleVerifyEwayBill()}
-                  disabled={ewbVerifying}
-                  style={{
-                    padding: '10px 24px',
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {ewbVerifying ? 'Verifying with GST...' : '🔍 Auto-Fetch Govt Portal Data'}
-                </button>
-              </div>
-
-              {/* DEMO CHIPS */}
-              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Quick Demos:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEwbSearchInput('2410-9876-5432');
-                    handleVerifyEwayBill('2410-9876-5432');
-                  }}
-                  style={{ padding: '4px 10px', fontSize: '11px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  🟢 2410-9876-5432 (Valid FTL)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEwbSearchInput('1812-4321-9988');
-                    handleVerifyEwayBill('1812-4321-9988');
-                  }}
-                  style={{ padding: '4px 10px', fontSize: '11px', background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  🟡 1812-4321-9988 (Expiring Soon)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEwbSearchInput('1009-8877-6655');
-                    handleVerifyEwayBill('1009-8877-6655');
-                  }}
-                  style={{ padding: '4px 10px', fontSize: '11px', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  🔴 1009-8877-6655 (Expired)
-                </button>
-              </div>
-
-              {/* ACTIVE VERIFICATION CARD */}
-              {ewbVerificationResult && (
-                <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-                  <div
-                    className={`ewb-status-banner ${
-                      ewbVerificationResult.status === 'VALID'
-                        ? 'valid'
-                        : ewbVerificationResult.status === 'EXPIRING_SOON'
-                        ? 'expiring'
-                        : 'expired'
-                    }`}
-                  >
-                    <div>
-                      {ewbVerificationResult.status === 'VALID' && (
-                        <span>✓ GOVERNMENT E-WAY BILL VALID &amp; ACTIVE — ZERO RTO PENALTY RISK</span>
-                      )}
-                      {ewbVerificationResult.status === 'EXPIRING_SOON' && (
-                        <span>⚠️ ATTENTION: E-WAY BILL EXPIRES IN &lt;4 HOURS — REQUEST VEHICLE VALIDITY EXTENSION</span>
-                      )}
-                      {ewbVerificationResult.status === 'EXPIRED' && (
-                        <span>❌ EXPIRED E-WAY BILL — TRANSIT PROHIBITED UNDER GST SECTION 129</span>
-                      )}
-                    </div>
-                    <div>
-                      Valid Until: <strong>{ewbVerificationResult.validUntil}</strong>
-                    </div>
-                  </div>
-
-                  <div className="ewb-party-grid">
-                    <div className="ewb-party-card">
-                      <small style={{ color: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700 }}>
-                        Supplier / Consignor Details
-                      </small>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
-                        {ewbVerificationResult.supplierName}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, marginTop: '2px' }}>
-                        GSTIN: {ewbVerificationResult.supplierGstin}
-                      </div>
-                    </div>
-
-                    <div className="ewb-party-card">
-                      <small style={{ color: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700 }}>
-                        Recipient / Consignee Details
-                      </small>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
-                        {ewbVerificationResult.recipientName}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, marginTop: '2px' }}>
-                        GSTIN: {ewbVerificationResult.recipientGstin}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '16px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', fontSize: '12px' }}>
-                    <div>
-                      <span style={{ color: '#64748b' }}>Assigned Vehicle Plate:</span>
-                      <div style={{ fontWeight: 800, color: '#0b72e7', fontSize: '13px' }}>{ewbVerificationResult.vehicleNo}</div>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748b' }}>Invoice / Doc Ref:</span>
-                      <div style={{ fontWeight: 700 }}>{ewbVerificationResult.docNo}</div>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748b' }}>HSN Code &amp; Goods:</span>
-                      <div style={{ fontWeight: 700 }}>{ewbVerificationResult.hsnCode}</div>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748b' }}>Declared Consignment Value:</span>
-                      <div style={{ fontWeight: 800, color: '#059669' }}>₹{ewbVerificationResult.cargoValue.toLocaleString('en-IN')}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* RECENT E-WAY BILLS TABLE */}
-            <div className="admin-table-card">
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
-                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800 }}>
-                  Recently Verified E-Way Bills Registry
-                </h3>
-              </div>
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>EWB Number</th>
-                    <th>Supplier / Consignor</th>
-                    <th>Recipient</th>
-                    <th>Vehicle Plate</th>
-                    <th>Cargo Value</th>
-                    <th>Validity Expiry</th>
-                    <th>RTO Compliance Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ewayBillsList.map(e => (
-                    <tr key={e.ewbNo}>
-                      <td><strong style={{ color: '#0b72e7' }}>{e.ewbNo}</strong></td>
-                      <td>{e.supplierName}</td>
-                      <td>{e.recipientName}</td>
-                      <td><strong style={{ color: '#0f172a' }}>{e.vehicleNo}</strong></td>
-                      <td>₹{e.cargoValue.toLocaleString('en-IN')}</td>
-                      <td style={{ fontSize: '12px', color: '#64748b' }}>{e.validUntil}</td>
-                      <td>
-                        <span
-                          className="admin-badge-status"
-                          style={{
-                            background:
-                              e.status === 'VALID' ? '#ecfdf5' : e.status === 'EXPIRING_SOON' ? '#fffbeb' : '#fef2f2',
-                            color:
-                              e.status === 'VALID' ? '#059669' : e.status === 'EXPIRING_SOON' ? '#b45309' : '#dc2626'
-                          }}
-                        >
-                          {e.status === 'VALID' ? '✓ Valid & Compliant' : e.status === 'EXPIRING_SOON' ? '⚠️ Expiring Soon' : '❌ Expired'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <NicEwayBillAutoExtensionSuite />
         )}
 
         {/* ============================================================== */}
