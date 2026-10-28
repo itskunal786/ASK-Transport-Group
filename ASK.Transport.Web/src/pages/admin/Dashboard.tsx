@@ -34,6 +34,7 @@ import { isUserApproved, setUserApproved } from '../../utils/accessControl';
 import './AdminDashboard.css';
 import AiOperationsDeck from '../../components/AiOperationsDeck';
 import AiOcrScannerModal from '../../components/AiOcrScannerModal';
+import FleetOperationsDeck from '../../components/FleetOperationsDeck';
 
 interface BookingRow {
   bookingNo: string;
@@ -474,7 +475,7 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -648,7 +649,8 @@ export default function Dashboard() {
       settings: { modules: ['Settings'], codes: ['Settings.View', 'Settings.Edit'] },
       reports: { modules: ['Reports'], codes: ['Reports.View', 'Reports.Export'] },
       access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] },
-      ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] }
+      ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] },
+      fleet_mgmt: { modules: ['Fleet', 'Expenses'], codes: ['Fleet.View', 'Expenses.Approve'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -1724,6 +1726,20 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'fleet_mgmt' ? 'active' : ''}`}
+            onClick={() => setActiveTab('fleet_mgmt')}
+            style={{
+              borderLeft: activeTab === 'fleet_mgmt' ? '3px solid #059669' : undefined,
+              background: activeTab === 'fleet_mgmt' ? 'rgba(5, 150, 105, 0.15)' : undefined
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>🚛</span>
+            Fleet Petty Cash &amp; P&amp;L
+            <span style={{ marginLeft: 'auto', background: '#059669', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>NEW</span>
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
             onClick={() => setActiveTab('ai_automation')}
             style={{
@@ -2175,6 +2191,15 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: FLEET PETTY CASH & TRIP P&L OPERATIONS DECK */}
+        {/* ============================================================== */}
+        {activeTab === 'fleet_mgmt' && (
+          <div className="admin-content-pad">
+            <FleetOperationsDeck />
           </div>
         )}
 

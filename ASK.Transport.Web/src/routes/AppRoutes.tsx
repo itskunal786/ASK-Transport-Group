@@ -18,6 +18,7 @@ import Payments from '../pages/customer/Payments';
 import Invoices from '../pages/customer/Invoices';
 import TrackShipment from '../pages/customer/TrackShipment';
 import AdminDashboard from '../pages/admin/Dashboard';
+import MobileDriverConsole from '../pages/driver/MobileDriverConsole';
 
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
@@ -70,6 +71,12 @@ export default function AppRoutes() {
       <Route
         path="/track"
         element={<TrackShipment />}
+      />
+
+      {/* DEDICATED MOBILE DRIVER APP CONSOLE */}
+      <Route
+        path="/driver"
+        element={<MobileDriverConsole />}
       />
 
       {/* CUSTOMER PROTECTED ROUTES */}

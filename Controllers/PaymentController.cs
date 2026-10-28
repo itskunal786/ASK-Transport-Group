@@ -1,4 +1,4 @@
-﻿using ASK.Group.Api.Data;
+using ASK.Group.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -49,13 +49,13 @@ public sealed class PaymentController : ControllerBase
         var payments =
             await _db.PaymentTransactions
                 .Where(x =>
-                    x.Booking.UserId == userId.Value)
+                    x.Booking!.UserId == userId.Value)
                 .OrderByDescending(x =>
                     x.CreatedAt)
                 .Select(x => new
                 {
                     x.Id,
-                    x.Booking.BookingNumber,
+                    BookingNumber = x.Booking != null ? x.Booking.BookingNumber : null,
                     x.TransactionId,
                     x.Amount,
                     x.PaymentMethod,
