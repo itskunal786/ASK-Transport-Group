@@ -136,7 +136,7 @@ export default function GovtEInvoiceManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL E-INVOICED FREIGHT</span>
           <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-            ₹{data?.summary.totalInvoiced.toLocaleString('en-IN') || 0}
+            ₹{(data?.summary?.totalInvoiced ?? 0).toLocaleString('en-IN')}
           </strong>
           <span style={{ fontSize: '11.5px', color: '#059669' }}>Fully audited &amp; legal</span>
         </div>
@@ -144,7 +144,7 @@ export default function GovtEInvoiceManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #2563eb' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>GST OUTPUT COLLECTED</span>
           <strong style={{ fontSize: '24px', color: '#2563eb', display: 'block', margin: '4px 0' }}>
-            ₹{data?.summary.totalGstCollected.toLocaleString('en-IN') || 0}
+            ₹{(data?.summary?.totalGstCollected ?? 0).toLocaleString('en-IN')}
           </strong>
           <span style={{ fontSize: '11.5px', color: '#64748b' }}>IGST + CGST/SGST ITC Pass-Through</span>
         </div>

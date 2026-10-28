@@ -142,7 +142,7 @@ export default function ReverseLogisticsRtoManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #7c3aed' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>DAMAGE CLAIMS VALUE</span>
           <strong style={{ fontSize: '24px', color: '#7c3aed', display: 'block', margin: '4px 0' }}>
-            ₹{data?.metrics.totalClaims.toLocaleString('en-IN') || 0}
+            ₹{(data?.metrics?.totalClaims ?? 0).toLocaleString('en-IN')}
           </strong>
           <span style={{ fontSize: '11.5px', color: '#64748b' }}>Cargo insurance inspection ready</span>
         </div>
@@ -241,7 +241,7 @@ export default function ReverseLogisticsRtoManager() {
                 <div>
                   <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>CUSTOMER CLAIM AMOUNT:</span>
                   <div style={{ fontSize: '16px', fontWeight: 900, color: '#7c3aed', marginTop: '2px' }}>
-                    {c.customerRefundClaimed > 0 ? `₹${c.customerRefundClaimed.toLocaleString('en-IN')}` : 'Nil (Stock Exchange)'}
+                    {(c.customerRefundClaimed ?? 0) > 0 ? `₹${(c.customerRefundClaimed ?? 0).toLocaleString('en-IN')}` : 'Nil (Stock Exchange)'}
                   </div>
                 </div>
               </div>

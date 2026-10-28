@@ -111,6 +111,25 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
           >
             About Us
           </Link>
+
+          <Link
+            to="/driver"
+            target="_blank"
+            className="landing-nav-link"
+            style={{
+              background: 'rgba(5, 150, 105, 0.12)',
+              color: '#059669',
+              fontWeight: 800,
+              padding: '5px 12px',
+              borderRadius: '20px',
+              border: '1px solid rgba(5, 150, 105, 0.3)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}
+          >
+            <span>📱</span> Driver App
+          </Link>
         </nav>
 
         {/* RIGHT ACTIONS */}
@@ -227,6 +246,46 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         }}
                       >
                         Book shipments, Bilty LR & invoices
+                      </small>
+                    </div>
+                  </Link>
+
+                  {/* Option: Mobile Driver Mode */}
+                  <Link
+                    to="/driver"
+                    target="_blank"
+                    onClick={() => setShowPortalMenu(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      background: 'rgba(16, 185, 129, 0.08)',
+                      border: '1px solid rgba(16, 185, 129, 0.25)',
+                      marginBottom: '8px',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <div style={{ fontSize: '1.25rem', marginTop: '2px' }}>📱</div>
+                    <div>
+                      <strong
+                        style={{
+                          display: 'block',
+                          fontSize: '0.88rem',
+                          color: '#059669',
+                        }}
+                      >
+                        Mobile Driver Mode ↗
+                      </strong>
+                      <small
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--color-text-secondary, #64748b)',
+                        }}
+                      >
+                        Hindi / English console, diesel slip & POD
                       </small>
                     </div>
                   </Link>

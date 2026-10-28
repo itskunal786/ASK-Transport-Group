@@ -548,12 +548,12 @@ export default function MobileDriverConsole() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                 <div style={{ background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #334155' }}>
                   <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Trip Advance Mila:</span>
-                  <strong style={{ fontSize: '18px', color: '#22c55e' }}>₹{pnl?.financials.driverAdvanceGiven.toLocaleString('en-IN') || 15000}</strong>
+                  <strong style={{ fontSize: '18px', color: '#22c55e' }}>₹{(pnl?.financials?.driverAdvanceGiven ?? 15000).toLocaleString('en-IN')}</strong>
                 </div>
 
                 <div style={{ background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #334155' }}>
                   <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Cash Kharcha Hua:</span>
-                  <strong style={{ fontSize: '18px', color: '#f87171' }}>₹{pnl?.financials.driverCashSpent.toLocaleString('en-IN') || 0}</strong>
+                  <strong style={{ fontSize: '18px', color: '#f87171' }}>₹{(pnl?.financials?.driverCashSpent ?? 0).toLocaleString('en-IN')}</strong>
                 </div>
               </div>
 
@@ -561,7 +561,7 @@ export default function MobileDriverConsole() {
                 <div>
                   <span style={{ fontSize: '11px', color: '#c7d2fe', textTransform: 'uppercase' }}>Bacha Hua Cash Balance:</span>
                   <div style={{ fontSize: '20px', fontWeight: 900, color: '#38bdf8' }}>
-                    ₹{pnl?.financials.driverPettyCashBalance.toLocaleString('en-IN') || 15000}
+                    ₹{(pnl?.financials?.driverPettyCashBalance ?? 15000).toLocaleString('en-IN')}
                   </div>
                 </div>
                 <span style={{ padding: '4px 10px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>

@@ -127,7 +127,7 @@ export default function TallyZohoErpSyncDeck() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>SYNCED REVENUE VALUE</span>
           <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-            ₹{data?.metrics.totalSyncedValue.toLocaleString('en-IN') || 0}
+            ₹{(data?.metrics?.totalSyncedValue ?? 0).toLocaleString('en-IN')}
           </strong>
           <span style={{ fontSize: '11.5px', color: '#059669' }}>Ledger balance posted</span>
         </div>

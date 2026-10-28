@@ -317,7 +317,7 @@ export default function FreightBiddingMarketplace() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>
-                    MARKET TRANSPORTER BIDS ({load.bids.length} Offers)
+                    MARKET TRANSPORTER BIDS ({(load.bids || []).length} Offers)
                   </span>
 
                   {!isLocked && (
@@ -335,7 +335,7 @@ export default function FreightBiddingMarketplace() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {load.bids.map((bid: MarketplaceBid, index: number) => {
+                  {(load.bids || []).map((bid: MarketplaceBid, index: number) => {
                     const isLowest = index === 0;
 
                     return (

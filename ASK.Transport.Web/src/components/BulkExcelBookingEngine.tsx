@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   getBulkSampleTemplate,
   previewBulkConsignments,
@@ -18,7 +18,11 @@ export default function BulkExcelBookingEngine() {
   const [processResult, setProcessResult] = useState<BulkProcessResponse | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
 
-  // Load sample demo consignment on start
+  // Load sample demo consignment automatically on component mount
+  useEffect(() => {
+    handleLoadDemoData();
+  }, []);
+
   async function handleLoadDemoData() {
     try {
       setLoading(true);
@@ -26,7 +30,7 @@ export default function BulkExcelBookingEngine() {
       setPreviewData(res);
       setProcessResult(null);
     } catch (err: any) {
-      alert('Error loading preview: ' + err?.message);
+      console.warn('Could not load demo preview data:', err?.message);
     } finally {
       setLoading(false);
     }
@@ -191,17 +195,17 @@ export default function BulkExcelBookingEngine() {
           <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL GROSS WEIGHT</span>
             <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-              {(previewData.totalWeightKg / 1000).toFixed(2)} Metric Tons
+              {((previewData.totalWeightKg ?? 0) / 1000).toFixed(2)} Metric Tons
             </strong>
             <span style={{ fontSize: '11.5px', color: '#64748b' }}>
-              {previewData.totalWeightKg.toLocaleString('en-IN')} KG • {previewData.totalPackages} Boxes
+              {(previewData.totalWeightKg ?? 0).toLocaleString('en-IN')} KG • {previewData.totalPackages ?? 0} Boxes
             </span>
           </div>
 
           <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #7c3aed' }}>
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>ESTIMATED TOTAL FREIGHT</span>
             <strong style={{ fontSize: '24px', color: '#7c3aed', display: 'block', margin: '4px 0' }}>
-              ₹{previewData.totalEstimatedFreight.toLocaleString('en-IN')}
+              ₹{(previewData.totalEstimatedFreight ?? 0).toLocaleString('en-IN')}
             </strong>
             <span style={{ fontSize: '11.5px', color: '#64748b' }}>Includes 5% Fuel Surcharge</span>
           </div>
@@ -209,7 +213,7 @@ export default function BulkExcelBookingEngine() {
           <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>DECLARED CARGO VALUE</span>
             <strong style={{ fontSize: '24px', color: '#d97706', display: 'block', margin: '4px 0' }}>
-              ₹{previewData.totalDeclaredValue.toLocaleString('en-IN')}
+              ₹{(previewData.totalDeclaredValue ?? 0).toLocaleString('en-IN')}
             </strong>
             <span style={{ fontSize: '11.5px', color: '#64748b' }}>Factory Commercial Invoices</span>
           </div>
@@ -304,14 +308,14 @@ export default function BulkExcelBookingEngine() {
                     <td style={{ padding: '10px 14px', color: '#475569' }}>{item.goodsDescription}</td>
                     <td style={{ padding: '10px 14px', fontWeight: 700 }}>{item.packageCount}</td>
                     <td style={{ padding: '10px 14px', fontWeight: 700, color: '#16a34a' }}>{item.weightKg} kg</td>
-                    <td style={{ padding: '10px 14px' }}>₹{item.declaredValue.toLocaleString('en-IN')}</td>
+                    <td style={{ padding: '10px 14px' }}>₹{(item.declaredValue ?? 0).toLocaleString('en-IN')}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, background: item.paymentMode === 'Prepaid' ? '#dcfce7' : item.paymentMode === 'COD' ? '#fef3c7' : '#eff6ff', color: item.paymentMode === 'Prepaid' ? '#166534' : item.paymentMode === 'COD' ? '#92400e' : '#1e40af' }}>
                         {item.paymentMode}
                       </span>
                     </td>
                     <td style={{ padding: '10px 14px', fontWeight: 800, color: '#7c3aed' }}>
-                      ₹{item.estimatedFreight.toLocaleString('en-IN')}
+                      ₹{(item.estimatedFreight ?? 0).toLocaleString('en-IN')}
                     </td>
                     <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                       {item.isValid ? (

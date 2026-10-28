@@ -655,8 +655,8 @@ export default function Dashboard() {
       access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] },
       ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] },
       fleet_mgmt: { modules: ['Fleet', 'Expenses'], codes: ['Fleet.View', 'Expenses.Approve'] },
-    enterprise_b2b: { modules: ['Enterprise', 'Bookings'], codes: ['Enterprise.Bulk', 'Marketplace.Bid'] },
-    finance_accounting: { modules: ['Finance', 'Invoices', 'Accounts'], codes: ['Finance.View', 'Invoices.Create'] }
+      enterprise_b2b: { modules: ['Enterprise'], codes: ['Enterprise.View'] },
+      finance_accounting: { modules: ['Finance'], codes: ['Finance.View'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -672,8 +672,7 @@ export default function Dashboard() {
 
     if (matchingRevoked.length > 0) {
       const hasViewRevoked = matchingRevoked.some(p => p.code.toLowerCase().endsWith('.view') || p.action.toLowerCase() === 'view');
-      const singleOrDirectMatch = mapping.codes.length <= 2 || hasViewRevoked;
-      if (singleOrDirectMatch || matchingRevoked.length >= mapping.codes.length / 2) {
+      if (hasViewRevoked) {
         return {
           revoked: true,
           reason: `Super Admin has revoked access: ${matchingRevoked.map(p => p.code).join(', ')}`
