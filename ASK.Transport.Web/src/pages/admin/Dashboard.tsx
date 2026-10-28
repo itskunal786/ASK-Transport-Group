@@ -36,6 +36,7 @@ import AiOperationsDeck from '../../components/AiOperationsDeck';
 import AiOcrScannerModal from '../../components/AiOcrScannerModal';
 import FleetOperationsDeck from '../../components/FleetOperationsDeck';
 import EnterpriseB2BDeck from '../../components/EnterpriseB2BDeck';
+import FinanceAccountingDeck from '../../components/FinanceAccountingDeck';
 
 interface BookingRow {
   bookingNo: string;
@@ -476,7 +477,7 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -652,7 +653,8 @@ export default function Dashboard() {
       access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] },
       ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] },
       fleet_mgmt: { modules: ['Fleet', 'Expenses'], codes: ['Fleet.View', 'Expenses.Approve'] },
-    enterprise_b2b: { modules: ['Enterprise', 'Bookings'], codes: ['Enterprise.Bulk', 'Marketplace.Bid'] }
+    enterprise_b2b: { modules: ['Enterprise', 'Bookings'], codes: ['Enterprise.Bulk', 'Marketplace.Bid'] },
+    finance_accounting: { modules: ['Finance', 'Invoices', 'Accounts'], codes: ['Finance.View', 'Invoices.Create'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -1756,6 +1758,20 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`admin-nav-item ${activeTab === 'finance_accounting' ? 'active' : ''}`}
+            onClick={() => setActiveTab('finance_accounting')}
+            style={{
+              borderLeft: activeTab === 'finance_accounting' ? '3px solid #059669' : undefined,
+              background: activeTab === 'finance_accounting' ? 'rgba(5, 150, 105, 0.15)' : undefined
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>💳</span>
+            GST E-Invoice, Tally &amp; Credit
+            <span style={{ marginLeft: 'auto', background: '#059669', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>GST</span>
+          </button>
+
+          <button
+            type="button"
             className={`admin-nav-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
             onClick={() => setActiveTab('ai_automation')}
             style={{
@@ -2225,6 +2241,15 @@ export default function Dashboard() {
         {activeTab === 'enterprise_b2b' && (
           <div className="admin-content-pad">
             <EnterpriseB2BDeck />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: FINANCE, GST & ACCOUNTING AUTOMATION SUITE */}
+        {/* ============================================================== */}
+        {activeTab === 'finance_accounting' && (
+          <div className="admin-content-pad">
+            <FinanceAccountingDeck />
           </div>
         )}
 
