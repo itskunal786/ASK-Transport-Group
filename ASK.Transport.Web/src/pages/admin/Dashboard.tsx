@@ -487,6 +487,53 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'maintenance' | 'mobile_driver'>('expenses');
 
+  // Hierarchical Navigation Accordion State
+  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
+    operations: true,
+    fleet: true,
+    enterprise: true,
+    ai: true,
+    governance: false,
+  });
+
+  const toggleNavGroup = (groupKey: string) => {
+    setOpenNavGroups(prev => ({
+      ...prev,
+      [groupKey]: !prev[groupKey]
+    }));
+  };
+
+  const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
+    switch (group) {
+      case 'operations':
+        return ['bookings', 'shipments', 'ewaybill', 'hubs'].includes(activeTab);
+      case 'fleet':
+        return ['fleet_mgmt', 'vehicles', 'drivers', 'telematics'].includes(activeTab);
+      case 'enterprise':
+        return ['enterprise_b2b', 'finance_accounting', 'tariff'].includes(activeTab);
+      case 'ai':
+        return activeTab === 'ai_automation';
+      case 'governance':
+        return ['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(activeTab);
+      default:
+        return false;
+    }
+  };
+
+  useEffect(() => {
+    if (['bookings', 'shipments', 'ewaybill', 'hubs'].includes(activeTab)) {
+      setOpenNavGroups(prev => (prev.operations ? prev : { ...prev, operations: true }));
+    } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics'].includes(activeTab)) {
+      setOpenNavGroups(prev => (prev.fleet ? prev : { ...prev, fleet: true }));
+    } else if (['enterprise_b2b', 'finance_accounting', 'tariff'].includes(activeTab)) {
+      setOpenNavGroups(prev => (prev.enterprise ? prev : { ...prev, enterprise: true }));
+    } else if (activeTab === 'ai_automation') {
+      setOpenNavGroups(prev => (prev.ai ? prev : { ...prev, ai: true }));
+    } else if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(activeTab)) {
+      setOpenNavGroups(prev => (prev.governance ? prev : { ...prev, governance: true }));
+    }
+  }, [activeTab]);
+
   // OPERATIONAL CONTROL (ADMIN / FLEET MANAGERS) STATE
   // 1. Dispatch Fleet State
   const [showDispatchModal, setShowDispatchModal] = useState(false);
@@ -1638,6 +1685,7 @@ export default function Dashboard() {
         </div>
 
         <nav className="admin-nav-menu">
+          {/* TOP STANDALONE: DASHBOARD */}
           <button
             type="button"
             className={`admin-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
@@ -1649,312 +1697,390 @@ export default function Dashboard() {
               <rect x="14" y="14" width="7" height="7" rx="1.5" />
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
-            Dashboard
+            <span style={{ fontWeight: 600 }}>Dashboard Home</span>
           </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'bookings' ? 'active' : ''} ${isTabRevoked('bookings').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('bookings')}
-            title={isTabRevoked('bookings').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            Bookings
-            {isTabRevoked('bookings').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+          {/* GROUP 1: OPERATIONS & DISPATCH */}
+          <div className="admin-nav-group">
+            <button
+              type="button"
+              className={`admin-nav-main-header ${isGroupActive('operations') ? 'has-active' : ''}`}
+              onClick={() => toggleNavGroup('operations')}
+            >
+              <div className="admin-nav-main-title">
+                <span style={{ fontSize: '13px' }}>📦</span>
+                <span>Operations &amp; Dispatch</span>
+              </div>
+              <div className="admin-nav-main-meta">
+                <span className="admin-nav-count-badge">4</span>
+                <span className={`admin-nav-chevron ${openNavGroups.operations ? 'open' : ''}`}>▸</span>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'customers' ? 'active' : ''} ${isTabRevoked('customers').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('customers')}
-            title={isTabRevoked('customers').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            User Management
-            {isTabRevoked('customers').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+            {openNavGroups.operations && (
+              <div className="admin-nav-sub-list">
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'bookings' ? 'active' : ''} ${isTabRevoked('bookings').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('bookings')}
+                  title={isTabRevoked('bookings').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span>Bookings &amp; Bilty</span>
+                  {isTabRevoked('bookings').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'shipments' ? 'active' : ''} ${isTabRevoked('shipments').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('shipments')}
-            title={isTabRevoked('shipments').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="6" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
-            Shipments &amp; Dispatch
-            {isTabRevoked('shipments').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'shipments' ? 'active' : ''} ${isTabRevoked('shipments').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('shipments')}
+                  title={isTabRevoked('shipments').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                  <span>Shipments &amp; Dispatch</span>
+                  {isTabRevoked('shipments').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'drivers' ? 'active' : ''} ${isTabRevoked('drivers').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('drivers')}
-            title={isTabRevoked('drivers').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-            </svg>
-            Drivers
-            {isTabRevoked('drivers').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'ewaybill' ? 'active' : ''} ${isTabRevoked('ewaybill').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('ewaybill')}
+                  title={isTabRevoked('ewaybill').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                  </svg>
+                  <span>E-Way Bill Engine</span>
+                  {isTabRevoked('ewaybill').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'vehicles' ? 'active' : ''} ${isTabRevoked('vehicles').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('vehicles')}
-            title={isTabRevoked('vehicles').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="1" y="3" width="15" height="13" />
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-              <circle cx="5.5" cy="18.5" r="2.5" />
-              <circle cx="18.5" cy="18.5" r="2.5" />
-            </svg>
-            Fleet &amp; Vehicles
-            {isTabRevoked('vehicles').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'hubs' ? 'active' : ''} ${isTabRevoked('hubs').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('hubs')}
+                  title={isTabRevoked('hubs').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span>Hubs &amp; Terminals</span>
+                  {isTabRevoked('hubs').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+              </div>
+            )}
+          </div>
 
-          {/* SECTION: 2026 FLEET & DRIVERS */}
-          <div className="admin-nav-section-title">🚛 2026 Fleet &amp; Driver Suite</div>
+          {/* GROUP 2: FLEET & DRIVER SUITE */}
+          <div className="admin-nav-group">
+            <button
+              type="button"
+              className={`admin-nav-main-header ${isGroupActive('fleet') ? 'has-active' : ''}`}
+              onClick={() => toggleNavGroup('fleet')}
+            >
+              <div className="admin-nav-main-title">
+                <span style={{ fontSize: '13px' }}>🚛</span>
+                <span>Fleet &amp; Driver Suite</span>
+              </div>
+              <div className="admin-nav-main-meta">
+                <span className="admin-nav-count-badge" style={{ background: 'rgba(5, 150, 105, 0.2)', color: '#34d399' }}>6</span>
+                <span className={`admin-nav-chevron ${openNavGroups.fleet ? 'open' : ''}`}>▸</span>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'active' : ''}`}
-            onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
-            style={{
-              borderLeft: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? '3px solid #059669' : undefined,
-              background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'rgba(5, 150, 105, 0.15)' : undefined
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>⛽</span>
-            Fleet Petty Cash &amp; P&amp;L
-            <span style={{ marginLeft: 'auto', background: '#059669', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>NEW</span>
-          </button>
+            {openNavGroups.fleet && (
+              <div className="admin-nav-sub-list">
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'active' : ''}`}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                >
+                  <span style={{ fontSize: '14px' }}>⛽</span>
+                  <span>Petty Cash &amp; P&amp;L</span>
+                  <span className="admin-nav-sub-badge" style={{ background: '#059669', color: '#ffffff' }}>NEW</span>
+                </button>
 
-          <a
-            href="/driver"
-            target="_blank"
-            rel="noreferrer"
-            className="admin-nav-item"
-            style={{
-              borderLeft: '3px solid #3b82f6',
-              background: 'rgba(59, 130, 246, 0.1)'
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>📱</span>
-            Mobile Driver Mode
-            <span style={{ marginLeft: 'auto', background: '#3b82f6', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>/driver ↗</span>
-          </a>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'active' : ''}`}
+                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                >
+                  <span style={{ fontSize: '14px' }}>🚨</span>
+                  <span>Fitness &amp; Radar</span>
+                  <span className="admin-nav-sub-badge" style={{ background: '#ef4444', color: '#ffffff' }}>ALERT</span>
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'active' : ''}`}
-            onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
-            style={{
-              borderLeft: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? '3px solid #ef4444' : undefined,
-              background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'rgba(239, 68, 68, 0.15)' : undefined
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>🚨</span>
-            Vehicle Fitness &amp; Radar
-            <span style={{ marginLeft: 'auto', background: '#ef4444', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>ALERT</span>
-          </button>
+                <a
+                  href="/driver"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="admin-nav-sub-item"
+                >
+                  <span style={{ fontSize: '14px' }}>📱</span>
+                  <span>Driver Mobile Mode</span>
+                  <span className="admin-nav-sub-badge" style={{ background: '#3b82f6', color: '#ffffff' }}>/driver ↗</span>
+                </a>
 
-          {/* SECTION: ENTERPRISE & FINANCE */}
-          <div className="admin-nav-section-title">🏢 Enterprise &amp; Finance</div>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'vehicles' ? 'active' : ''} ${isTabRevoked('vehicles').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('vehicles')}
+                  title={isTabRevoked('vehicles').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                  </svg>
+                  <span>Fleet &amp; Vehicles</span>
+                  {isTabRevoked('vehicles').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'enterprise_b2b' ? 'active' : ''}`}
-            onClick={() => setActiveTab('enterprise_b2b')}
-            style={{
-              borderLeft: activeTab === 'enterprise_b2b' ? '3px solid #7c3aed' : undefined,
-              background: activeTab === 'enterprise_b2b' ? 'rgba(124, 58, 237, 0.15)' : undefined
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>🏢</span>
-            B2B Bulk, Auction &amp; RTO
-            <span style={{ marginLeft: 'auto', background: '#7c3aed', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>PRO</span>
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'drivers' ? 'active' : ''} ${isTabRevoked('drivers').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('drivers')}
+                  title={isTabRevoked('drivers').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                  </svg>
+                  <span>Sarathi Drivers</span>
+                  {isTabRevoked('drivers').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'finance_accounting' ? 'active' : ''}`}
-            onClick={() => setActiveTab('finance_accounting')}
-            style={{
-              borderLeft: activeTab === 'finance_accounting' ? '3px solid #059669' : undefined,
-              background: activeTab === 'finance_accounting' ? 'rgba(5, 150, 105, 0.15)' : undefined
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>💳</span>
-            GST E-Invoice, Tally &amp; Credit
-            <span style={{ marginLeft: 'auto', background: '#059669', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>GST</span>
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'telematics' ? 'active' : ''} ${isTabRevoked('telematics').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('telematics')}
+                  title={isTabRevoked('telematics').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="3" />
+                    <line x1="12" y1="2" x2="12" y2="5" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
+                  </svg>
+                  <span>GPS Telematics Radar</span>
+                  {isTabRevoked('telematics').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+              </div>
+            )}
+          </div>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ai_automation')}
-            style={{
-              borderLeft: activeTab === 'ai_automation' ? '3px solid #6366f1' : undefined,
-              background: activeTab === 'ai_automation' ? 'rgba(99, 102, 241, 0.15)' : undefined
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>🤖</span>
-            AI &amp; Automation Lab
-            <span style={{ marginLeft: 'auto', background: '#6366f1', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>NEW</span>
-          </button>
+          {/* GROUP 3: ENTERPRISE & FINANCE */}
+          <div className="admin-nav-group">
+            <button
+              type="button"
+              className={`admin-nav-main-header ${isGroupActive('enterprise') ? 'has-active' : ''}`}
+              onClick={() => toggleNavGroup('enterprise')}
+            >
+              <div className="admin-nav-main-title">
+                <span style={{ fontSize: '13px' }}>🏢</span>
+                <span>Enterprise &amp; Finance</span>
+              </div>
+              <div className="admin-nav-main-meta">
+                <span className="admin-nav-count-badge" style={{ background: 'rgba(124, 58, 237, 0.2)', color: '#c084fc' }}>3</span>
+                <span className={`admin-nav-chevron ${openNavGroups.enterprise ? 'open' : ''}`}>▸</span>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'telematics' ? 'active' : ''} ${isTabRevoked('telematics').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('telematics')}
-            style={{ borderLeft: activeTab === 'telematics' ? '3px solid #22c55e' : undefined }}
-            title={isTabRevoked('telematics').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="3" />
-              <line x1="12" y1="2" x2="12" y2="5" />
-              <line x1="12" y1="19" x2="12" y2="22" />
-            </svg>
-            🛰️ Fleet Telematics (GPS)
-            {isTabRevoked('telematics').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+            {openNavGroups.enterprise && (
+              <div className="admin-nav-sub-list">
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'enterprise_b2b' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('enterprise_b2b')}
+                >
+                  <span style={{ fontSize: '14px' }}>🏢</span>
+                  <span>B2B Bulk, Auction &amp; RTO</span>
+                  <span className="admin-nav-sub-badge" style={{ background: '#7c3aed', color: '#ffffff' }}>PRO</span>
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'hubs' ? 'active' : ''} ${isTabRevoked('hubs').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('hubs')}
-            title={isTabRevoked('hubs').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            Hubs &amp; Terminals
-            {isTabRevoked('hubs').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'finance_accounting' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('finance_accounting')}
+                >
+                  <span style={{ fontSize: '14px' }}>💳</span>
+                  <span>GST E-Invoice &amp; ERP Ledgers</span>
+                  <span className="admin-nav-sub-badge" style={{ background: '#059669', color: '#ffffff' }}>GST</span>
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'tariff' ? 'active' : ''} ${isTabRevoked('tariff').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('tariff')}
-            style={user?.role === 'SuperAdmin' ? { borderLeft: '3px solid #38bdf8', color: '#e0f2fe' } : {}}
-            title={isTabRevoked('tariff').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <line x1="6" y1="8" x2="6" y2="8" />
-              <line x1="10" y1="8" x2="10" y2="8" />
-              <line x1="14" y1="8" x2="18" y2="8" />
-              <line x1="6" y1="12" x2="6" y2="12" />
-              <line x1="10" y1="12" x2="10" y2="12" />
-              <line x1="14" y1="12" x2="18" y2="12" />
-            </svg>
-            ⚡ Tariff &amp; Rate Matrix
-            {isTabRevoked('tariff').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'tariff' ? 'active' : ''} ${isTabRevoked('tariff').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('tariff')}
+                  title={isTabRevoked('tariff').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <line x1="6" y1="8" x2="6" y2="8" />
+                    <line x1="10" y1="8" x2="10" y2="8" />
+                    <line x1="14" y1="8" x2="18" y2="8" />
+                    <line x1="6" y1="12" x2="6" y2="12" />
+                    <line x1="10" y1="12" x2="10" y2="12" />
+                    <line x1="14" y1="12" x2="18" y2="12" />
+                  </svg>
+                  <span>Tariff &amp; Rate Matrix</span>
+                  {isTabRevoked('tariff').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+              </div>
+            )}
+          </div>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'ewaybill' ? 'active' : ''} ${isTabRevoked('ewaybill').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('ewaybill')}
-            title={isTabRevoked('ewaybill').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-            </svg>
-            ⚡ E-Way Bill Engine
-            {isTabRevoked('ewaybill').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+          {/* GROUP 4: AI & AUTOMATION */}
+          <div className="admin-nav-group">
+            <button
+              type="button"
+              className={`admin-nav-main-header ${isGroupActive('ai') ? 'has-active' : ''}`}
+              onClick={() => toggleNavGroup('ai')}
+            >
+              <div className="admin-nav-main-title">
+                <span style={{ fontSize: '13px' }}>🤖</span>
+                <span>AI &amp; Automation</span>
+              </div>
+              <div className="admin-nav-main-meta">
+                <span className="admin-nav-count-badge" style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8' }}>AI</span>
+                <span className={`admin-nav-chevron ${openNavGroups.ai ? 'open' : ''}`}>▸</span>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'audit' ? 'active' : ''} ${isTabRevoked('audit').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('audit')}
-            title={isTabRevoked('audit').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              <path d="M9 12l2 2 4-4" />
-            </svg>
-            Security &amp; Audit Trail
-            {isTabRevoked('audit').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+            {openNavGroups.ai && (
+              <div className="admin-nav-sub-list">
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'ai_automation' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('ai_automation')}
+                >
+                  <span style={{ fontSize: '14px' }}>✨</span>
+                  <span>OCR, 3D Packing &amp; Route</span>
+                  <span className="admin-nav-sub-badge" style={{ background: '#6366f1', color: '#ffffff' }}>NEW</span>
+                </button>
+              </div>
+            )}
+          </div>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'support' ? 'active' : ''} ${isTabRevoked('support').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('support')}
-            title={isTabRevoked('support').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            🎧 Support &amp; Escalations
-            {isTabRevoked('support').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+          {/* GROUP 5: GOVERNANCE & SYSTEM */}
+          <div className="admin-nav-group">
+            <button
+              type="button"
+              className={`admin-nav-main-header ${isGroupActive('governance') ? 'has-active' : ''}`}
+              onClick={() => toggleNavGroup('governance')}
+            >
+              <div className="admin-nav-main-title">
+                <span style={{ fontSize: '13px' }}>⚙️</span>
+                <span>Governance &amp; System</span>
+              </div>
+              <div className="admin-nav-main-meta">
+                <span className="admin-nav-count-badge">6</span>
+                <span className={`admin-nav-chevron ${openNavGroups.governance ? 'open' : ''}`}>▸</span>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'settings' ? 'active' : ''} ${isTabRevoked('settings').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('settings')}
-            title={isTabRevoked('settings').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            System Settings
-            {isTabRevoked('settings').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+            {openNavGroups.governance && (
+              <div className="admin-nav-sub-list">
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'customers' ? 'active' : ''} ${isTabRevoked('customers').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('customers')}
+                  title={isTabRevoked('customers').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <span>User Management</span>
+                  {isTabRevoked('customers').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'reports' ? 'active' : ''} ${isTabRevoked('reports').revoked ? 'revoked' : ''}`}
-            onClick={() => setActiveTab('reports')}
-            title={isTabRevoked('reports').revoked ? 'Access Revoked by Super Admin' : undefined}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-            </svg>
-            Reports &amp; Export
-            {isTabRevoked('reports').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
-          </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'access' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('access')}
+                  style={user?.role === 'SuperAdmin' ? { borderLeft: '3px solid #f59e0b', color: '#fef3c7' } : {}}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  <span>{user?.role === 'SuperAdmin' ? '👑 Rights & Delegation' : 'Staff Access'}</span>
+                </button>
 
-          <button
-            type="button"
-            className={`admin-nav-item ${activeTab === 'access' ? 'active' : ''}`}
-            onClick={() => setActiveTab('access')}
-            style={user?.role === 'SuperAdmin' ? { borderLeft: '3px solid #f59e0b', color: '#fef3c7' } : {}}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            {user?.role === 'SuperAdmin' ? '👑 Rights & Delegation' : 'Staff Access'}
-          </button>
-        </nav>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'audit' ? 'active' : ''} ${isTabRevoked('audit').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('audit')}
+                  title={isTabRevoked('audit').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                  <span>Security &amp; Audit Trail</span>
+                  {isTabRevoked('audit').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'support' ? 'active' : ''} ${isTabRevoked('support').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('support')}
+                  title={isTabRevoked('support').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>Support &amp; Escalations</span>
+                  {isTabRevoked('support').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'reports' ? 'active' : ''} ${isTabRevoked('reports').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('reports')}
+                  title={isTabRevoked('reports').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  <span>Reports &amp; Data Export</span>
+                  {isTabRevoked('reports').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'settings' ? 'active' : ''} ${isTabRevoked('settings').revoked ? 'revoked' : ''}`}
+                  onClick={() => setActiveTab('settings')}
+                  title={isTabRevoked('settings').revoked ? 'Access Revoked by Super Admin' : undefined}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  <span>System Settings</span>
+                  {isTabRevoked('settings').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
+                </button>
+              </div>
+            )}
+          </div>
+</nav>
 
         <div className="admin-sidebar-footer">
           <Link to="/landing" className="admin-switch-link">
