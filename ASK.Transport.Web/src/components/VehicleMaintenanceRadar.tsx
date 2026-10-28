@@ -54,7 +54,7 @@ export default function VehicleMaintenanceRadar() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #ef4444' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>CRITICAL / EXPIRED</span>
           <strong style={{ fontSize: '24px', color: '#dc2626', display: 'block', margin: '4px 0' }}>
-            {data?.summary.criticalCount || 0} Trucks
+            {data?.summary?.criticalCount ?? 0} Trucks
           </strong>
           <span style={{ fontSize: '11.5px', color: '#ef4444', fontWeight: 700 }}>Immediate RTO Penalty Risk!</span>
         </div>
@@ -62,7 +62,7 @@ export default function VehicleMaintenanceRadar() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>EXPIRING IN 30 DAYS</span>
           <strong style={{ fontSize: '24px', color: '#d97706', display: 'block', margin: '4px 0' }}>
-            {data?.summary.warningCount || 0} Trucks
+            {data?.summary?.warningCount ?? 0} Trucks
           </strong>
           <span style={{ fontSize: '11.5px', color: '#b45309' }}>Action required within 4 weeks</span>
         </div>
@@ -70,7 +70,7 @@ export default function VehicleMaintenanceRadar() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>COMPLIANT &amp; HEALTHY</span>
           <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-            {data?.summary.healthyCount || 0} Trucks
+            {data?.summary?.healthyCount ?? 0} Trucks
           </strong>
           <span style={{ fontSize: '11.5px', color: '#059669' }}>Fully road-worthy &amp; insured</span>
         </div>
@@ -78,7 +78,7 @@ export default function VehicleMaintenanceRadar() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #38bdf8' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL ACTIVE FLEET</span>
           <strong style={{ fontSize: '24px', color: '#0f172a', display: 'block', margin: '4px 0' }}>
-            {data?.summary.totalVehicles || 0} Trucks
+            {data?.summary?.totalVehicles ?? 0} Trucks
           </strong>
           <span style={{ fontSize: '11.5px', color: '#64748b' }}>Monitored Across India</span>
         </div>

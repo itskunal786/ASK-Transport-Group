@@ -126,7 +126,7 @@ export default function ReverseLogisticsRtoManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #ef4444' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL RTO CASES</span>
           <strong style={{ fontSize: '24px', color: '#dc2626', display: 'block', margin: '4px 0' }}>
-            {data?.metrics.totalReturns || 0} Returns
+            {data?.metrics?.totalReturns ?? 0} Returns
           </strong>
           <span style={{ fontSize: '11.5px', color: '#b91c1c' }}>Rejected or damaged shipments</span>
         </div>
@@ -134,7 +134,7 @@ export default function ReverseLogisticsRtoManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>REVERSE IN-TRANSIT</span>
           <strong style={{ fontSize: '24px', color: '#d97706', display: 'block', margin: '4px 0' }}>
-            {data?.metrics.inTransit || 0} Returning
+            {data?.metrics?.inTransit ?? 0} Returning
           </strong>
           <span style={{ fontSize: '11.5px', color: '#b45309' }}>En route to source manufacturing hub</span>
         </div>
@@ -150,7 +150,7 @@ export default function ReverseLogisticsRtoManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>RESTOCKED TO FACTORY</span>
           <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-            {data?.metrics.restocked || 0} Consignments
+            {data?.metrics?.restocked ?? 0} Consignments
           </strong>
           <span style={{ fontSize: '11.5px', color: '#059669' }}>QC inspected &amp; inventory reconciled</span>
         </div>

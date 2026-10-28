@@ -403,21 +403,21 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
           <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
             <h3 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #0f172a)', display: 'flex', justifyContent: 'space-between' }}>
               <span>Container Efficiency Metrics</span>
-              <span style={{ fontSize: '12px', color: '#2563eb' }}>{data?.truckSpecs.displayName}</span>
+              <span style={{ fontSize: '12px', color: '#2563eb' }}>{data?.truckSpecs?.displayName || "Loading Truck Specifications..."}</span>
             </h3>
 
             {/* Volume Utilization Meter */}
             <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, marginBottom: '4px' }}>
                 <span>Volumetric Capacity Used:</span>
-                <span style={{ color: '#0284c7' }}>{data?.utilization.volumeUtilizationPercent || 0}% ({data?.utilization.loadedVolumeFt3} / {data?.truckSpecs.totalVolumeFt3} cu.ft)</span>
+                <span style={{ color: '#0284c7' }}>{data?.utilization?.volumeUtilizationPercent || 0}% ({data?.utilization?.loadedVolumeFt3 || 0} / {data?.truckSpecs?.totalVolumeFt3 || 0} cu.ft)</span>
               </div>
               <div style={{ height: '10px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
-                    width: `${data?.utilization.volumeUtilizationPercent || 0}%`,
-                    background: (data?.utilization.volumeUtilizationPercent || 0) > 85 ? '#10b981' : '#0284c7',
+                    width: `${data?.utilization?.volumeUtilizationPercent || 0}%`,
+                    background: (data?.utilization?.volumeUtilizationPercent || 0) > 85 ? '#10b981' : '#0284c7',
                     borderRadius: '10px',
                     transition: 'width 0.4s ease'
                   }}
@@ -429,16 +429,16 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
             <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, marginBottom: '4px' }}>
                 <span>Payload Weight Allocated:</span>
-                <span style={{ color: data?.utilization.isAxleOverloaded ? '#ef4444' : '#059669' }}>
-                  {data?.utilization.weightUtilizationPercent || 0}% ({data?.utilization.totalWeightKg} / {data?.truckSpecs.maxPayloadKg} kg)
+                <span style={{ color: data?.utilization?.isAxleOverloaded ? '#ef4444' : '#059669' }}>
+                  {data?.utilization?.weightUtilizationPercent || 0}% ({data?.utilization?.totalWeightKg || 0} / {data?.truckSpecs?.maxPayloadKg || 0} kg)
                 </span>
               </div>
               <div style={{ height: '10px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
-                    width: `${Math.min(100, data?.utilization.weightUtilizationPercent || 0)}%`,
-                    background: data?.utilization.isAxleOverloaded ? '#ef4444' : '#10b981',
+                    width: `${Math.min(100, data?.utilization?.weightUtilizationPercent || 0)}%`,
+                    background: data?.utilization?.isAxleOverloaded ? '#ef4444' : '#10b981',
                     borderRadius: '10px',
                     transition: 'width 0.4s ease'
                   }}
@@ -450,19 +450,19 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <div>
                 <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Steer Axle (Front):</span>
-                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{data?.utilization.centerOfGravity.frontAxlePercent}% Load</strong>
+                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{data?.utilization?.centerOfGravity?.frontAxlePercent || 50}% Load</strong>
               </div>
               <div>
                 <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Drive Axles (Rear):</span>
-                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{data?.utilization.centerOfGravity.rearAxlePercent}% Load</strong>
+                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{data?.utilization?.centerOfGravity?.rearAxlePercent || 50}% Load</strong>
               </div>
             </div>
 
             <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '4px', background: data?.utilization.isAxleOverloaded ? '#fee2e2' : '#dcfce7', color: data?.utilization.isAxleOverloaded ? '#b91c1c' : '#15803d' }}>
-                {data?.utilization.isAxleOverloaded ? '⚠️ Overweight Warning' : '✓ RTO Axle Weight Compliant'}
+              <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '4px', background: data?.utilization?.isAxleOverloaded ? '#fee2e2' : '#dcfce7', color: data?.utilization?.isAxleOverloaded ? '#b91c1c' : '#15803d' }}>
+                {data?.utilization?.isAxleOverloaded ? '⚠️ Overweight Warning' : '✓ RTO Axle Weight Compliant'}
               </span>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>Remaining: {data?.utilization.remainingCapacityKg} kg</span>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>Remaining: {data?.utilization?.remainingCapacityKg || 0} kg</span>
             </div>
           </div>
 

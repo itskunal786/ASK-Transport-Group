@@ -2,6 +2,7 @@ import { useState } from 'react';
 import GovtEInvoiceManager from './GovtEInvoiceManager';
 import TallyZohoErpSyncDeck from './TallyZohoErpSyncDeck';
 import CustomerCreditLedgerManager from './CustomerCreditLedgerManager';
+import ErrorBoundary from './ErrorBoundary';
 
 export default function FinanceAccountingDeck() {
   const [activeTab, setActiveTab] = useState<'einv' | 'erp' | 'credit'>('einv');
@@ -101,9 +102,21 @@ export default function FinanceAccountingDeck() {
       </div>
 
       {/* RENDER CURRENT VIEW */}
-      {activeTab === 'einv' && <GovtEInvoiceManager />}
-      {activeTab === 'erp' && <TallyZohoErpSyncDeck />}
-      {activeTab === 'credit' && <CustomerCreditLedgerManager />}
+      {activeTab === 'einv' && (
+        <ErrorBoundary fallbackTitle="Govt E-Invoice Manager Error">
+          <GovtEInvoiceManager />
+        </ErrorBoundary>
+      )}
+      {activeTab === 'erp' && (
+        <ErrorBoundary fallbackTitle="Tally & Zoho ERP Sync Error">
+          <TallyZohoErpSyncDeck />
+        </ErrorBoundary>
+      )}
+      {activeTab === 'credit' && (
+        <ErrorBoundary fallbackTitle="Customer Credit Ledger Error">
+          <CustomerCreditLedgerManager />
+        </ErrorBoundary>
+      )}
     </div>
   );
 }
