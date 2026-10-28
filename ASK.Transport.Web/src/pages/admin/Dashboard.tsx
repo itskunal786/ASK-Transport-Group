@@ -612,6 +612,67 @@ export default function Dashboard() {
   const [rightsLoading, setRightsLoading] = useState(false);
   const [rightsSaving, setRightsSaving] = useState(false);
 
+  // Current Logged-in Admin Rights & Restrictions
+  const [myRevokedIds, setMyRevokedIds] = useState<number[]>(() => {
+    if (!user || user.role === 'SuperAdmin') return [];
+    try {
+      const saved = localStorage.getItem(`ask_user_revoked_ids_${user.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  function isTabRevoked(tab: AdminTab): { revoked: boolean; reason?: string } {
+    if (!user || user.role === 'SuperAdmin') return { revoked: false };
+    if (tab === 'dashboard') return { revoked: false };
+    if (tab === 'access') {
+      return { revoked: true, reason: 'Super Admin Rights Delegation is restricted to Super Admin master account.' };
+    }
+
+    const tabModuleMap: Record<AdminTab, { modules: string[]; codes: string[] }> = {
+      dashboard: { modules: [], codes: [] },
+      bookings: { modules: ['Bookings'], codes: ['Bookings.View', 'Bookings.Assign', 'Bookings.Cancel', 'Bookings.Create', 'Bookings.Edit', 'Bookings.UpdateStatus'] },
+      customers: { modules: ['Users'], codes: ['Users.View', 'Users.Edit'] },
+      shipments: { modules: ['Bookings', 'Shipments'], codes: ['Bookings.UpdateStatus', 'Bookings.View', 'Bookings.Assign'] },
+      drivers: { modules: ['Drivers'], codes: ['Drivers.View', 'Drivers.Create', 'Drivers.Edit'] },
+      vehicles: { modules: ['Vehicles'], codes: ['Vehicles.View', 'Vehicles.Create', 'Vehicles.Edit'] },
+      telematics: { modules: ['Telematics', 'Tracking'], codes: ['Telematics.View', 'Tracking.View'] },
+      hubs: { modules: ['Hubs', 'Branches'], codes: ['Hubs.View', 'Hubs.Create', 'Branches.View'] },
+      tariff: { modules: ['Tariff', 'Pricing'], codes: ['Tariff.View', 'Tariff.Edit'] },
+      ewaybill: { modules: ['EwayBill'], codes: ['EwayBill.View', 'EwayBill.Verify'] },
+      audit: { modules: ['Audit'], codes: ['Audit.View'] },
+      support: { modules: ['Support'], codes: ['Support.View', 'Support.Resolve'] },
+      settings: { modules: ['Settings'], codes: ['Settings.View', 'Settings.Edit'] },
+      reports: { modules: ['Reports'], codes: ['Reports.View', 'Reports.Export'] },
+      access: { modules: ['Roles'], codes: ['Roles.ManagePermissions'] }
+    };
+
+    const mapping = tabModuleMap[tab];
+    if (!mapping) return { revoked: false };
+
+    // Find revoked rights for this user
+    const matchingRevoked = allSystemRights.filter(p => {
+      if (!myRevokedIds.includes(p.id)) return false;
+      const matchModule = mapping.modules.some(m => m.toLowerCase() === p.module.toLowerCase());
+      const matchCode = mapping.codes.some(c => c.toLowerCase() === p.code.toLowerCase());
+      return matchModule || matchCode;
+    });
+
+    if (matchingRevoked.length > 0) {
+      const hasViewRevoked = matchingRevoked.some(p => p.code.toLowerCase().endsWith('.view') || p.action.toLowerCase() === 'view');
+      const singleOrDirectMatch = mapping.codes.length <= 2 || hasViewRevoked;
+      if (singleOrDirectMatch || matchingRevoked.length >= mapping.codes.length / 2) {
+        return {
+          revoked: true,
+          reason: `Super Admin has revoked access: ${matchingRevoked.map(p => p.code).join(', ')}`
+        };
+      }
+    }
+
+    return { revoked: false };
+  }
+
   // Shipments state
   const [shipmentsList, setShipmentsList] = useState<ShipmentRow[]>(INITIAL_SHIPMENTS);
   const [shipmentSearch, setShipmentSearch] = useState('');
@@ -841,7 +902,53 @@ export default function Dashboard() {
     }
     loadData();
     loadUsers();
+
+    // Ensure all system rights are pre-loaded
+    getAllRights()
+      .then(rights => {
+        if (rights && rights.length > 0) {
+          setAllSystemRights(rights);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!user || user.role === 'SuperAdmin') return;
+    const currentAdminId = user.id;
+
+    let isMounted = true;
+    async function loadCurrentAdminRights() {
+      try {
+        const rightsRes = await getUserRights(currentAdminId);
+        if (!isMounted) return;
+        if (rightsRes) {
+          const rev = rightsRes.revokedPermissionIds || [];
+          setMyRevokedIds(rev);
+          localStorage.setItem(`ask_user_revoked_ids_${currentAdminId}`, JSON.stringify(rev));
+        }
+      } catch {
+        try {
+          const saved = localStorage.getItem(`ask_user_revoked_ids_${currentAdminId}`);
+          if (saved && isMounted) setMyRevokedIds(JSON.parse(saved));
+        } catch {}
+      }
+    }
+
+    loadCurrentAdminRights();
+
+    function onRightsUpdated(e: any) {
+      if (e?.detail?.userId === currentAdminId) {
+        setMyRevokedIds(e.detail.revokedIds || []);
+      }
+    }
+
+    window.addEventListener('ask_rights_updated', onRightsUpdated);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('ask_rights_updated', onRightsUpdated);
+    };
+  }, [user]);
 
   useEffect(() => {
     if (activeTab === 'hubs') loadHubs();
@@ -1179,6 +1286,21 @@ export default function Dashboard() {
         grantedPermissionIds: grantedIds,
         revokedPermissionIds: revokedIds
       });
+
+      // Update persistent storage for instant enforcement
+      localStorage.setItem(`ask_user_revoked_ids_${rightsModalUser.id}`, JSON.stringify(revokedIds));
+      localStorage.setItem(`ask_user_granted_ids_${rightsModalUser.id}`, JSON.stringify(grantedIds));
+
+      window.dispatchEvent(
+        new CustomEvent('ask_rights_updated', {
+          detail: { userId: rightsModalUser.id, revokedIds, grantedIds }
+        })
+      );
+
+      if (user && user.id === rightsModalUser.id) {
+        setMyRevokedIds(revokedIds);
+      }
+
       showToast(res.message || 'Rights successfully updated!');
       setShowRightsModal(false);
     } catch (err: any) {
@@ -1520,8 +1642,9 @@ export default function Dashboard() {
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'bookings' ? 'active' : ''} ${isTabRevoked('bookings').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('bookings')}
+            title={isTabRevoked('bookings').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -1530,12 +1653,14 @@ export default function Dashboard() {
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
             Bookings
+            {isTabRevoked('bookings').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'customers' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'customers' ? 'active' : ''} ${isTabRevoked('customers').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('customers')}
+            title={isTabRevoked('customers').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -1544,12 +1669,14 @@ export default function Dashboard() {
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
             User Management
+            {isTabRevoked('customers').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'shipments' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'shipments' ? 'active' : ''} ${isTabRevoked('shipments').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('shipments')}
+            title={isTabRevoked('shipments').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
@@ -1557,24 +1684,28 @@ export default function Dashboard() {
               <circle cx="12" cy="12" r="2" />
             </svg>
             Shipments &amp; Dispatch
+            {isTabRevoked('shipments').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'drivers' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'drivers' ? 'active' : ''} ${isTabRevoked('drivers').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('drivers')}
+            title={isTabRevoked('drivers').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
             </svg>
             Drivers
+            {isTabRevoked('drivers').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'vehicles' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'vehicles' ? 'active' : ''} ${isTabRevoked('vehicles').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('vehicles')}
+            title={isTabRevoked('vehicles').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="1" y="3" width="15" height="13" />
@@ -1583,13 +1714,15 @@ export default function Dashboard() {
               <circle cx="18.5" cy="18.5" r="2.5" />
             </svg>
             Fleet &amp; Vehicles
+            {isTabRevoked('vehicles').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'telematics' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'telematics' ? 'active' : ''} ${isTabRevoked('telematics').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('telematics')}
             style={{ borderLeft: activeTab === 'telematics' ? '3px solid #22c55e' : undefined }}
+            title={isTabRevoked('telematics').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
@@ -1598,25 +1731,29 @@ export default function Dashboard() {
               <line x1="12" y1="19" x2="12" y2="22" />
             </svg>
             🛰️ Fleet Telematics (GPS)
+            {isTabRevoked('telematics').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'hubs' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'hubs' ? 'active' : ''} ${isTabRevoked('hubs').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('hubs')}
+            title={isTabRevoked('hubs').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
             Hubs &amp; Terminals
+            {isTabRevoked('hubs').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'tariff' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'tariff' ? 'active' : ''} ${isTabRevoked('tariff').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('tariff')}
             style={user?.role === 'SuperAdmin' ? { borderLeft: '3px solid #38bdf8', color: '#e0f2fe' } : {}}
+            title={isTabRevoked('tariff').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -1628,12 +1765,14 @@ export default function Dashboard() {
               <line x1="14" y1="12" x2="18" y2="12" />
             </svg>
             ⚡ Tariff &amp; Rate Matrix
+            {isTabRevoked('tariff').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'ewaybill' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'ewaybill' ? 'active' : ''} ${isTabRevoked('ewaybill').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('ewaybill')}
+            title={isTabRevoked('ewaybill').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1641,47 +1780,55 @@ export default function Dashboard() {
               <line x1="16" y1="13" x2="8" y2="13" />
             </svg>
             ⚡ E-Way Bill Engine
+            {isTabRevoked('ewaybill').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'audit' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'audit' ? 'active' : ''} ${isTabRevoked('audit').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('audit')}
+            title={isTabRevoked('audit').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               <path d="M9 12l2 2 4-4" />
             </svg>
             Security &amp; Audit Trail
+            {isTabRevoked('audit').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'support' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'support' ? 'active' : ''} ${isTabRevoked('support').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('support')}
+            title={isTabRevoked('support').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             🎧 Support &amp; Escalations
+            {isTabRevoked('support').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'settings' ? 'active' : ''} ${isTabRevoked('settings').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('settings')}
+            title={isTabRevoked('settings').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
             System Settings
+            {isTabRevoked('settings').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'reports' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'reports' ? 'active' : ''} ${isTabRevoked('reports').revoked ? 'revoked' : ''}`}
             onClick={() => setActiveTab('reports')}
+            title={isTabRevoked('reports').revoked ? 'Access Revoked by Super Admin' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1690,6 +1837,7 @@ export default function Dashboard() {
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
             Reports &amp; Export
+            {isTabRevoked('reports').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
           <button
@@ -2011,6 +2159,34 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* ACCESS REVOKED SHIELD FOR RESTRICTED TABS */}
+        {activeTab !== 'dashboard' && isTabRevoked(activeTab).revoked ? (
+          <div className="admin-content-pad">
+            <div className="admin-revoked-card">
+              <div className="admin-revoked-icon">🔒</div>
+              <h2>Module Access Revoked</h2>
+              <p className="admin-revoked-desc">
+                Aapke account (<strong>{user?.name || user?.email}</strong>) se iss module ka right Super Admin dwara revoke kar diya gaya hai.
+              </p>
+              <div className="admin-revoked-details">
+                <strong>Revoked Security Policy:</strong>
+                <span>{isTabRevoked(activeTab).reason}</span>
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', marginTop: '14px' }}>
+                Aap iss subsystem ke data ya features ko operate nahi kar sakte. Agar aapko access chahiye, toh kripya Super Admin se rights delegate karwayein.
+              </p>
+              <button
+                type="button"
+                className="admin-btn-primary"
+                style={{ marginTop: '18px' }}
+                onClick={() => setActiveTab('dashboard')}
+              >
+                ← Return to Admin Dashboard
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* ============================================================== */}
         {/* VIEW 2: BOOKINGS TAB */}
         {/* ============================================================== */}
@@ -4601,6 +4777,9 @@ export default function Dashboard() {
           </div>
         )}
 
+          </>
+        )}
+
         {/* ============================================================== */}
         {/* MODAL 1: ADD CUSTOMER MODAL */}
         {/* ============================================================== */}
@@ -5147,69 +5326,82 @@ export default function Dashboard() {
         {/* MODAL 7: RIGHTS DELEGATION MODAL (SUPERADMIN ONLY) */}
         {/* ============================================================== */}
         {showRightsModal && rightsModalUser && (
-          <div className="st-modal-overlay" onClick={() => setShowRightsModal(false)}>
-            <div className="st-drawer-box" style={{ maxWidth: '620px' }} onClick={e => e.stopPropagation()}>
-              <div className="st-drawer-head">
+          <div className="rights-modal-overlay" onClick={() => setShowRightsModal(false)}>
+            <div className="rights-modal-box" onClick={e => e.stopPropagation()}>
+              <div className="rights-modal-head">
                 <div>
                   <h2 style={{ color: '#4338ca' }}>🛡️ Super Admin Rights Delegation</h2>
-                  <p>Assign specific permissions for: {rightsModalUser.name} ({rightsModalUser.role})</p>
+                  <p>Assign specific permissions for: <strong>{rightsModalUser.name}</strong> ({rightsModalUser.role})</p>
                 </div>
                 <button
                   type="button"
-                  className="st-drawer-close"
+                  className="rights-modal-close"
                   onClick={() => setShowRightsModal(false)}
+                  title="Close Modal"
                 >
                   &times;
                 </button>
               </div>
 
-              <div className="st-drawer-body">
+              <div className="rights-modal-body">
                 {rightsLoading ? (
                   <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
                     Loading permissions registry...
                   </div>
                 ) : (
                   <>
-                    <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', marginBottom: '10px' }}>
                       Toggle individual rights to grant or revoke access to specific subsystems:
                     </p>
 
                     {/* Quick Presets for Role Delegation */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '14px', background: '#f1f5f9', padding: '8px 12px', borderRadius: '8px' }}>
+                    <div className="rights-preset-wrap" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '14px', background: '#f1f5f9', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border-color, #e2e8f0)' }}>
                       <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
                         Presets:
                       </span>
                       <button
                         type="button"
                         onClick={() => applyRightsPreset('dispatch')}
-                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
+                        style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer' }}
                       >
                         ⚡ Dispatcher
                       </button>
                       <button
                         type="button"
                         onClick={() => applyRightsPreset('finance')}
-                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#059669', border: '1px solid #a7f3d0', borderRadius: '6px', cursor: 'pointer' }}
+                        style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#059669', border: '1px solid #a7f3d0', borderRadius: '6px', cursor: 'pointer' }}
                       >
                         💳 Finance
                       </button>
                       <button
                         type="button"
                         onClick={() => applyRightsPreset('manager')}
-                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#7c3aed', border: '1px solid #ddd6fe', borderRadius: '6px', cursor: 'pointer' }}
+                        style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 600, background: '#ffffff', color: '#7c3aed', border: '1px solid #ddd6fe', borderRadius: '6px', cursor: 'pointer' }}
                       >
                         🏢 Hub Manager
                       </button>
                       <button
                         type="button"
                         onClick={() => applyRightsPreset('superadmin')}
-                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 700, background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', borderRadius: '6px', cursor: 'pointer' }}
+                        style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', borderRadius: '6px', cursor: 'pointer' }}
                       >
                         👑 Super Admin (All)
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRevokedIds(allSystemRights.map(r => r.id));
+                          setGrantedIds([]);
+                          showToast('✕ Revoked all permissions for this user');
+                        }}
+                        style={{ padding: '5px 12px', fontSize: '11px', fontWeight: 700, background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '6px', cursor: 'pointer', marginLeft: 'auto' }}
+                      >
+                        ✕ Revoke All
+                      </button>
                     </div>
 
-                    <div style={{ maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '6px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {allSystemRights.map(perm => {
                         const isRevoked = revokedIds.includes(perm.id);
                         const isExplicitlyGranted = grantedIds.includes(perm.id);
@@ -5217,14 +5409,16 @@ export default function Dashboard() {
                         return (
                           <div
                             key={perm.id}
+                            className="rights-item-row"
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'space-between',
                               padding: '10px 14px',
                               background: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              borderRadius: '8px'
+                              border: isRevoked ? '1px solid #fca5a5' : isExplicitlyGranted ? '1px solid #86efac' : '1px solid #e2e8f0',
+                              borderRadius: '8px',
+                              transition: 'all 0.15s ease'
                             }}
                           >
                             <div>
@@ -5247,7 +5441,7 @@ export default function Dashboard() {
                                   }
                                 }}
                                 style={{
-                                  padding: '4px 10px',
+                                  padding: '5px 12px',
                                   borderRadius: '6px',
                                   fontSize: '11px',
                                   fontWeight: 700,
@@ -5272,7 +5466,7 @@ export default function Dashboard() {
                                   }
                                 }}
                                 style={{
-                                  padding: '4px 10px',
+                                  padding: '5px 12px',
                                   borderRadius: '6px',
                                   fontSize: '11px',
                                   fontWeight: 700,
@@ -5293,7 +5487,8 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="st-drawer-actions">
+              {/* STICKY BOTTOM ACTIONS BAR - PERMANENTLY VISIBLE */}
+              <div className="rights-modal-actions">
                 <button
                   type="button"
                   className="st-btn-cancel"
@@ -5306,6 +5501,7 @@ export default function Dashboard() {
                   className="st-btn-submit"
                   onClick={handleSaveRights}
                   disabled={rightsSaving}
+                  style={{ background: '#4338ca' }}
                 >
                   {rightsSaving ? 'Saving Rights...' : 'Save Rights Delegation'}
                 </button>

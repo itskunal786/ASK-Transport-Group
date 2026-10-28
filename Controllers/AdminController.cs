@@ -18,19 +18,22 @@ public class AdminController : ControllerBase
     private readonly AuditService _auditService;
     private readonly WebhookService _webhookService;
     private readonly AdminSafetyService _adminSafetyService;
+    private readonly PermissionService _permissionService;
 
     public AdminController(
         AskTransportDbContext db,
         NotificationService notificationService,
         AuditService auditService,
         WebhookService webhookService,
-        AdminSafetyService adminSafetyService)
+        AdminSafetyService adminSafetyService,
+        PermissionService permissionService)
     {
         _db = db;
         _notificationService = notificationService;
         _auditService = auditService;
         _webhookService = webhookService;
         _adminSafetyService = adminSafetyService;
+        _permissionService = permissionService;
     }
 
     [HttpGet("dashboard")]
@@ -880,6 +883,16 @@ public class AdminController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 30)
     {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out var currentUserId))
+        {
+            var hasAuditRight = await _permissionService.HasPermissionAsync(currentUserId, "Audit.View");
+            if (!hasAuditRight)
+            {
+                return StatusCode(403, new { message = "Forbidden: Access to Audit Logs has been revoked by Super Admin." });
+            }
+        }
+
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 5, 100);
 

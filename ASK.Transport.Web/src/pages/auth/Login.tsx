@@ -5,7 +5,7 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, logout } = useAuth();
+  const { login } = useAuth();
 
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('portal=admin')) {
@@ -32,26 +32,11 @@ export default function Login() {
     try {
       const user = await login(email, password);
 
-      // Strict role-portal enforcement
-      if (loginRole === 'customer') {
-        if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-          await logout();
-          setError(
-            '⚠️ Yeh Customer Portal hai. Admin ya Super Admin accounts yahan login nahi kar sakte. Kripya upar "Admin / Super Admin" tab select karke login karein.'
-          );
-          return;
-        }
-        navigate('/dashboard');
-      } else {
-        // loginRole === 'admin'
-        if (user.role !== 'Admin' && user.role !== 'SuperAdmin') {
-          await logout();
-          setError(
-            '⛔ Access Denied: Yeh Administrative Portal hai. Customer / Shipper accounts yahan se login nahi kar sakte. Kripya upar "Customer Login" tab select karein.'
-          );
-          return;
-        }
+      // Intelligent role-based redirection without blocking or showing error text
+      if (user.role === 'Admin' || user.role === 'SuperAdmin') {
         navigate('/admin');
+      } else {
+        navigate('/dashboard');
       }
     } catch (err) {
       setError(
