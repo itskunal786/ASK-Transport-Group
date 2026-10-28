@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import FleetTripExpenseManager from './FleetTripExpenseManager';
 import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
+import FleetFuelAntiTheftRadar from './FleetFuelAntiTheftRadar';
 import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
-  initialTab?: 'expenses' | 'maintenance' | 'mobile_driver';
+  initialTab?: 'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver';
 }
 
 export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOperationsDeckProps) {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'maintenance' | 'mobile_driver'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver'>(initialTab);
 
   useEffect(() => {
     if (initialTab) {
@@ -94,6 +95,26 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
+          onClick={() => setActiveTab('fuel_theft')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeTab === 'fuel_theft' ? '#dc2626' : '#64748b',
+            borderBottom: activeTab === 'fuel_theft' ? '3px solid #dc2626' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>🚨</span> Fuel Sensor &amp; Diesel Anti-Theft Radar
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('maintenance')}
           style={{
             padding: '10px 18px',
@@ -138,6 +159,12 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
         {activeTab === 'expenses' && (
           <ErrorBoundary fallbackTitle="Driver Trip Expenses Error">
             <FleetTripExpenseManager />
+          </ErrorBoundary>
+        )}
+
+        {activeTab === 'fuel_theft' && (
+          <ErrorBoundary fallbackTitle="Diesel Anti-Theft Radar Error">
+            <FleetFuelAntiTheftRadar />
           </ErrorBoundary>
         )}
 

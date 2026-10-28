@@ -485,7 +485,7 @@ export default function Dashboard() {
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
-  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'maintenance' | 'mobile_driver'>('expenses');
+  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'maintenance' | 'mobile_driver'>('expenses');
 
   // Hierarchical Navigation Accordion State
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
@@ -1906,6 +1906,7 @@ export default function Dashboard() {
 
           {/* GROUP 2: FLEET & DRIVER SUITE */}
           {(itemMatchesQuery('Petty Cash & P&L', ['petty cash', 'p&l', 'diesel', 'fuel slip', 'toll', 'bhatta', 'puncture', 'expenses', 'profit']) ||
+            itemMatchesQuery('Fuel Theft & Diesel Radar', ['fuel theft', 'diesel pilferage', 'theft alert', 'fuel sensor', 'fuel rod', 'diesel', 'chori', 'anti-theft', 'siren', 'mileage audit']) ||
             itemMatchesQuery('Fitness & Radar', ['vehicle fitness', 'radar', 'insurance expiry', 'puc', 'service', 'maintenance', 'fitness']) ||
             itemMatchesQuery('Driver Mobile Mode', ['driver mobile mode', 'sarathi portal', 'pod upload', 'driver app', 'driver mode']) ||
             itemMatchesQuery('Fleet & Vehicles', ['vehicles', 'fleet', 'trucks', 'trailer', 'container', 'rto rc']) ||
@@ -1922,7 +1923,7 @@ export default function Dashboard() {
                   <span>Fleet &amp; Driver Suite</span>
                 </div>
                 <div className="admin-nav-main-meta">
-                  <span className="admin-nav-count-badge" style={{ background: 'rgba(5, 150, 105, 0.2)', color: '#34d399' }}>6</span>
+                  <span className="admin-nav-count-badge" style={{ background: 'rgba(5, 150, 105, 0.2)', color: '#34d399' }}>7</span>
                   <span className={`admin-nav-chevron ${openNavGroups.fleet || sidebarMenuQuery ? 'open' : ''}`}>▸</span>
                 </div>
               </button>
@@ -1938,6 +1939,18 @@ export default function Dashboard() {
                       <span style={{ fontSize: '14px' }}>⛽</span>
                       <span>Petty Cash &amp; P&amp;L</span>
                       <span className="admin-nav-sub-badge" style={{ background: '#059669', color: '#ffffff' }}>LIVE ₹</span>
+                    </button>
+                  )}
+
+                  {itemMatchesQuery('Fuel Theft & Diesel Radar', ['fuel theft', 'diesel pilferage', 'theft alert', 'fuel sensor', 'fuel rod', 'diesel', 'chori', 'anti-theft', 'siren', 'mileage audit']) && (
+                    <button
+                      type="button"
+                      className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fuel_theft' ? 'active' : ''}`}
+                      onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt'); }}
+                    >
+                      <span style={{ fontSize: '14px' }}>🛡️</span>
+                      <span>Diesel Theft &amp; Fuel Radar</span>
+                      <span className="admin-nav-sub-badge" style={{ background: '#dc2626', color: '#ffffff' }}>ANTI-THEFT</span>
                     </button>
                   )}
 
