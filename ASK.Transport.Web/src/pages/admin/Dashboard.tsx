@@ -440,6 +440,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot'>('3d_load');
+  const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
 
   // Hierarchical Navigation Accordion State
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
@@ -1962,6 +1963,7 @@ export default function Dashboard() {
 
           {/* GROUP 3: ENTERPRISE & FINANCE */}
           {(itemMatchesQuery('B2B Bulk, Auction & RTO', ['b2b bulk', 'auction', 'reverse logistics', 'rto', 'bidding', 'corporate']) ||
+            itemMatchesQuery('Hired Fleet & 194C TDS', ['hired fleet', 'market fleet', 'transporter settlement', 'tds', '194c', '70:30', 'fastag', 'recharge', 'sub-contractor', 'lorry hire', 'advance', 'pod settlement']) ||
             itemMatchesQuery('GST E-Invoice & ERP Ledgers', ['gst e-invoice', 'tally erp', 'zoho', 'credit ledger', 'billing', 'irn']) ||
             itemMatchesQuery('Tariff & Rate Matrix', ['tariff', 'rate matrix', 'pricing', 'freight charges', 'per km rate'])) && (
             <div className="admin-nav-group">
@@ -1975,13 +1977,27 @@ export default function Dashboard() {
                   <span>Enterprise &amp; Finance</span>
                 </div>
                 <div className="admin-nav-main-meta">
-                  <span className="admin-nav-count-badge" style={{ background: 'rgba(124, 58, 237, 0.2)', color: '#c084fc' }}>3</span>
+                  <span className="admin-nav-count-badge" style={{ background: 'rgba(124, 58, 237, 0.2)', color: '#c084fc' }}>4</span>
                   <span className={`admin-nav-chevron ${openNavGroups.enterprise || sidebarMenuQuery ? 'open' : ''}`}>▸</span>
                 </div>
               </button>
 
               {(openNavGroups.enterprise || sidebarMenuQuery) && (
                 <div className="admin-nav-sub-list">
+                  {itemMatchesQuery('Hired Fleet & 194C TDS', ['hired fleet', 'market fleet', 'transporter settlement', 'tds', '194c', '70:30', 'fastag', 'recharge', 'sub-contractor', 'lorry hire', 'advance', 'pod settlement']) && (
+                    <button
+                      type="button"
+                      className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'settlement' ? 'active' : ''}`}
+                      onClick={() => {
+                        setFinanceDeckSubTab('settlement');
+                        setActiveTab('finance_accounting');
+                      }}
+                    >
+                      <span style={{ fontSize: '14px' }}>🤝</span>
+                      <span>Hired Fleet &amp; 194C TDS</span>
+                      <span className="admin-nav-sub-badge" style={{ background: '#4f46e5', color: '#ffffff' }}>70:30</span>
+                    </button>
+                  )}
                   {itemMatchesQuery('B2B Bulk, Auction & RTO', ['b2b bulk', 'auction', 'reverse logistics', 'rto', 'bidding', 'corporate']) && (
                     <button
                       type="button"
@@ -2852,7 +2868,7 @@ export default function Dashboard() {
         {activeTab === 'finance_accounting' && (
           <div className="admin-content-pad">
             <ErrorBoundary fallbackTitle="Finance & Accounting Suite Error">
-              <FinanceAccountingDeck />
+              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} />
             </ErrorBoundary>
           </div>
         )}
