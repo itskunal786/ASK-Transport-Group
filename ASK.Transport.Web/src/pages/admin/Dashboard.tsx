@@ -484,6 +484,7 @@ export default function Dashboard() {
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'maintenance' | 'mobile_driver'>('expenses');
 
   // OPERATIONAL CONTROL (ADMIN / FLEET MANAGERS) STATE
   // 1. Dispatch Fleet State
@@ -1728,19 +1729,54 @@ export default function Dashboard() {
             {isTabRevoked('vehicles').revoked && <span className="nav-revoked-pill">🔒 Revoked</span>}
           </button>
 
+          {/* SECTION: 2026 FLEET & DRIVERS */}
+          <div className="admin-nav-section-title">🚛 2026 Fleet &amp; Driver Suite</div>
+
           <button
             type="button"
-            className={`admin-nav-item ${activeTab === 'fleet_mgmt' ? 'active' : ''}`}
-            onClick={() => setActiveTab('fleet_mgmt')}
+            className={`admin-nav-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'active' : ''}`}
+            onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
             style={{
-              borderLeft: activeTab === 'fleet_mgmt' ? '3px solid #059669' : undefined,
-              background: activeTab === 'fleet_mgmt' ? 'rgba(5, 150, 105, 0.15)' : undefined
+              borderLeft: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? '3px solid #059669' : undefined,
+              background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'rgba(5, 150, 105, 0.15)' : undefined
             }}
           >
-            <span style={{ fontSize: '18px' }}>🚛</span>
+            <span style={{ fontSize: '18px' }}>⛽</span>
             Fleet Petty Cash &amp; P&amp;L
             <span style={{ marginLeft: 'auto', background: '#059669', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>NEW</span>
           </button>
+
+          <a
+            href="/driver"
+            target="_blank"
+            rel="noreferrer"
+            className="admin-nav-item"
+            style={{
+              borderLeft: '3px solid #3b82f6',
+              background: 'rgba(59, 130, 246, 0.1)'
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📱</span>
+            Mobile Driver Mode
+            <span style={{ marginLeft: 'auto', background: '#3b82f6', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>/driver ↗</span>
+          </a>
+
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'active' : ''}`}
+            onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+            style={{
+              borderLeft: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? '3px solid #ef4444' : undefined,
+              background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'rgba(239, 68, 68, 0.15)' : undefined
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>🚨</span>
+            Vehicle Fitness &amp; Radar
+            <span style={{ marginLeft: 'auto', background: '#ef4444', color: '#ffffff', fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>ALERT</span>
+          </button>
+
+          {/* SECTION: ENTERPRISE & FINANCE */}
+          <div className="admin-nav-section-title">🏢 Enterprise &amp; Finance</div>
 
           <button
             type="button"
@@ -1967,6 +2003,68 @@ export default function Dashboard() {
             />
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px' }}>
+            <button
+              type="button"
+              onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? '#059669' : 'rgba(5, 150, 105, 0.12)',
+                color: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? '#ffffff' : '#059669',
+                border: '1px solid rgba(5, 150, 105, 0.3)',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <span>🚛</span> Petty Cash (P&amp;L)
+            </button>
+
+            <a
+              href="/driver"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: 'rgba(37, 99, 235, 0.12)',
+                color: '#2563eb',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              <span>📱</span> Driver App (/driver) ↗
+            </a>
+
+            <button
+              type="button"
+              onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? '#dc2626' : 'rgba(220, 38, 38, 0.12)',
+                color: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? '#ffffff' : '#dc2626',
+                border: '1px solid rgba(220, 38, 38, 0.3)',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <span>🚨</span> Vehicle Radar
+            </button>
+          </div>
           <div className="admin-top-profile">
             <ThemeToggle />
 
@@ -2105,6 +2203,226 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* 2026 FLEET, DRIVER & EXPENSE COMMAND SUITE */}
+            <div style={{
+              marginTop: '20px',
+              marginBottom: '24px',
+              padding: '22px 24px',
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              borderRadius: '16px',
+              border: '1px solid #334155',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)',
+              color: '#ffffff'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
+                <div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#6ee7b7', padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span>⚡</span> 2026 Fleet &amp; Driver Operations Live Hub
+                  </div>
+                  <h2 style={{ margin: '8px 0 4px', fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
+                    Driver Petty Cash, Mobile Driver Mode &amp; Fleet Compliance Suite
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
+                    Manage diesel expense slips, launch regional driver mobile app, and monitor RTO fitness &amp; insurance expiry alerts.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <a
+                    href="/driver"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 800,
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                    }}
+                  >
+                    <span>📱</span> Launch Driver Mobile Mode (/driver) ↗
+                  </a>
+                </div>
+              </div>
+
+              {/* 3 CORE FEATURE CARDS */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                {/* CARD 1: TRIP EXPENSES & DIESEL SLIPS */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      ⛽
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        1. Driver Trip Expenses
+                        <span style={{ background: '#10b981', color: '#022c22', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>P&amp;L</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                        Review diesel pump receipts, Fastag tolls, puncture repairs, and halting bhatta. 1-click Approve/Reject with real-time Net Profit margin engine.
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        background: '#059669',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      Audit Petty Cash &amp; P&amp;L →
+                    </button>
+                  </div>
+                </div>
+
+                {/* CARD 2: DEDICATED MOBILE DRIVER APP */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      📱
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        2. Mobile Driver Mode
+                        <span style={{ background: '#3b82f6', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>HINDI/ENG</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                        Highway smartphone interface at <code>/driver</code>: Odometer start, 1-tap Google Maps GPS, Camera slip upload, Consignee OTP &amp; POD signature.
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                    <a
+                      href="/driver"
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        background: '#2563eb',
+                        color: '#ffffff',
+                        textDecoration: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      Open Mobile App (/driver) ↗
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => { setFleetDeckSubTab('mobile_driver'); setActiveTab('fleet_mgmt'); }}
+                      style={{
+                        padding: '9px 12px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        color: '#e2e8f0',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                      title="Preview Driver Console inside Admin"
+                    >
+                      Admin Preview
+                    </button>
+                  </div>
+                </div>
+
+                {/* CARD 3: VEHICLE MAINTENANCE & FITNESS RADAR */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      🚨
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        3. Maintenance &amp; Fitness Radar
+                        <span style={{ background: '#ef4444', color: '#fef2f2', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>ALERTS</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                        Track Commercial Insurance, Fitness, PUC, and National Permit expiries + Engine oil KM countdown. 1-Click WhatsApp renewal alerts to drivers.
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      Open Compliance Radar →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* CHARTS ROW */}
             <div className="admin-charts-grid">
               <div className="admin-chart-card">
@@ -2231,7 +2549,7 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'fleet_mgmt' && (
           <div className="admin-content-pad">
-            <FleetOperationsDeck />
+            <FleetOperationsDeck initialTab={fleetDeckSubTab} />
           </div>
         )}
 
@@ -2928,6 +3246,65 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'drivers' && (
           <div className="admin-content-pad">
+            {/* MOBILE DRIVER MODE & PETTY CASH BANNER */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              marginBottom: '20px',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+              boxShadow: '0 4px 14px rgba(29, 78, 216, 0.25)'
+            }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.2)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>
+                  <span>📱</span> HIGHWAY DRIVER APP READY
+                </div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Dedicated Mobile Driver Mode (Bilingual Hindi / English)</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#bfdbfe' }}>
+                  Drivers can access <strong>http://localhost:5173/driver</strong> from any smartphone to start trips, navigate via Google Maps, capture diesel slips, and collect consignee delivery OTP &amp; POD.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <a
+                  href="/driver"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    background: '#ffffff',
+                    color: '#1d4ed8',
+                    textDecoration: 'none',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  🚀 Open Driver Console (/driver) ↗
+                </a>
+                <button
+                  type="button"
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  style={{
+                    background: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⛽ Audit Driver Petty Cash &amp; Slips →
+                </button>
+              </div>
+            </div>
             <div className="admin-page-title-row">
               <div>
                 <h1>Drivers &amp; Operators Directory</h1>
@@ -3007,6 +3384,65 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'vehicles' && (
           <div className="admin-content-pad">
+            {/* VEHICLE MAINTENANCE RADAR & PETTY CASH BANNER */}
+            <div style={{
+              background: 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              marginBottom: '20px',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+              boxShadow: '0 4px 14px rgba(185, 28, 28, 0.25)'
+            }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.2)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>
+                  <span>🚨</span> COMPLIANCE &amp; EXPIRY RADAR ACTIVE
+                </div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Fleet Maintenance, Service &amp; Fitness Renewal Alerts</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#fecaca' }}>
+                  Live document tracking: Commercial Insurance, Fitness, PUC, National Permits, and Engine Oil KM countdown with 1-Click WhatsApp reminder triggers.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                  style={{
+                    background: '#ffffff',
+                    color: '#b91c1c',
+                    border: 'none',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  🛡️ Open Maintenance Radar →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  style={{
+                    background: '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⛽ Fleet Diesel &amp; Trip P&amp;L →
+                </button>
+              </div>
+            </div>
             <div className="admin-page-title-row">
               <div>
                 <h1>Fleet &amp; Heavy Vehicles Registry</h1>

@@ -1,9 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FleetTripExpenseManager from './FleetTripExpenseManager';
 import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
 
-export default function FleetOperationsDeck() {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'maintenance' | 'mobile_driver'>('expenses');
+interface FleetOperationsDeckProps {
+  initialTab?: 'expenses' | 'maintenance' | 'mobile_driver';
+}
+
+export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOperationsDeckProps) {
+  const [activeTab, setActiveTab] = useState<'expenses' | 'maintenance' | 'mobile_driver'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

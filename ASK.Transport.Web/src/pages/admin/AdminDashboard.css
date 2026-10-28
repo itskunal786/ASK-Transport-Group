@@ -68,6 +68,27 @@
   margin-top: 20px;
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.admin-nav-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-nav-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.admin-nav-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #64748b;
+  padding: 10px 14px 2px;
+  user-select: none;
 }
 
 .admin-nav-item {
