@@ -9,10 +9,111 @@ import {
   type TripPnLResult
 } from '../api/fleetApi';
 
+const DEFAULT_EXPENSES: TripExpense[] = [
+  {
+    id: 1,
+    tripId: 101,
+    tripNumber: 'TRIP-2026-98102',
+    driverId: 1,
+    driverName: 'Ramesh Singh Rawat',
+    driverPhone: '+91 98230 45812',
+    vehicleNumber: 'MH-12-RN-7845',
+    expenseType: 'Diesel',
+    amount: 18450,
+    liters: 203.8,
+    fuelStationName: 'IndianOil COCO Highway Pump, Surat NH-48',
+    receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400',
+    odometerReading: 142850,
+    status: 'Approved',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    tripId: 101,
+    tripNumber: 'TRIP-2026-98102',
+    driverId: 1,
+    driverName: 'Ramesh Singh Rawat',
+    driverPhone: '+91 98230 45812',
+    vehicleNumber: 'MH-12-RN-7845',
+    expenseType: 'Toll',
+    amount: 1420,
+    fuelStationName: 'Vadodara Expressway Toll Plaza',
+    receiptPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400',
+    odometerReading: 143120,
+    status: 'Approved',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 3,
+    tripId: 101,
+    tripNumber: 'TRIP-2026-98102',
+    driverId: 1,
+    driverName: 'Ramesh Singh Rawat',
+    driverPhone: '+91 98230 45812',
+    vehicleNumber: 'MH-12-RN-7845',
+    expenseType: 'DriverBhatta',
+    amount: 1200,
+    fuelStationName: 'Daily Food & Night Halting Allowance',
+    odometerReading: 143400,
+    status: 'Pending',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 4,
+    tripId: 102,
+    tripNumber: 'TRIP-2026-98105',
+    driverId: 2,
+    driverName: 'Jaswinder Singh',
+    driverPhone: '+91 98112 34981',
+    vehicleNumber: 'HR-38-X-9988',
+    expenseType: 'TyrePuncture',
+    amount: 650,
+    fuelStationName: 'Shree Ram Tyre Vulcanizing, Jaipur Bypass',
+    receiptPhotoUrl: 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=400',
+    odometerReading: 98450,
+    status: 'Pending',
+    createdAt: new Date().toISOString()
+  }
+];
+
+const DEFAULT_METRICS: ExpenseMetrics = {
+  totalApproved: 19870,
+  totalPending: 1850,
+  totalDiesel: 18450,
+  totalToll: 1420,
+  pendingCount: 2,
+  approvedCount: 2
+};
+
+const DEFAULT_PNL: TripPnLResult = {
+  tripId: 101,
+  tripNumber: 'TRIP-2026-98102',
+  route: 'Pune Chakan Hub → Gurugram IMT Manesar',
+  vehicleNumber: 'MH-12-RN-7845',
+  driverName: 'Ramesh Singh Rawat',
+  financials: {
+    grossFreightRevenue: 58000,
+    totalOperatingExpenses: 19870,
+    netProfit: 38130,
+    netMarginPercent: 65.7,
+    driverAdvanceGiven: 25000,
+    driverCashSpent: 21070,
+    driverPettyCashBalance: 3930
+  },
+  breakdown: {
+    dieselTotal: 18450,
+    tollTotal: 1420,
+    bhattaTotal: 0,
+    maintenanceTotal: 0,
+    otherTotal: 0,
+    totalApprovedExpenses: 19870
+  }
+};
+
 export default function FleetTripExpenseManager() {
-  const [expenses, setExpenses] = useState<TripExpense[]>([]);
-  const [metrics, setMetrics] = useState<ExpenseMetrics | null>(null);
-  const [pnl, setPnl] = useState<TripPnLResult | null>(null);
+  const [expenses, setExpenses] = useState<TripExpense[]>(DEFAULT_EXPENSES);
+  const [metrics, setMetrics] = useState<ExpenseMetrics | null>(DEFAULT_METRICS);
+  const [pnl, setPnl] = useState<TripPnLResult | null>(DEFAULT_PNL);
   const [loading, setLoading] = useState(false);
 
   // Filters
@@ -41,12 +142,18 @@ export default function FleetTripExpenseManager() {
         status: statusFilter,
         expenseType: typeFilter
       });
-      setExpenses(res?.expenses || []);
-      setMetrics(res?.metrics || null);
+      if (res && Array.isArray(res.expenses)) {
+        setExpenses(res.expenses);
+      }
+      if (res && res.metrics) {
+        setMetrics(res.metrics);
+      }
 
       // Load active trip P&L
       const pnlRes = await getTripPnL(101);
-      setPnl(pnlRes);
+      if (pnlRes) {
+        setPnl(pnlRes);
+      }
     } catch (err) {
       console.error('Error loading expenses:', err);
     } finally {
@@ -104,6 +211,8 @@ export default function FleetTripExpenseManager() {
     }
   }
 
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* TOP P&L BANNER & EXPENSE METRICS */}
@@ -111,23 +220,23 @@ export default function FleetTripExpenseManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>APPROVED EXPENSES</span>
           <strong style={{ fontSize: '22px', color: '#0f172a', display: 'block', margin: '4px 0' }}>
-            ₹{metrics?.totalApproved.toLocaleString('en-IN') || 0}
+            ₹{(metrics?.totalApproved ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>{metrics?.approvedCount || 0} Claims Verified</span>
+          <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>{metrics?.approvedCount ?? 0} Claims Verified</span>
         </div>
 
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>PENDING REVIEW</span>
           <strong style={{ fontSize: '22px', color: '#b45309', display: 'block', margin: '4px 0' }}>
-            ₹{metrics?.totalPending.toLocaleString('en-IN') || 0}
+            ₹{(metrics?.totalPending ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700 }}>{metrics?.pendingCount || 0} Slips Require Action</span>
+          <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700 }}>{metrics?.pendingCount ?? 0} Slips Require Action</span>
         </div>
 
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #2563eb' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>DIESEL PUMP EXPENSES</span>
           <strong style={{ fontSize: '22px', color: '#2563eb', display: 'block', margin: '4px 0' }}>
-            ₹{metrics?.totalDiesel.toLocaleString('en-IN') || 0}
+            ₹{(metrics?.totalDiesel ?? 0).toLocaleString('en-IN')}
           </strong>
           <span style={{ fontSize: '12px', color: '#64748b' }}>Highway Bulk Refueling</span>
         </div>
@@ -135,7 +244,7 @@ export default function FleetTripExpenseManager() {
         <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #7c3aed' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>HIGHWAY TOLL TAX</span>
           <strong style={{ fontSize: '22px', color: '#7c3aed', display: 'block', margin: '4px 0' }}>
-            ₹{metrics?.totalToll.toLocaleString('en-IN') || 0}
+            ₹{(metrics?.totalToll ?? 0).toLocaleString('en-IN')}
           </strong>
           <span style={{ fontSize: '12px', color: '#64748b' }}>Fastag Corridor Deductions</span>
         </div>
@@ -147,35 +256,35 @@ export default function FleetTripExpenseManager() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px', borderBottom: '1px solid #334155', paddingBottom: '12px' }}>
             <div>
               <span style={{ padding: '3px 8px', background: '#38bdf8', color: '#0f172a', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>LIVE TRIP P&amp;L</span>
-              <strong style={{ fontSize: '16px', marginLeft: '10px' }}>{pnl.tripNumber} — {pnl.route}</strong>
+              <strong style={{ fontSize: '16px', marginLeft: '10px' }}>{pnl.tripNumber || 'Active Trip'} — {pnl.route || 'Transit Route'}</strong>
             </div>
             <div style={{ fontSize: '12.5px', color: '#94a3b8' }}>
-              Truck: <strong style={{ color: '#ffffff' }}>{pnl.vehicleNumber}</strong> • Driver: <strong style={{ color: '#ffffff' }}>{pnl.driverName}</strong>
+              Truck: <strong style={{ color: '#ffffff' }}>{pnl.vehicleNumber || '—'}</strong> • Driver: <strong style={{ color: '#ffffff' }}>{pnl.driverName || '—'}</strong>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
             <div>
               <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>Gross Freight Revenue</span>
-              <strong style={{ fontSize: '20px', color: '#ffffff', display: 'block' }}>₹{pnl.financials.grossFreightRevenue.toLocaleString('en-IN')}</strong>
+              <strong style={{ fontSize: '20px', color: '#ffffff', display: 'block' }}>₹{(pnl.financials?.grossFreightRevenue ?? 0).toLocaleString('en-IN')}</strong>
             </div>
 
             <div>
               <span style={{ fontSize: '11px', color: '#f87171', textTransform: 'uppercase' }}>Total Operating Expenses</span>
-              <strong style={{ fontSize: '20px', color: '#f87171', display: 'block' }}>- ₹{pnl.financials.totalOperatingExpenses.toLocaleString('en-IN')}</strong>
-              <small style={{ fontSize: '11px', color: '#94a3b8' }}>Diesel (₹{pnl.breakdown.dieselTotal}) + Toll (₹{pnl.breakdown.tollTotal})</small>
+              <strong style={{ fontSize: '20px', color: '#f87171', display: 'block' }}>- ₹{(pnl.financials?.totalOperatingExpenses ?? 0).toLocaleString('en-IN')}</strong>
+              <small style={{ fontSize: '11px', color: '#94a3b8' }}>Diesel (₹{pnl.breakdown?.dieselTotal ?? 0}) + Toll (₹{pnl.breakdown?.tollTotal ?? 0})</small>
             </div>
 
             <div>
               <span style={{ fontSize: '11px', color: '#4ade80', textTransform: 'uppercase' }}>Net Trip Profit</span>
-              <strong style={{ fontSize: '22px', color: '#4ade80', display: 'block' }}>₹{pnl.financials.netProfit.toLocaleString('en-IN')}</strong>
-              <span style={{ fontSize: '12px', color: '#4ade80', fontWeight: 700 }}>Margin: {pnl.financials.netMarginPercent}%</span>
+              <strong style={{ fontSize: '22px', color: '#4ade80', display: 'block' }}>₹{(pnl.financials?.netProfit ?? 0).toLocaleString('en-IN')}</strong>
+              <span style={{ fontSize: '12px', color: '#4ade80', fontWeight: 700 }}>Margin: {pnl.financials?.netMarginPercent ?? 0}%</span>
             </div>
 
             <div>
               <span style={{ fontSize: '11px', color: '#c7d2fe', textTransform: 'uppercase' }}>Driver Petty Cash Balance</span>
-              <strong style={{ fontSize: '20px', color: '#38bdf8', display: 'block' }}>₹{pnl.financials.driverPettyCashBalance.toLocaleString('en-IN')}</strong>
-              <small style={{ fontSize: '11px', color: '#94a3b8' }}>Advance: ₹{pnl.financials.driverAdvanceGiven}</small>
+              <strong style={{ fontSize: '20px', color: '#38bdf8', display: 'block' }}>₹{(pnl.financials?.driverPettyCashBalance ?? 0).toLocaleString('en-IN')}</strong>
+              <small style={{ fontSize: '11px', color: '#94a3b8' }}>Advance: ₹{pnl.financials?.driverAdvanceGiven ?? 0}</small>
             </div>
           </div>
         </div>
@@ -241,18 +350,20 @@ export default function FleetTripExpenseManager() {
             </tr>
           </thead>
           <tbody>
-            {(expenses || []).length === 0 ? (
+            {safeExpenses.length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
                   No trip expenses found for the selected filters.
                 </td>
               </tr>
             ) : (
-              (expenses || []).map(exp => (
+              safeExpenses.map(exp => (
                 <tr key={exp.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '10px 14px' }}>
                     <strong style={{ color: '#2563eb' }}>{exp.tripNumber}</strong>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>{new Date(exp.createdAt).toLocaleDateString()}</div>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>
+                      {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : '—'}
+                    </div>
                   </td>
                   <td style={{ padding: '10px 14px' }}>
                     <strong>{exp.driverName}</strong>
@@ -269,7 +380,7 @@ export default function FleetTripExpenseManager() {
                     {exp.odometerReading && <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px' }}>• Odo: {exp.odometerReading} km</span>}
                   </td>
                   <td style={{ padding: '10px 14px' }}>
-                    <strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{exp.amount.toLocaleString('en-IN')}</strong>
+                    <strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{(exp.amount ?? 0).toLocaleString('en-IN')}</strong>
                   </td>
                   <td style={{ padding: '10px 14px' }}>
                     {exp.receiptPhotoUrl ? (

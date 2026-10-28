@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import FleetTripExpenseManager from './FleetTripExpenseManager';
 import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
+import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
   initialTab?: 'expenses' | 'maintenance' | 'mobile_driver';
@@ -135,11 +136,15 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
       {/* VIEWPORT */}
       <div>
         {activeTab === 'expenses' && (
-          <FleetTripExpenseManager />
+          <ErrorBoundary fallbackTitle="Driver Trip Expenses Error">
+            <FleetTripExpenseManager />
+          </ErrorBoundary>
         )}
 
         {activeTab === 'maintenance' && (
-          <VehicleMaintenanceRadar />
+          <ErrorBoundary fallbackTitle="Vehicle Maintenance Radar Error">
+            <VehicleMaintenanceRadar />
+          </ErrorBoundary>
         )}
 
         {activeTab === 'mobile_driver' && (

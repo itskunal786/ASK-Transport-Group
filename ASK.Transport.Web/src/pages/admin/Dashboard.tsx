@@ -37,6 +37,7 @@ import AiOcrScannerModal from '../../components/AiOcrScannerModal';
 import FleetOperationsDeck from '../../components/FleetOperationsDeck';
 import EnterpriseB2BDeck from '../../components/EnterpriseB2BDeck';
 import FinanceAccountingDeck from '../../components/FinanceAccountingDeck';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
   bookingNo: string;
@@ -2549,7 +2550,9 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'fleet_mgmt' && (
           <div className="admin-content-pad">
-            <FleetOperationsDeck initialTab={fleetDeckSubTab} />
+            <ErrorBoundary fallbackTitle="Fleet Petty Cash & Operations Error">
+              <FleetOperationsDeck initialTab={fleetDeckSubTab} />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -2558,7 +2561,9 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'enterprise_b2b' && (
           <div className="admin-content-pad">
-            <EnterpriseB2BDeck />
+            <ErrorBoundary fallbackTitle="Enterprise B2B Suite Error">
+              <EnterpriseB2BDeck />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -2567,7 +2572,9 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'finance_accounting' && (
           <div className="admin-content-pad">
-            <FinanceAccountingDeck />
+            <ErrorBoundary fallbackTitle="Finance & Accounting Suite Error">
+              <FinanceAccountingDeck />
+            </ErrorBoundary>
           </div>
         )}
 
