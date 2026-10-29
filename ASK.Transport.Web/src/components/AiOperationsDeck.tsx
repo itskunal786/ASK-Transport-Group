@@ -3,15 +3,16 @@ import WhatsAppAiLogisticsBot from './WhatsAppAiLogisticsBot';
 import AiTruckLoadVisualizer from './AiTruckLoadVisualizer';
 import AiOcrScannerModal from './AiOcrScannerModal';
 import AiRouteCostPredictor from './AiRouteCostPredictor';
+import SpotFreightRateAiPredictor from './SpotFreightRateAiPredictor';
 
 export default function AiOperationsDeck({
   initialDeckTab = '3d_load',
   onApplyOcrData
 }: {
-  initialDeckTab?: '3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot';
+  initialDeckTab?: '3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai';
   onApplyOcrData?: (docType: string, data: Record<string, any>) => void;
 }) {
-  const [activeDeckTab, setActiveDeckTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot'>(initialDeckTab);
+  const [activeDeckTab, setActiveDeckTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>(initialDeckTab);
 
   useEffect(() => {
     if (initialDeckTab) {
@@ -190,6 +191,26 @@ export default function AiOperationsDeck({
 
         <button
           type="button"
+          onClick={() => setActiveDeckTab('spot_rate_ai')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeDeckTab === 'spot_rate_ai' ? '#4f46e5' : '#64748b',
+            borderBottom: activeDeckTab === 'spot_rate_ai' ? '3px solid #4f46e5' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>📈</span> Spot Freight AI &amp; Reverse Bidding
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveDeckTab('whatsapp_bot')}
           style={{
             padding: '10px 18px',
@@ -221,6 +242,10 @@ export default function AiOperationsDeck({
 
         {activeDeckTab === 'whatsapp_bot' && (
           <WhatsAppAiLogisticsBot />
+        )}
+
+        {activeDeckTab === 'spot_rate_ai' && (
+          <SpotFreightRateAiPredictor />
         )}
 
         {activeDeckTab === 'ocr_scanner' && (

@@ -3,14 +3,15 @@ import FleetTripExpenseManager from './FleetTripExpenseManager';
 import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
 import FleetFuelAntiTheftRadar from './FleetFuelAntiTheftRadar';
 import ColdChainTemperatureRadar from './ColdChainTemperatureRadar';
+import TyreLifecycleTpmsRadar from './TyreLifecycleTpmsRadar';
 import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
-  initialTab?: 'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver';
+  initialTab?: 'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar';
 }
 
 export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOperationsDeckProps) {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>(initialTab);
 
   useEffect(() => {
     if (initialTab) {
@@ -156,6 +157,26 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
+          onClick={() => setActiveTab('tyre_radar')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeTab === 'tyre_radar' ? '#ea580c' : '#64748b',
+            borderBottom: activeTab === 'tyre_radar' ? '3px solid #ea580c' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>🛞</span> Tyre &amp; TPMS Radar
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('mobile_driver')}
           style={{
             padding: '10px 18px',
@@ -198,6 +219,12 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
         {activeTab === 'maintenance' && (
           <ErrorBoundary fallbackTitle="Vehicle Maintenance Radar Error">
             <VehicleMaintenanceRadar />
+          </ErrorBoundary>
+        )}
+
+        {activeTab === 'tyre_radar' && (
+          <ErrorBoundary fallbackTitle="Tyre &amp; TPMS Radar Error">
+            <TyreLifecycleTpmsRadar />
           </ErrorBoundary>
         )}
 
