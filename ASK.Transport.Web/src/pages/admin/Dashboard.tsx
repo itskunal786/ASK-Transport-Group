@@ -38,6 +38,8 @@ import FleetOperationsDeck from '../../components/FleetOperationsDeck';
 import EnterpriseB2BDeck from '../../components/EnterpriseB2BDeck';
 import FinanceAccountingDeck from '../../components/FinanceAccountingDeck';
 import NicEwayBillAutoExtensionSuite from '../../components/NicEwayBillAutoExtensionSuite';
+import DockYardGatePassManager from '../../components/DockYardGatePassManager';
+import ElectronicWeighbridgeDeck from '../../components/ElectronicWeighbridgeDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -431,15 +433,15 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
-  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver'>('expenses');
-  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot'>('3d_load');
+  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
+  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
   const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
 
   // Hierarchical Navigation Accordion State
@@ -463,7 +465,7 @@ export default function Dashboard() {
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
     switch (group) {
       case 'operations':
-        return ['bookings', 'shipments', 'ewaybill', 'hubs'].includes(activeTab);
+        return ['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge'].includes(activeTab);
       case 'fleet':
         return ['fleet_mgmt', 'vehicles', 'drivers', 'telematics'].includes(activeTab);
       case 'enterprise':
@@ -478,7 +480,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (['bookings', 'shipments', 'ewaybill', 'hubs'].includes(activeTab)) {
+    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.operations ? prev : { ...prev, operations: true }));
     } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.fleet ? prev : { ...prev, fleet: true }));
@@ -654,7 +656,9 @@ export default function Dashboard() {
       ai_automation: { modules: ['AI', 'Automation'], codes: ['AI.View', 'AI.Use'] },
       fleet_mgmt: { modules: ['Fleet', 'Expenses'], codes: ['Fleet.View', 'Expenses.Approve'] },
       enterprise_b2b: { modules: ['Enterprise'], codes: ['Enterprise.View'] },
-      finance_accounting: { modules: ['Finance'], codes: ['Finance.View'] }
+      finance_accounting: { modules: ['Finance'], codes: ['Finance.View'] },
+      dock_yard: { modules: ['Hubs', 'Terminal', 'Yard'], codes: ['Hubs.View'] },
+      weighbridge: { modules: ['Weighbridge', 'Fleet'], codes: ['Fleet.View'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -1685,6 +1689,26 @@ export default function Dashboard() {
                   <span>Hubs &amp; Terminals</span>
                   {isTabRevoked('hubs').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'dock_yard' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('dock_yard')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Gate Pass &amp; Dock Yard</span>
+                  {isTabRevoked('dock_yard').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'weighbridge' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('weighbridge')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Dharam Kanta &amp; Weighbridge</span>
+                  {isTabRevoked('weighbridge').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
               </div>
             )}
           </div>
@@ -1744,6 +1768,15 @@ export default function Dashboard() {
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>Fitness &amp; Renewal Alerts</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'tyre_radar' ? 'active' : ''}`}
+                  onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt'); }}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Tyre &amp; TPMS Radar</span>
                 </button>
 
                 <button
@@ -1895,6 +1928,15 @@ export default function Dashboard() {
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>Highway Route Predictor</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'spot_rate_ai' ? 'active' : ''}`}
+                  onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation'); }}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Spot Freight Rate AI</span>
                 </button>
 
                 <button
@@ -4690,6 +4732,24 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'ewaybill' && (
           <NicEwayBillAutoExtensionSuite />
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: AUTOMATED GATE PASS & DOCK YARD MANAGEMENT */}
+        {/* ============================================================== */}
+        {activeTab === 'dock_yard' && (
+          <div className="admin-content-pad">
+            <DockYardGatePassManager />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: ELECTRONIC WEIGHBRIDGE (DHARAM KANTA) & OVERLOAD SHIELD */}
+        {/* ============================================================== */}
+        {activeTab === 'weighbridge' && (
+          <div className="admin-content-pad">
+            <ElectronicWeighbridgeDeck />
+          </div>
         )}
 
         {/* ============================================================== */}
