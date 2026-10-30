@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { getDockBays, getGatePasses, generateGateInPass, expediteDockLoading, authorizeGateOut } from '../api/dockYardApi';
+import './DockYardGatePassManager.css';
 
 // ============================================================================
 // DOCK YARD & GATE PASS TYPES & MODELS
@@ -236,6 +238,7 @@ const INITIAL_GATE_PASSES: GatePassRecord[] = [
 ];
 
 export default function DockYardGatePassManager() {
+  const { t } = useLanguage();
   const [bays, setBays] = useState<DockBayStatus[]>(INITIAL_BAYS);
   const [gatePasses, setGatePasses] = useState<GatePassRecord[]>(INITIAL_GATE_PASSES);
   const [selectedPass, setSelectedPass] = useState<GatePassRecord | null>(INITIAL_GATE_PASSES[0]);
@@ -403,60 +406,34 @@ export default function DockYardGatePassManager() {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* HEADER BANNER */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-          borderRadius: '16px',
-          padding: '24px 28px',
-          color: '#ffffff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-          boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.4)'
-        }}
-      >
+    <div className="dockyard-container">
+      {/* 1. TOP HEADER BANNER */}
+      <div className="dockyard-banner">
         <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '8px' }}>
-            <span>🏷️</span> HUB &amp; WAREHOUSE TERMINAL OPERATIONS
+          <div className="dockyard-banner-tag">
+            <span>🏷️</span> {t('HUB & WAREHOUSE TERMINAL OPERATIONS', 'हब एवं वेयरहाउस टर्मिनल संचालन')}
           </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 900, letterSpacing: '-0.5px' }}>
-            Automated Gate Pass &amp; Dock Yard Management
-          </h1>
-          <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8', lineHeight: 1.5 }}>
-            Digital QR Gate-In / Gate-Out inspection slips, live loading bay turnaround time (TAT) clocks, physical container seal integrity audits, and zero-detention alerts.
-          </p>
+          <div className="dockyard-banner-titles">
+            <h1>{t('Automated Gate Pass & Dock Yard Management', 'स्वचालित गेट पास एवं डॉक यार्ड प्रबंधन')}</h1>
+            <p>
+              {t(
+                'Digital QR Gate-In / Gate-Out inspection slips, live loading bay turnaround time (TAT) clocks, physical container seal integrity audits, and zero-detention alerts.',
+                'डिजिटल क्यूआर गेट-इन / गेट-आउट निरीक्षण पर्ची, लाइव लोडिंग बे टर्नअराउंड समय (TAT) घड़ियां, कंटेनर सील अखंडता ऑडिट और शून्य-डिटेंशन अलर्ट।'
+              )}
+            </p>
+          </div>
         </div>
 
-        {/* TOP CTA BUTTONS */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setShowNewGateInModal(true)}
-            style={{
-              padding: '11px 20px',
-              borderRadius: '10px',
-              background: '#059669',
-              color: '#ffffff',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)'
-            }}
-          >
-            <span>➕</span> Generate Gate-In Entry Pass
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowNewGateInModal(true)}
+          className="dockyard-btn-new-pass"
+        >
+          <span>➕</span> {t('Generate Gate-In Entry Pass', 'गेट-इन एंट्री पास बनाएं')}
+        </button>
       </div>
 
-      {/* TOAST ALERT */}
+      {/* 2. TOAST ALERT */}
       {toastMessage && (
         <div
           style={{
@@ -474,76 +451,78 @@ export default function DockYardGatePassManager() {
         </div>
       )}
 
-      {/* KPI METRICS OVERVIEW */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Active Bay Occupancy</span>
-            <span style={{ fontSize: '18px' }}>🏗️</span>
+      {/* 3. 4 TOP KPI METRICS OVERVIEW */}
+      <div className="dockyard-kpis-grid">
+        <div className="dockyard-kpi-card">
+          <div className="dockyard-kpi-head">
+            <span className="dockyard-kpi-label">{t('Active Bay Occupancy', 'सक्रिय बे अधिभोग')}</span>
+            <span className="dockyard-kpi-icon">🏗️</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', marginTop: '6px' }}>
-            4 / 6 Bays <span style={{ fontSize: '13px', fontWeight: 700, color: '#059669' }}>(67% Active)</span>
+          <div className="dockyard-kpi-value">
+            4 / 6 {t('Bays', 'बे')} <span style={{ fontSize: '13px', fontWeight: 700, color: '#059669' }}>(67% {t('Active', 'सक्रिय')})</span>
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>2 Bays ready for immediate staging</small>
+          <span className="dockyard-kpi-sub">{t('2 Bays ready for immediate staging', '2 बे तत्काल स्टेजिंग के लिए तैयार')}</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Average Yard TAT</span>
-            <span style={{ fontSize: '18px' }}>⏱️</span>
+        <div className="dockyard-kpi-card">
+          <div className="dockyard-kpi-head">
+            <span className="dockyard-kpi-label">{t('Average Yard TAT', 'औसत यार्ड टीएटी')}</span>
+            <span className="dockyard-kpi-icon">⏱️</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#059669', marginTop: '6px' }}>
-            68 Minutes <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981' }}>(-22m vs Target)</span>
+          <div className="dockyard-kpi-value" style={{ color: '#059669' }}>
+            68 {t('Minutes', 'मिनट')} <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981' }}>(-22m vs {t('Target', 'लक्ष्य')})</span>
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>Benchmark standard: &lt; 90 mins</small>
+          <span className="dockyard-kpi-sub">{t('Benchmark standard: < 90 mins', 'मानक बेंचमार्क: < 90 मिनट')}</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Detention Loss Prevented</span>
-            <span style={{ fontSize: '18px' }}>🛡️</span>
+        <div className="dockyard-kpi-card">
+          <div className="dockyard-kpi-head">
+            <span className="dockyard-kpi-label">{t('Detention Loss Prevented', 'बचत डिटेंशन शुल्क')}</span>
+            <span className="dockyard-kpi-icon">🛡️</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#0284c7', marginTop: '6px' }}>
-            ₹84,500 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0369a1' }}>/ this Month</span>
+          <div className="dockyard-kpi-value" style={{ color: '#0284c7' }}>
+            ₹84,500 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0369a1' }}>/ {t('this Month', 'इस महीने')}</span>
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>1 truck currently in detention review</small>
+          <span className="dockyard-kpi-sub">{t('1 truck currently in detention review', '1 ट्रक वर्तमान में डिटेंशन समीक्षा में')}</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Container Seal Integrity</span>
-            <span style={{ fontSize: '18px' }}>🔒</span>
+        <div className="dockyard-kpi-card">
+          <div className="dockyard-kpi-head">
+            <span className="dockyard-kpi-label">{t('Container Seal Integrity', 'कंटेनर सील अखंडता')}</span>
+            <span className="dockyard-kpi-icon">🔒</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#16a34a', marginTop: '6px' }}>
-            100% Intact <span style={{ fontSize: '12px', fontWeight: 700, color: '#16a34a' }}>Verified</span>
+          <div className="dockyard-kpi-value" style={{ color: '#16a34a' }}>
+            100% {t('Intact', 'अक्षुण्ण')} <span style={{ fontSize: '12px', fontWeight: 700, color: '#16a34a' }}>{t('Verified', 'सत्यापित')}</span>
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>0 tamper breach incidents logged</small>
+          <span className="dockyard-kpi-sub">{t('0 tamper breach incidents logged', '0 छेड़छाड़ उल्लंघन दर्ज')}</span>
         </div>
       </div>
 
-      {/* LIVE DOCK BAYS SCHEMATIC (BAYS 1 TO 6) */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '22px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+      {/* 4. LIVE DOCK BAYS SCHEMATIC (BAYS 1 TO 6) */}
+      <div className="dockyard-card-left" style={{ padding: '22px' }}>
+        <div className="dockyard-bays-header" style={{ marginBottom: '16px' }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
-              🏭 Live Terminal Loading Bays (Hub-01 Pune Logistics Park)
+              🏭 {t('Live Terminal Loading Bays (Hub-01 Pune Logistics Park)', 'लाइव टर्मिनल लोडिंग बे (हब-01 पुणे लॉजिस्टिक्स पार्क)')}
             </h3>
-            <small style={{ color: '#64748b', fontSize: '12px' }}>Visual real-time status of cargo docks, trailers docked, and turnaround countdown</small>
+            <small style={{ color: 'var(--text-secondary, #64748b)', fontSize: '12px' }}>
+              {t('Visual real-time status of cargo docks, trailers docked, and turnaround countdown', 'कार्गो डॉक्स, ट्रेलरों और टर्नअराउंड उलटी गिनती की दृश्य वास्तविक स्थिति')}
+            </small>
           </div>
           <div style={{ display: 'flex', gap: '8px', fontSize: '11px', fontWeight: 700 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span> Available
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span> {t('Available', 'उपलब्ध')}
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0284c7' }}></span> Loading/Unloading
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0284c7' }}></span> {t('Loading/Unloading', 'लोड/अनलोड')}
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#dc2626' }}></span> Detention Warning
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#dc2626' }}></span> {t('Detention Warning', 'डिटेंशन चेतावनी')}
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+        <div className="dockyard-bays-grid">
           {bays.map(bay => {
             const isDetention = bay.elapsedMinutes && bay.elapsedMinutes > bay.targetMinutes;
             const isAvailable = bay.status === 'AVAILABLE';
@@ -551,63 +530,44 @@ export default function DockYardGatePassManager() {
             return (
               <div
                 key={bay.bayId}
-                style={{
-                  border: '1.5px solid',
-                  borderColor: isDetention ? '#fca5a5' : isAvailable ? '#cbd5e1' : '#bae6fd',
-                  background: isDetention ? '#fff1f2' : isAvailable ? '#f8fafc' : '#f0f9ff',
-                  borderRadius: '12px',
-                  padding: '14px',
-                  position: 'relative'
-                }}
+                className={`dockyard-bay-card ${isDetention ? 'bay-detention' : isAvailable ? 'bay-available' : 'bay-occupied'}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <div>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: isDetention ? '#b91c1c' : isAvailable ? '#64748b' : '#0369a1', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {bay.bayId} • {bay.type}
-                    </span>
-                    <h4 style={{ margin: '2px 0 0', fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
-                      {bay.bayName}
-                    </h4>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 800,
-                      padding: '3px 8px',
-                      borderRadius: '12px',
-                      background: isDetention ? '#fee2e2' : isAvailable ? '#e2e8f0' : '#e0f2fe',
-                      color: isDetention ? '#dc2626' : isAvailable ? '#475569' : '#0284c7'
-                    }}
-                  >
-                    {isDetention ? '⚠️ Detention' : isAvailable ? '✓ Ready' : 'Active'}
+                <div className="dockyard-bay-top">
+                  <span className="dockyard-bay-id">
+                    {bay.bayId} • {bay.type}
+                  </span>
+                  <span className={`dockyard-bay-status-badge ${isDetention ? 'detention' : isAvailable ? 'available' : 'occupied'}`}>
+                    {isDetention ? t('⚠️ Detention', '⚠️ डिटेंशन') : isAvailable ? t('✓ Ready', '✓ तैयार') : t('Active', 'सक्रिय')}
                   </span>
                 </div>
+
+                <h4 style={{ margin: '2px 0 6px', fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
+                  {bay.bayName}
+                </h4>
 
                 {!isAvailable ? (
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 800, marginTop: '8px' }}>
-                      <span style={{ color: '#0f172a' }}>🚛 {bay.activeVehicle}</span>
-                      <span style={{ color: '#64748b' }}>{bay.activePassNumber}</span>
+                      <span className="dockyard-vehicle-text">🚛 {bay.activeVehicle}</span>
+                      <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11px', fontFamily: 'monospace' }}>{bay.activePassNumber}</span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div className="dockyard-bay-material">
                       📦 {bay.material}
                     </div>
 
-                    {/* PROGRESS BAR & TAT */}
-                    <div style={{ marginTop: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>
-                        <span style={{ color: '#64748b' }}>Dock Progress ({bay.progressPercent}%)</span>
-                        <span style={{ color: isDetention ? '#dc2626' : '#0284c7' }}>
-                          ⏱️ {bay.elapsedMinutes}m / {bay.targetMinutes}m TAT
+                    <div className="dockyard-bay-progress-wrap">
+                      <div className="dockyard-bay-progress-labels">
+                        <span>{t('Dock Progress', 'डॉक प्रगति')} ({bay.progressPercent}%)</span>
+                        <span style={{ color: isDetention ? '#dc2626' : '#0284c7', fontWeight: 800 }}>
+                          ⏱️ {bay.elapsedMinutes}m / {bay.targetMinutes}m
                         </span>
                       </div>
-                      <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div className="dockyard-bay-progress-bar">
                         <div
+                          className="dockyard-bay-progress-fill"
                           style={{
-                            height: '100%',
                             width: `${bay.progressPercent}%`,
-                            background: isDetention ? '#dc2626' : '#0284c7',
-                            borderRadius: '3px'
+                            background: isDetention ? '#dc2626' : '#0284c7'
                           }}
                         />
                       </div>
@@ -616,7 +576,9 @@ export default function DockYardGatePassManager() {
                 ) : (
                   <div style={{ height: '70px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                     <span style={{ fontSize: '20px' }}>🟢</span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, marginTop: '4px' }}>Bay Vacant - Ready for Docking</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, marginTop: '4px' }}>
+                      {t('Bay Vacant - Ready for Docking', 'बे खाली है - डॉकिंग के लिए तैयार')}
+                    </span>
                   </div>
                 )}
               </div>
@@ -625,141 +587,109 @@ export default function DockYardGatePassManager() {
         </div>
       </div>
 
-      {/* GATE PASS MASTER TABLE & INSPECTION SPLIT */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(360px, 1fr)', gap: '20px', alignItems: 'start' }}>
+      {/* 5. GATE PASS MASTER TABLE & INSPECTION SPLIT */}
+      <div className="dockyard-split-row">
         {/* LEFT COLUMN: GATE PASSES DIRECTORY */}
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          {/* TAB FILTERS */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
-              📋 Digital Gate Passes (Today's Yard Traffic)
-            </h3>
+        <div className="dockyard-card-left">
+          <div className="dockyard-card-header">
+            <h3>📋 {t("Digital Gate Passes (Today's Yard Traffic)", 'डिजिटल गेट पास (आज का यार्ड ट्रैफिक)')}</h3>
 
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {(['ALL', 'ACTIVE_DOCKS', 'DETENTION_ALERTS', 'GATE_OUT'] as const).map(tab => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTabFilter(tab)}
-                  style={{
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: activeTabFilter === tab ? '#0f172a' : '#f1f5f9',
-                    color: activeTabFilter === tab ? '#ffffff' : '#64748b'
-                  }}
-                >
-                  {tab === 'ALL' && 'All Passes'}
-                  {tab === 'ACTIVE_DOCKS' && 'Docked (3)'}
-                  {tab === 'DETENTION_ALERTS' && 'Detention (1)'}
-                  {tab === 'GATE_OUT' && 'Cleared'}
-                </button>
-              ))}
+            <div className="dockyard-filter-group">
+              <button
+                type="button"
+                className={`dockyard-filter-pill ${activeTabFilter === 'ALL' ? 'active' : ''}`}
+                onClick={() => setActiveTabFilter('ALL')}
+              >
+                {t('All Passes', 'सभी पास')}
+              </button>
+              <button
+                type="button"
+                className={`dockyard-filter-pill ${activeTabFilter === 'ACTIVE_DOCKS' ? 'active' : ''}`}
+                onClick={() => setActiveTabFilter('ACTIVE_DOCKS')}
+              >
+                {t('Docked (3)', 'डॉक्ड (3)')}
+              </button>
+              <button
+                type="button"
+                className={`dockyard-filter-pill ${activeTabFilter === 'DETENTION_ALERTS' ? 'active' : ''}`}
+                onClick={() => setActiveTabFilter('DETENTION_ALERTS')}
+              >
+                {t('Detention (1)', 'डिटेंशन (1)')}
+              </button>
+              <button
+                type="button"
+                className={`dockyard-filter-pill ${activeTabFilter === 'GATE_OUT' ? 'active' : ''}`}
+                onClick={() => setActiveTabFilter('GATE_OUT')}
+              >
+                {t('Cleared', 'स्वीकृत')}
+              </button>
             </div>
           </div>
 
-          {/* TABLE */}
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <div className="dockyard-table-wrap">
+            <table className="dockyard-data-table">
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', textAlign: 'left' }}>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>PASS #</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>VEHICLE &amp; DRIVER</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>BAY &amp; CARGO</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>TAT STATUS</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>SEAL</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800, textAlign: 'right' }}>ACTION</th>
+                <tr>
+                  <th>{t('PASS #', 'पास सं.')}</th>
+                  <th>{t('VEHICLE & DRIVER', 'वाहन एवं चालक')}</th>
+                  <th>{t('BAY & CARGO', 'बे एवं कार्गो')}</th>
+                  <th>{t('TAT STATUS', 'टीएटी स्थिति')}</th>
+                  <th>{t('SEAL', 'सील')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('ACTION', 'कार्रवाई')}</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPasses.map(pass => {
                   const isSelected = selectedPass?.id === pass.id;
                   const isDetention = pass.status === 'DETENTION_WARNING';
+                  const isCleared = pass.status === 'GATE_OUT_CLEARED';
 
                   return (
                     <tr
                       key={pass.id}
                       onClick={() => setSelectedPass(pass)}
-                      style={{
-                        borderBottom: '1px solid #f1f5f9',
-                        background: isSelected ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'background 0.15s ease'
-                      }}
+                      className={`dockyard-table-row ${isSelected ? 'selected' : ''}`}
                     >
-                      <td style={{ padding: '12px', fontWeight: 800, color: '#0f172a' }}>
-                        <div>{pass.passNumber}</div>
-                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{pass.type}</span>
+                      <td>
+                        <div className="dockyard-pass-no">{pass.passNumber}</div>
+                        <span className="dockyard-type-badge">{pass.type}</span>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <div style={{ fontWeight: 800, color: '#0f172a' }}>{pass.vehicleNumber}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>{pass.driverName}</div>
+                      <td>
+                        <div className="dockyard-vehicle-text">{pass.vehicleNumber}</div>
+                        <div className="dockyard-driver-text">{pass.driverName}</div>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <div style={{ fontWeight: 800, color: '#0284c7' }}>{pass.assignedBay}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <td>
+                        <div className="dockyard-bay-badge">{pass.assignedBay}</div>
+                        <div className="dockyard-cargo-text" title={`${pass.materialType} (${pass.cargoWeightTon}T)`}>
                           {pass.materialType} ({pass.cargoWeightTon}T)
                         </div>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            background: isDetention ? '#fee2e2' : pass.status === 'GATE_OUT_CLEARED' ? '#ecfdf5' : '#f0f9ff',
-                            color: isDetention ? '#dc2626' : pass.status === 'GATE_OUT_CLEARED' ? '#059669' : '#0284c7'
-                          }}
-                        >
-                          {isDetention ? `⚠️ ${pass.elapsedMinutes}m (Overdue)` : pass.status === 'GATE_OUT_CLEARED' ? '✓ Cleared' : `⏱️ ${pass.elapsedMinutes}m / ${pass.targetTatMinutes}m`}
+                      <td>
+                        <span className={`dockyard-tat-pill ${isDetention ? 'detention' : isCleared ? 'cleared' : 'safe'}`}>
+                          {isDetention ? `⚠️ ${pass.elapsedMinutes}m (${t('Overdue', 'अतिदेय')})` : isCleared ? `✓ ${t('Cleared', 'स्वीकृत')}` : `⏱️ ${pass.elapsedMinutes}m / ${pass.targetTatMinutes}m`}
                         </span>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            background: pass.sealStatus === 'INTACT_VERIFIED' ? '#ecfdf5' : '#fee2e2',
-                            color: pass.sealStatus === 'INTACT_VERIFIED' ? '#059669' : '#dc2626'
-                          }}
-                        >
-                          {pass.sealStatus === 'INTACT_VERIFIED' ? '🔒 Intact' : 'Tampered'}
+                      <td>
+                        <span className={`dockyard-seal-pill ${pass.sealStatus === 'INTACT_VERIFIED' ? 'intact' : 'tampered'}`}>
+                          {pass.sealStatus === 'INTACT_VERIFIED' ? `🔒 ${t('Intact', 'अक्षुण्ण')}` : `⚠️ ${t('Tampered', 'छेड़छाड़')}`}
                         </span>
                       </td>
 
-                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                      <td style={{ textAlign: 'right' }}>
                         <button
                           type="button"
+                          className="dockyard-btn-slip"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedPass(pass);
                             setShowSlipPrintModal(true);
                           }}
-                          style={{
-                            background: '#f1f5f9',
-                            color: '#0f172a',
-                            border: '1px solid #cbd5e1',
-                            borderRadius: '6px',
-                            padding: '4px 8px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                          }}
                         >
-                          🖨️ Slip
+                          🖨️ {t('Slip', 'पर्ची')}
                         </button>
                       </td>
                     </tr>
@@ -771,289 +701,203 @@ export default function DockYardGatePassManager() {
         </div>
 
         {/* RIGHT COLUMN: ACTIVE INSPECTION & GATE CONTROL SLIP */}
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '22px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div className="dockyard-card-right">
           {selectedPass ? (
             <div>
-              {/* PASS HEADER */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px' }}>
+              <div className="dockyard-audit-header">
                 <div>
-                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    GATE PASS AUDIT &amp; CLEARANCE
+                  <span className="dockyard-audit-tag">
+                    {t('GATE PASS AUDIT & CLEARANCE', 'गेट पास ऑडिट एवं क्लीयरेंस')}
                   </span>
-                  <h3 style={{ margin: '2px 0 0', fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="dockyard-audit-title">
                     {selectedPass.passNumber}
-                  </h3>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <span
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      background: selectedPass.status === 'GATE_OUT_CLEARED' ? '#ecfdf5' : selectedPass.status === 'DETENTION_WARNING' ? '#fee2e2' : '#e0f2fe',
-                      color: selectedPass.status === 'GATE_OUT_CLEARED' ? '#059669' : selectedPass.status === 'DETENTION_WARNING' ? '#dc2626' : '#0284c7'
-                    }}
-                  >
+                  <span className={`dockyard-status-pill-big ${selectedPass.status === 'GATE_OUT_CLEARED' ? 'cleared' : selectedPass.status === 'DETENTION_WARNING' ? 'detention' : 'docked'}`}>
                     {selectedPass.status.replace('_', ' ')}
                   </span>
-                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', marginTop: '4px' }}>
                     {selectedPass.gateInTime}
                   </div>
                 </div>
               </div>
 
               {/* QR CODE & VEHICLE DETAILS */}
-              <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: '#f8fafc', padding: '14px', borderRadius: '12px', margin: '16px 0', border: '1px solid #e2e8f0' }}>
-                <div style={{ width: '64px', height: '64px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>
+              <div className="dockyard-vehicle-banner">
+                <div className="dockyard-qr-thumb">
                   📱
                 </div>
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a' }}>
+                <div className="dockyard-vehicle-info-text">
+                  <div className="dockyard-plate-big">
                     {selectedPass.vehicleNumber}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#475569', fontWeight: 700 }}>
+                  <div className="dockyard-driver-contact">
                     {selectedPass.driverName} • {selectedPass.driverPhone}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Transporter: {selectedPass.transporterName}
+                  <div className="dockyard-transporter-name">
+                    {t('Transporter:', 'ट्रांसपोर्टर:')} {selectedPass.transporterName}
                   </div>
                 </div>
               </div>
 
-              {/* CONSIGNMENT & CONTAINER SEAL DETAILS */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '12px', marginBottom: '16px' }}>
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Consignment / LR</span>
-                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{selectedPass.consignmentNo}</div>
-                  <small style={{ color: '#64748b' }}>{selectedPass.cargoWeightTon} Tonnes</small>
+              {/* 4 MINI TILES */}
+              <div className="dockyard-metrics-2x2">
+                <div className="dockyard-mini-tile">
+                  <span>{t('Consignment / LR', 'कंसाइनमेंट / बिल्टी')}</span>
+                  <strong>{selectedPass.consignmentNo}</strong>
+                  <small>{selectedPass.cargoWeightTon} {t('Tonnes', 'टन')}</small>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Container Seal ID</span>
-                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{selectedPass.sealNumber}</div>
-                  <small style={{ color: '#059669', fontWeight: 700 }}>✓ Verified at Gate</small>
+                <div className="dockyard-mini-tile">
+                  <span>{t('Container Seal ID', 'कंटेनर सील आईडी')}</span>
+                  <strong>{selectedPass.sealNumber}</strong>
+                  <small style={{ color: '#059669', fontWeight: 700 }}>✓ {t('Verified at Gate', 'गेट पर सत्यापित')}</small>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Assigned Dock Bay</span>
-                  <div style={{ fontWeight: 800, color: '#0284c7' }}>{selectedPass.assignedBay}</div>
-                  <small style={{ color: '#64748b' }}>Docked at {selectedPass.dockInTime || 'Waiting'}</small>
+                <div className="dockyard-mini-tile">
+                  <span>{t('Assigned Dock Bay', 'आवंटित डॉक बे')}</span>
+                  <strong style={{ color: '#0284c7' }}>{selectedPass.assignedBay}</strong>
+                  <small>{t('Docked at', 'डॉक समय')}: {selectedPass.dockInTime || t('Waiting', 'प्रतीक्षारत')}</small>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Odometer at Gate-In</span>
-                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{selectedPass.odometerReadingKm.toLocaleString('en-IN')} KM</div>
-                  <small style={{ color: '#64748b' }}>Guard: {selectedPass.securityGuardName}</small>
+                <div className="dockyard-mini-tile">
+                  <span>{t('Odometer at Gate-In', 'गेट-इन पर ओडोमीटर')}</span>
+                  <strong>{selectedPass.odometerReadingKm.toLocaleString('en-IN')} KM</strong>
+                  <small>{t('Guard', 'गार्ड')}: {selectedPass.securityGuardName}</small>
                 </div>
               </div>
 
-              {/* TAT COUNTDOWN & DETENTION SECTION */}
-              <div
-                style={{
-                  background: selectedPass.status === 'DETENTION_WARNING' ? '#fff1f2' : '#f0fdf4',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: '1px solid',
-                  borderColor: selectedPass.status === 'DETENTION_WARNING' ? '#fecaca' : '#bbf7d0',
-                  marginBottom: '16px'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: selectedPass.status === 'DETENTION_WARNING' ? '#dc2626' : '#15803d' }}>
-                    {selectedPass.status === 'DETENTION_WARNING' ? '⚠️ DETENTION CHARGES TRIGGERED' : '⏱️ TURNAROUND TIME (TAT) HEALTH'}
+              {/* TAT SLA HEALTH GAUGE */}
+              <div className={`dockyard-tat-gauge ${selectedPass.status === 'DETENTION_WARNING' ? 'detention' : 'safe'}`}>
+                <div className="dockyard-tat-gauge-head">
+                  <span>
+                    {selectedPass.status === 'DETENTION_WARNING' ? t('⚠️ DETENTION CHARGES TRIGGERED', '⚠️ डिटेंशन शुल्क लागू') : t('⏱️ TURNAROUND TIME (TAT) HEALTH', '⏱️ टर्नअराउंड समय (TAT) स्वास्थ्य')}
                   </span>
-                  <span style={{ fontSize: '13px', fontWeight: 900, color: selectedPass.status === 'DETENTION_WARNING' ? '#dc2626' : '#15803d' }}>
+                  <span>
                     {selectedPass.elapsedMinutes}m / {selectedPass.targetTatMinutes}m
                   </span>
                 </div>
                 {selectedPass.status === 'DETENTION_WARNING' ? (
-                  <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: '#991b1b' }}>
-                    Loading delayed by 25 mins. Auto-demurrage fine accrued: <strong>₹{selectedPass.demurrageChargesInr}</strong>.
+                  <p>
+                    {t('Loading delayed by 25 mins. Auto-demurrage fine accrued:', 'लोडिंग में 25 मिनट का विलंब। जुर्माना शुल्क:')} <strong>₹{selectedPass.demurrageChargesInr}</strong>.
                   </p>
                 ) : (
-                  <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: '#166534' }}>
-                    Truck is operating comfortably within the 75-minute yard turnaround SLA.
+                  <p>
+                    {t('Truck is operating comfortably within the 75-minute yard turnaround SLA.', 'ट्रक 75-मिनट यार्ड टर्नअराउंड एसएलए के अंतर्गत सुरक्षित रूप से संचालित हो रहा है।')}
                   </p>
                 )}
               </div>
 
-              {/* ACTION BUTTONS */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* ACTIONS */}
+              <div className="dockyard-actions-col">
                 {selectedPass.status === 'DETENTION_WARNING' && (
                   <button
                     type="button"
+                    className="dockyard-btn-expedite"
                     onClick={() => handleExpediteDock(selectedPass.id)}
-                    style={{
-                      background: '#ea580c',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '10px 14px',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
                   >
-                    <span>⚡</span> Expedite Unload &amp; Waive Detention
+                    <span>⚡</span> {t('Expedite Unload & Waive Detention', 'अनलोडिंग तेज करें एवं डिटेंशन शुल्क माफ करें')}
                   </button>
                 )}
 
                 {selectedPass.status !== 'GATE_OUT_CLEARED' && (
                   <button
                     type="button"
+                    className="dockyard-btn-gateout"
                     onClick={() => handleGateOutRelease(selectedPass.id)}
-                    style={{
-                      background: '#059669',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '10px 14px',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
                   >
-                    <span>🚪</span> Authorize Gate-Out Exit &amp; Print Slip
+                    <span>🚪</span> {t('Authorize Gate-Out Exit & Print Slip', 'गेट-आउट निकास अधिकृत करें एवं पर्ची प्रिंट करें')}
                   </button>
                 )}
 
                 <button
                   type="button"
+                  className="dockyard-btn-doc"
                   onClick={() => setShowSlipPrintModal(true)}
-                  style={{
-                    background: '#f8fafc',
-                    color: '#0f172a',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '8px 14px',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
                 >
-                  🖨️ View Official Digital Gate Pass Document
+                  🖨️ {t('View Official Digital Gate Pass Document', 'आधिकारिक डिजिटल गेट पास दस्तावेज देखें')}
                 </button>
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-              Select a gate pass to inspect details.
+            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary, #64748b)' }}>
+              {t('Select a gate pass to inspect details.', 'विवरण देखने के लिए गेट पास का चयन करें।')}
             </div>
           )}
         </div>
       </div>
 
-      {/* NEW GATE-IN PASS MODAL */}
+      {/* 6. NEW GATE-IN PASS MODAL */}
       {showNewGateInModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.7)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              padding: '24px',
-              maxWidth: '560px',
-              width: '100%',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
-                🏷️ New Gate-In Entry Slip Generator
-              </h3>
+        <div className="dockyard-modal-overlay">
+          <div className="dockyard-modal-card">
+            <div className="dockyard-modal-head">
+              <h3>🏷️ {t('New Gate-In Entry Slip Generator', 'नया गेट-इन एंट्री पास जनरेटर')}</h3>
               <button
                 type="button"
+                className="dockyard-modal-close"
                 onClick={() => setShowNewGateInModal(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateGateIn} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <form onSubmit={handleCreateGateIn} className="dockyard-modal-form">
+              <div className="dockyard-form-grid-2">
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Vehicle Number *
-                  </label>
+                  <label className="dockyard-input-label">{t('Vehicle Number *', 'वाहन संख्या *')}</label>
                   <input
                     type="text"
                     required
                     value={newVehicle}
                     onChange={e => setNewVehicle(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase' }}
+                    className="dockyard-input-field"
+                    style={{ textTransform: 'uppercase' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Consignment / Bilty (LR) *
-                  </label>
+                  <label className="dockyard-input-label">{t('Consignment / Bilty (LR) *', 'कंसाइनमेंट / बिल्टी (LR) *')}</label>
                   <input
                     type="text"
                     required
                     value={newConsignment}
                     onChange={e => setNewConsignment(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="dockyard-form-grid-2">
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Driver Name *
-                  </label>
+                  <label className="dockyard-input-label">{t('Driver Name *', 'चालक का नाम *')}</label>
                   <input
                     type="text"
                     required
                     value={newDriver}
                     onChange={e => setNewDriver(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Driver Phone *
-                  </label>
+                  <label className="dockyard-input-label">{t('Driver Phone *', 'चालक फोन नंबर *')}</label>
                   <input
                     type="text"
                     required
                     value={newPhone}
                     onChange={e => setNewPhone(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="dockyard-form-grid-2">
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Assigned Loading/Unloading Bay
-                  </label>
+                  <label className="dockyard-input-label">{t('Assigned Loading/Unloading Bay', 'आवंटित लोडिंग/अनलोडिंग बे')}</label>
                   <select
                     value={newBay}
                     onChange={e => setNewBay(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700 }}
+                    className="dockyard-select-field"
                   >
                     <option value="BAY-01">Bay 1 - Heavy Cargo Unload</option>
                     <option value="BAY-02">Bay 2 - Fast Express Cross-Dock</option>
@@ -1064,73 +908,65 @@ export default function DockYardGatePassManager() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Container Physical Seal No *
-                  </label>
+                  <label className="dockyard-input-label">{t('Container Physical Seal No *', 'कंटेनर भौतिक सील संख्या *')}</label>
                   <input
                     type="text"
                     required
                     value={newSealNo}
                     onChange={e => setNewSealNo(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '10px' }}>
+              <div className="dockyard-form-grid-3">
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Material Description
-                  </label>
+                  <label className="dockyard-input-label">{t('Material Description', 'सामग्री विवरण')}</label>
                   <input
                     type="text"
                     value={newMaterial}
                     onChange={e => setNewMaterial(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Weight (Ton)
-                  </label>
+                  <label className="dockyard-input-label">{t('Weight (Ton)', 'वजन (टन)')}</label>
                   <input
                     type="number"
                     step="0.1"
                     value={newWeight}
                     onChange={e => setNewWeight(Number(e.target.value))}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    Odometer (KM)
-                  </label>
+                  <label className="dockyard-input-label">{t('Odometer (KM)', 'ओडोमीटर (KM)')}</label>
                   <input
                     type="number"
                     value={newOdo}
                     onChange={e => setNewOdo(Number(e.target.value))}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="dockyard-input-field"
                   />
                 </div>
               </div>
 
-              <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', fontSize: '11px', color: '#64748b' }}>
-                🔒 Security Checklist: Driver sobriety checked, helmet worn, container seals intact, and fire extinguisher present.
+              <div className="dockyard-security-box">
+                🔒 {t('Security Checklist: Driver sobriety checked, helmet worn, container seals intact, and fire extinguisher present.', 'सुरक्षा चेकलिस्ट: चालक की सतर्कता जांची गई, हेलमेट पहना है, कंटेनर सील बरकरार है और अग्निशामक यंत्र उपस्थित है।')}
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button
                   type="button"
                   onClick={() => setShowNewGateInModal(false)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#f1f5f9', border: 'none', fontWeight: 700, cursor: 'pointer', color: '#475569' }}
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-subtle, #f1f5f9)', border: '1px solid var(--border-color, #cbd5e1)', fontWeight: 700, cursor: 'pointer', color: 'var(--text-primary, #475569)' }}
                 >
-                  Cancel
+                  {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   type="submit"
                   style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#059669', color: '#ffffff', border: 'none', fontWeight: 800, cursor: 'pointer' }}
                 >
-                  Confirm Gate-In &amp; Generate Barcode
+                  {t('Confirm Gate-In & Generate Barcode', 'गेट-इन पुष्टि करें एवं बारकोड जनरेट करें')}
                 </button>
               </div>
             </form>
@@ -1138,40 +974,18 @@ export default function DockYardGatePassManager() {
         </div>
       )}
 
-      {/* PRINT SLIP MODAL */}
+      {/* 7. PRINT SLIP MODAL */}
       {showSlipPrintModal && selectedPass && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.7)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              padding: '28px',
-              maxWidth: '500px',
-              width: '100%',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)',
-              fontFamily: 'monospace'
-            }}
-          >
-            <div style={{ textAlign: 'center', borderBottom: '2px dashed #000', paddingBottom: '12px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 900 }}>ASK TRANSPORT GROUP</div>
-              <div style={{ fontSize: '11px' }}>HUB TERMINAL-01 PUNE LOGISTICS PARK</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px' }}>OFFICIAL GATE IN/OUT PASS</div>
-              <div style={{ fontSize: '11px' }}>PASS NO: {selectedPass.passNumber}</div>
+        <div className="dockyard-modal-overlay">
+          <div className="dockyard-modal-card print-card">
+            <div style={{ textAlign: 'center', borderBottom: '2px dashed var(--border-color, #000)', paddingBottom: '12px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary, #0f172a)' }}>ASK TRANSPORT GROUP</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>HUB TERMINAL-01 PUNE LOGISTICS PARK</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px', color: 'var(--text-primary, #0f172a)' }}>OFFICIAL GATE IN/OUT PASS</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>PASS NO: {selectedPass.passNumber}</div>
             </div>
 
-            <div style={{ padding: '16px 0', fontSize: '12px', lineHeight: '1.8', borderBottom: '2px dashed #000' }}>
+            <div style={{ padding: '16px 0', fontSize: '12px', lineHeight: '1.8', borderBottom: '2px dashed var(--border-color, #000)', color: 'var(--text-primary, #0f172a)' }}>
               <div><strong>VEHICLE NO:</strong> {selectedPass.vehicleNumber}</div>
               <div><strong>DRIVER:</strong> {selectedPass.driverName} ({selectedPass.driverPhone})</div>
               <div><strong>TRANSPORTER:</strong> {selectedPass.transporterName}</div>
@@ -1185,7 +999,7 @@ export default function DockYardGatePassManager() {
               <div><strong>GUARD:</strong> {selectedPass.securityGuardName}</div>
             </div>
 
-            <div style={{ textAlign: 'center', padding: '16px 0', borderBottom: '2px dashed #000' }}>
+            <div style={{ textAlign: 'center', padding: '16px 0', borderBottom: '2px dashed var(--border-color, #000)', color: 'var(--text-primary, #0f172a)' }}>
               <div style={{ fontSize: '32px' }}>||| || ||||| |||| ||| ||</div>
               <div style={{ fontSize: '10px', marginTop: '4px' }}>*{selectedPass.passNumber}*</div>
             </div>
@@ -1194,9 +1008,9 @@ export default function DockYardGatePassManager() {
               <button
                 type="button"
                 onClick={() => setShowSlipPrintModal(false)}
-                style={{ flex: 1, padding: '9px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '9px', background: 'var(--bg-subtle, #f1f5f9)', border: '1px solid var(--border-color, #cbd5e1)', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', color: 'var(--text-primary, #0f172a)' }}
               >
-                Close
+                {t('Close', 'बंद करें')}
               </button>
               <button
                 type="button"
@@ -1204,9 +1018,9 @@ export default function DockYardGatePassManager() {
                   window.print();
                   setShowSlipPrintModal(false);
                 }}
-                style={{ flex: 1, padding: '9px', background: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '9px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
               >
-                🖨️ Print Slip
+                🖨️ {t('Print Slip', 'पर्ची प्रिंट करें')}
               </button>
             </div>
           </div>

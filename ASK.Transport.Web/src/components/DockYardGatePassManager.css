@@ -1,0 +1,1010 @@
+/* ============================================================================
+   DOCK YARD & GATE PASS MANAGER CSS
+   Theme-Adaptive (Dark & Light Mode), Ultra-Responsive, Zero-Clipping
+   ============================================================================ */
+
+.dockyard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--text-primary, #0f172a);
+}
+
+/* TOP HEADER BANNER */
+.dockyard-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.35);
+}
+
+.dockyard-banner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.dockyard-banner-titles h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.dockyard-banner-titles p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.dockyard-btn-new-pass {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  transition: all 0.15s ease;
+}
+
+.dockyard-btn-new-pass:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+/* 4 TOP KPI METRIC CARDS */
+.dockyard-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.dockyard-kpi-card {
+  background: var(--bg-surface, #ffffff);
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.dockyard-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.dockyard-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dockyard-kpi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+}
+
+.dockyard-kpi-icon {
+  font-size: 18px;
+}
+
+.dockyard-kpi-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text-primary, #0f172a);
+  margin-top: 6px;
+}
+
+.dockyard-kpi-sub {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 4px;
+  display: block;
+}
+
+/* 5 DOCK BAYS LIVE MONITOR */
+.dockyard-bays-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dockyard-bays-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dockyard-bays-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+.dockyard-bays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.dockyard-bay-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.dockyard-bay-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.dockyard-bay-card.bay-occupied {
+  border-top: 3px solid #0284c7;
+}
+
+.dockyard-bay-card.bay-detention {
+  border-top: 3px solid #ef4444;
+}
+
+.dockyard-bay-card.bay-available {
+  border-top: 3px solid #10b981;
+}
+
+.dockyard-bay-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dockyard-bay-id {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+.dockyard-bay-status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.dockyard-bay-status-badge.occupied {
+  background: rgba(2, 132, 199, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+.dockyard-bay-status-badge.available {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.dockyard-bay-status-badge.detention {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.dockyard-bay-vehicle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  font-family: monospace;
+}
+
+.dockyard-bay-material {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.dockyard-bay-progress-wrap {
+  margin-top: 10px;
+}
+
+.dockyard-bay-progress-bar {
+  height: 5px;
+  background: var(--bg-subtle, #e2e8f0);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dockyard-bay-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.dockyard-bay-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* ============================================================================
+   SPLIT DIRECTORY & CLEARANCE CONSOLE
+   ============================================================================ */
+.dockyard-split-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(360px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1120px) {
+  .dockyard-split-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LEFT CARD: DIRECTORY */
+.dockyard-card-left {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.dockyard-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dockyard-card-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+.dockyard-filter-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dockyard-filter-pill {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dockyard-filter-pill.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* RESPONSIVE TABLE (NO UGLY TEXT WRAPS & NO HORIZONTAL CUTTING) */
+.dockyard-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+}
+
+.dockyard-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.dockyard-data-table th {
+  background: var(--bg-subtle, #f8fafc);
+  padding: 10px 12px;
+  color: var(--text-secondary, #64748b);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  white-space: nowrap;
+}
+
+.dockyard-data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  vertical-align: middle;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+}
+
+.dockyard-table-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.dockyard-table-row:hover {
+  background: var(--bg-hover, rgba(2, 132, 199, 0.05));
+}
+
+.dockyard-table-row.selected {
+  background: rgba(2, 132, 199, 0.1) !important;
+  border-left: 3px solid #0284c7;
+}
+
+.dockyard-pass-no {
+  font-weight: 800;
+  font-family: monospace;
+  font-size: 12.5px;
+  color: #0284c7;
+  white-space: nowrap;
+}
+
+.dockyard-type-badge {
+  font-size: 10px;
+  color: var(--text-secondary, #64748b);
+  font-weight: 600;
+}
+
+.dockyard-vehicle-text {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--text-primary, #0f172a);
+  font-family: monospace;
+}
+
+.dockyard-driver-text {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+}
+
+.dockyard-bay-badge {
+  font-weight: 800;
+  color: #0284c7;
+  font-size: 12px;
+}
+
+.dockyard-cargo-text {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dockyard-tat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.dockyard-tat-pill.safe {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+.dockyard-tat-pill.detention {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.dockyard-tat-pill.cleared {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dockyard-seal-pill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dockyard-seal-pill.intact {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.dockyard-seal-pill.tampered {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.dockyard-btn-slip {
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #0f172a);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.dockyard-btn-slip:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* RIGHT CARD: CLEARANCE & DISPATCH CONSOLE */
+.dockyard-card-right {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.dockyard-audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+}
+
+.dockyard-audit-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dockyard-audit-title {
+  font-size: 18px;
+  font-weight: 900;
+  font-family: monospace;
+  color: var(--text-primary, #0f172a);
+  margin-top: 2px;
+}
+
+.dockyard-status-pill-big {
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dockyard-status-pill-big.docked {
+  background: rgba(2, 132, 199, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.3);
+}
+
+.dockyard-status-pill-big.detention {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.dockyard-status-pill-big.cleared {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* VEHICLE & DRIVER BOX */
+.dockyard-vehicle-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 16px 0;
+}
+
+.dockyard-qr-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.dockyard-vehicle-info-text {
+  flex: 1;
+}
+
+.dockyard-plate-big {
+  font-size: 16px;
+  font-weight: 900;
+  font-family: monospace;
+  color: var(--text-primary, #0f172a);
+}
+
+.dockyard-driver-contact {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 2px;
+}
+
+.dockyard-transporter-name {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+}
+
+/* 4 METRICS TILES */
+.dockyard-metrics-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dockyard-mini-tile {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #f1f5f9);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.dockyard-mini-tile span {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+}
+
+.dockyard-mini-tile strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  margin-top: 2px;
+}
+
+.dockyard-mini-tile small {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+}
+
+/* TAT SLA HEALTH GAUGE */
+.dockyard-tat-gauge {
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid;
+  margin-bottom: 16px;
+}
+
+.dockyard-tat-gauge.safe {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #15803d;
+}
+
+.dockyard-tat-gauge.detention {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #dc2626;
+}
+
+.dockyard-tat-gauge-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.dockyard-tat-gauge p {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* ACTIONS IN RIGHT CARD */
+.dockyard-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dockyard-btn-gateout {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: all 0.15s ease;
+}
+
+.dockyard-btn-gateout:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.dockyard-btn-expedite {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+  transition: all 0.15s ease;
+}
+
+.dockyard-btn-doc {
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #0f172a);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.dockyard-btn-doc:hover {
+  background: var(--bg-subtle, #f8fafc);
+  border-color: #94a3b8;
+}
+
+/* MODALS */
+.dockyard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.dockyard-modal-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+.dockyard-modal-card.print-card {
+  max-width: 520px;
+  font-family: monospace;
+}
+
+.dockyard-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dockyard-modal-head h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-primary, #0f172a);
+}
+
+.dockyard-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-secondary, #64748b);
+  transition: color 0.15s ease;
+}
+
+.dockyard-modal-close:hover {
+  color: #ef4444;
+}
+
+.dockyard-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dockyard-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dockyard-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 10px;
+}
+
+.dockyard-input-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  margin-bottom: 4px;
+}
+
+.dockyard-input-field,
+.dockyard-select-field {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-subtle, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 600;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.dockyard-input-field:focus,
+.dockyard-select-field:focus {
+  outline: none;
+  border-color: #0284c7;
+  background: var(--bg-surface, #ffffff);
+}
+
+.dockyard-security-box {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.4;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES (HIGH CONTRAST & LUXURY DARK SLATE)
+   ============================================================================ */
+[data-theme="dark"] .dockyard-container,
+body.dark .dockyard-container,
+.dark .dockyard-container {
+  --bg-surface: #111a2e;
+  --bg-subtle: #090f1d;
+  --bg-hover: rgba(56, 189, 248, 0.08);
+  --border-color: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+[data-theme="dark"] .dockyard-kpi-card,
+body.dark .dockyard-kpi-card,
+.dark .dockyard-kpi-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .dockyard-bay-card,
+body.dark .dockyard-bay-card,
+.dark .dockyard-bay-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .dockyard-card-left,
+[data-theme="dark"] .dockyard-card-right,
+body.dark .dockyard-card-left,
+body.dark .dockyard-card-right,
+.dark .dockyard-card-left,
+.dark .dockyard-card-right {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .dockyard-filter-pill,
+body.dark .dockyard-filter-pill,
+.dark .dockyard-filter-pill {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .dockyard-filter-pill.active,
+body.dark .dockyard-filter-pill.active,
+.dark .dockyard-filter-pill.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+[data-theme="dark"] .dockyard-data-table th,
+body.dark .dockyard-data-table th,
+.dark .dockyard-data-table th {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .dockyard-data-table td,
+body.dark .dockyard-data-table td,
+.dark .dockyard-data-table td {
+  border-color: #17243c !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .dockyard-vehicle-text,
+body.dark .dockyard-vehicle-text,
+.dark .dockyard-vehicle-text {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .dockyard-btn-slip,
+body.dark .dockyard-btn-slip,
+.dark .dockyard-btn-slip {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .dockyard-btn-slip:hover,
+body.dark .dockyard-btn-slip:hover,
+.dark .dockyard-btn-slip:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+[data-theme="dark"] .dockyard-vehicle-banner,
+body.dark .dockyard-vehicle-banner,
+.dark .dockyard-vehicle-banner {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .dockyard-qr-thumb,
+body.dark .dockyard-qr-thumb,
+.dark .dockyard-qr-thumb {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .dockyard-plate-big,
+body.dark .dockyard-plate-big,
+.dark .dockyard-plate-big {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .dockyard-mini-tile,
+body.dark .dockyard-mini-tile,
+.dark .dockyard-mini-tile {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .dockyard-mini-tile strong,
+body.dark .dockyard-mini-tile strong,
+.dark .dockyard-mini-tile strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .dockyard-btn-doc,
+body.dark .dockyard-btn-doc,
+.dark .dockyard-btn-doc {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .dockyard-btn-doc:hover,
+body.dark .dockyard-btn-doc:hover,
+.dark .dockyard-btn-doc:hover {
+  background: #17243c !important;
+  border-color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .dockyard-modal-card,
+body.dark .dockyard-modal-card,
+.dark .dockyard-modal-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .dockyard-input-field,
+[data-theme="dark"] .dockyard-select-field,
+body.dark .dockyard-input-field,
+body.dark .dockyard-select-field,
+.dark .dockyard-input-field,
+.dark .dockyard-select-field {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .dockyard-security-box,
+body.dark .dockyard-security-box,
+.dark .dockyard-security-box {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
