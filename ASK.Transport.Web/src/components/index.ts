@@ -52,7 +52,14 @@ export { default as FreightBiddingMarketplace } from './FreightBiddingMarketplac
 export { default as ReverseLogisticsRtoManager } from './ReverseLogisticsRtoManager';
 export { default as CorporateCargoClaimsManager } from './CorporateCargoClaimsManager';
 
-// 6. COMMON & CORE INFRASTRUCTURE
+// 6. EXECUTIVE GOVERNANCE, AUDIT & CUSTOMER CONNECT
+export { default as ExecutiveProfitabilityRadar } from './ExecutiveProfitabilityRadar';
+export { default as CaTaxAuditVault } from './CaTaxAuditVault';
+export { default as PhysicalPodInwardDeck } from './PhysicalPodInwardDeck';
+export { default as ConsigneeAddressBookModal } from './ConsigneeAddressBookModal';
+export { default as WhatsAppTrackShareModal } from './WhatsAppTrackShareModal';
+
+// 7. COMMON & CORE INFRASTRUCTURE
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as ThemeToggle } from './ThemeToggle';
 export { default as AccessRestrictedNotice } from './AccessRestrictedNotice';

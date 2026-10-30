@@ -236,3 +236,132 @@ public class CorporateCargoClaim
     public string? SurveyorReportUrl { get; set; }
     public DateTime LoggedDate { get; set; } = DateTime.UtcNow;
 }
+
+
+// ============================================================================
+// NEW TRANSPORT SUITE: PROFITABILITY, AUDIT, POD & DIRECTORY ENTITIES
+// ============================================================================
+
+public class ExecutiveRouteProfitability
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string CorridorLane { get; set; } = string.Empty;
+    public string OriginHub { get; set; } = string.Empty;
+    public string DestinationHub { get; set; } = string.Empty;
+    public int TotalTripsExecuted { get; set; }
+    public decimal TotalFreightRevenueInr { get; set; }
+    public decimal TotalDieselCostInr { get; set; }
+    public decimal TotalTollExpensesInr { get; set; }
+    public decimal TotalDriverBhattaInr { get; set; }
+    public decimal TotalMarketFleetPayoutInr { get; set; }
+    public decimal TotalEnrouteMiscMaintenanceInr { get; set; }
+    public decimal NetGrossMarginInr { get; set; }
+    public decimal NetProfitPercentage { get; set; }
+    public ProfitabilityHealthStatus HealthStatus { get; set; }
+    public int RankPosition { get; set; }
+    public string PeriodMonthYear { get; set; } = string.Empty;
+}
+
+public class BranchPerformanceRanking
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string BranchCode { get; set; } = string.Empty;
+    public string BranchCity { get; set; } = string.Empty;
+    public string RegionZone { get; set; } = string.Empty;
+    public decimal MonthlyDispatchedTonnage { get; set; }
+    public decimal AverageTurnaroundTimeHours { get; set; }
+    public decimal SlaDeliveryCompliancePercent { get; set; }
+    public decimal TotalRevenueInr { get; set; }
+    public decimal BranchNetProfitInr { get; set; }
+    public string PerformanceTier { get; set; } = "Gold Standard";
+}
+
+public class TaxAuditVaultEntry
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string AuditPeriodQuarter { get; set; } = string.Empty;
+    public GstTaxFilingType TaxFilingType { get; set; }
+    public string DocumentReferenceNo { get; set; } = string.Empty;
+    public string PartyGstin { get; set; } = string.Empty;
+    public string PartyLegalName { get; set; } = string.Empty;
+    public decimal TaxableFreightAmountInr { get; set; }
+    public decimal CgstAmountInr { get; set; }
+    public decimal SgstAmountInr { get; set; }
+    public decimal IgstAmountInr { get; set; }
+    public bool RcmApplicable { get; set; }
+    public decimal RcmTaxLiabilityInr { get; set; }
+    public decimal Section194CTdsDeductedInr { get; set; }
+    public string TdsCertificateNumber { get; set; } = string.Empty;
+    public string FilingStatus { get; set; } = "READY_FOR_PORTAL";
+    public DateTime GeneratedTimestamp { get; set; } = DateTime.UtcNow;
+}
+
+public class PhysicalPodInwardReceipt
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string BiltyLrNumber { get; set; } = string.Empty;
+    public string BarcodeToken { get; set; } = string.Empty;
+    public string ConsignmentNo { get; set; } = string.Empty;
+    public string ConsignorName { get; set; } = string.Empty;
+    public string ConsigneeName { get; set; } = string.Empty;
+    public string DestinationCity { get; set; } = string.Empty;
+    public string TransporterBrokerName { get; set; } = string.Empty;
+    public string VehicleNumber { get; set; } = string.Empty;
+    public string DriverName { get; set; } = string.Empty;
+    public decimal TotalFreightInr { get; set; }
+    public decimal Advance70PercentPaidInr { get; set; }
+    public decimal Balance30PercentDueInr { get; set; }
+    public bool PhysicalSignedCopyReceived { get; set; }
+    public bool ConsigneeStampVerified { get; set; }
+    public DateTime? OpticalBarcodeScannedAt { get; set; }
+    public string ScannedByOperator { get; set; } = string.Empty;
+    public PhysicalPodVerificationStatus VerificationStatus { get; set; }
+    public string? PayoutReleaseTransactionRef { get; set; }
+}
+
+public class EmergencyTransshipmentRescue
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string BreakdownIncidentNo { get; set; } = string.Empty;
+    public string OriginalVehiclePlate { get; set; } = string.Empty;
+    public string BreakdownLocation { get; set; } = string.Empty;
+    public TransshipmentReason BreakdownReason { get; set; }
+    public string AssignedRescueVehiclePlate { get; set; } = string.Empty;
+    public string RescueDriverName { get; set; } = string.Empty;
+    public string RescueDriverPhone { get; set; } = string.Empty;
+    public bool CraneMechanicDispatched { get; set; }
+    public string TransshipmentCargoStatus { get; set; } = "ENROUTE_TRANSFER";
+    public DateTime IncidentReportedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? ResolvedAt { get; set; }
+}
+
+public class CustomerConsigneeDirectory
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string CustomerId { get; set; } = string.Empty;
+    public string ConsigneeLegalTitle { get; set; } = string.Empty;
+    public string TradeBrandName { get; set; } = string.Empty;
+    public string GstinNumber { get; set; } = string.Empty;
+    public string CompleteAddress { get; set; } = string.Empty;
+    public string DestinationCity { get; set; } = string.Empty;
+    public string Pincode { get; set; } = string.Empty;
+    public string StateCode { get; set; } = string.Empty;
+    public string ContactPerson { get; set; } = string.Empty;
+    public string ContactPhone { get; set; } = string.Empty;
+    public string ContactEmail { get; set; } = string.Empty;
+    public string DockUnloadingInstructions { get; set; } = string.Empty;
+    public bool IsFavorite { get; set; }
+}
+
+public class ShareableTrackingSession
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string ConsignmentNo { get; set; } = string.Empty;
+    public string SecureAccessPin { get; set; } = string.Empty;
+    public string ShareToken { get; set; } = string.Empty;
+    public string PublicUrlSlug { get; set; } = string.Empty;
+    public string ReceiverPartyName { get; set; } = string.Empty;
+    public string ReceiverPhone { get; set; } = string.Empty;
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(7);
+    public bool IsActive { get; set; } = true;
+}

@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import CustomerLayout from '../../layouts/CustomerLayout';
 import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
 import GstTaxInvoiceModal, { type GstInvoiceData } from '../../components/GstTaxInvoiceModal';
+import ConsigneeAddressBookModal from '../../components/ConsigneeAddressBookModal';
+import WhatsAppTrackShareModal from '../../components/WhatsAppTrackShareModal';
 
 import {
   getShipment,
@@ -37,6 +39,8 @@ export default function TrackShipment() {
   const [selectedLr, setSelectedLr] = useState<ConsignmentLRData | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<GstInvoiceData | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
+  const [showWhatsAppShareModal, setShowWhatsAppShareModal] = useState(false);
+  const [showAddressBookModal, setShowAddressBookModal] = useState(false);
 
   const executeTracking = useCallback(async (num: string) => {
     const clean = num.trim();
@@ -232,9 +236,29 @@ export default function TrackShipment() {
             </h2>
 
             <p>
-              Enter your tracking number to view
-              shipment status, movement history and ETA.
+              Enter your tracking number to view shipment status, movement history and ETA.
             </p>
+            <div style={{ marginTop: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setShowAddressBookModal(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #c7d2fe',
+                  background: '#eef2ff',
+                  color: '#4338ca',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                📖 Consignee Address Book
+              </button>
+            </div>
 
           </div>
 
@@ -401,6 +425,28 @@ export default function TrackShipment() {
                   title="Copy direct tracking link (No login required for receiver)"
                 >
                   {copiedShareLink ? '✓ Link Copied!' : '🔗 Copy Consignee Link'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowWhatsAppShareModal(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #10b981',
+                    background: '#059669',
+                    color: '#ffffff',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 6px rgba(5,150,105,0.2)'
+                  }}
+                  title="Generate PIN-protected Live WhatsApp Track Link for Consignee"
+                >
+                  📲 1-Click WhatsApp PIN Share
                 </button>
 
                 <button
@@ -758,6 +804,23 @@ export default function TrackShipment() {
         <GstTaxInvoiceModal
           data={selectedInvoice}
           onClose={() => setSelectedInvoice(null)}
+        />
+      )}
+
+      {showWhatsAppShareModal && shipment && (
+        <WhatsAppTrackShareModal
+          isOpen={showWhatsAppShareModal}
+          onClose={() => setShowWhatsAppShareModal(false)}
+          consignmentNo={shipment.trackingNumber}
+          defaultReceiverName="Valued Consignee Partner"
+          routeInfo={`Booking Ref: ${shipment.bookingNumber} | Status: ${shipment.status}`}
+        />
+      )}
+
+      {showAddressBookModal && (
+        <ConsigneeAddressBookModal
+          isOpen={showAddressBookModal}
+          onClose={() => setShowAddressBookModal(false)}
         />
       )}
 

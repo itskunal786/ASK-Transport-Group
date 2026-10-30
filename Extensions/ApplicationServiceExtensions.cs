@@ -81,6 +81,10 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IAis140SafetyService, Ais140SafetyService>();
         services.AddScoped<IRtoBorderVaultService, RtoBorderVaultService>();
         services.AddScoped<ICorporateCargoClaimsService, CorporateCargoClaimsService>();
+        services.AddScoped<IExecutiveProfitabilityService, ExecutiveProfitabilityService>();
+        services.AddScoped<ITaxAuditVaultService, TaxAuditVaultService>();
+        services.AddScoped<IPhysicalPodInwardService, PhysicalPodInwardService>();
+        services.AddScoped<ICustomerDirectoryShareService, CustomerDirectoryShareService>();
 
         return services;
     }

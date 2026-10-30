@@ -45,6 +45,9 @@ import DriverTripSettlementHisaab from '../../components/DriverTripSettlementHis
 import Ais140SafetyTelematicsRadar from '../../components/Ais140SafetyTelematicsRadar';
 import RtoBorderCheckpostVault from '../../components/RtoBorderCheckpostVault';
 import CorporateCargoClaimsManager from '../../components/CorporateCargoClaimsManager';
+import ExecutiveProfitabilityRadar from '../../components/ExecutiveProfitabilityRadar';
+import CaTaxAuditVault from '../../components/CaTaxAuditVault';
+import PhysicalPodInwardDeck from '../../components/PhysicalPodInwardDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -438,7 +441,7 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge' | 'rto_vault' | 'driver_settlement' | 'ais140_safety' | 'cargo_claims';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge' | 'rto_vault' | 'driver_settlement' | 'ais140_safety' | 'cargo_claims' | 'executive_pnl' | 'tax_audit' | 'pod_inward';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -470,11 +473,11 @@ export default function Dashboard() {
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
     switch (group) {
       case 'operations':
-        return ['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault'].includes(activeTab);
+        return ['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(activeTab);
       case 'fleet':
         return ['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(activeTab);
       case 'enterprise':
-        return ['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims'].includes(activeTab);
+        return ['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims', 'executive_pnl', 'tax_audit'].includes(activeTab);
       case 'ai':
         return activeTab === 'ai_automation';
       case 'governance':
@@ -485,11 +488,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault'].includes(activeTab)) {
+    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.operations ? prev : { ...prev, operations: true }));
     } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.fleet ? prev : { ...prev, fleet: true }));
-    } else if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims'].includes(activeTab)) {
+    } else if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims', 'executive_pnl', 'tax_audit'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.enterprise ? prev : { ...prev, enterprise: true }));
     } else if (activeTab === 'ai_automation') {
       setOpenNavGroups(prev => (prev.ai ? prev : { ...prev, ai: true }));
@@ -667,7 +670,10 @@ export default function Dashboard() {
       rto_vault: { modules: ['Fleet', 'Operations'], codes: ['Fleet.View'] },
       driver_settlement: { modules: ['Fleet', 'Expenses'], codes: ['Expenses.Approve'] },
       ais140_safety: { modules: ['Telematics', 'Fleet'], codes: ['Telematics.View'] },
-      cargo_claims: { modules: ['Enterprise', 'Finance'], codes: ['Enterprise.View'] }
+      cargo_claims: { modules: ['Enterprise', 'Finance'], codes: ['Enterprise.View'] },
+      executive_pnl: { modules: ['Finance', 'Executive'], codes: ['Executive.View'] },
+      tax_audit: { modules: ['Finance', 'Audit'], codes: ['Audit.View', 'Finance.View'] },
+      pod_inward: { modules: ['Operations', 'Terminal'], codes: ['Operations.View', 'Terminal.View'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -1728,6 +1734,15 @@ export default function Dashboard() {
                   <span>RTO Check-Post Vault</span>
                   {isTabRevoked('rto_vault').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'pod_inward' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('pod_inward')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Physical POD &amp; SOS Rescue</span>
+                  {isTabRevoked('pod_inward').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
               </div>
             )}
           </div>
@@ -1907,6 +1922,25 @@ export default function Dashboard() {
                   <span className="nav-sub-bullet">•</span>
                   <span>Cargo Claims &amp; SLA Shield</span>
                   {isTabRevoked('cargo_claims').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'executive_pnl' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('executive_pnl')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Executive P&amp;L Margins Radar</span>
+                  {isTabRevoked('executive_pnl').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'tax_audit' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('tax_audit')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>CA 1-Click Tax &amp; Audit Vault</span>
+                  {isTabRevoked('tax_audit').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
                 <button
@@ -4835,6 +4869,33 @@ export default function Dashboard() {
         {activeTab === 'cargo_claims' && (
           <div className="admin-content-pad">
             <CorporateCargoClaimsManager />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: EXECUTIVE ROUTE PROFITABILITY & P&L MARGINS RADAR */}
+        {/* ============================================================== */}
+        {activeTab === 'executive_pnl' && (
+          <div className="admin-content-pad">
+            <ExecutiveProfitabilityRadar />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: CA 1-CLICK TAX & AUDIT VAULT */}
+        {/* ============================================================== */}
+        {activeTab === 'tax_audit' && (
+          <div className="admin-content-pad">
+            <CaTaxAuditVault />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: PHYSICAL POD INWARD & RESCUE DECK */}
+        {/* ============================================================== */}
+        {activeTab === 'pod_inward' && (
+          <div className="admin-content-pad">
+            <PhysicalPodInwardDeck />
           </div>
         )}
 

@@ -280,3 +280,132 @@ export interface CorporateCargoClaim {
   delayHours: number;
   filedDate: string;
 }
+
+
+// 9. SUPERADMIN EXECUTIVE PROFITABILITY & MARGIN RADAR
+export type ProfitabilityHealthStatus = 'HighMarginProfitable' | 'ModerateMargin' | 'LossMakingCritical';
+
+export interface ExecutiveRouteProfitability {
+  id: string;
+  corridorLane: string;
+  originHub: string;
+  destinationHub: string;
+  totalTripsExecuted: number;
+  totalFreightRevenueInr: number;
+  totalDieselCostInr: number;
+  totalTollExpensesInr: number;
+  totalDriverBhattaInr: number;
+  totalMarketFleetPayoutInr: number;
+  totalEnrouteMiscMaintenanceInr: number;
+  netGrossMarginInr: number;
+  netProfitPercentage: number;
+  healthStatus: ProfitabilityHealthStatus;
+  rankPosition: number;
+  periodMonthYear: string;
+}
+
+export interface BranchPerformanceRanking {
+  id: string;
+  branchCode: string;
+  branchCity: string;
+  regionZone: string;
+  monthlyDispatchedTonnage: number;
+  averageTurnaroundTimeHours: number;
+  slaDeliveryCompliancePercent: number;
+  totalRevenueInr: number;
+  branchNetProfitInr: number;
+  performanceTier: 'Platinum Alpha' | 'Gold Standard' | 'Under Review';
+}
+
+// 10. CA & TAX AUDIT VAULT
+export type GstTaxFilingType = 'Gstr1B2B' | 'Gstr3BMonthlySummary' | 'RcmFivePercent' | 'Tds194C26As';
+
+export interface TaxAuditVaultEntry {
+  id: string;
+  auditPeriodQuarter: string;
+  taxFilingType: GstTaxFilingType;
+  documentReferenceNo: string;
+  partyGstin: string;
+  partyLegalName: string;
+  taxableFreightAmountInr: number;
+  cgstAmountInr: number;
+  sgstAmountInr: number;
+  igstAmountInr: number;
+  rcmApplicable: boolean;
+  rcmTaxLiabilityInr: number;
+  section194CTdsDeductedInr: number;
+  tdsCertificateNumber: string;
+  filingStatus: 'READY_FOR_PORTAL' | 'FILED_ACKNOWLEDGED' | 'UNDER_RECONCILIATION';
+  generatedTimestamp: string;
+}
+
+// 11. PHYSICAL POD INWARD & BARCODE SCANNER
+export type PhysicalPodVerificationStatus = 'PendingInward' | 'ScannedVerified' | 'ShortageRejected' | 'PaymentReleased';
+export type TransshipmentReason = 'EngineBreakdown' | 'AccidentDamage' | 'AxlePuncture' | 'OverloadTransshipment';
+
+export interface PhysicalPodInwardReceipt {
+  id: string;
+  biltyLrNumber: string;
+  barcodeToken: string;
+  consignmentNo: string;
+  consignorName: string;
+  consigneeName: string;
+  destinationCity: string;
+  transporterBrokerName: string;
+  vehicleNumber: string;
+  driverName: string;
+  totalFreightInr: number;
+  advance70PercentPaidInr: number;
+  balance30PercentDueInr: number;
+  physicalSignedCopyReceived: boolean;
+  consigneeStampVerified: boolean;
+  opticalBarcodeScannedAt?: string;
+  scannedByOperator: string;
+  verificationStatus: PhysicalPodVerificationStatus;
+  payoutReleaseTransactionRef?: string;
+}
+
+export interface EmergencyTransshipmentRescue {
+  id: string;
+  breakdownIncidentNo: string;
+  originalVehiclePlate: string;
+  breakdownLocation: string;
+  breakdownReason: TransshipmentReason;
+  assignedRescueVehiclePlate: string;
+  rescueDriverName: string;
+  rescueDriverPhone: string;
+  craneMechanicDispatched: boolean;
+  transshipmentCargoStatus: string;
+  incidentReportedAt: string;
+  resolvedAt?: string;
+}
+
+// 12. CUSTOMER CONSIGNEE DIRECTORY & SHAREABLE TRACKING
+export interface CustomerConsigneeDirectory {
+  id: string;
+  customerId: string;
+  consigneeLegalTitle: string;
+  tradeBrandName: string;
+  gstinNumber: string;
+  completeAddress: string;
+  destinationCity: string;
+  pincode: string;
+  stateCode: string;
+  contactPerson: string;
+  contactPhone: string;
+  contactEmail: string;
+  dockUnloadingInstructions: string;
+  isFavorite: boolean;
+}
+
+export interface ShareableTrackingSession {
+  id: string;
+  consignmentNo: string;
+  secureAccessPin: string;
+  shareToken: string;
+  publicUrlSlug: string;
+  receiverPartyName: string;
+  receiverPhone: string;
+  expiresAt: string;
+  isActive: boolean;
+}

@@ -154,3 +154,47 @@ public enum ClaimDisputeReason
     TemperatureBreach,
     AccidentImpact
 }
+
+
+// ============================================================================
+// NEW TRANSPORT SUITE: PROFITABILITY, AUDIT, POD & DIRECTORY ENUMS
+// ============================================================================
+
+public enum PhysicalPodVerificationStatus
+{
+    PendingInward,
+    ScannedVerified,
+    ShortageRejected,
+    PaymentReleased
+}
+
+public enum TransshipmentReason
+{
+    EngineBreakdown,
+    AccidentDamage,
+    AxlePuncture,
+    OverloadTransshipment
+}
+
+public enum GstTaxFilingType
+{
+    Gstr1B2B,
+    Gstr3BMonthlySummary,
+    RcmFivePercent,
+    Tds194C26As
+}
+
+public enum ProfitabilityHealthStatus
+{
+    HighMarginProfitable,
+    ModerateMargin,
+    LossMakingCritical
+}
+
+public enum ConsigneePartyType
+{
+    Warehouse,
+    FactoryPlant,
+    RetailSupermarket,
+    CrossDockHub
+}

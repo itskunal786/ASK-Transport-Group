@@ -30,3 +30,7 @@ export * from './driverSettlementApi';
 export * from './ais140SafetyApi';
 export * from './rtoVaultApi';
 export * from './cargoClaimsApi';
+export * from './executiveProfitabilityApi';
+export * from './taxAuditVaultApi';
+export * from './physicalPodApi';
+export * from './customerDirectoryApi';
