@@ -25,6 +25,7 @@ public static class InfrastructureServiceExtensions
         services.AddDbContext<AskTransportDbContext>(options =>
         {
             options.UseSqlServer(connectionString);
+            options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
 
         // Clean Architecture: Bind IAskTransportDbContext to concrete DbContext

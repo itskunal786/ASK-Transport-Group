@@ -63,6 +63,14 @@ public interface IAskTransportDbContext
     DbSet<SavedContact> SavedContacts { get; }
     DbSet<DeliveryFeedback> DeliveryFeedbacks { get; }
 
+    DbSet<Domain.Entities.ExecutiveRouteProfitability> ExecutiveRouteProfitabilities { get; }
+    DbSet<Domain.Entities.BranchPerformanceRanking> BranchPerformanceRankings { get; }
+    DbSet<Domain.Entities.TaxAuditVaultEntry> TaxAuditVaultEntries { get; }
+    DbSet<Domain.Entities.PhysicalPodInwardReceipt> PhysicalPodInwardReceipts { get; }
+    DbSet<Domain.Entities.EmergencyTransshipmentRescue> EmergencyTransshipmentRescues { get; }
+    DbSet<Domain.Entities.CustomerConsigneeDirectory> CustomerConsigneeDirectories { get; }
+    DbSet<Domain.Entities.ShareableTrackingSession> ShareableTrackingSessions { get; }
+
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     int SaveChanges();

@@ -193,6 +193,33 @@ public class AskTransportDbContext : DbContext, IAskTransportDbContext
     public DbSet<DeliveryFeedback> DeliveryFeedbacks =>
         Set<DeliveryFeedback>();
 
+    public DbSet<Domain.Entities.ExecutiveRouteProfitability> ExecutiveRouteProfitabilities =>
+        Set<Domain.Entities.ExecutiveRouteProfitability>();
+
+    public DbSet<Domain.Entities.BranchPerformanceRanking> BranchPerformanceRankings =>
+        Set<Domain.Entities.BranchPerformanceRanking>();
+
+    public DbSet<Domain.Entities.TaxAuditVaultEntry> TaxAuditVaultEntries =>
+        Set<Domain.Entities.TaxAuditVaultEntry>();
+
+    public DbSet<Domain.Entities.PhysicalPodInwardReceipt> PhysicalPodInwardReceipts =>
+        Set<Domain.Entities.PhysicalPodInwardReceipt>();
+
+    public DbSet<Domain.Entities.EmergencyTransshipmentRescue> EmergencyTransshipmentRescues =>
+        Set<Domain.Entities.EmergencyTransshipmentRescue>();
+
+    public DbSet<Domain.Entities.CustomerConsigneeDirectory> CustomerConsigneeDirectories =>
+        Set<Domain.Entities.CustomerConsigneeDirectory>();
+
+    public DbSet<Domain.Entities.ShareableTrackingSession> ShareableTrackingSessions =>
+        Set<Domain.Entities.ShareableTrackingSession>();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+        configurationBuilder.Properties<decimal>().HaveColumnType("decimal(18,2)");
+    }
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
