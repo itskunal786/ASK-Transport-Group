@@ -1,0 +1,581 @@
+/* ============================================================================
+   DRIVER TRIP SETTLEMENT & HISAAB PARCHI - THEME ADAPTIVE STYLESHEET
+   ============================================================================ */
+
+.settlement-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Hero Banner */
+.settlement-hero {
+  background: linear-gradient(135deg, #78350f 0%, #451a03 50%, #1c1917 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.settlement-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.settlement-hero-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.settlement-hero-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #fef3c7;
+  opacity: 0.9;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.settlement-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settlement-btn-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.settlement-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.settlement-btn-primary {
+  background: #f59e0b;
+  color: #1c1917;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  transition: all 0.2s ease;
+}
+
+.settlement-btn-primary:hover {
+  background: #fbbf24;
+  transform: translateY(-1px);
+}
+
+/* Metrics 4-Card Grid */
+.settlement-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .settlement-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .settlement-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settlement-metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.settlement-metric-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.settlement-metric-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.settlement-metric-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 4px 0 2px;
+}
+
+.settlement-metric-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.settlement-metric-sub.warning {
+  color: #d97706;
+}
+
+.settlement-metric-sub.danger {
+  color: #dc2626;
+}
+
+.settlement-metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.settlement-metric-icon.amber {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.settlement-metric-icon.emerald {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.settlement-metric-icon.rose {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.settlement-metric-icon.blue {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+/* Main Split Grid */
+.settlement-main-split {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .settlement-main-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Sidebar / List Card */
+.settlement-list-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.settlement-search-input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 12px;
+  color: #0f172a;
+  outline: none;
+}
+
+.settlement-search-input:focus {
+  border-color: #f59e0b;
+  background: #ffffff;
+}
+
+.settlement-filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.settlement-tab-chip {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.settlement-tab-chip.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.settlement-items-scroll {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 620px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.settlement-item-tile {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.settlement-item-tile:hover {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.settlement-item-tile.active {
+  border-color: #f59e0b;
+  background: #fef3c7;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.18);
+}
+
+/* Right Detail Card */
+.settlement-detail-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.settlement-detail-header {
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.settlement-detail-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Trip Route Header Box */
+.settlement-route-box {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .settlement-route-box {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Fuel Economy & Mileage Box */
+.settlement-fuel-box {
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settlement-fuel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.settlement-fuel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .settlement-fuel-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.settlement-fuel-tile {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+/* Breakdown Table */
+.settlement-table-wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.settlement-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.settlement-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 800;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.settlement-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.settlement-table tr.total-row {
+  background: #f8fafc;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Net Balance Callout Box */
+.settlement-balance-box {
+  background: #fffbeb;
+  border: 2px dashed #f59e0b;
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES ([data-theme="dark"], body.dark, .dark)
+   ============================================================================ */
+
+[data-theme="dark"] .settlement-metric-card,
+body.dark .settlement-metric-card,
+.dark .settlement-metric-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .settlement-metric-value,
+body.dark .settlement-metric-value,
+.dark .settlement-metric-value {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .settlement-metric-label,
+body.dark .settlement-metric-label,
+.dark .settlement-metric-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .settlement-list-card,
+body.dark .settlement-list-card,
+.dark .settlement-list-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .settlement-search-input,
+body.dark .settlement-search-input,
+.dark .settlement-search-input {
+  background: #090f1d;
+  border-color: #1e2c47;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .settlement-tab-chip,
+body.dark .settlement-tab-chip,
+.dark .settlement-tab-chip {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .settlement-tab-chip.active,
+body.dark .settlement-tab-chip.active,
+.dark .settlement-tab-chip.active {
+  background: #f59e0b;
+  color: #0f172a;
+  border-color: #f59e0b;
+}
+
+[data-theme="dark"] .settlement-item-tile,
+body.dark .settlement-item-tile,
+.dark .settlement-item-tile {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .settlement-item-tile:hover,
+body.dark .settlement-item-tile:hover,
+.dark .settlement-item-tile:hover {
+  background: #162238;
+  border-color: #f59e0b;
+}
+
+[data-theme="dark"] .settlement-item-tile.active,
+body.dark .settlement-item-tile.active,
+.dark .settlement-item-tile.active {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+}
+
+[data-theme="dark"] .settlement-detail-card,
+body.dark .settlement-detail-card,
+.dark .settlement-detail-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .settlement-detail-header,
+body.dark .settlement-detail-header,
+.dark .settlement-detail-header {
+  background: #090f1d;
+  border-bottom-color: #1e2c47;
+}
+
+[data-theme="dark"] .settlement-route-box,
+body.dark .settlement-route-box,
+.dark .settlement-route-box {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .settlement-fuel-box,
+body.dark .settlement-fuel-box,
+.dark .settlement-fuel-box {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+[data-theme="dark"] .settlement-fuel-header,
+body.dark .settlement-fuel-header,
+.dark .settlement-fuel-header {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .settlement-fuel-tile,
+body.dark .settlement-fuel-tile,
+.dark .settlement-fuel-tile {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .settlement-table-wrapper,
+body.dark .settlement-table-wrapper,
+.dark .settlement-table-wrapper {
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .settlement-table th,
+body.dark .settlement-table th,
+.dark .settlement-table th {
+  background: #090f1d;
+  border-bottom-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .settlement-table td,
+body.dark .settlement-table td,
+.dark .settlement-table td {
+  border-bottom-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .settlement-table tr.total-row,
+body.dark .settlement-table tr.total-row,
+.dark .settlement-table tr.total-row {
+  background: #0d1526;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .settlement-balance-box,
+body.dark .settlement-balance-box,
+.dark .settlement-balance-box {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+}

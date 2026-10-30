@@ -146,26 +146,46 @@ public class SpotBrokerBid
 public class DriverTripSettlement
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string SettlementNo { get; set; } = string.Empty;
+    public string TripSheetNo { get; set; } = string.Empty;
     public string TripNumber { get; set; } = string.Empty;
     public string VehicleNumber { get; set; } = string.Empty;
     public string DriverName { get; set; } = string.Empty;
     public string DriverPhone { get; set; } = string.Empty;
     public string TripRoute { get; set; } = string.Empty;
+    public string OriginCity { get; set; } = string.Empty;
+    public string DestinationCity { get; set; } = string.Empty;
     public DateTime TripCompletedAt { get; set; } = DateTime.UtcNow;
+    
+    public double TotalTripKm { get; set; }
+    public double StandardKmpl { get; set; } = 4.2;
+    public double ActualKmpl { get; set; } = 4.3;
+    public double DieselLitersStandard { get; set; }
+    public double DieselLitersActual { get; set; }
+    public decimal DieselPenaltyBonusInr { get; set; }
     
     // Financial Breakdown
     public decimal AdvanceCashGivenInr { get; set; }
+    public decimal DieselCardAdvanceInr { get; set; }
     public decimal DieselFuelExpensesInr { get; set; }
     public decimal FastagTollsInr { get; set; }
+    public decimal FastagTollActualInr { get; set; }
     public decimal FoodBhattaInr { get; set; }
+    public decimal DriverBhattaFoodInr { get; set; }
     public decimal UnloadingPettyExpenseInr { get; set; }
+    public decimal LoadingUnloadingExpensesInr { get; set; }
+    public decimal EnrouteMaintenanceRtoInr { get; set; }
+    public decimal TotalAuthorizedExpensesInr { get; set; }
     public decimal TotalExpensesInr => DieselFuelExpensesInr + FastagTollsInr + FoodBhattaInr + UnloadingPettyExpenseInr;
     public decimal NetBalanceInr => AdvanceCashGivenInr - TotalExpensesInr;
+    public decimal NetPayableToDriverInr { get; set; }
+    public decimal RecoverableFromDriverInr { get; set; }
     
     public DriverSettlementStatus Status { get; set; } = DriverSettlementStatus.Draft;
     public string SettlementVoucherNo { get; set; } = string.Empty;
     public string AuditedBy { get; set; } = "Senior Fleet Auditor";
     public DateTime? AuditedAt { get; set; }
+    public DateTime? SettledDate { get; set; }
     public string? Notes { get; set; }
 }
 
