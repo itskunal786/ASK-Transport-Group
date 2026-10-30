@@ -2176,7 +2176,7 @@ export default function Dashboard() {
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px' }}>
+          <div className="admin-topbar-quick-actions">
             <button
               type="button"
               onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}

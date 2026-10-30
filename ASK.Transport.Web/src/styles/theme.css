@@ -159,11 +159,13 @@ body.dark {
 [data-theme="dark"] .topbar-user-info strong,
 [data-theme="dark"] .admin-user-names strong {
   color: #f8fafc !important;
+  white-space: nowrap !important;
 }
 
 [data-theme="dark"] .topbar-user-info small,
 [data-theme="dark"] .admin-user-names small {
   color: #94a3b8 !important;
+  white-space: nowrap !important;
 }
 
 [data-theme="dark"] .topbar-icon-btn,
