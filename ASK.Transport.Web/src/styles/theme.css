@@ -1175,8 +1175,61 @@ body.dark {
 
 [data-theme="dark"] .admin-data-table td {
   border-bottom: 1px solid #17243c !important;
-  color: #cbd5e1 !important;
+  color: #f1f5f9 !important;
   background: transparent !important;
+}
+
+[data-theme="dark"] .admin-data-table td span:not(.admin-badge-status):not([class*="badge"]) {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .admin-data-table td strong {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-data-table td strong[style*="0b72e7"],
+[data-theme="dark"] .admin-data-table td [style*="0b72e7"] {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .admin-data-table td div[style*="64748b"],
+[data-theme="dark"] .admin-data-table td small {
+  color: #94a3b8 !important;
+}
+
+/* HIGH-CONTRAST NIGHT MODE STATUS BADGES (NO BLUR) */
+[data-theme="dark"] .admin-badge-status {
+  font-weight: 700 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .admin-badge-status[style*="10b981"],
+[data-theme="dark"] .admin-badge-status[style*="edfdf4"] {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+}
+
+[data-theme="dark"] .admin-badge-status[style*="0b72e7"],
+[data-theme="dark"] .admin-badge-status[style*="eff6ff"],
+[data-theme="dark"] .admin-badge-status[style*="e0f2fe"] {
+  background: rgba(14, 165, 233, 0.18) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(14, 165, 233, 0.45) !important;
+}
+
+[data-theme="dark"] .admin-badge-status[style*="d97706"],
+[data-theme="dark"] .admin-badge-status[style*="fef3c7"] {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+[data-theme="dark"] .admin-badge-status[style*="dc2626"],
+[data-theme="dark"] .admin-badge-status[style*="fee2e2"] {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
 }
 
 [data-theme="dark"] .admin-data-table tr:hover td {

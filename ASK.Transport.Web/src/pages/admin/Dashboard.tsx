@@ -3386,7 +3386,7 @@ export default function Dashboard() {
                         <div style={{ fontSize: '11px', color: '#0b72e7' }}>{s.vehicle}</div>
                       </td>
                       <td>
-                        <span style={{ fontSize: '12px', color: '#1e293b', fontWeight: 500 }}>
+                        <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>
                           📍 {s.currentLocation}
                         </span>
                       </td>
@@ -3528,7 +3528,7 @@ export default function Dashboard() {
                         <strong>{d.name}</strong>
                         <div style={{ fontSize: '11px', color: '#0b72e7' }}>{d.id}</div>
                       </td>
-                      <td style={{ fontWeight: 600, color: '#334155' }}>{d.phone}</td>
+                      <td style={{ fontWeight: 600, color: '#f1f5f9' }}>{d.phone}</td>
                       <td>
                         <div>{d.licenseNo}</div>
                         <small style={{ color: '#64748b' }}>{d.licenseType}</small>
@@ -4720,7 +4720,7 @@ export default function Dashboard() {
                                 className="radar-ping-dot"
                                 style={{ background: v.speedKmH > 0 ? '#10b981' : '#f59e0b' }}
                               />
-                              <strong style={{ fontSize: '15px', color: '#0f172a' }}>{v.plateNo}</strong>
+                              <strong style={{ fontSize: '15px', color: '#f8fafc' }}>{v.plateNo}</strong>
                             </div>
                             <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
                               {v.routeCorridor}
@@ -5075,7 +5075,7 @@ export default function Dashboard() {
                   <div className="st-drawer-body">
                     <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
                       <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Issue Summary</div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>{editingTicket.subject}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>{editingTicket.subject}</div>
                       <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
                         Category: {editingTicket.category} | Logged: {editingTicket.createdAt}
                       </div>
@@ -6095,7 +6095,7 @@ export default function Dashboard() {
                             }}
                           >
                             <div>
-                              <strong style={{ fontSize: '13px', color: '#0f172a' }}>{perm.code}</strong>
+                              <strong style={{ fontSize: '13px', color: '#f8fafc' }}>{perm.code}</strong>
                               <div style={{ fontSize: '11px', color: '#64748b' }}>
                                 [{perm.module}] {perm.description || perm.action}
                               </div>
