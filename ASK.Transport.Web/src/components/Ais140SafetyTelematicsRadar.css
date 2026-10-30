@@ -1,0 +1,686 @@
+/* ============================================================================
+   AIS-140 NATIONAL TELEMATICS & HIGHWAY SAFETY RADAR - THEME ADAPTIVE CSS
+   ============================================================================ */
+
+.ais-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Flashing Emergency SOS Banner */
+.ais-emergency-banner {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #991b1b 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4);
+  border: 1px solid rgba(254, 202, 202, 0.4);
+  animation: aisSosPulse 2s infinite ease-in-out;
+}
+
+@keyframes aisSosPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.ais-emergency-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ais-sos-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #dc2626;
+  font-weight: 900;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.ais-emergency-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ais-emergency-desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #fee2e2;
+  line-height: 1.4;
+}
+
+.ais-emergency-btn {
+  background: #ffffff;
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ais-emergency-btn:hover {
+  background: #fef2f2;
+  transform: translateY(-1px);
+}
+
+/* Main Hero Banner */
+.ais-hero {
+  background: linear-gradient(135deg, #450a0a 0%, #1c1917 50%, #09090b 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+}
+
+.ais-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fb7185;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.ais-hero-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.ais-hero-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #cbd5e1;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.ais-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ais-btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ais-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.ais-live-pill {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(225, 29, 72, 0.15);
+  border: 1px solid rgba(225, 29, 72, 0.4);
+  color: #fda4af;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Metrics 4-Card Grid */
+.ais-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .ais-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .ais-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ais-metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.ais-metric-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ais-metric-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ais-metric-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 4px 0 2px;
+}
+
+.ais-metric-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.ais-metric-sub.danger {
+  color: #dc2626;
+}
+
+.ais-metric-sub.warning {
+  color: #d97706;
+}
+
+.ais-metric-sub.indigo {
+  color: #4f46e5;
+}
+
+.ais-metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.ais-metric-icon.danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.ais-metric-icon.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.ais-metric-icon.indigo {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+/* Main Split Grid */
+.ais-main-split {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .ais-main-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Fleet List Card */
+.ais-list-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ais-search-input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 12px;
+  color: #0f172a;
+  outline: none;
+}
+
+.ais-search-input:focus {
+  border-color: #ef4444;
+  background: #ffffff;
+}
+
+.ais-filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.ais-filter-chip {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.ais-filter-chip.active {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+.ais-items-scroll {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 620px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ais-item-tile {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ais-item-tile:hover {
+  border-color: #ef4444;
+  background: #fff1f2;
+}
+
+.ais-item-tile.active {
+  border-color: #ef4444;
+  background: #fef2f2;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.18);
+}
+
+.ais-item-tile.sos-active {
+  border-color: #dc2626;
+  background: #fff1f2;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+}
+
+/* Right Detail Radar Card */
+.ais-detail-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ais-detail-header {
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ais-detail-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Panic Distress Alert Box */
+.ais-distress-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: aisSosPulse 2s infinite ease-in-out;
+}
+
+.ais-distress-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #991b1b;
+}
+
+.ais-distress-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #b91c1c;
+  line-height: 1.4;
+}
+
+/* Telematics Gauges Grid */
+.ais-gauges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .ais-gauges-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ais-gauge-tile {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.ais-gauge-tile.overspeed {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.ais-gauge-tile.fatigue {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.ais-gauge-val {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.ais-gauge-val.overspeed {
+  color: #dc2626;
+}
+
+.ais-gauge-val.fatigue {
+  color: #4f46e5;
+}
+
+/* Satellite GPS Map Card */
+.ais-gps-card {
+  background: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  padding: 18px 20px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ais-gps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.ais-gps-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ais-driver-call-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #111a2e;
+  border: 1px solid #1e2c47;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.ais-call-btn {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.ais-call-btn:hover {
+  background: #059669;
+}
+
+/* Hardware Compliance Standards */
+.ais-standards-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ais-standards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  font-size: 11px;
+  color: #334155;
+}
+
+@media (max-width: 640px) {
+  .ais-standards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   DARK MODE ADAPTATION ([data-theme="dark"], body.dark, .dark)
+   ============================================================================ */
+
+[data-theme="dark"] .ais-metric-card,
+body.dark .ais-metric-card,
+.dark .ais-metric-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .ais-metric-value,
+body.dark .ais-metric-value,
+.dark .ais-metric-value {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .ais-metric-label,
+body.dark .ais-metric-label,
+.dark .ais-metric-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .ais-metric-icon,
+body.dark .ais-metric-icon,
+.dark .ais-metric-icon {
+  background: #0d1526;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .ais-list-card,
+body.dark .ais-list-card,
+.dark .ais-list-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .ais-search-input,
+body.dark .ais-search-input,
+.dark .ais-search-input {
+  background: #090f1d;
+  border-color: #1e2c47;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .ais-filter-chip,
+body.dark .ais-filter-chip,
+.dark .ais-filter-chip {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .ais-filter-chip.active,
+body.dark .ais-filter-chip.active,
+.dark .ais-filter-chip.active {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+[data-theme="dark"] .ais-item-tile,
+body.dark .ais-item-tile,
+.dark .ais-item-tile {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .ais-item-tile:hover,
+body.dark .ais-item-tile:hover,
+.dark .ais-item-tile:hover {
+  background: #1c1424;
+  border-color: #ef4444;
+}
+
+[data-theme="dark"] .ais-item-tile.active,
+body.dark .ais-item-tile.active,
+.dark .ais-item-tile.active {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: #ef4444;
+}
+
+[data-theme="dark"] .ais-detail-card,
+body.dark .ais-detail-card,
+.dark .ais-detail-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .ais-detail-header,
+body.dark .ais-detail-header,
+.dark .ais-detail-header {
+  background: #090f1d;
+  border-bottom-color: #1e2c47;
+}
+
+[data-theme="dark"] .ais-gauge-tile,
+body.dark .ais-gauge-tile,
+.dark .ais-gauge-tile {
+  background: #0d1526;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .ais-gauge-val,
+body.dark .ais-gauge-val,
+.dark .ais-gauge-val {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .ais-standards-box,
+body.dark .ais-standards-box,
+.dark .ais-standards-box {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .ais-standards-grid,
+body.dark .ais-standards-grid,
+.dark .ais-standards-grid {
+  color: #cbd5e1;
+}
