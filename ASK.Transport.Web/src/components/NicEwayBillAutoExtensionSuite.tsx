@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
+import './NicEwayBillAutoExtensionSuite.css';
 
 // ============================================================================
 // DATA MODELS & INTERFACES FOR GOVT NIC E-WAY BILL SYSTEM
@@ -275,6 +277,7 @@ const AVAILABLE_STANDBY_VEHICLES = [
 ];
 
 export default function NicEwayBillAutoExtensionSuite() {
+  const { t } = useLanguage();
   const [ewayBills, setEwayBills] = useState<EwayBillItem[]>(INITIAL_EWAY_BILLS);
   const [filterTab, setFilterTab] = useState<'ALL' | 'CRITICAL' | 'WARNING' | 'EXTENDED' | 'EXPIRED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -587,19 +590,19 @@ export default function NicEwayBillAutoExtensionSuite() {
   };
 
   return (
-    <div className="admin-content-pad" style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div className="ewb-suite-container admin-content-pad">
       {/* TOAST NOTIFICATION */}
       {toastMessage && (
         <div style={{
           position: 'fixed',
           top: '20px',
           right: '24px',
-          background: '#0f172a',
+          background: 'var(--bg-surface, #0f172a)',
           color: '#ffffff',
           padding: '14px 22px',
           borderRadius: '10px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-          zIndex: 9999,
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.4)',
+          zIndex: 99999,
           fontSize: '13px',
           fontWeight: 600,
           borderLeft: '4px solid #10b981',
@@ -612,641 +615,435 @@ export default function NicEwayBillAutoExtensionSuite() {
         </div>
       )}
 
-      {/* HEADER SECTION */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        flexWrap: 'wrap',
-        gap: '16px',
-        marginBottom: '24px'
-      }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              color: '#fff',
-              padding: '8px 12px',
-              borderRadius: '10px',
-              fontWeight: 800,
-              fontSize: '16px',
-              boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
-            }}>
-              NIC 1.03
-            </div>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#0f172a' }}>
-                Govt NIC E-Way Bill Auto-Extension &amp; Part-B Suite
-              </h1>
-              <p style={{ margin: '3px 0 0', fontSize: '13px', color: '#64748b' }}>
-                Automated highway validity extension, instant Part-B vehicle transshipment swap &amp; 100% zero RTO seizure penalty protection under Rule 138 CGST
-              </p>
-            </div>
+      {/* 1. TOP HEADER & NIC GATEWAY STATUS */}
+      <div className="ewb-header-row">
+        <div className="ewb-header-title-box">
+          <div className="ewb-nic-badge">
+            <span>🏛️</span> NIC 1.03
+          </div>
+          <div className="ewb-header-titles">
+            <h1>{t('Govt NIC E-Way Bill Auto-Extension & Part-B Suite', 'सरकारी एनआईसी ई-वे बिल ऑटो-एक्सटेंशन और पार्ट-बी सूट')}</h1>
+            <p>{t('Automated highway validity extension, instant Part-B vehicle transshipment swap & 100% zero RTO seizure penalty protection under Rule 138 CGST', 'राजमार्ग वैधता विस्तार, तुरंत पार्ट-बी वाहन ट्रांसफर और नियम 138 सीजीएसटी के तहत 100% आरटीओ जब्ती दंड सुरक्षा')}</p>
           </div>
         </div>
 
-        {/* GOVT API STATUS PILL */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          background: '#ffffff',
-          padding: '8px 16px',
-          borderRadius: '12px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              background: '#10b981',
-              boxShadow: '0 0 8px #10b981',
-              display: 'inline-block'
-            }}></span>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#047857' }}>NIC GST API Gateway: Active</span>
+        <div className="ewb-gateway-status-pill">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="ewb-status-indicator" />
+            <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981' }}>{t('NIC Gateway: Active', 'एनआईसी गेटवे: सक्रिय')}</span>
           </div>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
-            TRANSIN: <strong style={{ color: '#0f172a' }}>27AABCA1234F1Z8</strong>
+          <span style={{ color: 'var(--border-color, #cbd5e1)' }}>|</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
+            TRANSIN: <strong style={{ color: 'var(--text-primary, #0f172a)', fontFamily: 'monospace' }}>27AABCA1234F1Z8</strong>
           </span>
         </div>
       </div>
 
-      {/* COMPLIANCE WARNING & RTO PENALTY RADAR HERO */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        color: '#ffffff',
-        borderRadius: '16px',
-        padding: '20px 24px',
-        marginBottom: '24px',
-        boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.25)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-          <div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
-              Protected Consignment Value
-            </div>
-            <div style={{ fontSize: '26px', fontWeight: 900, color: '#38bdf8', marginTop: '4px' }}>
-              ₹{(totalCargoValueProtected / 100000).toFixed(2)} Lakhs
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '4px' }}>
-              Covered under ASK Live Telematics &amp; EWB Sync
-            </div>
+      {/* 2. 4 INTERACTIVE COMPLIANCE KPI METRICS */}
+      <div className="ewb-metrics-grid">
+        <div className="ewb-metric-card critical">
+          <div className="ewb-metric-label">
+            <span>{t('Critical Expiring (<4h)', 'अत्यंत गंभीर समाप्ति (<4 घंटे)')}</span>
+            <span>🚨</span>
           </div>
-
-          <div>
-            <div style={{ fontSize: '11px', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
-              Potential RTO Section 129 Penalty At Risk
-            </div>
-            <div style={{ fontSize: '26px', fontWeight: 900, color: '#f87171', marginTop: '4px' }}>
-              ₹{(totalTaxAtRisk / 100000).toFixed(2)} Lakhs
-            </div>
-            <div style={{ fontSize: '12px', color: '#fda4af', marginTop: '4px' }}>
-              200% GST Penalty if truck moves with expired validity
-            </div>
+          <div className="ewb-metric-val critical-text">
+            {criticalCount} {t('E-Way Bills', 'ई-वे बिल')}
           </div>
-
-          <div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
-              Urgent Auto-Extension Radar
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-              <span style={{
-                background: criticalCount > 0 ? '#ef4444' : '#10b981',
-                color: '#fff',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 800
-              }}>
-                {criticalCount} Critical (&lt;4 Hrs)
-              </span>
-              <span style={{
-                background: '#f59e0b',
-                color: '#fff',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 800
-              }}>
-                {warningCount} Warning (&lt;8 Hrs)
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '6px' }}>
-              {criticalCount > 0 ? '⚠️ Immediate 1-Click Extension recommended to avert seizure' : '✓ All running fleets within compliance corridor'}
-            </div>
+          <div className="ewb-metric-sub">
+            {t('Immediate 1-Click Extension required to avoid penalty', 'जब्ती से बचने के लिए तुरंत 1-क्लिक विस्तार आवश्यक')}
           </div>
+        </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              padding: '10px 14px',
-              borderRadius: '10px',
-              width: '100%'
-            }}>
-              <div style={{ fontSize: '11px', color: '#93c5fd', fontWeight: 700 }}>
-                💡 CGST RULE 138 EXTENSION WINDOW:
-              </div>
-              <div style={{ fontSize: '11px', color: '#e2e8f0', marginTop: '3px' }}>
-                Validity can be extended <strong>within 8 hours before expiry</strong> or up to <strong>8 hours after expiry</strong> by declaring current location &amp; reason.
-              </div>
-            </div>
+        <div className="ewb-metric-card warning">
+          <div className="ewb-metric-label">
+            <span>{t('Warning Expiry (<8h)', 'चेतावनी समाप्ति (<8 घंटे)')}</span>
+            <span>⚠️</span>
+          </div>
+          <div className="ewb-metric-val warning-text">
+            {warningCount} {t('E-Way Bills', 'ई-वे बिल')}
+          </div>
+          <div className="ewb-metric-sub">
+            {t('Within Rule 138 extension renewal window', 'नियम 138 विस्तार नवीनीकरण विंडो में')}
+          </div>
+        </div>
+
+        <div className="ewb-metric-card safe">
+          <div className="ewb-metric-label">
+            <span>{t('Active Highway Fleets', 'मार्ग में सक्रिय वाहन')}</span>
+            <span>🚛</span>
+          </div>
+          <div className="ewb-metric-val safe-text">
+            {ewayBills.filter(e => e.status === 'ACTIVE_SAFE' || e.status === 'EXTENDED').length} {t('Vehicles', 'वाहन')}
+          </div>
+          <div className="ewb-metric-sub">
+            {t('100% AIS-140 GPS synced with active Part-B', 'सक्रिय पार्ट-बी के साथ 100% जीपीएस सिंक')}
+          </div>
+        </div>
+
+        <div className="ewb-metric-card penalty">
+          <div className="ewb-metric-label">
+            <span>{t('Protected Value & Penalty Shield', 'सुरक्षित माल व जुर्माना शील्ड')}</span>
+            <span>🛡️</span>
+          </div>
+          <div className="ewb-metric-val penalty-text">
+            ₹{(totalCargoValueProtected / 100000).toFixed(1)}L
+          </div>
+          <div className="ewb-metric-sub">
+            {t(`₹${(totalTaxAtRisk / 100000).toFixed(1)}L CGST penalty liability shielded`, `₹${(totalTaxAtRisk / 100000).toFixed(1)}L जब्ती जुर्माना सुरक्षित`)}
           </div>
         </div>
       </div>
 
-      {/* INSTANT NIC AUTO-FETCH & VERIFICATION TOOLBAR */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '14px',
-        padding: '16px 20px',
-        marginBottom: '20px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
+      {/* 3. QUICK NIC AUTO-FETCH & DEMOS BAR */}
+      <div className="ewb-fetch-card">
+        <div className="ewb-fetch-header">
           <div>
-            <span style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
-              🔍 Instant Govt E-Way Bill Auto-Fetch &amp; Sync Engine
-            </span>
-            <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
-              Direct national GST portal pull by 12-digit E-Way Bill number with Part-A &amp; Part-B validation
-            </p>
+            <div className="ewb-fetch-title">
+              🔍 {t('Instant Govt E-Way Bill Auto-Fetch & Telematics Sync Engine', 'तुरंत सरकारी ई-वे बिल फेच और टेलीमैटिक्स सिंक इंजन')}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
+              {t('Direct national GST portal pull by 12-digit E-Way Bill number with Part-A & Part-B validation', '12-अंकीय ई-वे बिल संख्या दर्ज करके एनआईसी जीएसटी पोर्टल से सीधा डेटा लाएं')}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>Quick Demos:</span>
+
+          <div className="ewb-demo-chips">
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 700 }}>
+              {t('Live Scenarios:', 'लाइव डेमो:')}
+            </span>
             <button
               type="button"
+              className="ewb-demo-chip red"
               onClick={() => {
                 setEwbFetchInput('2410-9876-5432');
                 handleFetchFromGovtNIC('2410-9876-5432');
               }}
-              style={{ padding: '3px 8px', fontSize: '11px', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
             >
-              🔴 Kasara Ghat (Critical &lt;3h)
+              🔴 Kasara Ghat (&lt;3h Critical)
             </button>
             <button
               type="button"
+              className="ewb-demo-chip amber"
               onClick={() => {
                 setEwbFetchInput('1812-4321-9988');
                 handleFetchFromGovtNIC('1812-4321-9988');
               }}
-              style={{ padding: '3px 8px', fontSize: '11px', background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
             >
-              🟡 Dhule Bypass (Warning &lt;7h)
+              🟡 Dhule Bypass (&lt;7h Warning)
             </button>
             <button
               type="button"
+              className="ewb-demo-chip slate"
               onClick={() => {
                 setEwbFetchInput('3310-7766-1122');
                 handleFetchFromGovtNIC('3310-7766-1122');
               }}
-              style={{ padding: '3px 8px', fontSize: '11px', background: '#f3f4f6', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
             >
-              ❌ Satara Axle Breakdown
+              ⚫ Satara Breakdown
             </button>
             <button
               type="button"
+              className="ewb-demo-chip green"
               onClick={() => {
                 setEwbFetchInput('9988-1122-3344');
                 handleFetchFromGovtNIC('9988-1122-3344');
               }}
-              style={{ padding: '3px 8px', fontSize: '11px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
             >
-              ⚡ New NIC Load
+              🟢 New Haridwar Dispatch
             </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="ewb-fetch-input-row">
           <input
             type="text"
-            placeholder="Enter 12-digit E-Way Bill Number (e.g. 2410-9876-5432)"
+            className="ewb-fetch-input"
+            placeholder={t('Enter 12-digit E-Way Bill Number (e.g. 2410-9876-5432)', '12-अंकीय ई-वे बिल संख्या दर्ज करें (उदा. 2410-9876-5432)')}
             value={ewbFetchInput}
             onChange={e => setEwbFetchInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleFetchFromGovtNIC()}
-            style={{
-              flex: 1,
-              minWidth: '280px',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '2px solid #cbd5e1',
-              fontSize: '13px',
-              fontWeight: 700,
-              fontFamily: 'monospace'
-            }}
           />
           <button
             type="button"
+            className="ewb-fetch-btn"
             onClick={() => handleFetchFromGovtNIC()}
             disabled={isFetchingGovtData}
-            style={{
-              background: '#0284c7',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '10px 22px',
-              fontWeight: 800,
-              fontSize: '13px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)'
-            }}
           >
-            {isFetchingGovtData ? 'Connecting to NIC Portal...' : '🔍 Auto-Fetch from Govt Portal'}
+            {isFetchingGovtData ? t('Fetching from NIC Gateway...', 'गेटवे से फेच हो रहा है...') : t('Fetch & Sync from NIC ➔', 'एनआईसी से लाएं ➔')}
           </button>
         </div>
       </div>
 
-      {/* FILTER TABS & SEARCH BAR */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '12px',
-        marginBottom: '18px'
-      }}>
-        {/* TABS */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      {/* 4. CONTROLS: SEARCH BAR & FILTER TABS */}
+      <div className="ewb-controls-row">
+        <div className="ewb-filter-pills">
           <button
             type="button"
+            className={`ewb-pill-btn ${filterTab === 'ALL' ? 'active' : ''}`}
             onClick={() => setFilterTab('ALL')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid',
-              borderColor: filterTab === 'ALL' ? '#0284c7' : '#cbd5e1',
-              background: filterTab === 'ALL' ? '#0284c7' : '#ffffff',
-              color: filterTab === 'ALL' ? '#ffffff' : '#475569',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer'
-            }}
           >
-            All Active Bills ({ewayBills.length})
+            {t('All E-Way Bills', 'सभी ई-वे बिल')} ({ewayBills.length})
           </button>
           <button
             type="button"
+            className={`ewb-pill-btn critical-tab ${filterTab === 'CRITICAL' ? 'active' : ''}`}
             onClick={() => setFilterTab('CRITICAL')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid',
-              borderColor: filterTab === 'CRITICAL' ? '#ef4444' : '#fecaca',
-              background: filterTab === 'CRITICAL' ? '#ef4444' : '#fef2f2',
-              color: filterTab === 'CRITICAL' ? '#ffffff' : '#b91c1c',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer'
-            }}
           >
-            🔴 Critical &lt;4h ({criticalCount})
+            🚨 {t('Critical (<4h)', 'अत्यंत गंभीर')} ({criticalCount})
           </button>
           <button
             type="button"
+            className={`ewb-pill-btn warning-tab ${filterTab === 'WARNING' ? 'active' : ''}`}
             onClick={() => setFilterTab('WARNING')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid',
-              borderColor: filterTab === 'WARNING' ? '#f59e0b' : '#fde68a',
-              background: filterTab === 'WARNING' ? '#f59e0b' : '#fffbeb',
-              color: filterTab === 'WARNING' ? '#ffffff' : '#b45309',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer'
-            }}
           >
-            🟡 Expiring 4-8h ({warningCount})
+            ⚠️ {t('Warning (<8h)', 'चेतावनी')} ({warningCount})
           </button>
           <button
             type="button"
+            className={`ewb-pill-btn ${filterTab === 'EXTENDED' ? 'active' : ''}`}
             onClick={() => setFilterTab('EXTENDED')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid',
-              borderColor: filterTab === 'EXTENDED' ? '#10b981' : '#a7f3d0',
-              background: filterTab === 'EXTENDED' ? '#10b981' : '#ecfdf5',
-              color: filterTab === 'EXTENDED' ? '#ffffff' : '#047857',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer'
-            }}
           >
-            ✓ NIC Extended ({extendedCount})
+            ✓ {t('Extended', 'विस्तारित')} ({extendedCount})
           </button>
           <button
             type="button"
+            className={`ewb-pill-btn ${filterTab === 'EXPIRED' ? 'active' : ''}`}
             onClick={() => setFilterTab('EXPIRED')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid',
-              borderColor: filterTab === 'EXPIRED' ? '#64748b' : '#e2e8f0',
-              background: filterTab === 'EXPIRED' ? '#64748b' : '#f1f5f9',
-              color: filterTab === 'EXPIRED' ? '#ffffff' : '#475569',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer'
-            }}
           >
-            ❌ Expired ({expiredCount})
+            {t('Expired', 'समाप्त')} ({expiredCount})
           </button>
         </div>
 
-        {/* SEARCH BOX */}
-        <div style={{ minWidth: '280px', flex: '1', maxWidth: '400px' }}>
+        <div className="ewb-search-box">
+          <svg className="ewb-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           <input
             type="text"
-            placeholder="Search E-Way Bill #, Vehicle, Consignor, Route..."
+            placeholder={t('Search by EWB, Vehicle, Consignor, Route...', 'ई-वे बिल, वाहन, पार्टी या मार्ग खोजें...')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 14px',
-              borderRadius: '8px',
-              border: '1px solid #cbd5e1',
-              fontSize: '13px',
-              background: '#ffffff',
-              boxSizing: 'border-box'
-            }}
           />
         </div>
       </div>
 
-      {/* E-WAY BILLS TABLE & ACTION CARDS */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* 5. RECREATED E-WAY BILL CARDS STACK */}
+      <div className="ewb-cards-stack">
         {filteredEwbList.map((item) => {
           const isCritical = item.status === 'CRITICAL_EXPIRING';
           const isWarning = item.status === 'WARNING_EXPIRING';
           const isExpired = item.status === 'EXPIRED';
           const isExtended = item.status === 'EXTENDED';
+          const completedKm = Math.max(0, item.totalDistanceKm - item.remainingDistanceKm);
+          const percentProgress = Math.min(100, Math.round((completedKm / item.totalDistanceKm) * 100));
 
           return (
             <div
               key={item.id}
-              style={{
-                background: '#ffffff',
-                borderRadius: '14px',
-                border: '1px solid',
-                borderColor: isCritical ? '#fca5a5' : isWarning ? '#fde68a' : isExpired ? '#fecaca' : '#e2e8f0',
-                boxShadow: isCritical ? '0 4px 16px rgba(239, 68, 68, 0.12)' : '0 2px 8px rgba(0,0,0,0.03)',
-                padding: '20px',
-                position: 'relative',
-                transition: 'all 0.2s ease'
-              }}
+              className={`ewb-card ${
+                isCritical ? 'status-critical' :
+                isWarning ? 'status-warning' :
+                isExtended ? 'status-extended' :
+                isExpired ? 'status-expired' : 'status-safe'
+              }`}
             >
-              {/* TOP STRIP: EWB # + COUNTDOWN + QUICK STATUS */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    background: '#f8fafc',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '4px 10px',
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: '#0f172a',
-                    letterSpacing: '0.04em'
-                  }}>
-                    EWB: <span style={{ color: '#0284c7' }}>{item.ewbNo}</span>
+              {/* TOP STRIP */}
+              <div className="ewb-card-topstrip">
+                <div className="ewb-meta-group">
+                  <div className="ewb-number-chip">
+                    <span>EWB:</span>
+                    <span>{item.ewbNo}</span>
+                    <button
+                      type="button"
+                      className="ewb-copy-btn"
+                      title={t('Copy EWB Number', 'ई-वे बिल नंबर कॉपी करें')}
+                      onClick={() => {
+                        navigator.clipboard?.writeText(item.ewbNo.replace(/-/g, ''));
+                        showToast(t(`✓ EWB ${item.ewbNo} copied to clipboard!`, `✓ ई-वे बिल ${item.ewbNo} क्लिपबोर्ड पर कॉपी हो गया!`));
+                      }}
+                    >
+                      📋
+                    </button>
                   </div>
 
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    Doc: <strong>{item.docNo}</strong> ({item.docDate})
+                  <span className="ewb-doc-chip">
+                    📄 {item.docNo} ({item.docDate})
                   </span>
 
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    HSN: <strong>{item.hsnCode}</strong>
+                  <span className="ewb-hsn-chip">
+                    🏷️ HSN: {item.hsnCode}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {/* EXPIRY BADGE / COUNTDOWN */}
-                  <div style={{
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: isCritical ? '#fef2f2' : isWarning ? '#fffbeb' : isExpired ? '#f3f4f6' : '#ecfdf5',
-                    color: isCritical ? '#dc2626' : isWarning ? '#b45309' : isExpired ? '#475569' : '#059669',
-                    border: '1px solid',
-                    borderColor: isCritical ? '#fecaca' : isWarning ? '#fde68a' : isExpired ? '#e2e8f0' : '#a7f3d0'
-                  }}>
-                    {isCritical && <span>🚨 EXPIRES IN {item.hoursRemaining} HOURS</span>}
-                    {isWarning && <span>⚠️ EXPIRES IN {item.hoursRemaining} HOURS</span>}
-                    {isExpired && <span>❌ EXPIRED ({Math.abs(item.hoursRemaining)}h AGO)</span>}
-                    {isExtended && <span>✓ EXTENDED (Valid Until {item.validUntil})</span>}
-                    {item.status === 'ACTIVE_SAFE' && <span>🟢 VALID ({item.hoursRemaining}h remaining)</span>}
+                  {/* EXPIRY COUNTDOWN BADGE */}
+                  <div className={`ewb-countdown-badge ${
+                    isCritical ? 'badge-critical' :
+                    isWarning ? 'badge-warning' :
+                    isExtended ? 'badge-extended' :
+                    isExpired ? 'badge-expired' : 'badge-safe'
+                  }`}>
+                    {isCritical && <span>🚨 {t(`EXPIRES IN ${item.hoursRemaining} HOURS`, `${item.hoursRemaining} घंटे में समाप्त होगा`)}</span>}
+                    {isWarning && <span>⚠️ {t(`EXPIRES IN ${item.hoursRemaining} HOURS`, `${item.hoursRemaining} घंटे में समाप्त होगा`)}</span>}
+                    {isExpired && <span>❌ {t(`EXPIRED (${Math.abs(item.hoursRemaining)}h AGO)`, `समाप्त (${Math.abs(item.hoursRemaining)} घंटे पहले)`)}</span>}
+                    {isExtended && <span>✓ {t(`EXTENDED (Valid Until ${item.validUntil})`, `विस्तारित (वैधता: ${item.validUntil})`)}</span>}
+                    {item.status === 'ACTIVE_SAFE' && <span>🟢 {t(`VALID (${item.hoursRemaining}h remaining)`, `सक्रिय (${item.hoursRemaining}h शेष)`)}</span>}
                   </div>
 
                   {item.extensionCount > 0 && (
                     <span style={{
-                      background: '#eff6ff',
-                      color: '#1d4ed8',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '4px 8px',
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      color: '#3b82f6',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
                       borderRadius: '6px',
-                      border: '1px solid #bfdbfe'
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 800
                     }}>
-                      Extended {item.extensionCount}x
+                      🔄 {t(`Extended ${item.extensionCount}x`, `${item.extensionCount} बार विस्तारित`)}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* BODY: ROUTE & CARGO GRID */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: '16px',
-                marginTop: '16px'
-              }}>
-                {/* CONSIGNOR -> CONSIGNEE */}
+              {/* 3-COLUMN RECREATED BODY */}
+              <div className="ewb-card-body">
+                {/* COL 1: CONSIGNOR & CONSIGNEE ROUTE */}
                 <div>
-                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Consignor &amp; Consignee Route
+                  <div className="ewb-col-title">
+                    {t('Consignor & Consignee Journey', 'प्रेषक एवं प्राप्तकर्ता मार्ग')}
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                    {item.supplierName}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#475569' }}>
-                    GSTIN: <span style={{ fontFamily: 'monospace' }}>{item.supplierGstin}</span> ({item.supplierPlace})
-                  </div>
-                  <div style={{ margin: '6px 0', fontSize: '12px', color: '#0284c7', fontWeight: 700 }}>
-                    ➔ {item.recipientName}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#475569' }}>
-                    GSTIN: <span style={{ fontFamily: 'monospace' }}>{item.recipientGstin}</span> ({item.recipientPlace})
-                  </div>
-                </div>
-
-                {/* CARGO & VALUE */}
-                <div>
-                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Cargo &amp; Tax Value
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                    {item.cargoDescription}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#059669', fontWeight: 800, marginTop: '4px' }}>
-                    Declared Value: ₹{item.cargoValue.toLocaleString('en-IN')}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#b91c1c', fontWeight: 600, marginTop: '2px' }}>
-                    Applicable Tax: ₹{item.taxAmount.toLocaleString('en-IN')} (Penalty: ₹{(item.taxAmount * 2).toLocaleString('en-IN')})
-                  </div>
-                </div>
-
-                {/* CURRENT TELEMATICS & DELAY REASON */}
-                <div>
-                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Part-B Vehicle &amp; Location
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <span style={{
-                      background: '#f1f5f9',
-                      color: '#0f172a',
-                      fontWeight: 800,
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '13px'
-                    }}>
-                      🚛 {item.vehicleNo}
-                    </span>
-                    <span style={{ fontSize: '12px', color: '#475569' }}>
-                      Driver: <strong>{item.driverName}</strong>
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#334155', marginTop: '6px' }}>
-                    📍 {item.currentLocationName} (PIN: {item.currentPincode})
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                    Remaining: <strong>{item.remainingDistanceKm} KM</strong> of {item.totalDistanceKm} KM
-                  </div>
-                  {item.transitDelayReason && (
-                    <div style={{
-                      marginTop: '6px',
-                      background: '#fff1f2',
-                      border: '1px solid #fecdd3',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      color: '#9f1239',
-                      fontWeight: 600
-                    }}>
-                      ⚠️ Delay: {item.transitDelayReason}
+                  <div className="ewb-route-timeline">
+                    <div className="ewb-route-node">
+                      <div className="ewb-node-dot origin" />
+                      <div className="ewb-node-company">{item.supplierName}</div>
+                      <div className="ewb-node-gstin">GSTIN: {item.supplierGstin}</div>
+                      <div className="ewb-node-location">{item.supplierPlace} (PIN: {item.supplierPincode})</div>
                     </div>
-                  )}
+
+                    <div style={{ fontSize: '11px', color: '#0284c7', fontWeight: 800, margin: '2px 0' }}>
+                      ⬇️ {item.totalDistanceKm} KM Highway Freight Corridor
+                    </div>
+
+                    <div className="ewb-route-node">
+                      <div className="ewb-node-dot dest" />
+                      <div className="ewb-node-company">{item.recipientName}</div>
+                      <div className="ewb-node-gstin">GSTIN: {item.recipientGstin}</div>
+                      <div className="ewb-node-location">{item.recipientPlace} (PIN: {item.recipientPincode})</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* COL 2: CARGO & PENALTY SHIELD */}
+                <div>
+                  <div className="ewb-col-title">
+                    {t('Cargo, Tax & RTO Liability', 'कार्गो, कर एवं जब्ती जोखिम')}
+                  </div>
+                  <div className="ewb-cargo-box">
+                    <div className="ewb-cargo-desc">
+                      📦 {item.cargoDescription}
+                    </div>
+
+                    <div className="ewb-value-row">
+                      <span className="ewb-declared-pill">
+                        {t('Value:', 'मूल्य:')} ₹{item.cargoValue.toLocaleString('en-IN')}
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
+                        GST: ₹{item.taxAmount.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+
+                    <div className="ewb-penalty-shield-box">
+                      <div className="ewb-penalty-title">
+                        <span>🛡️</span>
+                        <span>{t('Rule 138 CGST Seizure Shield', 'नियम 138 सीजीएसटी जब्ती सुरक्षा')}</span>
+                      </div>
+                      <div className="ewb-penalty-desc">
+                        {t('Potential Section 129 Penalty At Risk:', 'संभावित धारा 129 जब्ती दंड जोखिम:')} <strong>₹{(item.taxAmount * 2).toLocaleString('en-IN')}</strong> (200% GST)
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* COL 3: PART-B TELEMATICS & DISTANCE PROGRESS */}
+                <div>
+                  <div className="ewb-col-title">
+                    {t('Part-B Vehicle & Highway Telematics', 'पार्ट-बी वाहन एवं हाईवे टेलीमैटिक्स')}
+                  </div>
+                  <div className="ewb-telematics-box">
+                    <div className="ewb-truck-driver-row">
+                      <span className="ewb-truck-badge">
+                        🚛 {item.vehicleNo}
+                      </span>
+                      <span className="ewb-driver-text">
+                        👤 <strong>{item.driverName}</strong> ({item.driverPhone})
+                      </span>
+                    </div>
+
+                    <div className="ewb-checkpoint-text">
+                      <span>📍</span>
+                      <span>{item.currentLocationName} (PIN: {item.currentPincode})</span>
+                    </div>
+
+                    <div className="ewb-progress-wrap">
+                      <div className="ewb-progress-track">
+                        <div className="ewb-progress-fill" style={{ width: `${percentProgress}%` }} />
+                      </div>
+                      <div className="ewb-progress-labels">
+                        <span>{percentProgress}% {t('Covered', 'पूर्ण')}</span>
+                        <span>{t('Remaining:', 'शेष:')} <strong>{item.remainingDistanceKm} KM</strong> / {item.totalDistanceKm} KM</span>
+                      </div>
+                    </div>
+
+                    {item.transitDelayReason && (
+                      <div className="ewb-delay-alert">
+                        <span>⚠️</span>
+                        <span>{t('Delay:', 'विलंब:')} {item.transitDelayReason}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* BOTTOM ACTIONS BAR */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '10px',
-                marginTop: '16px',
-                paddingTop: '14px',
-                borderTop: '1px dashed #e2e8f0'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* CARD FOOTER TOOLBAR */}
+              <div className="ewb-card-footer">
+                <div className="ewb-footer-left">
                   <button
                     type="button"
+                    className="ewb-btn-secondary"
                     onClick={() => setSelectedForPrint(item)}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '8px',
-                      padding: '7px 14px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      color: '#334155',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
                   >
-                    <span>📄 View E-Way Bill (EWB-01)</span>
+                    <span>📄</span>
+                    <span>{t('View E-Way Bill (EWB-01)', 'ई-वे बिल देखें (EWB-01)')}</span>
                   </button>
 
                   <button
                     type="button"
+                    className="ewb-btn-whatsapp"
                     onClick={() => handleDispatchWhatsAppToDriver(item)}
-                    style={{
-                      background: item.driverNotified ? '#f0fdf4' : '#ffffff',
-                      border: '1px solid',
-                      borderColor: item.driverNotified ? '#86efac' : '#cbd5e1',
-                      borderRadius: '8px',
-                      padding: '7px 14px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      color: item.driverNotified ? '#166534' : '#25d366',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
                   >
-                    <span>💬 {item.driverNotified ? '✓ Link Sent via WhatsApp' : 'WhatsApp Link to Driver'}</span>
+                    <span>💬</span>
+                    <span>{item.driverNotified ? t('✓ Link Sent to Driver', '✓ ड्राइवर को भेजा गया') : t('WhatsApp Link to Driver', 'ड्राइवर को व्हाट्सएप भेजें')}</span>
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {/* PART-B VEHICLE UPDATE TRIGGER */}
+                <div className="ewb-footer-right">
                   <button
                     type="button"
+                    className="ewb-btn-partb"
                     onClick={() => handleOpenPartB(item)}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #0284c7',
-                      color: '#0284c7',
-                      borderRadius: '8px',
-                      padding: '7px 16px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
                   >
-                    <span>🔄 Update Part-B Vehicle</span>
+                    <span>🔄</span>
+                    <span>{t('Update Part-B Vehicle', 'पार्ट-बी वाहन बदलें')}</span>
                   </button>
 
-                  {/* 1-CLICK AUTO-EXTEND VALIDITY TRIGGER */}
                   <button
                     type="button"
+                    className={`ewb-btn-extend ${isCritical ? 'critical-btn' : 'safe-btn'}`}
                     onClick={() => handleOpenExtension(item)}
-                    style={{
-                      background: isCritical ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '7px 18px',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      boxShadow: isCritical ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 4px 12px rgba(2, 132, 199, 0.25)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
                   >
-                    <span>⚡ 1-Click NIC Auto-Extend</span>
+                    <span>⚡</span>
+                    <span>{t('1-Click NIC Auto-Extend', '1-क्लिक एनआईसी ऑटो-एक्सटेंड')}</span>
                   </button>
                 </div>
               </div>
@@ -1254,6 +1051,7 @@ export default function NicEwayBillAutoExtensionSuite() {
           );
         })}
       </div>
+
 
       {/* ===================================================================== */}
       {/* MODAL 1: 1-CLICK NIC VALIDITY AUTO-EXTENSION MODAL */}
