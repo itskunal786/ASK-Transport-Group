@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
 import LanguageToggle from '../../components/LanguageToggle';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   getAdminOperationsSummary,
   getAdminUsers,
@@ -445,6 +446,7 @@ type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers'
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
@@ -1641,7 +1643,7 @@ export default function Dashboard() {
               <rect x="14" y="14" width="7" height="7" rx="1.5" />
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
-            <span>Dashboard</span>
+            <span>{t('Dashboard', 'डैशबोर्ड')}</span>
           </button>
 
           {/* 1. OPERATIONS & DISPATCH DROPDOWN */}
@@ -1653,7 +1655,7 @@ export default function Dashboard() {
             >
               <div className="nav-dropdown-title">
                 <span className="nav-group-icon">📦</span>
-                <span>Operations</span>
+                <span>{t('Operations', 'संचालन')}</span>
               </div>
               <svg
                 className={`nav-chevron-icon ${openNavGroups.operations ? 'open' : ''}`}
@@ -1671,7 +1673,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('bookings')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Bookings &amp; Bilty</span>
+                  <span>{t('Bookings & Bilty', 'बुकिंग और बिल्टी')}</span>
                   {isTabRevoked('bookings').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1681,7 +1683,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('shipments')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Shipments &amp; Dispatch</span>
+                  <span>{t('Shipments & Dispatch', 'कंसाइनमेंट और डिस्पैच')}</span>
                   {isTabRevoked('shipments').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1691,7 +1693,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('ewaybill')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>NIC E-Way Bill &amp; Part-B</span>
+                  <span>{t('NIC E-Way Bill & Part-B', 'ई-वे बिल और भाग-बी')}</span>
                   {isTabRevoked('ewaybill').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1701,7 +1703,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('hubs')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Hubs &amp; Terminals</span>
+                  <span>{t('Hubs & Terminals', 'हब और टर्मिनल')}</span>
                   {isTabRevoked('hubs').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1711,7 +1713,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('dock_yard')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Gate Pass &amp; Dock Yard</span>
+                  <span>{t('Gate Pass & Dock Yard', 'गेट पास और डॉक यार्ड')}</span>
                   {isTabRevoked('dock_yard').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1721,7 +1723,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('weighbridge')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Dharam Kanta &amp; Weighbridge</span>
+                  <span>{t('Dharam Kanta & Weighbridge', 'धरम कांटा और वे-ब्रिज')}</span>
                   {isTabRevoked('weighbridge').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1731,7 +1733,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('rto_vault')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>RTO Check-Post Vault</span>
+                  <span>{t('RTO Check-Post Vault', 'आरटीओ चेक-पोस्ट वॉल्ट')}</span>
                   {isTabRevoked('rto_vault').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
                 <button
@@ -1740,7 +1742,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('pod_inward')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Physical POD &amp; SOS Rescue</span>
+                  <span>{t('Physical POD & SOS Rescue', 'भौतिक पीओडी और आपातकालीन सहायता')}</span>
                   {isTabRevoked('pod_inward').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
               </div>
@@ -1756,7 +1758,7 @@ export default function Dashboard() {
             >
               <div className="nav-dropdown-title">
                 <span className="nav-group-icon">🚛</span>
-                <span>Fleet &amp; Drivers</span>
+                <span>{t('Fleet & Drivers', 'फ्लीट और चालक')}</span>
               </div>
               <svg
                 className={`nav-chevron-icon ${openNavGroups.fleet ? 'open' : ''}`}
@@ -1774,7 +1776,7 @@ export default function Dashboard() {
                   onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Trip Petty Cash &amp; P&amp;L</span>
+                  <span>{t('Trip Petty Cash & P&L', 'ट्रिप खर्च और लाभ-हानि')}</span>
                 </button>
 
                 <button
@@ -1783,7 +1785,7 @@ export default function Dashboard() {
                   onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Fuel &amp; Diesel Theft Radar</span>
+                  <span>{t('Fuel & Diesel Theft Radar', 'ईंधन और डीजल रडार')}</span>
                 </button>
 
                 <button
@@ -1792,7 +1794,7 @@ export default function Dashboard() {
                   onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Cold-Chain Temp Radar</span>
+                  <span>{t('Cold-Chain Temp Radar', 'कोल्ड-चेन तापमान रडार')}</span>
                 </button>
 
                 <button
@@ -1801,7 +1803,7 @@ export default function Dashboard() {
                   onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Fitness &amp; Renewal Alerts</span>
+                  <span>{t('Fitness & Renewal Alerts', 'फिटनेस और नवीनीकरण अलर्ट')}</span>
                 </button>
 
                 <button
@@ -1810,7 +1812,7 @@ export default function Dashboard() {
                   onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Tyre &amp; TPMS Radar</span>
+                  <span>{t('Tyre & TPMS Radar', 'टायर और टीपीएमएस रडार')}</span>
                 </button>
 
                 <button
@@ -1819,7 +1821,7 @@ export default function Dashboard() {
                   onClick={() => { setFleetDeckSubTab('mobile_driver'); setActiveTab('fleet_mgmt'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Driver Mobile Mode</span>
+                  <span>{t('Driver Mobile Mode', 'ड्राइवर मोबाइल मोड')}</span>
                 </button>
 
                 <button
@@ -1828,7 +1830,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('vehicles')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Fleet &amp; Vehicles</span>
+                  <span>{t('Fleet & Vehicles', 'फ्लीट और वाहन')}</span>
                   {isTabRevoked('vehicles').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1838,7 +1840,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('drivers')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Sarathi Drivers</span>
+                  <span>{t('Sarathi Drivers', 'सारथी चालक')}</span>
                   {isTabRevoked('drivers').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1848,7 +1850,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('telematics')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>GPS Telematics Radar</span>
+                  <span>{t('GPS Telematics Radar', 'जीपीएस टेलीमैटिक्स रडार')}</span>
                   {isTabRevoked('telematics').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1858,7 +1860,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('driver_settlement')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Trip Settlement &amp; Hisaab</span>
+                  <span>{t('Trip Settlement & Hisaab', 'ट्रिप निपटान और हिसाब')}</span>
                   {isTabRevoked('driver_settlement').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1868,7 +1870,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('ais140_safety')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>AIS-140 Highway Safety</span>
+                  <span>{t('AIS-140 Highway Safety', 'एआईएस-140 सुरक्षा')}</span>
                   {isTabRevoked('ais140_safety').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
               </div>
@@ -1884,7 +1886,7 @@ export default function Dashboard() {
             >
               <div className="nav-dropdown-title">
                 <span className="nav-group-icon">🏢</span>
-                <span>Enterprise &amp; Finance</span>
+                <span>{t('Enterprise & Finance', 'एंटरप्राइज और वित्त')}</span>
               </div>
               <svg
                 className={`nav-chevron-icon ${openNavGroups.enterprise ? 'open' : ''}`}
@@ -1902,7 +1904,7 @@ export default function Dashboard() {
                   onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Hired Fleet &amp; 194C TDS</span>
+                  <span>{t('Hired Fleet & 194C TDS', 'किराए का बेड़ा और 194C टीडीएस')}</span>
                 </button>
 
                 <button
@@ -1911,7 +1913,7 @@ export default function Dashboard() {
                   onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>GST E-Invoice &amp; ERP Ledgers</span>
+                  <span>{t('GST E-Invoice & ERP Ledgers', 'जीएसटी ई-चालान और ईआरपी लेजर')}</span>
                 </button>
 
                 <button
@@ -1920,7 +1922,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('cargo_claims')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Cargo Claims &amp; SLA Shield</span>
+                  <span>{t('Cargo Claims & SLA Shield', 'कार्गो दावे और एसएलए सुरक्षा')}</span>
                   {isTabRevoked('cargo_claims').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
                 <button
@@ -1929,7 +1931,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('executive_pnl')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Executive P&amp;L Margins Radar</span>
+                  <span>{t('Executive P&L Margins Radar', 'लाभ-हानि मार्जिन रडार')}</span>
                   {isTabRevoked('executive_pnl').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1939,7 +1941,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('tax_audit')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>CA 1-Click Tax &amp; Audit Vault</span>
+                  <span>{t('CA 1-Click Tax & Audit Vault', 'सीए टैक्स और ऑडिट वॉल्ट')}</span>
                   {isTabRevoked('tax_audit').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -1949,7 +1951,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('enterprise_b2b')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>B2B Bulk, Auction &amp; RTO</span>
+                  <span>{t('B2B Bulk, Auction & RTO', 'बी2बी बल्क, नीलामी और आरटीओ')}</span>
                 </button>
 
                 <button
@@ -1958,7 +1960,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('tariff')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Tariff &amp; Rate Matrix</span>
+                  <span>{t('Tariff & Rate Matrix', 'भाड़ा दर सूची और मैट्रिक्स')}</span>
                   {isTabRevoked('tariff').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
               </div>
@@ -1974,7 +1976,7 @@ export default function Dashboard() {
             >
               <div className="nav-dropdown-title">
                 <span className="nav-group-icon">🧠</span>
-                <span>AI &amp; Automation</span>
+                <span>{t('AI & Automation', 'एआई और ऑटोमेशन')}</span>
               </div>
               <svg
                 className={`nav-chevron-icon ${openNavGroups.ai ? 'open' : ''}`}
@@ -2001,7 +2003,7 @@ export default function Dashboard() {
                   onClick={() => { setAiDeckSubTab('ocr_scanner'); setActiveTab('ai_automation'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>AI Bilty Scanner (OCR)</span>
+                  <span>{t('AI Bilty Scanner (OCR)', 'एआई बिल्टी स्कैनर (ओसीआर)')}</span>
                 </button>
 
                 <button
@@ -2010,7 +2012,7 @@ export default function Dashboard() {
                   onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Highway Route Predictor</span>
+                  <span>{t('Highway Route Predictor', 'हाईवे मार्ग अनुमान')}</span>
                 </button>
 
                 <button
@@ -2019,7 +2021,7 @@ export default function Dashboard() {
                   onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Spot Freight Rate AI</span>
+                  <span>{t('Spot Freight Rate AI', 'स्पॉट भाड़ा दर एआई')}</span>
                 </button>
 
                 <button
@@ -2028,7 +2030,7 @@ export default function Dashboard() {
                   onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>WhatsApp AI Logistics Bot</span>
+                  <span>{t('WhatsApp AI Logistics Bot', 'व्हाट्सएप एआई लॉजिस्टिक्स बॉट')}</span>
                 </button>
               </div>
             )}
@@ -2043,7 +2045,7 @@ export default function Dashboard() {
             >
               <div className="nav-dropdown-title">
                 <span className="nav-group-icon">⚙️</span>
-                <span>Governance &amp; Admin</span>
+                <span>{t('Governance & Admin', 'प्रशासन और गवर्नेंस')}</span>
               </div>
               <svg
                 className={`nav-chevron-icon ${openNavGroups.governance ? 'open' : ''}`}
@@ -2061,7 +2063,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('customers')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>User Management</span>
+                  <span>{t('User Management', 'उपयोगकर्ता प्रबंधन')}</span>
                   {isTabRevoked('customers').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -2071,7 +2073,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('access')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Staff Access &amp; Roles</span>
+                  <span>{t('Staff Access & Roles', 'स्टाफ अधिकार और भूमिकाएं')}</span>
                 </button>
 
                 <button
@@ -2080,7 +2082,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('audit')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Security &amp; Audit Trail</span>
+                  <span>{t('Security & Audit Trail', 'सुरक्षा और ऑडिट लॉग')}</span>
                   {isTabRevoked('audit').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -2090,7 +2092,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('support')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Support &amp; Escalations</span>
+                  <span>{t('Support & Escalations', 'सहायता और शिकायत निवारण')}</span>
                   {isTabRevoked('support').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -2100,7 +2102,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('reports')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>Reports &amp; Data Export</span>
+                  <span>{t('Reports & Data Export', 'रिपोर्ट और डेटा निर्यात')}</span>
                   {isTabRevoked('reports').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
@@ -2110,7 +2112,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('settings')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>System Settings</span>
+                  <span>{t('System Settings', 'सिस्टम सेटिंग्स')}</span>
                   {isTabRevoked('settings').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
               </div>
@@ -2126,15 +2128,15 @@ export default function Dashboard() {
             </div>
             <div className="admin-user-meta">
               <div className="admin-user-name">{user?.name || 'Administrator'}</div>
-              <div className="admin-user-role">{user?.role === 'SuperAdmin' ? 'Super Admin' : 'Staff'}</div>
+              <div className="admin-user-role">{user?.role === 'SuperAdmin' ? t('Super Admin', 'सुपर एडमिन') : t('Staff', 'स्टाफ')}</div>
             </div>
           </div>
           <div className="admin-sidebar-actions-grid">
             <Link to="/landing" className="admin-switch-link" title="Open public portal website">
-              <span>🌐 Web</span>
+              <span>🌐 {t('Web', 'वेबसाइट')}</span>
             </Link>
             <button type="button" onClick={logout} className="admin-logout-btn" title="Sign out from session">
-              <span>🚪 Sign Out</span>
+              <span>🚪 {t('Sign Out', 'लॉग आउट')}</span>
             </button>
           </div>
         </div>
@@ -2151,7 +2153,7 @@ export default function Dashboard() {
             </svg>
             <input
               type="text"
-              placeholder={`Search ${activeTab}...`}
+              placeholder={t(`Search ${activeTab}...`, 'डैशबोर्ड में खोजें...')}
               value={
                 activeTab === 'bookings'
                   ? bookingSearch
@@ -2215,7 +2217,7 @@ export default function Dashboard() {
                 textDecoration: 'none'
               }}
             >
-              <span>📱</span> Driver App (/driver) ↗
+              <span>📱</span> {t('Driver App (/driver) ↗', 'ड्राइवर ऐप (/driver) ↗')}
             </a>
 
             <button
@@ -2235,7 +2237,7 @@ export default function Dashboard() {
                 cursor: 'pointer'
               }}
             >
-              <span>🚨</span> Vehicle Radar
+              <span>🚨</span> {t('Vehicle Radar', 'वाहन रडार')}
             </button>
           </div>
           <div className="admin-top-profile">
@@ -2252,7 +2254,7 @@ export default function Dashboard() {
               <div className="admin-user-names">
                 <strong>{user?.name || 'Administrator'}</strong>
                 <small style={user?.role === 'SuperAdmin' ? { color: '#f59e0b', fontWeight: 700 } : {}}>
-                  {user?.role === 'SuperAdmin' ? '👑 Super Admin • Full Rights' : 'Admin • Operations Access'}
+                  {user?.role === 'SuperAdmin' ? t('👑 Super Admin • Full Rights', '👑 सुपर एडमिन • पूर्ण अधिकार') : t('Admin • Operations Access', 'एडमिन • संचालन अधिकार')}
                 </small>
               </div>
             </div>
@@ -2263,8 +2265,8 @@ export default function Dashboard() {
         <div className={`admin-maintenance-bar ${isMaintenanceActive ? 'alert' : 'normal'}`}>
           <div className="maintenance-info">
             <span className="pulse-dot" />
-            <strong>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : '🟢 PLATFORM LIVE & FULLY OPERATIONAL'}</strong>
-            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : 'All public rate calculators, online bookings, and vehicle dispatches running normally'}</span>
+            <strong>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : t('🟢 PLATFORM LIVE & FULLY OPERATIONAL', '🟢 प्लेटफ़ॉर्म लाइव और पूर्णतः संचालित')}</strong>
+            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public rate calculators, online bookings, and vehicle dispatches running normally', 'सभी सार्वजनिक दर कैलकुलेटर, ऑनलाइन बुकिंग और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
           </div>
           {user?.role === 'SuperAdmin' && (
             <button
@@ -2284,8 +2286,8 @@ export default function Dashboard() {
           <div className="admin-content-pad">
             <div className="admin-page-title-row">
               <div>
-                <h1>Operations Command Center</h1>
-                <p>Real-time analytics and freight fleet monitoring</p>
+                <h1>{t('Operations Command Center', 'संचालन कमांड सेंटर')}</h1>
+                <p>{t('Real-time analytics and freight fleet monitoring', 'रीयल-टाइम एनालिटिक्स और मालवाहक बेड़े की निगरानी')}</p>
               </div>
 
               <div className="admin-title-actions">
@@ -2314,11 +2316,11 @@ export default function Dashboard() {
                   </div>
                   <div className="admin-box-content">
                     <strong>{summary?.totalBookings && summary.totalBookings > 0 ? summary.totalBookings : 1284}</strong>
-                    <span>Total Bookings</span>
+                    <span>{t('Total Bookings', 'कुल बुकिंग')}</span>
                   </div>
                 </div>
                 <div className="admin-box-delta green">
-                  ↑ 12.5% vs previous 30 days
+                  {t('↑ 12.5% vs previous 30 days', '↑ पिछले 30 दिनों से 12.5% अधिक')}
                 </div>
               </div>
 
@@ -2332,11 +2334,11 @@ export default function Dashboard() {
                   </div>
                   <div className="admin-box-content">
                     <strong>{summary?.inTransitShipments && summary.inTransitShipments > 0 ? summary.inTransitShipments : 184}</strong>
-                    <span>Active In-Transit</span>
+                    <span>{t('Active In-Transit', 'सक्रिय पारगमन में')}</span>
                   </div>
                 </div>
                 <div className="admin-box-delta green">
-                  ↑ 5.2% on highways
+                  {t('↑ 5.2% on highways', '↑ राजमार्गों पर 5.2% अधिक')}
                 </div>
               </div>
 
@@ -2350,11 +2352,11 @@ export default function Dashboard() {
                   </div>
                   <div className="admin-box-content">
                     <strong>{summary?.deliveredBookings && summary.deliveredBookings > 0 ? summary.deliveredBookings : 1032}</strong>
-                    <span>Delivered (Month)</span>
+                    <span>{t('Delivered (Month)', 'वितरित (मासिक)')}</span>
                   </div>
                 </div>
                 <div className="admin-box-delta green">
-                  99.4% on-time SLA
+                  {t('99.4% on-time SLA', '99.4% समय पर एसएलए')}
                 </div>
               </div>
 
@@ -2368,11 +2370,11 @@ export default function Dashboard() {
                   </div>
                   <div className="admin-box-content">
                     <strong>₹{(summary?.successfulPaymentAmount && summary.successfulPaymentAmount > 0 ? summary.successfulPaymentAmount : 4250000).toLocaleString('en-IN')}</strong>
-                    <span>Gross Revenue</span>
+                    <span>{t('Gross Revenue', 'सकल राजस्व')}</span>
                   </div>
                 </div>
                 <div className="admin-box-delta green">
-                  ↑ 18.2% GST Invoiced
+                  {t('↑ 18.2% GST Invoiced', '↑ 18.2% जीएसटी चालान')}
                 </div>
               </div>
             </div>
@@ -2391,13 +2393,13 @@ export default function Dashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
                 <div>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#6ee7b7', padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    <span>⚡</span> 2026 Fleet &amp; Driver Operations Live Hub
+                    <span>⚡</span> {t('2026 Fleet & Driver Operations Live Hub', '2026 फ्लीट एवं चालक संचालन लाइव हब')}
                   </div>
                   <h2 style={{ margin: '8px 0 4px', fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-                    Driver Petty Cash, Mobile Driver Mode &amp; Fleet Compliance Suite
+                    {t('Driver Petty Cash, Mobile Driver Mode & Fleet Compliance Suite', 'चालक खर्च, मोबाइल चालक मोड और वाहन अनुपालन सूट')}
                   </h2>
                   <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
-                    Manage diesel expense slips, launch regional driver mobile app, and monitor RTO fitness &amp; insurance expiry alerts.
+                    {t('Manage diesel expense slips, launch regional driver mobile app, and monitor RTO fitness & insurance expiry alerts.', 'डीजल पर्ची प्रबंधित करें, क्षेत्रीय ड्राइवर मोबाइल ऐप खोलें, और आरटीओ फिटनेस व बीमा समाप्ति अलर्ट देखें।')}
                   </p>
                 </div>
 
@@ -2420,7 +2422,7 @@ export default function Dashboard() {
                       boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
                     }}
                   >
-                    <span>📱</span> Launch Driver Mobile Mode (/driver) ↗
+                    <span>📱</span> {t('Launch Driver Mobile Mode (/driver) ↗', 'ड्राइवर मोबाइल मोड शुरू करें (/driver) ↗')}
                   </a>
                 </div>
               </div>
@@ -2444,11 +2446,11 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        1. Driver Trip Expenses
+                        {t('1. Driver Trip Expenses', '1. चालक ट्रिप खर्च')}
                         <span style={{ background: '#10b981', color: '#022c22', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>P&amp;L</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                        Review diesel pump receipts, Fastag tolls, puncture repairs, and halting bhatta. 1-click Approve/Reject with real-time Net Profit margin engine.
+                        {t('Review diesel pump receipts, Fastag tolls, puncture repairs, and halting bhatta. 1-click Approve/Reject with real-time Net Profit margin engine.', 'डीजल पर्ची, फास्टैग टोल और चालक भत्ते की समीक्षा करें। रियल-टाइम शुद्ध लाभ मार्जिन के साथ 1-क्लिक में स्वीकार/अस्वीकार करें।')}
                       </p>
                     </div>
                   </div>
@@ -2472,7 +2474,7 @@ export default function Dashboard() {
                         gap: '6px'
                       }}
                     >
-                      Audit Petty Cash &amp; P&amp;L →
+                      {t('Audit Petty Cash & P&L →', 'खर्च और लाभ-हानि जांचें →')}
                     </button>
                   </div>
                 </div>
@@ -2494,11 +2496,11 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        2. Mobile Driver Mode
+                        {t('2. Mobile Driver Mode', '2. मोबाइल चालक मोड')}
                         <span style={{ background: '#3b82f6', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>HINDI/ENG</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                        Highway smartphone interface at <code>/driver</code>: Odometer start, 1-tap Google Maps GPS, Camera slip upload, Consignee OTP &amp; POD signature.
+                        {t('Highway smartphone interface at /driver: Odometer start, 1-tap Google Maps GPS, Camera slip upload, Consignee OTP & POD signature.', '/driver पर मोबाइल इंटरफेस: ओडोमीटर रीडिंग, 1-टैप गूगल मैप्स जीपीएस, कैमरा रसीद अपलोड, ओटीपी और डिजिटल हस्ताक्षर।')}
                       </p>
                     </div>
                   </div>
@@ -2523,7 +2525,7 @@ export default function Dashboard() {
                         gap: '6px'
                       }}
                     >
-                      Open Mobile App (/driver) ↗
+                      {t('Open Mobile App (/driver) ↗', 'मोबाइल ऐप खोलें (/driver) ↗')}
                     </a>
                     <button
                       type="button"
@@ -2562,11 +2564,11 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        3. Maintenance &amp; Fitness Radar
+                        {t('3. Maintenance & Fitness Radar', '3. रखरखाव और फिटनेस रडार')}
                         <span style={{ background: '#ef4444', color: '#fef2f2', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>ALERTS</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                        Track Commercial Insurance, Fitness, PUC, and National Permit expiries + Engine oil KM countdown. 1-Click WhatsApp renewal alerts to drivers.
+                        {t('Track Commercial Insurance, Fitness, PUC, and National Permit expiries + Engine oil KM countdown. 1-Click WhatsApp renewal alerts to drivers.', 'वाहन बीमा, फिटनेस, पीयूसी और राष्ट्रीय परमिट समाप्ति ट्रैक करें। ड्राइवरों को 1-क्लिक व्हाट्सएप नवीनीकरण अलर्ट भेजें।')}
                       </p>
                     </div>
                   </div>
@@ -2590,7 +2592,7 @@ export default function Dashboard() {
                         gap: '6px'
                       }}
                     >
-                      Open Compliance Radar →
+                      {t('Open Compliance Radar →', 'अनुपालन रडार खोलें →')}
                     </button>
                   </div>
                 </div>
@@ -2601,8 +2603,8 @@ export default function Dashboard() {
             <div className="admin-charts-grid">
               <div className="admin-chart-card">
                 <div className="admin-chart-head">
-                  <h3>Monthly Bookings Trend</h3>
-                  <div className="admin-chart-sub">Showing 2026 Monthly Volume</div>
+                  <h3>{t('Monthly Bookings Trend', 'मासिक बुकिंग रुझान')}</h3>
+                  <div className="admin-chart-sub">{t('Showing 2026 Monthly Volume', '2026 मासिक मात्रा प्रदर्शन')}</div>
                 </div>
 
                 <div className="admin-bar-chart-container">
@@ -2637,8 +2639,8 @@ export default function Dashboard() {
 
               <div className="admin-chart-card">
                 <div className="admin-chart-head">
-                  <h3>Shipment Status Breakdown</h3>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>245 Active Units</span>
+                  <h3>{t('Shipment Status Breakdown', 'शिपमेंट स्थिति विवरण')}</h3>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>{t('245 Active Units', '245 सक्रिय इकाइयाँ')}</span>
                 </div>
 
                 <div className="admin-donut-wrapper">
@@ -2686,29 +2688,29 @@ export default function Dashboard() {
 
                     <div className="admin-donut-center">
                       <strong>245</strong>
-                      <small>Total Units</small>
+                      <small>{t('Total Units', 'कुल इकाइयाँ')}</small>
                     </div>
                   </div>
 
                   <div className="admin-donut-legend">
                     <div className="admin-legend-item">
                       <div className="admin-legend-dot delivered" />
-                      <span>Delivered</span>
+                      <span>{t('Delivered', 'वितरित')}</span>
                       <strong className="admin-legend-val">40%</strong>
                     </div>
                     <div className="admin-legend-item">
                       <div className="admin-legend-dot transit" />
-                      <span>In Transit</span>
+                      <span>{t('In Transit', 'मार्ग में')}</span>
                       <strong className="admin-legend-val">35%</strong>
                     </div>
                     <div className="admin-legend-item">
                       <div className="admin-legend-dot pending" />
-                      <span>Pending</span>
+                      <span>{t('Pending', 'लंबित')}</span>
                       <strong className="admin-legend-val">15%</strong>
                     </div>
                     <div className="admin-legend-item">
                       <div className="admin-legend-dot cancelled" />
-                      <span>Cancelled</span>
+                      <span>{t('Cancelled', 'रद्द')}</span>
                       <strong className="admin-legend-val">10%</strong>
                     </div>
                   </div>
@@ -2814,8 +2816,8 @@ export default function Dashboard() {
           <div className="admin-content-pad">
             <div className="admin-page-title-row">
               <div>
-                <h1>Manage Customer Bookings</h1>
-                <p>Consignments, schedules, and carrier allocations</p>
+                <h1>{t('Manage Customer Bookings', 'ग्राहक बुकिंग प्रबंधन')}</h1>
+                <p>{t('Consignments, schedules, and carrier allocations', 'कंसाइनमेंट, शेड्यूलिंग और वाहन आवंटन')}</p>
               </div>
 
               <div className="admin-title-actions">
@@ -2825,7 +2827,7 @@ export default function Dashboard() {
                   style={{ background: '#0284c7' }}
                   onClick={() => setShowManualBiltyModal(true)}
                 >
-                  + Manual Bilty (Counter Booking)
+                  {t('+ Manual Bilty (Counter Booking)', '+ मैन्युअल बिल्टी (काउंटर बुकिंग)')}
                 </button>
                 <button type="button" className="admin-btn-export" onClick={exportBookingsToCSV}>
                   Export CSV
@@ -2861,12 +2863,12 @@ export default function Dashboard() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th>Booking No</th>
-                    <th>Customer</th>
-                    <th>Route</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>{t('Booking No', 'बुकिंग सं.')}</th>
+                    <th>{t('Customer', 'ग्राहक')}</th>
+                    <th>{t('Route', 'मार्ग')}</th>
+                    <th>{t('Date', 'दिनांक')}</th>
+                    <th>{t('Status', 'स्थिति')}</th>
+                    <th>{t('Actions', 'कार्रवाई')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -3360,7 +3362,7 @@ export default function Dashboard() {
                     <th>Origin → Destination</th>
                     <th>Driver &amp; Vehicle</th>
                     <th>Current Checkpoint</th>
-                    <th>Status</th>
+                    <th>{t('Status', 'स्थिति')}</th>
                     <th>Dispatch Action</th>
                   </tr>
                 </thead>
@@ -3515,7 +3517,7 @@ export default function Dashboard() {
                     <th>Driving License (DL)</th>
                     <th>Base Hub</th>
                     <th>Assigned Vehicle</th>
-                    <th>Status</th>
+                    <th>{t('Status', 'स्थिति')}</th>
                     <th>Trips</th>
                   </tr>
                 </thead>
@@ -3654,7 +3656,7 @@ export default function Dashboard() {
                     <th>Payload Capacity</th>
                     <th>Assigned Terminal</th>
                     <th>Fuel Level</th>
-                    <th>Status</th>
+                    <th>{t('Status', 'स्थिति')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -4016,7 +4018,7 @@ export default function Dashboard() {
                     <th>Personnel</th>
                     <th>Email Address</th>
                     <th>Role Privilege</th>
-                    <th>Status</th>
+                    <th>{t('Status', 'स्थिति')}</th>
                     <th>Super Admin Rights Delegation</th>
                   </tr>
                 </thead>
@@ -4979,7 +4981,7 @@ export default function Dashboard() {
                     <th>Consignment Ref</th>
                     <th>Category &amp; Subject</th>
                     <th>Priority</th>
-                    <th>Status</th>
+                    <th>{t('Status', 'स्थिति')}</th>
                     <th>Action</th>
                   </tr>
                 </thead>

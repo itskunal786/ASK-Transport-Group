@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import PublicNavbar from '../../components/PublicNavbar';
 import PublicFooter from '../../components/PublicFooter';
 import './LandingPage.css';
@@ -19,6 +20,7 @@ interface TrackingResult {
 
 export default function LandingPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -168,7 +170,7 @@ export default function LandingPage() {
           <div className="landing-hero-content">
             <div className="landing-badge">
               <span className="badge-pulse" />
-              Trusted Logistics Partner for 10,000+ Businesses Across India
+              {t('Trusted Logistics Partner for 10,000+ Businesses Across India', 'भारत भर के 10,000+ व्यवसायों का विश्वसनीय लॉजिस्टिक्स पार्टनर')}
             </div>
             <h1 className="landing-hero-title">
               Move Together.<br />
@@ -181,7 +183,7 @@ export default function LandingPage() {
 
             <div className="hero-cta-buttons">
               <Link to={user ? "/book" : "/login"} className="hero-btn-primary">
-                📦 Book a Shipment &rarr;
+                {t('📦 Book a Shipment →', '📦 शिपमेंट बुक करें →')}
               </Link>
               <button
                 type="button"
@@ -191,24 +193,24 @@ export default function LandingPage() {
                   document.getElementById('tracking')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                ⚡ Calculate Tariff &rarr;
+                {t('⚡ Calculate Tariff →', '⚡ भाड़ा दर गणना करें →')}
               </button>
             </div>
 
             <div className="landing-hero-stats">
               <div className="hero-stat-item">
                 <strong>19,000+</strong>
-                <span>PinCodes Covered</span>
+                <span>{t('PinCodes Covered', 'पिनकोड सेवा उपलब्ध')}</span>
               </div>
               <div className="hero-stat-sep" />
               <div className="hero-stat-item">
                 <strong>99.4%</strong>
-                <span>On-Time Delivery</span>
+                <span>{t('On-Time Delivery', 'समय पर डिलीवरी')}</span>
               </div>
               <div className="hero-stat-sep" />
               <div className="hero-stat-item">
                 <strong>500+</strong>
-                <span>Fleet Vehicles</span>
+                <span>{t('Fleet Vehicles', 'वाहन बेड़ा')}</span>
               </div>
             </div>
           </div>
@@ -226,7 +228,7 @@ export default function LandingPage() {
                   <circle cx="12" cy="12" r="6" />
                   <circle cx="12" cy="12" r="2" />
                 </svg>
-                Track Shipment
+                {t('Track Shipment', 'शिपमेंट ट्रैक करें')}
               </button>
 
               <button
@@ -244,7 +246,7 @@ export default function LandingPage() {
                   <line x1="10" y1="12" x2="10" y2="12" />
                   <line x1="14" y1="12" x2="18" y2="12" />
                 </svg>
-                Rate Calculator
+                {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
               </button>
             </div>
 
@@ -252,7 +254,7 @@ export default function LandingPage() {
               {activeHeroTab === 'track' ? (
                 <div className="widget-track-panel">
                   <form onSubmit={handleQuickTrack} className="quick-track-form">
-                    <label>Enter Waybill, Bilty, or Booking Number</label>
+                    <label>{t('Enter Waybill, Bilty, or Booking Number', 'वे-बिल, बिल्टी या बुकिंग संख्या दर्ज करें')}</label>
                     <div className="quick-track-input-group">
                       <input
                         type="text"
@@ -262,7 +264,7 @@ export default function LandingPage() {
                         required
                       />
                       <button type="submit" className="quick-track-submit-btn" disabled={trackLoading}>
-                        {trackLoading ? 'Searching...' : 'Track Now →'}
+                        {trackLoading ? t('Searching...', 'खोज रहे हैं...') : t('Track Now →', 'ट्रैक करें →')}
                       </button>
                     </div>
                   </form>

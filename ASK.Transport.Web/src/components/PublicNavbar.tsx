@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 
@@ -10,6 +11,7 @@ interface PublicNavbarProps {
 
 export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [showPortalMenu, setShowPortalMenu] = useState(false);
@@ -65,9 +67,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             to="/services"
             className={`landing-nav-link ${location.pathname === '/services' ? 'active' : ''}`}
             style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
-          >
-            Services
-          </Link>
+          >{t('Services', 'सेवाएं')}</Link>
 
           <a
             href="#calculator"
@@ -77,9 +77,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               e.preventDefault();
               handleRateCalcClick();
             }}
-          >
-            Rate Calculator
-          </a>
+          >{t('Rate Calculator', 'भाड़ा कैलकुलेटर')}</a>
 
           <a
             href="#network"
@@ -89,9 +87,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               e.preventDefault();
               handleNetworkClick();
             }}
-          >
-            Pan-India Network
-          </a>
+          >{t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}</a>
 
           <a
             href="#tracking"
@@ -101,17 +97,13 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               e.preventDefault();
               handleTrackClick();
             }}
-          >
-            Track Consignment
-          </a>
+          >{t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}</a>
 
           <Link
             to="/about"
             className={`landing-nav-link ${location.pathname === '/about' ? 'active' : ''}`}
             style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
-          >
-            About Us
-          </Link>
+          >{t('About Us', 'हमारे बारे में')}</Link>
 
           <Link
             to="/driver"
@@ -129,7 +121,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               gap: '5px'
             }}
           >
-            <span>📱</span> Driver App
+            <span>📱</span> {t('Driver App', 'ड्राइवर ऐप')}
           </Link>
         </nav>
 
@@ -152,7 +144,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 border: 'none',
               }}
             >
-              <span>Portal Login</span>
+              <span>{t('Portal Login', 'पोर्टल लॉगिन')}</span>
               <span style={{ fontSize: '0.72rem' }}>▾</span>
             </button>
 
@@ -200,7 +192,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         letterSpacing: '0.05em',
                       }}
                     >
-                      CHOOSE PORTAL ACCESS
+                      {t('CHOOSE PORTAL ACCESS', 'पोर्टल एक्सेस चुनें')}
                     </span>
                     <p
                       style={{
@@ -209,7 +201,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         color: 'var(--color-text-secondary, #64748b)',
                       }}
                     >
-                      Select account type to enter login portal
+                      {t('Select account type to enter login portal', 'लॉगिन करने के लिए खाता प्रकार चुनें')}
                     </p>
                   </div>
 
@@ -239,7 +231,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           color: 'var(--color-text-primary, #0f172a)',
                         }}
                       >
-                        Customer / Business Login
+                        {t('Customer / Business Login', 'ग्राहक / व्यवसाय लॉगिन')}
                       </strong>
                       <small
                         style={{
@@ -247,7 +239,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           color: 'var(--color-text-secondary, #64748b)',
                         }}
                       >
-                        Book shipments, Bilty LR & invoices
+                        {t('Book shipments, Bilty LR & invoices', 'शिपमेंट बुकिंग, बिल्टी और बिल')}
                       </small>
                     </div>
                   </Link>
@@ -279,7 +271,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           color: '#059669',
                         }}
                       >
-                        Mobile Driver Mode ↗
+                        {t('Mobile Driver Mode ↗', 'मोबाइल चालक मोड ↗')}
                       </strong>
                       <small
                         style={{
@@ -287,7 +279,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           color: 'var(--color-text-secondary, #64748b)',
                         }}
                       >
-                        Hindi / English console, diesel slip & POD
+                        {t('Hindi / English console, diesel slip & POD', 'हिंदी / अंग्रेजी कंसोल, डीजल पर्ची और पीओडी')}
                       </small>
                     </div>
                   </Link>
@@ -318,7 +310,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           color: 'var(--color-text-primary, #0f172a)',
                         }}
                       >
-                        Admin &amp; Super Admin Login
+                        {t('Admin & Super Admin Login', 'एडमिन और सुपर एडमिन लॉगिन')}
                       </strong>
                       <small
                         style={{
@@ -326,7 +318,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           color: 'var(--color-text-secondary, #64748b)',
                         }}
                       >
-                        Fleet dispatch, audit trail &amp; controls
+                        {t('Fleet dispatch, audit trail & controls', 'फ्लीट डिस्पैच, ऑडिट लॉग और नियंत्रण')}
                       </small>
                     </div>
                   </Link>
@@ -350,7 +342,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                       marginTop: '4px',
                     }}
                   >
-                    + Create New Client Account
+                    {t('+ Create New Client Account', '+ नया क्लाइंट खाता बनाएं')}
                   </Link>
 
                   {/* Active session section */}
@@ -369,7 +361,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           marginBottom: '6px',
                         }}
                       >
-                        Active session: <strong>{user.name}</strong> ({user.role})
+                        {t('Active session: ', 'सक्रिय सत्र: ')}<strong>{user.name}</strong> ({user.role})
                       </div>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <Link
@@ -391,7 +383,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                             textDecoration: 'none',
                           }}
                         >
-                          Open Dashboard &rarr;
+                          {t('Open Dashboard →', 'डैशबोर्ड खोलें →')}
                         </Link>
                         <button
                           type="button"
@@ -422,9 +414,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             )}
           </div>
 
-          <Link to="/login" className="landing-btn-login">
-            Sign In
-          </Link>
+          <Link to="/login" className="landing-btn-login">{t('Sign In', 'साइन इन')}</Link>
         </div>
       </div>
     </header>
