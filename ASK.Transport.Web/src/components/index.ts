@@ -58,3 +58,4 @@ export { default as ThemeToggle } from './ThemeToggle';
 export { default as AccessRestrictedNotice } from './AccessRestrictedNotice';
 export { default as PublicNavbar } from './PublicNavbar';
 export { default as PublicFooter } from './PublicFooter';
+export { default as LanguageToggle } from './LanguageToggle';

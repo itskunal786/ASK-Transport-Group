@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
 
 interface PublicNavbarProps {
   onSwitchHeroTab?: (tab: 'track' | 'quote') => void;
@@ -134,6 +135,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
 
         {/* RIGHT ACTIONS */}
         <div className="landing-header-actions">
+          <LanguageToggle />
           <ThemeToggle />
 
           {/* PORTAL LOGIN DROPDOWN */}

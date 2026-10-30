@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
+import LanguageToggle from '../../components/LanguageToggle';
 import {
   getAdminOperationsSummary,
   getAdminUsers,
@@ -2204,6 +2205,7 @@ export default function Dashboard() {
             </button>
           </div>
           <div className="admin-top-profile">
+            <LanguageToggle />
             <ThemeToggle />
 
             <div className="admin-profile-pill">

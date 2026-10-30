@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Receipt, 
   Fuel, 
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { DriverTripSettlement } from '../types/transportOperations';
 import { getAllDriverSettlements, approveDriverSettlement, createDriverSettlement } from '../api/driverSettlementApi';
+import { useLanguage } from '../context/LanguageContext';
 
 const SEED_SETTLEMENTS: DriverTripSettlement[] = [
   {
@@ -35,7 +36,7 @@ const SEED_SETTLEMENTS: DriverTripSettlement[] = [
     actualKmpl: 4.4,
     dieselLitersActual: 260.9,
     dieselLitersStandard: 273.3,
-    dieselPenaltyBonusInr: 1116, // Bonus for higher mileage
+    dieselPenaltyBonusInr: 1116,
     advanceCashGivenInr: 12000,
     dieselCardAdvanceInr: 23500,
     fastagTollActualInr: 4320,
@@ -63,7 +64,7 @@ const SEED_SETTLEMENTS: DriverTripSettlement[] = [
     actualKmpl: 3.7,
     dieselLitersActual: 400.0,
     dieselLitersStandard: 360.9,
-    dieselPenaltyBonusInr: -3519, // Diesel penalty deduction
+    dieselPenaltyBonusInr: -3519,
     advanceCashGivenInr: 18000,
     dieselCardAdvanceInr: 32000,
     fastagTollActualInr: 5850,
@@ -109,6 +110,7 @@ const SEED_SETTLEMENTS: DriverTripSettlement[] = [
 ];
 
 export const DriverTripSettlementHisaab: React.FC = () => {
+  const { t, language } = useLanguage();
   const [settlements, setSettlements] = useState<DriverTripSettlement[]>(SEED_SETTLEMENTS);
   const [selectedSettlement, setSelectedSettlement] = useState<DriverTripSettlement>(SEED_SETTLEMENTS[0]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -164,28 +166,27 @@ export const DriverTripSettlementHisaab: React.FC = () => {
       if (selectedSettlement.id === id) {
         setSelectedSettlement(prev => ({ ...prev, status: 'SETTLED_CASH_PAID', settledDate: new Date().toISOString() }));
       }
-      showToast('success', `हिसाब पर्ची ${selectedSettlement.settlementNo} सफलतापूर्वक स्वीकृत व फाइनल सेटल की गई!`);
+      showToast('success', t(`Trip settlement ${selectedSettlement.settlementNo} approved and finalized!`, `हिसाब पर्ची ${selectedSettlement.settlementNo} सफलतापूर्वक स्वीकृत व फाइनल सेटल की गई!`));
     } catch {
-      // Local fallback for offline/preview
       setSettlements(prev => prev.map(s => s.id === id ? { ...s, status: 'SETTLED_CASH_PAID', settledDate: new Date().toISOString() } : s));
       if (selectedSettlement.id === id) {
         setSelectedSettlement(prev => ({ ...prev, status: 'SETTLED_CASH_PAID', settledDate: new Date().toISOString() }));
       }
-      showToast('success', `हिसाब पर्ची ${selectedSettlement.settlementNo} स्वीकृत व फाइनल सेटल की गई!`);
+      showToast('success', t(`Trip settlement ${selectedSettlement.settlementNo} approved and finalized!`, `हिसाब पर्ची ${selectedSettlement.settlementNo} स्वीकृत व फाइनल सेटल की गई!`));
     }
   };
 
   const handleCreateNew = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDriver.trim()) {
-      showToast('error', 'कृपया ड्राइवर का नाम दर्ज करें!');
+      showToast('error', t('Please enter driver name!', 'कृपया ड्राइवर का नाम दर्ज करें!'));
       return;
     }
 
     const stdDiesel = Number((newKm / newStdKmpl).toFixed(1));
     const actDiesel = Number((newKm / newActKmpl).toFixed(1));
     const dieselDiffLiters = Number((stdDiesel - actDiesel).toFixed(1));
-    const fuelBonusPenalty = Math.round(dieselDiffLiters * 90); // ~90 Rs per liter diesel
+    const fuelBonusPenalty = Math.round(dieselDiffLiters * 90);
 
     const totalAuthExpenses = Number(newFastag) + Number(newBhatta) + Number(newLabor) + Number(newMisc);
     const balance = totalAuthExpenses + fuelBonusPenalty - Number(newCashAdv);
@@ -231,7 +232,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
     setSettlements(prev => [newItem, ...prev]);
     setSelectedSettlement(newItem);
     setShowNewModal(false);
-    showToast('success', `नई हिसाब पर्ची ${newItem.settlementNo} सफलतापूर्वक बनाई गई!`);
+    showToast('success', t(`New trip settlement ${newItem.settlementNo} created successfully!`, `नई हिसाब पर्ची ${newItem.settlementNo} सफलतापूर्वक बनाई गई!`));
   };
 
   const filteredSettlements = settlements.filter(s => {
@@ -272,13 +273,16 @@ export const DriverTripSettlementHisaab: React.FC = () => {
         <div>
           <div className="flex items-center space-x-2 text-amber-300 text-xs font-bold tracking-wider uppercase">
             <Receipt className="w-4 h-4" />
-            <span>Driver Trip Settlement & Hisaab Parchi Engine</span>
+            <span>Driver Trip Settlement & Voucher Engine</span>
           </div>
           <h1 className="text-2xl font-bold mt-1 text-white">
-            ड्राइवर ट्रिप हिसाब व वाउचर सेटलमेंट (Hisaab Parchi)
+            {t('Driver Trip Settlement & Voucher Audit', 'ड्राइवर ट्रिप हिसाब व वाउचर सेटलमेंट')}
           </h1>
           <p className="text-amber-100/80 text-sm mt-1">
-            डीजल माइलेज बोनस/पेनल्टी, फ़ास्टैग टोल, ड्राइवर भत्ता व अग्रिम रोकड़ का 100% पारदर्शी ऑटोमैटिक हिसाब।
+            {t(
+              'Automated fuel mileage bonus/penalty, Fastag tolls, driver bhatta allowances and cash advance settlement.',
+              'डीजल माइलेज बोनस/पेनल्टी, फ़ास्टैग टोल, ड्राइवर भत्ता व अग्रिम रोकड़ का 100% पारदर्शी ऑटोमैटिक हिसाब।'
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -288,14 +292,14 @@ export const DriverTripSettlementHisaab: React.FC = () => {
             className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>रिफ्रेश</span>
+            <span>{t('Refresh', 'रिफ्रेश')}</span>
           </button>
           <button
             onClick={() => setShowNewModal(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-xl text-sm shadow-md transition"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>नया ट्रिप हिसाब बनाएं</span>
+            <span>{t('New Trip Settlement', 'नया ट्रिप हिसाब बनाएं')}</span>
           </button>
         </div>
       </div>
@@ -304,9 +308,13 @@ export const DriverTripSettlementHisaab: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">कुल हिसाब पर्चियां</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Total Settlements', 'कुल हिसाब पर्चियां')}
+            </span>
             <div className="text-2xl font-bold text-stone-800 dark:text-stone-100 mt-0.5">{settlements.length}</div>
-            <span className="text-xs text-amber-600 dark:text-amber-400 mt-1 inline-block">फ्लीट ट्रिप लेजर सक्रिय</span>
+            <span className="text-xs text-amber-600 dark:text-amber-400 mt-1 inline-block">
+              {t('Active Fleet Ledger', 'फ्लीट ट्रिप लेजर सक्रिय')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
             <Receipt className="w-6 h-6" />
@@ -315,9 +323,13 @@ export const DriverTripSettlementHisaab: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">पेंडिंग स्वीकृति (Drafts)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Pending Approvals (Drafts)', 'पेंडिंग स्वीकृति (Drafts)')}
+            </span>
             <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-0.5">{pendingCount}</div>
-            <span className="text-xs text-stone-400 mt-1 inline-block">अकाउंट्स वेरिफिकेशन शेष</span>
+            <span className="text-xs text-stone-400 mt-1 inline-block">
+              {t('Awaiting Accounts Audit', 'अकाउंट्स वेरिफिकेशन शेष')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center text-yellow-600">
             <AlertTriangle className="w-6 h-6" />
@@ -326,9 +338,13 @@ export const DriverTripSettlementHisaab: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">ड्राइवर को देय राशि (Payable)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Net Payable to Driver', 'ड्राइवर को देय राशि (Payable)')}
+            </span>
             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">₹{totalPayableAll.toLocaleString('en-IN')}</div>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 inline-block">रिलीज़ हेतु तैयार</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 inline-block">
+              {t('Ready for Disbursement', 'रिलीज़ हेतु तैयार')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600">
             <IndianRupee className="w-6 h-6" />
@@ -337,9 +353,13 @@ export const DriverTripSettlementHisaab: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">ड्राइवर से रिकवरेबल (कटौती)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Recoverable from Driver', 'ड्राइवर से रिकवरेबल (कटौती)')}
+            </span>
             <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">₹{totalRecoverableAll.toLocaleString('en-IN')}</div>
-            <span className="text-xs text-rose-500 mt-1 inline-block">अगली ट्रिप से समायोजित</span>
+            <span className="text-xs text-rose-500 mt-1 inline-block">
+              {t('Adjusted in Next Trip', 'अगली ट्रिप से समायोजित')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center text-rose-600">
             <Wallet className="w-6 h-6" />
@@ -358,7 +378,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                 <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="गाड़ी संख्या / ट्रिप शीट / ड्राइवर नाम खोजें..."
+                  placeholder={t('Search vehicle no / trip sheet / driver...', 'गाड़ी संख्या / ट्रिप शीट / ड्राइवर नाम खोजें...')}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-stone-800 dark:text-stone-100"
@@ -376,9 +396,9 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                         : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
                     }`}
                   >
-                    {st === 'ALL' ? 'सभी पर्चियां' :
-                     st === 'DRAFT_PENDING_APPROVAL' ? 'पेंडिंग ड्राफ्ट' :
-                     st === 'SETTLED_CASH_PAID' ? 'फाइनल सेटल्ड' : 'ऑडिट डिस्प्यूट'}
+                    {st === 'ALL' ? t('All Settlements', 'सभी पर्चियां') :
+                     st === 'DRAFT_PENDING_APPROVAL' ? t('Pending Drafts', 'पेंडिंग ड्राफ्ट') :
+                     st === 'SETTLED_CASH_PAID' ? t('Settled & Paid', 'फाइनल सेटल्ड') : t('Disputed Audit', 'ऑडिट आपत्ति')}
                   </button>
                 ))}
               </div>
@@ -386,7 +406,9 @@ export const DriverTripSettlementHisaab: React.FC = () => {
 
             <div className="mt-4 space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
               {filteredSettlements.length === 0 ? (
-                <div className="text-center py-8 text-stone-400 text-sm">कोई हिसाब पर्ची नहीं मिली</div>
+                <div className="text-center py-8 text-stone-400 text-sm">
+                  {t('No trip settlements found', 'कोई हिसाब पर्ची नहीं मिली')}
+                </div>
               ) : (
                 filteredSettlements.map(item => {
                   const isSelected = selectedSettlement.id === item.id;
@@ -409,8 +431,8 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                           item.status === 'DISPUTED_AUDIT' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300' :
                           'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
                         }`}>
-                          {item.status === 'SETTLED_CASH_PAID' ? 'सफल भुगतान' :
-                           item.status === 'DISPUTED_AUDIT' ? 'ऑडिट आपत्ति' : 'स्वीकृति लंबित'}
+                          {item.status === 'SETTLED_CASH_PAID' ? t('Settled & Paid', 'सफल भुगतान') :
+                           item.status === 'DISPUTED_AUDIT' ? t('Disputed', 'ऑडिट आपत्ति') : t('Pending Approval', 'स्वीकृति लंबित')}
                         </span>
                       </div>
 
@@ -427,7 +449,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                       <div className="mt-1 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 border-t border-stone-100 dark:border-stone-800 pt-2">
                         <span>{item.originCity.split(' ')[0]} ➔ {item.destinationCity.split(' ')[0]}</span>
                         <span className={`font-bold ${item.netPayableToDriverInr > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {item.netPayableToDriverInr > 0 ? `देय: ₹${item.netPayableToDriverInr}` : `वसूली: ₹${item.recoverableFromDriverInr}`}
+                          {item.netPayableToDriverInr > 0 ? `${t('Payable', 'देय')}: ₹${item.netPayableToDriverInr}` : `${t('Recovery', 'वसूली')}: ₹${item.recoverableFromDriverInr}`}
                         </span>
                       </div>
                     </div>
@@ -446,7 +468,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <FileCheck2 className="w-5 h-5 text-amber-600" />
                 <h3 className="font-bold text-stone-800 dark:text-stone-100 text-sm">
-                  ड्राइवर ट्रिप हिसाब वाउचर • {selectedSettlement.settlementNo}
+                  {t('Trip Settlement Voucher', 'ड्राइवर ट्रिप हिसाब वाउचर')} • {selectedSettlement.settlementNo}
                 </h3>
               </div>
               <div className="flex items-center space-x-2">
@@ -455,7 +477,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>पर्ची प्रिंट / PDF</span>
+                  <span>{t('Print Voucher / PDF', 'पर्ची प्रिंट / PDF')}</span>
                 </button>
                 {selectedSettlement.status !== 'SETTLED_CASH_PAID' && (
                   <button
@@ -463,7 +485,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>फाइनल अप्रूव व भुगतान करें</span>
+                    <span>{t('Approve & Release Balance', 'फाइनल अप्रूव व भुगतान करें')}</span>
                   </button>
                 )}
               </div>
@@ -475,20 +497,20 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               {/* Trip Identity Card */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/60 text-xs">
                 <div>
-                  <span className="text-stone-400 block">गाड़ी संख्या</span>
+                  <span className="text-stone-400 block">{t('Vehicle Plate No', 'गाड़ी संख्या')}</span>
                   <span className="font-bold text-stone-800 dark:text-stone-200 text-sm">{selectedSettlement.vehicleNumber}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block">ड्राइवर नाम</span>
+                  <span className="text-stone-400 block">{t('Driver Name', 'ड्राइवर नाम')}</span>
                   <span className="font-semibold text-stone-800 dark:text-stone-200">{selectedSettlement.driverName}</span>
                   <span className="text-[11px] text-stone-500 block">{selectedSettlement.driverPhone}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block">ट्रिप शीट संख्या</span>
+                  <span className="text-stone-400 block">{t('Trip Sheet No', 'ट्रिप शीट संख्या')}</span>
                   <span className="font-mono font-medium text-stone-700 dark:text-stone-300">{selectedSettlement.tripSheetNo}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block">रूट एवं दूरी</span>
+                  <span className="text-stone-400 block">{t('Route & Distance', 'रूट एवं दूरी')}</span>
                   <span className="font-semibold text-stone-800 dark:text-stone-200">{selectedSettlement.originCity} ➔ {selectedSettlement.destinationCity}</span>
                   <span className="text-amber-600 dark:text-amber-400 block font-bold">{selectedSettlement.totalTripKm} KM</span>
                 </div>
@@ -499,41 +521,43 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                 <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
                   <div className="flex items-center space-x-2">
                     <Fuel className="w-4 h-4 text-amber-600" />
-                    <span className="font-bold text-xs text-stone-800 dark:text-stone-200">डीजल खपत व माइलेज ऑडिट (Fuel KMPL Ledger)</span>
+                    <span className="font-bold text-xs text-stone-800 dark:text-stone-200">
+                      {t('Fuel Economy & Mileage Ledger', 'डीजल खपत व माइलेज ऑडिट (Fuel KMPL Ledger)')}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1 text-xs">
                     <Gauge className="w-3.5 h-3.5 text-stone-400" />
-                    <span className="text-stone-500">मानक (Standard): {selectedSettlement.standardKmpl} KMPL</span>
+                    <span className="text-stone-500">{t('Standard KMPL', 'मानक')}: {selectedSettlement.standardKmpl} KMPL</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 text-xs">
                   <div className="p-2.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                    <span className="text-stone-400 text-[11px] block">वास्तविक माइलेज (Actual)</span>
+                    <span className="text-stone-400 text-[11px] block">{t('Actual Mileage', 'वास्तविक माइलेज (Actual)')}</span>
                     <span className={`text-base font-bold ${selectedSettlement.actualKmpl >= selectedSettlement.standardKmpl ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {selectedSettlement.actualKmpl} KMPL
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                    <span className="text-stone-400 text-[11px] block">डीजल खपत (Liters)</span>
+                    <span className="text-stone-400 text-[11px] block">{t('Fuel Consumed', 'डीजल खपत (Liters)')}</span>
                     <span className="text-base font-bold text-stone-800 dark:text-stone-200">
                       {selectedSettlement.dieselLitersActual} L
                     </span>
-                    <span className="text-[10px] text-stone-400 block">लक्ष्य: {selectedSettlement.dieselLitersStandard} L</span>
+                    <span className="text-[10px] text-stone-400 block">{t('Target', 'लक्ष्य')}: {selectedSettlement.dieselLitersStandard} L</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                    <span className="text-stone-400 text-[11px] block">डीजल कार्ड अग्रिम</span>
+                    <span className="text-stone-400 text-[11px] block">{t('Diesel Card Advance', 'डीजल कार्ड अग्रिम')}</span>
                     <span className="text-base font-bold text-stone-800 dark:text-stone-200">
                       ₹{selectedSettlement.dieselCardAdvanceInr.toLocaleString('en-IN')}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                    <span className="text-stone-400 text-[11px] block">माइलेज बोनस / पेनल्टी</span>
+                    <span className="text-stone-400 text-[11px] block">{t('Mileage Bonus / Penalty', 'माइलेज बोनस / पेनल्टी')}</span>
                     <span className={`text-base font-bold ${selectedSettlement.dieselPenaltyBonusInr >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {selectedSettlement.dieselPenaltyBonusInr >= 0 ? `+ ₹${selectedSettlement.dieselPenaltyBonusInr}` : `- ₹${Math.abs(selectedSettlement.dieselPenaltyBonusInr)}`}
                     </span>
                     <span className="text-[10px] text-stone-400 block">
-                      {selectedSettlement.dieselPenaltyBonusInr >= 0 ? 'बचत रिवार्ड' : 'अतिरिक्त खपत कटौती'}
+                      {selectedSettlement.dieselPenaltyBonusInr >= 0 ? t('Fuel Savings Bonus', 'बचत रिवार्ड') : t('Excess Fuel Penalty', 'अतिरिक्त खपत कटौती')}
                     </span>
                   </div>
                 </div>
@@ -544,16 +568,16 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-semibold border-b border-stone-200 dark:border-stone-700">
                     <tr>
-                      <th className="py-2.5 px-3">खर्च का विवरण (Trip Expense Head)</th>
-                      <th className="py-2.5 px-3">वेरिफिकेशन प्रकार</th>
-                      <th className="py-2.5 px-3 text-right">स्वीकृत राशि (Amount)</th>
+                      <th className="py-2.5 px-3">{t('Trip Expense Head', 'खर्च का विवरण (Trip Expense Head)')}</th>
+                      <th className="py-2.5 px-3">{t('Audit Verification', 'वेरिफिकेशन प्रकार')}</th>
+                      <th className="py-2.5 px-3 text-right">{t('Approved Amount', 'स्वीकृत राशि (Amount)')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-stone-700 dark:text-stone-300">
                     <tr>
                       <td className="py-2 px-3 flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                        <span>फ़ास्टैग इलेक्ट्रॉनिक टोल (Fastag Tolls)</span>
+                        <span>{t('Fastag Electronic Tolls', 'फ़ास्टैग इलेक्ट्रॉनिक टोल (Fastag Tolls)')}</span>
                       </td>
                       <td className="py-2 px-3 text-stone-500">NPCI Fastag API Live Log</td>
                       <td className="py-2 px-3 text-right font-medium">₹{selectedSettlement.fastagTollActualInr.toLocaleString('en-IN')}</td>
@@ -561,30 +585,30 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     <tr>
                       <td className="py-2 px-3 flex items-center gap-2">
                         <Receipt className="w-3.5 h-3.5 text-stone-400" />
-                        <span>ड्राइवर भोजन व दैनिक भत्ता (Driver Daily Bhatta)</span>
+                        <span>{t('Driver Daily Allowance (Bhatta)', 'ड्राइवर भोजन व दैनिक भत्ता (Driver Daily Bhatta)')}</span>
                       </td>
-                      <td className="py-2 px-3 text-stone-500">प्रति दिन ₹700 मानक दर</td>
+                      <td className="py-2 px-3 text-stone-500">{t('Standard ₹700 / day rate', 'प्रति दिन ₹700 मानक दर')}</td>
                       <td className="py-2 px-3 text-right font-medium">₹{selectedSettlement.driverBhattaFoodInr.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr>
                       <td className="py-2 px-3 flex items-center gap-2">
                         <Truck className="w-3.5 h-3.5 text-stone-400" />
-                        <span>लोडिंग व अनलोडिंग हमाली खर्च (Loading Labor)</span>
+                        <span>{t('Loading / Unloading Labor Charges', 'लोडिंग व अनलोडिंग हमाली खर्च (Loading Labor)')}</span>
                       </td>
-                      <td className="py-2 px-3 text-stone-500">वेयरहाउस गेट रसीद सत्यापित</td>
+                      <td className="py-2 px-3 text-stone-500">{t('Warehouse Gate Receipt Verified', 'वेयरहाउस गेट रसीद सत्यापित')}</td>
                       <td className="py-2 px-3 text-right font-medium">₹{selectedSettlement.loadingUnloadingExpensesInr.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr>
                       <td className="py-2 px-3 flex items-center gap-2">
                         <ShieldCheck className="w-3.5 h-3.5 text-stone-400" />
-                        <span>रास्ते का आकस्मिक खर्च / पंचर / आरटीओ पर्ची</span>
+                        <span>{t('Enroute Emergency / RTO Charges', 'रास्ते का आकस्मिक खर्च / पंचर / आरटीओ पर्ची')}</span>
                       </td>
-                      <td className="py-2 px-3 text-stone-500">बिल रसीद अनुमोदित</td>
+                      <td className="py-2 px-3 text-stone-500">{t('Approved Bill Vouchers', 'बिल रसीद अनुमोदित')}</td>
                       <td className="py-2 px-3 text-right font-medium">₹{selectedSettlement.enrouteMaintenanceRtoInr.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr className="bg-stone-50 dark:bg-stone-800/50 font-bold text-stone-800 dark:text-stone-100">
-                      <td className="py-2.5 px-3">कुल अधिकृत ट्रिप खर्च (Total Authorized Expenses)</td>
-                      <td className="py-2.5 px-3 text-stone-400">Total Valid Claims</td>
+                      <td className="py-2.5 px-3">{t('Total Authorized Trip Expenses', 'कुल अधिकृत ट्रिप खर्च (Total Authorized Expenses)')}</td>
+                      <td className="py-2.5 px-3 text-stone-400">{t('Total Valid Claims', 'मान्य दावे')}</td>
                       <td className="py-2.5 px-3 text-right text-stone-900 dark:text-white">
                         ₹{selectedSettlement.totalAuthorizedExpensesInr.toLocaleString('en-IN')}
                       </td>
@@ -597,15 +621,17 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               <div className="p-4 rounded-xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="space-y-1 text-xs text-stone-600 dark:text-stone-300">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-stone-800 dark:text-stone-200">ट्रिप के आरंभ में दिया गया एडवांस रोकड़:</span>
+                    <span className="font-semibold text-stone-800 dark:text-stone-200">
+                      {t('Cash Advance Disbursed at Start:', 'ट्रिप के आरंभ में दिया गया एडवांस रोकड़:')}
+                    </span>
                     <span className="font-bold text-stone-900 dark:text-white">₹{selectedSettlement.advanceCashGivenInr.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="text-[11px] text-stone-500">
-                    ऑडिट किया गया: {selectedSettlement.auditedBy}
+                    {t('Audited by:', 'ऑडिट किया गया:')} {selectedSettlement.auditedBy}
                   </div>
                   {selectedSettlement.notes && (
                     <div className="text-[11px] italic text-stone-500">
-                      नोट: {selectedSettlement.notes}
+                      {t('Notes:', 'नोट:')} {selectedSettlement.notes}
                     </div>
                   )}
                 </div>
@@ -613,14 +639,18 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                 <div className="text-right">
                   {selectedSettlement.netPayableToDriverInr > 0 ? (
                     <div>
-                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block">ड्राइवर को देय अंतिम राशि (Net Balance to Pay)</span>
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block">
+                        {t('Net Balance Payable to Driver', 'ड्राइवर को देय अंतिम राशि (Net Balance to Pay)')}
+                      </span>
                       <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                         ₹{selectedSettlement.netPayableToDriverInr.toLocaleString('en-IN')}
                       </span>
                     </div>
                   ) : (
                     <div>
-                      <span className="text-xs text-rose-600 dark:text-rose-400 font-bold block">ड्राइवर से वसूली शेष (Recoverable Advance)</span>
+                      <span className="text-xs text-rose-600 dark:text-rose-400 font-bold block">
+                        {t('Recoverable Advance from Driver', 'ड्राइवर से वसूली शेष (Recoverable Advance)')}
+                      </span>
                       <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
                         ₹{selectedSettlement.recoverableFromDriverInr.toLocaleString('en-IN')}
                       </span>
@@ -643,7 +673,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
             <div className="p-4 bg-stone-100 border-b border-stone-200 flex items-center justify-between">
               <h3 className="font-bold text-sm text-stone-800 flex items-center gap-2">
                 <Printer className="w-4 h-4 text-amber-600" />
-                <span>प्रिंट प्रीव्यू • ड्राइवर ट्रिप हिसाब पर्ची (Official Voucher)</span>
+                <span>{t('Print Preview • Trip Expense Settlement Voucher', 'प्रिंट प्रीव्यू • ड्राइवर ट्रिप हिसाब पर्ची (Official Voucher)')}</span>
               </h3>
               <button 
                 onClick={() => setShowPrintModal(false)}
@@ -658,57 +688,61 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               <div className="text-center border-b pb-3">
                 <h2 className="text-base font-bold tracking-wider text-stone-950 uppercase">ASK TRANSPORT GROUP PVT. LTD.</h2>
                 <p className="text-[11px] text-stone-600">National Logistics & Fleet Management System</p>
-                <p className="text-[11px] font-bold text-amber-800 mt-1">ड्राइवर ट्रिप हिसाब पर्ची / TRIP EXPENSE SETTLEMENT SLIP</p>
+                <p className="text-[11px] font-bold text-amber-800 mt-1">
+                  {language === 'hi' ? 'ड्राइवर ट्रिप हिसाब पर्ची / TRIP EXPENSE SETTLEMENT SLIP' : 'TRIP EXPENSE SETTLEMENT VOUCHER'}
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-2 border-b pb-3 text-[11px]">
-                <div>पर्ची क्र: <b>{selectedSettlement.settlementNo}</b></div>
-                <div className="text-right">दिनांक: <b>{new Date().toLocaleDateString('en-IN')}</b></div>
-                <div>गाड़ी संख्या: <b>{selectedSettlement.vehicleNumber}</b></div>
-                <div className="text-right">ट्रिप शीट: <b>{selectedSettlement.tripSheetNo}</b></div>
-                <div>ड्राइवर: <b>{selectedSettlement.driverName}</b></div>
-                <div className="text-right">फोन: <b>{selectedSettlement.driverPhone}</b></div>
-                <div>रूट: <b>{selectedSettlement.originCity} ➔ {selectedSettlement.destinationCity}</b></div>
-                <div className="text-right">कुल किमी: <b>{selectedSettlement.totalTripKm} KM</b></div>
+                <div>{t('Settlement No:', 'पर्ची क्र:')} <b>{selectedSettlement.settlementNo}</b></div>
+                <div className="text-right">{t('Date:', 'दिनांक:')} <b>{new Date().toLocaleDateString('en-IN')}</b></div>
+                <div>{t('Vehicle No:', 'गाड़ी संख्या:')} <b>{selectedSettlement.vehicleNumber}</b></div>
+                <div className="text-right">{t('Trip Sheet:', 'ट्रिप शीट:')} <b>{selectedSettlement.tripSheetNo}</b></div>
+                <div>{t('Driver:', 'ड्राइवर:')} <b>{selectedSettlement.driverName}</b></div>
+                <div className="text-right">{t('Phone:', 'फोन:')} <b>{selectedSettlement.driverPhone}</b></div>
+                <div>{t('Route:', 'रूट:')} <b>{selectedSettlement.originCity} ➔ {selectedSettlement.destinationCity}</b></div>
+                <div className="text-right">{t('Total Distance:', 'कुल किमी:')} <b>{selectedSettlement.totalTripKm} KM</b></div>
               </div>
 
               {/* Table in slip */}
               <div className="border border-stone-300">
                 <div className="grid grid-cols-12 bg-stone-100 p-1.5 font-bold border-b border-stone-300 text-[11px]">
-                  <div className="col-span-8">खर्च विवरण (Expense Head)</div>
-                  <div className="col-span-4 text-right">रुपये (INR)</div>
+                  <div className="col-span-8">{t('Expense Head', 'खर्च विवरण (Expense Head)')}</div>
+                  <div className="col-span-4 text-right">{t('Amount (INR)', 'रुपये (INR)')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 border-b border-stone-200">
-                  <div className="col-span-8">फ़ास्टैग इलेक्ट्रॉनिक टोल</div>
+                  <div className="col-span-8">{t('Fastag Electronic Tolls', 'फ़ास्टैग इलेक्ट्रॉनिक टोल')}</div>
                   <div className="col-span-4 text-right">₹{selectedSettlement.fastagTollActualInr.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 border-b border-stone-200">
-                  <div className="col-span-8">ड्राइवर दैनिक भत्ता (Food/Bhatta)</div>
+                  <div className="col-span-8">{t('Driver Daily Allowance (Bhatta)', 'ड्राइवर दैनिक भत्ता (Food/Bhatta)')}</div>
                   <div className="col-span-4 text-right">₹{selectedSettlement.driverBhattaFoodInr.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 border-b border-stone-200">
-                  <div className="col-span-8">लोडिंग / अनलोडिंग हमाली खर्च</div>
+                  <div className="col-span-8">{t('Loading / Unloading Labor', 'लोडिंग / अनलोडिंग हमाली खर्च')}</div>
                   <div className="col-span-4 text-right">₹{selectedSettlement.loadingUnloadingExpensesInr.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 border-b border-stone-200">
-                  <div className="col-span-8">रास्ते का आपातकालीन खर्च / आरटीओ</div>
+                  <div className="col-span-8">{t('Enroute Emergency / RTO Charges', 'रास्ते का आपातकालीन खर्च / आरटीओ')}</div>
                   <div className="col-span-4 text-right">₹{selectedSettlement.enrouteMaintenanceRtoInr.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 bg-stone-50 font-bold border-b border-stone-300">
-                  <div className="col-span-8">कुल मान्य ट्रिप खर्च (A)</div>
+                  <div className="col-span-8">{t('Total Authorized Trip Expenses (A)', 'कुल मान्य ट्रिप खर्च (A)')}</div>
                   <div className="col-span-4 text-right">₹{selectedSettlement.totalAuthorizedExpensesInr.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 border-b border-stone-200 text-stone-600">
-                  <div className="col-span-8">डीजल माइलेज बचत रिवार्ड / पेनल्टी</div>
+                  <div className="col-span-8">{t('Fuel Savings Mileage Bonus / Penalty', 'डीजल माइलेज बचत रिवार्ड / पेनल्टी')}</div>
                   <div className="col-span-4 text-right">{selectedSettlement.dieselPenaltyBonusInr >= 0 ? `+ ₹${selectedSettlement.dieselPenaltyBonusInr}` : `- ₹${Math.abs(selectedSettlement.dieselPenaltyBonusInr)}`}</div>
                 </div>
                 <div className="grid grid-cols-12 p-1.5 border-b border-stone-200 text-stone-600">
-                  <div className="col-span-8">घटाएं: आरंभ में दिया गया अग्रिम रोकड़ (Cash Advance - B)</div>
+                  <div className="col-span-8">{t('Less: Cash Advance Paid at Start (B)', 'घटाएं: आरंभ में दिया गया अग्रिम रोकड़ (Cash Advance - B)')}</div>
                   <div className="col-span-4 text-right">- ₹{selectedSettlement.advanceCashGivenInr.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="grid grid-cols-12 p-2 bg-amber-50 font-black text-sm border-t-2 border-stone-900">
                   <div className="col-span-8">
-                    {selectedSettlement.netPayableToDriverInr > 0 ? 'ड्राइवर को अंतिम देय राशि (NET PAYABLE):' : 'ड्राइवर से कटौती शेष (NET RECOVERABLE):'}
+                    {selectedSettlement.netPayableToDriverInr > 0 
+                      ? t('NET BALANCE PAYABLE TO DRIVER:', 'ड्राइवर को अंतिम देय राशि (NET PAYABLE):') 
+                      : t('NET RECOVERABLE FROM DRIVER:', 'ड्राइवर से कटौती शेष (NET RECOVERABLE):')}
                   </div>
                   <div className="col-span-4 text-right text-stone-950">
                     ₹{(selectedSettlement.netPayableToDriverInr > 0 ? selectedSettlement.netPayableToDriverInr : selectedSettlement.recoverableFromDriverInr).toLocaleString('en-IN')}
@@ -720,11 +754,11 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               <div className="grid grid-cols-2 pt-6 text-[10px]">
                 <div>
                   <div className="h-10 border-b border-stone-400 w-36"></div>
-                  <p className="mt-1 font-bold">ड्राइवर के हस्ताक्षर (Driver Signature)</p>
+                  <p className="mt-1 font-bold">{t('Driver Signature', 'ड्राइवर के हस्ताक्षर (Driver Signature)')}</p>
                 </div>
                 <div className="text-right">
                   <div className="h-10 border-b border-stone-400 w-36 ml-auto"></div>
-                  <p className="mt-1 font-bold">फ्लीट मैनेजर / ऑडिटर सील (Auditor Seal)</p>
+                  <p className="mt-1 font-bold">{t('Fleet Manager / Auditor Seal', 'फ्लीट मैनेजर / ऑडिटर सील (Auditor Seal)')}</p>
                 </div>
               </div>
             </div>
@@ -735,7 +769,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                 onClick={() => setShowPrintModal(false)}
                 className="px-4 py-1.5 border border-stone-300 text-stone-700 rounded-lg text-xs hover:bg-stone-200"
               >
-                बंद करें
+                {t('Close', 'बंद करें')}
               </button>
               <button
                 onClick={() => {
@@ -745,7 +779,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                 className="px-4 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-500 flex items-center gap-1.5 shadow"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>प्रिंट करें (Print / PDF)</span>
+                <span>{t('Print Voucher (PDF)', 'प्रिंट करें (Print / PDF)')}</span>
               </button>
             </div>
           </div>
@@ -759,7 +793,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
             <div className="p-4 bg-amber-600 text-white flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <PlusCircle className="w-4 h-4" />
-                <span>नया ड्राइवर ट्रिप हिसाब दर्ज करें (New Hisaab Entry)</span>
+                <span>{t('Record New Trip Settlement Entry', 'नया ड्राइवर ट्रिप हिसाब दर्ज करें (New Hisaab Entry)')}</span>
               </h3>
               <button onClick={() => setShowNewModal(false)} className="text-white/80 hover:text-white">
                 <X className="w-5 h-5" />
@@ -769,7 +803,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
             <form onSubmit={handleCreateNew} className="p-6 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-stone-500 mb-1">गाड़ी संख्या *</label>
+                  <label className="block text-stone-500 mb-1">{t('Vehicle Number *', 'गाड़ी संख्या *')}</label>
                   <input
                     type="text"
                     value={newVehicle}
@@ -779,10 +813,10 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">ड्राइवर का नाम *</label>
+                  <label className="block text-stone-500 mb-1">{t('Driver Name *', 'ड्राइवर का नाम *')}</label>
                   <input
                     type="text"
-                    placeholder="जैसे: Ramesh Yadav"
+                    placeholder="e.g. Ramesh Yadav"
                     value={newDriver}
                     onChange={e => setNewDriver(e.target.value)}
                     required
@@ -790,7 +824,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">ड्राइवर मोबाइल फोन</label>
+                  <label className="block text-stone-500 mb-1">{t('Driver Mobile Phone', 'ड्राइवर मोबाइल फोन')}</label>
                   <input
                     type="text"
                     placeholder="+91 98..."
@@ -800,7 +834,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">कुल ट्रिप दूरी (KM)</label>
+                  <label className="block text-stone-500 mb-1">{t('Total Trip Distance (KM)', 'कुल ट्रिप दूरी (KM)')}</label>
                   <input
                     type="number"
                     value={newKm}
@@ -809,7 +843,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">आरंभिक स्टेशन (Origin)</label>
+                  <label className="block text-stone-500 mb-1">{t('Origin Station', 'आरंभिक स्टेशन (Origin)')}</label>
                   <input
                     type="text"
                     value={newOrigin}
@@ -818,7 +852,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">गंतव्य स्टेशन (Destination)</label>
+                  <label className="block text-stone-500 mb-1">{t('Destination Station', 'गंतव्य स्टेशन (Destination)')}</label>
                   <input
                     type="text"
                     value={newDest}
@@ -829,10 +863,12 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               </div>
 
               <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-800/40 space-y-3">
-                <span className="font-bold text-amber-800 dark:text-amber-300 block">माइलेज एवं डीजल पैरामीटर</span>
+                <span className="font-bold text-amber-800 dark:text-amber-300 block">
+                  {t('Fuel Economy & Mileage Parameters', 'माइलेज एवं डीजल पैरामीटर')}
+                </span>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-stone-500 mb-1">मानक माइलेज (Target KMPL)</label>
+                    <label className="block text-stone-500 mb-1">{t('Target Mileage (KMPL)', 'मानक माइलेज (Target KMPL)')}</label>
                     <input
                       type="number"
                       step="0.1"
@@ -842,7 +878,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-stone-500 mb-1">वास्तविक माइलेज (Actual KMPL)</label>
+                    <label className="block text-stone-500 mb-1">{t('Actual Mileage (KMPL)', 'वास्तविक माइलेज (Actual KMPL)')}</label>
                     <input
                       type="number"
                       step="0.1"
@@ -855,10 +891,12 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <span className="font-bold text-stone-700 dark:text-stone-300 block">खर्च एवं अग्रिम विवरण (INR)</span>
+                <span className="font-bold text-stone-700 dark:text-stone-300 block">
+                  {t('Expenses & Cash Advance Breakdown (INR)', 'खर्च एवं अग्रिम विवरण (INR)')}
+                </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-stone-500 mb-1">कैश एडवांस दिया</label>
+                    <label className="block text-stone-500 mb-1">{t('Cash Advance Given', 'कैश एडवांस दिया')}</label>
                     <input
                       type="number"
                       value={newCashAdv}
@@ -867,7 +905,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-stone-500 mb-1">फ़ास्टैग टोल</label>
+                    <label className="block text-stone-500 mb-1">{t('Fastag Tolls', 'फ़ास्टैग टोल')}</label>
                     <input
                       type="number"
                       value={newFastag}
@@ -876,7 +914,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-stone-500 mb-1">ड्राइवर भत्ता (Bhatta)</label>
+                    <label className="block text-stone-500 mb-1">{t('Driver Allowance (Bhatta)', 'ड्राइवर भत्ता (Bhatta)')}</label>
                     <input
                       type="number"
                       value={newBhatta}
@@ -885,7 +923,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-stone-500 mb-1">हमाली / लोडिंग</label>
+                    <label className="block text-stone-500 mb-1">{t('Labor / Hamali', 'हमाली / लोडिंग')}</label>
                     <input
                       type="number"
                       value={newLabor}
@@ -894,7 +932,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-stone-500 mb-1">अन्य / आरटीओ खर्च</label>
+                    <label className="block text-stone-500 mb-1">{t('Misc / RTO Expenses', 'अन्य / आरटीओ खर्च')}</label>
                     <input
                       type="number"
                       value={newMisc}
@@ -911,13 +949,13 @@ export const DriverTripSettlementHisaab: React.FC = () => {
                   onClick={() => setShowNewModal(false)}
                   className="px-4 py-2 border rounded-lg text-stone-600 dark:text-stone-300"
                 >
-                  रद्द करें
+                  {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg shadow"
                 >
-                  हिसाब सुरक्षित करें
+                  {t('Save Settlement', 'हिसाब सुरक्षित करें')}
                 </button>
               </div>
             </form>

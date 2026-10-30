@@ -766,7 +766,7 @@ export default function ElectronicWeighbridgeDeck() {
             }}
           >
             <div style={{ textAlign: 'center', borderBottom: '2px dashed #000', paddingBottom: '12px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 900 }}>ASK DHARAM KANTA • धर्म कांटा</div>
+              <div style={{ fontSize: '18px', fontWeight: 900 }}>ASK ELECTRONIC WEIGHBRIDGE (DHARAM KANTA)</div>
               <div style={{ fontSize: '11px' }}>HUB TERMINAL-01 PUNE (GOVT APPROVED 60-TON SCALE)</div>
               <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px' }}>COMPUTERIZED WEIGHMENT CERTIFICATE</div>
               <div style={{ fontSize: '11px' }}>SLIP NO: {selectedSlip.slipNumber} • CALIB ID: {selectedSlip.calibrationCertificateId}</div>

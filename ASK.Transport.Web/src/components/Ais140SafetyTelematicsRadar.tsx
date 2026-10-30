@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Radio, 
   AlertOctagon, 
@@ -11,11 +11,12 @@ import {
   Search, 
   Compass, 
   Moon, 
-  Zap,
+  Zap, 
   X
 } from 'lucide-react';
 import type { Ais140SafetyTelemetry } from '../types/transportOperations';
 import { getAis140FleetSafety, ackAis140Panic } from '../api/ais140SafetyApi';
+import { useLanguage } from '../context/LanguageContext';
 
 const SEED_AIS140_DATA: Ais140SafetyTelemetry[] = [
   {
@@ -105,8 +106,9 @@ const SEED_AIS140_DATA: Ais140SafetyTelemetry[] = [
 ];
 
 export const Ais140SafetyTelematicsRadar: React.FC = () => {
+  const { t } = useLanguage();
   const [telemetryList, setTelemetryList] = useState<Ais140SafetyTelemetry[]>(SEED_AIS140_DATA);
-  const [selectedTruck, setSelectedTruck] = useState<Ais140SafetyTelemetry>(SEED_AIS140_DATA[2]); // Default to SOS truck for high urgency
+  const [selectedTruck, setSelectedTruck] = useState<Ais140SafetyTelemetry>(SEED_AIS140_DATA[2]);
   const [filterType, setFilterType] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -140,11 +142,11 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
   const handleAckPanic = async (truckId: string) => {
     try {
       await ackAis140Panic(truckId);
-      setTelemetryList(prev => prev.map(t => t.id === truckId ? {
-        ...t,
+      setTelemetryList(prev => prev.map(tItem => tItem.id === truckId ? {
+        ...tItem,
         panicButtonTriggered: false,
         severity: 'NORMAL_COMPLIANT'
-      } : t));
+      } : tItem));
       if (selectedTruck.id === truckId) {
         setSelectedTruck(prev => ({
           ...prev,
@@ -152,13 +154,13 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
           severity: 'NORMAL_COMPLIANT'
         }));
       }
-      showToast('success', `गाड़ी ${selectedTruck.vehicleNumber} का पैनिक अलर्ट सफलतापूर्वक सत्यापित एवं रीसेट किया गया!`);
+      showToast('success', t(`Emergency panic alarm acknowledged & reset for vehicle ${selectedTruck.vehicleNumber}!`, `गाड़ी ${selectedTruck.vehicleNumber} का पैनिक अलर्ट सफलतापूर्वक सत्यापित एवं रीसेट किया गया!`));
     } catch {
-      setTelemetryList(prev => prev.map(t => t.id === truckId ? {
-        ...t,
+      setTelemetryList(prev => prev.map(tItem => tItem.id === truckId ? {
+        ...tItem,
         panicButtonTriggered: false,
         severity: 'NORMAL_COMPLIANT'
-      } : t));
+      } : tItem));
       if (selectedTruck.id === truckId) {
         setSelectedTruck(prev => ({
           ...prev,
@@ -166,12 +168,15 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
           severity: 'NORMAL_COMPLIANT'
         }));
       }
-      showToast('success', `पैनिक अलार्म रीसेट किया गया!`);
+      showToast('success', t('Panic alarm reset!', 'पैनिक अलार्म रीसेट किया गया!'));
     }
   };
 
   const handlePoliceAlert = (truck: Ais140SafetyTelemetry) => {
-    showToast('info', `हाईवे पुलिस कंट्रोल रूम (${truck.nearestPoliceEmergencyContact}) को लाइव जीपीएस लोकेशन व अलर्ट टेलीमेट्री प्रेषित कर दी गई है!`);
+    showToast('info', t(
+      `Live coordinates and emergency telemetry dispatched to Highway Patrol (${truck.nearestPoliceEmergencyContact})!`,
+      `हाईवे पुलिस कंट्रोल रूम (${truck.nearestPoliceEmergencyContact}) को लाइव जीपीएस लोकेशन व अलर्ट टेलीमेट्री प्रेषित कर दी गई है!`
+    ));
   };
 
   const filteredList = telemetryList.filter(item => {
@@ -186,9 +191,9 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
     return matchSearch;
   });
 
-  const activePanicCount = telemetryList.filter(t => t.panicButtonTriggered).length;
-  const speedingCount = telemetryList.filter(t => t.currentSpeedKmph > t.speedLimitKmph).length;
-  const fatigueCount = telemetryList.filter(t => t.fatigueWarning || t.continuousDrivingHours > 8).length;
+  const activePanicCount = telemetryList.filter(tItem => tItem.panicButtonTriggered).length;
+  const speedingCount = telemetryList.filter(tItem => tItem.currentSpeedKmph > tItem.speedLimitKmph).length;
+  const fatigueCount = telemetryList.filter(tItem => tItem.fatigueWarning || tItem.continuousDrivingHours > 8).length;
 
   return (
     <div className="space-y-6">
@@ -220,21 +225,24 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
             </div>
             <div>
               <h4 className="font-extrabold text-base tracking-wide flex items-center gap-2">
-                <span>🚨 लाइव पैनिक इमरजेंसी चेतावनी ({activePanicCount} वाहन संकट में)</span>
+                <span>{t(`🚨 Live Panic Emergency Alert (${activePanicCount} Vehicle in Distress)`, `🚨 लाइव पैनिक इमरजेंसी चेतावनी (${activePanicCount} वाहन संकट में)`)}</span>
               </h4>
               <p className="text-xs text-rose-100 mt-0.5">
-                ड्राइवर द्वारा केबिन का इमरजेंसी पैनिक बटन दबाया गया है! निकटतम हाईवे पुलिस एवं रेस्क्यू यूनिट तुरंत संपर्क करें।
+                {t(
+                  'Emergency panic button pressed inside cabin! Nearest Highway Patrol and response units alerted.',
+                  'ड्राइवर द्वारा केबिन का इमरजेंसी पैनिक बटन दबाया गया है! निकटतम हाईवे पुलिस एवं रेस्क्यू यूनिट तुरंत संपर्क करें।'
+                )}
               </p>
             </div>
           </div>
           <button
             onClick={() => {
-              const sos = telemetryList.find(t => t.panicButtonTriggered);
+              const sos = telemetryList.find(tItem => tItem.panicButtonTriggered);
               if (sos) setSelectedTruck(sos);
             }}
             className="px-4 py-2 bg-white text-rose-700 font-bold text-xs rounded-xl hover:bg-rose-50 shadow transition whitespace-nowrap"
           >
-            तत्काल वाहन देखें ➔
+            {t('View Vehicle Immediately ➔', 'तत्काल वाहन देखें ➔')}
           </button>
         </div>
       )}
@@ -247,10 +255,13 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
             <span>Govt MoRTH AIS-140 Certified Telematics Shield</span>
           </div>
           <h1 className="text-2xl font-bold mt-1 text-white">
-            AIS-140 राष्ट्रीय टेलीमैटिक्स व हाईवे सुरक्षा राडार
+            {t('AIS-140 National Telematics & Highway Safety Radar', 'AIS-140 राष्ट्रीय टेलीमैटिक्स व हाईवे सुरक्षा राडार')}
           </h1>
           <p className="text-stone-300 text-sm mt-1">
-            24×7 इमरजेंसी पैनिक एसओएस, स्पीड गवर्नर (&gt;80 km/h) उल्लंघन, नाइट ड्राइविंग एवं ड्राइवर थकान मॉनिटरिंग।
+            {t(
+              '24×7 real-time emergency panic SOS, speed governor (>80 km/h) violations, night driving and driver fatigue monitoring.',
+              '24×7 इमरजेंसी पैनिक एसओएस, स्पीड गवर्नर (>80 km/h) उल्लंघन, नाइट ड्राइविंग एवं ड्राइवर थकान मॉनिटरिंग।'
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -260,7 +271,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
             className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>रिफ्रेश</span>
+            <span>{t('Refresh', 'रिफ्रेश')}</span>
           </button>
           <div className="px-3 py-1.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs font-bold text-rose-300 flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-rose-400" />
@@ -273,9 +284,13 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">सक्रिय AIS-140 गाड़ियां</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Active AIS-140 Fleet', 'सक्रिय AIS-140 गाड़ियां')}
+            </span>
             <div className="text-2xl font-bold text-stone-800 dark:text-stone-100 mt-0.5">{telemetryList.length}</div>
-            <span className="text-xs text-emerald-600 mt-1 inline-block">100% IRNSS सैटेलाइट लॉक</span>
+            <span className="text-xs text-emerald-600 mt-1 inline-block">
+              {t('100% IRNSS Satellite Lock', '100% IRNSS सैटेलाइट लॉक')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-stone-100 dark:bg-stone-800 rounded-xl flex items-center justify-center text-stone-600 dark:text-stone-300">
             <Radio className="w-6 h-6" />
@@ -284,11 +299,15 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">SOS पैनिक अलार्म</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Active SOS Panic Alarms', 'SOS पैनिक अलार्म')}
+            </span>
             <div className={`text-2xl font-bold mt-0.5 ${activePanicCount > 0 ? 'text-rose-600 animate-pulse' : 'text-stone-800 dark:text-stone-100'}`}>
               {activePanicCount}
             </div>
-            <span className="text-xs text-rose-500 mt-1 inline-block">हाईवे इमरजेंसी प्रोटोकॉल</span>
+            <span className="text-xs text-rose-500 mt-1 inline-block">
+              {t('Highway Emergency Protocol', 'हाईवे इमरजेंसी प्रोटोकॉल')}
+            </span>
           </div>
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${activePanicCount > 0 ? 'bg-rose-100 dark:bg-rose-950/50 text-rose-600' : 'bg-stone-100 dark:bg-stone-800 text-stone-500'}`}>
             <AlertOctagon className="w-6 h-6" />
@@ -297,9 +316,13 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">ओवर-स्पीड (&gt;80 km/h)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Over-Speed (>80 km/h)', 'ओवर-स्पीड (>80 km/h)')}
+            </span>
             <div className="text-2xl font-bold text-amber-600 mt-0.5">{speedingCount}</div>
-            <span className="text-xs text-amber-500 mt-1 inline-block">स्पीड गवर्नर वॉयलेशन</span>
+            <span className="text-xs text-amber-500 mt-1 inline-block">
+              {t('Speed Governor Violations', 'स्पीड गवर्नर वॉयलेशन')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
             <Zap className="w-6 h-6" />
@@ -308,9 +331,13 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">ड्राइवर थकान जोखिम (&gt;8h)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Driver Fatigue Risk (>8h)', 'ड्राइवर थकान जोखिम (>8h)')}
+            </span>
             <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">{fatigueCount}</div>
-            <span className="text-xs text-indigo-500 mt-1 inline-block">विश्राम ब्रेक अनुशंसित</span>
+            <span className="text-xs text-indigo-500 mt-1 inline-block">
+              {t('Mandatory Rest Break Due', 'विश्राम ब्रेक अनुशंसित')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600">
             <Moon className="w-6 h-6" />
@@ -329,7 +356,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                 <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="गाड़ी संख्या / ड्राइवर / हाईवे लोकेशन..."
+                  placeholder={t('Search vehicle / driver / highway corridor...', 'गाड़ी संख्या / ड्राइवर / हाईवे लोकेशन...')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 text-stone-800 dark:text-stone-100"
@@ -339,10 +366,10 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
               {/* Filter Pills */}
               <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
                 {[
-                  { key: 'ALL', label: 'सभी गाड़ियां' },
-                  { key: 'SOS', label: `पैनिक SOS (${activePanicCount})` },
-                  { key: 'SPEED', label: `ओवर स्पीड (${speedingCount})` },
-                  { key: 'FATIGUE', label: `ड्राइवर थकान (${fatigueCount})` }
+                  { key: 'ALL', label: t('All Vehicles', 'सभी गाड़ियां') },
+                  { key: 'SOS', label: `${t('Panic SOS', 'पैनिक SOS')} (${activePanicCount})` },
+                  { key: 'SPEED', label: `${t('Over-Speed', 'ओवर स्पीड')} (${speedingCount})` },
+                  { key: 'FATIGUE', label: `${t('Fatigue Risk', 'ड्राइवर थकान')} (${fatigueCount})` }
                 ].map(tab => (
                   <button
                     key={tab.key}
@@ -361,7 +388,9 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
 
             <div className="mt-4 space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
               {filteredList.length === 0 ? (
-                <div className="text-center py-8 text-stone-400 text-sm">कोई टेलीमेट्री डेटा नहीं मिला</div>
+                <div className="text-center py-8 text-stone-400 text-sm">
+                  {t('No safety telemetry data found', 'कोई टेलीमेट्री डेटा नहीं मिला')}
+                </div>
               ) : (
                 filteredList.map(truck => {
                   const isSelected = selectedTruck.id === truck.id;
@@ -397,7 +426,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                       </div>
 
                       <div className="mt-2 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
-                        <span>ड्राइवर: <b>{truck.driverName}</b></span>
+                        <span>{t('Driver:', 'ड्राइवर:')} <b>{truck.driverName}</b></span>
                         <span className="font-mono text-[11px]">{truck.currentSpeedKmph} km/h</span>
                       </div>
 
@@ -421,7 +450,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Radio className={`w-5 h-5 ${selectedTruck.panicButtonTriggered ? 'text-rose-600 animate-spin' : 'text-emerald-600'}`} />
                 <h3 className="font-bold text-stone-800 dark:text-stone-100 text-sm">
-                  AIS-140 राडार व्यू • {selectedTruck.vehicleNumber}
+                  {t('AIS-140 Radar Console', 'AIS-140 राडार व्यू')} • {selectedTruck.vehicleNumber}
                 </h3>
               </div>
               <div className="flex items-center gap-2">
@@ -431,7 +460,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                     className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>SOS अलार्म रीसेट / एक्नॉलेज</span>
+                    <span>{t('Reset / Acknowledge SOS Alarm', 'SOS अलार्म रीसेट / एक्नॉलेज')}</span>
                   </button>
                 )}
                 <button
@@ -439,7 +468,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                   className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 dark:bg-stone-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
                 >
                   <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-                  <span>हाईवे पुलिस अलर्ट भेजें</span>
+                  <span>{t('Alert Highway Patrol', 'हाईवे पुलिस अलर्ट भेजें')}</span>
                 </button>
               </div>
             </div>
@@ -453,13 +482,16 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                   <AlertOctagon className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <h4 className="font-bold text-rose-800 dark:text-rose-300 text-sm">
-                      अलर्ट: केबिन पैनिक बटन सक्रिय (Cabin SOS Switch Triggered)
+                      {t('ALERT: Cabin Emergency Panic Button Triggered', 'अलर्ट: केबिन पैनिक बटन सक्रिय (Cabin SOS Switch Triggered)')}
                     </h4>
                     <p className="text-xs text-rose-700 dark:text-rose-400">
-                      वाहन चालक ने सहायता हेतु पैनिक स्विच दबाया है। संभावित हाइजैक, सड़क दुर्घटना या आपातकालीन चिकित्सा स्थिति।
+                      {t(
+                        'Driver has activated the emergency distress switch. Potential hijack, accident or urgent medical situation.',
+                        'वाहन चालक ने सहायता हेतु पैनिक स्विच दबाया है। संभावित हाइजैक, सड़क दुर्घटना या आपातकालीन चिकित्सा स्थिति।'
+                      )}
                     </p>
                     <div className="pt-1 text-xs font-mono font-bold text-rose-900 dark:text-rose-200">
-                      निकटतम पुलिस स्टेशन: {selectedTruck.nearestPoliceEmergencyContact}
+                      {t('Nearest Police Station:', 'निकटतम पुलिस स्टेशन:')} {selectedTruck.nearestPoliceEmergencyContact}
                     </div>
                   </div>
                 </div>
@@ -468,47 +500,47 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
               {/* Speed & Live Status Gauges */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                  <span className="text-[11px] text-stone-500 block">लाइव गति (Current Speed)</span>
+                  <span className="text-[11px] text-stone-500 block">{t('Current Speed', 'लाइव गति (Current Speed)')}</span>
                   <div className="flex items-baseline gap-1 mt-1">
                     <span className={`text-2xl font-black ${selectedTruck.currentSpeedKmph > selectedTruck.speedLimitKmph ? 'text-rose-600' : 'text-stone-800 dark:text-stone-100'}`}>
                       {selectedTruck.currentSpeedKmph}
                     </span>
                     <span className="text-xs text-stone-400">km/h</span>
                   </div>
-                  <span className="text-[10px] text-stone-400 block mt-0.5">सीमा: {selectedTruck.speedLimitKmph} km/h</span>
+                  <span className="text-[10px] text-stone-400 block mt-0.5">{t('Limit:', 'सीमा:')} {selectedTruck.speedLimitKmph} km/h</span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                  <span className="text-[11px] text-stone-500 block">लगातार ड्राइविंग (Continuous)</span>
+                  <span className="text-[11px] text-stone-500 block">{t('Continuous Driving', 'लगातार ड्राइविंग (Continuous)')}</span>
                   <div className="flex items-baseline gap-1 mt-1">
                     <span className={`text-2xl font-black ${selectedTruck.continuousDrivingHours > 8 ? 'text-indigo-600' : 'text-stone-800 dark:text-stone-100'}`}>
                       {selectedTruck.continuousDrivingHours}
                     </span>
-                    <span className="text-xs text-stone-400">घंटे</span>
+                    <span className="text-xs text-stone-400">{t('hours', 'घंटे')}</span>
                   </div>
-                  <span className="text-[10px] text-stone-400 block mt-0.5">अधिकतम सुरक्षित: 8.0h</span>
+                  <span className="text-[10px] text-stone-400 block mt-0.5">{t('Safe Max: 8.0h', 'अधिकतम सुरक्षित: 8.0h')}</span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                  <span className="text-[11px] text-stone-500 block">हर्ष ब्रेकिंग (Harsh Braking)</span>
+                  <span className="text-[11px] text-stone-500 block">{t('Harsh Braking Count', 'हर्ष ब्रेकिंग (Harsh Braking)')}</span>
                   <div className="flex items-baseline gap-1 mt-1">
                     <span className="text-2xl font-black text-amber-600">
                       {selectedTruck.harshBrakingCount}
                     </span>
-                    <span className="text-xs text-stone-400">बार</span>
+                    <span className="text-xs text-stone-400">{t('events', 'बार')}</span>
                   </div>
-                  <span className="text-[10px] text-stone-400 block mt-0.5">रैपिड एक्सेल: {selectedTruck.rapidAccelerationCount}</span>
+                  <span className="text-[10px] text-stone-400 block mt-0.5">{t('Rapid Accel:', 'रैपिड एक्सेल:')} {selectedTruck.rapidAccelerationCount}</span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                  <span className="text-[11px] text-stone-500 block">नाइट ड्राइविंग स्टेटस</span>
+                  <span className="text-[11px] text-stone-500 block">{t('Night Driving Status', 'नाइट ड्राइविंग स्टेटस')}</span>
                   <div className="flex items-center gap-1.5 mt-1">
                     <Moon className={`w-4 h-4 ${selectedTruck.isNightDriving ? 'text-indigo-500' : 'text-stone-400'}`} />
                     <span className="text-sm font-bold text-stone-800 dark:text-stone-200">
-                      {selectedTruck.isNightDriving ? 'रात्रि सक्रिय' : 'दिन का सफर'}
+                      {selectedTruck.isNightDriving ? t('Night Active', 'रात्रि सक्रिय') : t('Day Transit', 'दिन का सफर')}
                     </span>
                   </div>
-                  <span className="text-[10px] text-stone-400 block mt-0.5">11 PM - 5 AM रिस्क ज़ोन</span>
+                  <span className="text-[10px] text-stone-400 block mt-0.5">11 PM - 5 AM Risk Window</span>
                 </div>
               </div>
 
@@ -518,7 +550,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <Compass className="w-4 h-4 text-rose-400 animate-spin" />
                     <span className="text-xs font-bold uppercase tracking-wider text-stone-300">
-                      AIS-140 GPS & IRNSS सैटेलाइट टेलीमेट्री पोजीशन
+                      AIS-140 GPS & IRNSS Satellite Telemetry Position
                     </span>
                   </div>
                   <span className="text-[11px] font-mono text-emerald-400">
@@ -532,7 +564,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                     <div>
                       <h4 className="font-bold text-sm text-white">{selectedTruck.currentHighwayLocation}</h4>
                       <div className="text-xs font-mono text-stone-400 mt-0.5">
-                        निर्देशांक (Coordinates): Lat {selectedTruck.latitude.toFixed(4)}°N, Lon {selectedTruck.longitude.toFixed(4)}°E
+                        Coordinates: Lat {selectedTruck.latitude.toFixed(4)}°N, Lon {selectedTruck.longitude.toFixed(4)}°E
                       </div>
                     </div>
                   </div>
@@ -540,13 +572,13 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
                   <div className="mt-3 p-3 bg-stone-800/80 rounded-lg flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <PhoneCall className="w-4 h-4 text-emerald-400" />
-                      <span>चालक: <b>{selectedTruck.driverName}</b> ({selectedTruck.driverPhone})</span>
+                      <span>{t('Driver:', 'चालक:')} <b>{selectedTruck.driverName}</b> ({selectedTruck.driverPhone})</span>
                     </div>
                     <button 
-                      onClick={() => showToast('info', `${selectedTruck.driverName} को वॉयस कॉल कनेक्ट हो रही है...`)}
+                      onClick={() => showToast('info', t(`Connecting voice call to ${selectedTruck.driverName}...`, `${selectedTruck.driverName} को वॉयस कॉल कनेक्ट हो रही है...`))}
                       className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold"
                     >
-                      कॉल करें
+                      {t('Call Driver', 'कॉल करें')}
                     </button>
                   </div>
                 </div>
@@ -555,20 +587,20 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
               {/* Hardware Compliance Badges */}
               <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-3">
                 <span className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
-                  MoRTH AIS-140 हार्डवेयर कम्पलायंस पैरामीटर
+                  MoRTH AIS-140 Hardware Compliance Standards
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div className="flex items-center space-x-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>डुअल सिम ई-सिम कनेक्टिविटी (BSNL + Airtel)</span>
+                    <span>{t('Dual eSIM Connectivity (BSNL + Airtel)', 'डुअल सिम ई-सिम कनेक्टिविटी (BSNL + Airtel)')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>एंटी-टैम्परिंग बैटरी बैकअप (5 Hours Active)</span>
+                    <span>{t('Anti-Tampering Battery (5h Active Backup)', 'एंटी-टैम्परिंग बैटरी बैकअप (5 Hours Active)')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>IRNSS / NavIC भारतीय उपग्रह सपोर्ट</span>
+                    <span>{t('IRNSS / NavIC Indian Satellite Support', 'IRNSS / NavIC भारतीय उपग्रह सपोर्ट')}</span>
                   </div>
                 </div>
               </div>

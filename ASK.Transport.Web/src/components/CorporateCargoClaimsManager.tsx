@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Building2, 
   ShieldCheck, 
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { CorporateCargoClaim, ClaimDisputeReason } from '../types/transportOperations';
 import { getAllCargoClaims, createCargoClaim, issueClaimDebitNote } from '../api/cargoClaimsApi';
+import { useLanguage } from '../context/LanguageContext';
 
 const SEED_CLAIMS: CorporateCargoClaim[] = [
   {
@@ -79,6 +80,7 @@ const SEED_CLAIMS: CorporateCargoClaim[] = [
 ];
 
 export const CorporateCargoClaimsManager: React.FC = () => {
+  const { t } = useLanguage();
   const [claims, setClaims] = useState<CorporateCargoClaim[]>(SEED_CLAIMS);
   const [selectedClaim, setSelectedClaim] = useState<CorporateCargoClaim>(SEED_CLAIMS[0]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,7 +128,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
   const handleIssueDebitNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!debitRefInput.trim()) {
-      showToast('error', 'कृपया डेबिट नोट संदर्भ संख्या दर्ज करें!');
+      showToast('error', t('Please enter debit note reference number!', 'कृपया डेबिट नोट संदर्भ संख्या दर्ज करें!'));
       return;
     }
 
@@ -145,7 +147,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
         settledAmountInr: agreedAmountInput
       }));
       setShowDebitModal(false);
-      showToast('success', `डेबिट नोट ${debitRefInput} (₹${agreedAmountInput.toLocaleString('en-IN')}) सफलतापूर्वक जारी हुआ!`);
+      showToast('success', t(`Debit note ${debitRefInput} (₹${agreedAmountInput.toLocaleString('en-IN')}) issued successfully!`, `डेबिट नोट ${debitRefInput} (₹${agreedAmountInput.toLocaleString('en-IN')}) सफलतापूर्वक जारी हुआ!`));
     } catch {
       setClaims(prev => prev.map(c => c.id === selectedClaim.id ? {
         ...c,
@@ -160,14 +162,14 @@ export const CorporateCargoClaimsManager: React.FC = () => {
         settledAmountInr: agreedAmountInput
       }));
       setShowDebitModal(false);
-      showToast('success', `डेबिट नोट ${debitRefInput} जारी हुआ!`);
+      showToast('success', t(`Debit note ${debitRefInput} issued!`, `डेबिट नोट ${debitRefInput} जारी हुआ!`));
     }
   };
 
   const handleCreateClaim = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newShipper.trim() || !newCn.trim()) {
-      showToast('error', 'कृपया कॉर्पोरेट शिपर व कन्साइनमेंट नंबर दर्ज करें!');
+      showToast('error', t('Please enter corporate shipper and consignment number!', 'कृपया कॉर्पोरेट शिपर व कन्साइनमेंट नंबर दर्ज करें!'));
       return;
     }
 
@@ -200,7 +202,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
     setClaims(prev => [newClaim, ...prev]);
     setSelectedClaim(newClaim);
     setShowNewModal(false);
-    showToast('success', `नया कार्गो डिस्प्यूट क्लेम टिकट ${newClaim.claimTicketNo} दर्ज हुआ!`);
+    showToast('success', t(`New cargo dispute claim ticket ${newClaim.claimTicketNo} registered!`, `नया कार्गो डिस्प्यूट क्लेम टिकट ${newClaim.claimTicketNo} दर्ज हुआ!`));
   };
 
   const filteredClaims = claims.filter(c => {
@@ -245,10 +247,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
             <span>Corporate Shipper SLA & Cargo Claims Dispute Shield</span>
           </div>
           <h1 className="text-2xl font-bold mt-1 text-white">
-            कॉर्पोरेट कार्गो डैमेज व क्लेम डिस्प्यूट शील्ड
+            {t('Corporate Cargo Claims & SLA Dispute Shield', 'कॉर्पोरेट कार्गो डैमेज व क्लेम डिस्प्यूट शील्ड')}
           </h1>
           <p className="text-cyan-100/80 text-sm mt-1">
-            बारिश में भीगने, टूट-फूट, माल कमी, SLA डिलीवरी देरी व अनधिकृत डेबिट नोट कटौती से 100% सुरक्षा।
+            {t(
+              'Audit-proof protection against rain damages, impact breakages, pilferage, SLA delivery delays, and arbitrary debit notes.',
+              'बारिश में भीगने, टूट-फूट, माल कमी, SLA डिलीवरी देरी व अनधिकृत डेबिट नोट कटौती से 100% सुरक्षा।'
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -258,14 +263,14 @@ export const CorporateCargoClaimsManager: React.FC = () => {
             className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>रिफ्रेश</span>
+            <span>{t('Refresh', 'रिफ्रेश')}</span>
           </button>
           <button
             onClick={() => setShowNewModal(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-stone-950 font-bold rounded-xl text-sm shadow-md transition"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>नया डिस्प्यूट टिकट दर्ज करें</span>
+            <span>{t('File New Dispute Ticket', 'नया डिस्प्यूट टिकट दर्ज करें')}</span>
           </button>
         </div>
       </div>
@@ -274,9 +279,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">सक्रिय डिस्प्यूट मामले</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Active Claim Disputes', 'सक्रिय डिस्प्यूट मामले')}
+            </span>
             <div className="text-2xl font-bold text-stone-800 dark:text-stone-100 mt-0.5">{activeDisputes}</div>
-            <span className="text-xs text-amber-500 mt-1 inline-block">सर्वेक्षक मूल्यांकन प्रगति पर</span>
+            <span className="text-xs text-amber-500 mt-1 inline-block">
+              {t('Surveyor Assessment Pending', 'सर्वेक्षक मूल्यांकन प्रगति पर')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
             <Clock className="w-6 h-6" />
@@ -285,9 +294,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">कुल दावा राशि (Claimed)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Total Claimed Value', 'कुल दावा राशि (Claimed)')}
+            </span>
             <div className="text-2xl font-bold text-rose-600 mt-0.5">₹{totalClaimed.toLocaleString('en-IN')}</div>
-            <span className="text-xs text-rose-500 mt-1 inline-block">शिपर द्वारा मांगी गई क्षतिपूर्ति</span>
+            <span className="text-xs text-rose-500 mt-1 inline-block">
+              {t('Shipper Demand for Loss', 'शिपर द्वारा मांगी गई क्षतिपूर्ति')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 rounded-xl flex items-center justify-center text-rose-600">
             <IndianRupee className="w-6 h-6" />
@@ -296,9 +309,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">अंतिम स्वीकृत राशि (Settled)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Agreed Settled Value', 'अंतिम स्वीकृत राशि (Settled)')}
+            </span>
             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">₹{totalSettled.toLocaleString('en-IN')}</div>
-            <span className="text-xs text-emerald-600 mt-1 inline-block">वार्ता उपरांत डेबिट नोट</span>
+            <span className="text-xs text-emerald-600 mt-1 inline-block">
+              {t('Negotiated Debit Note', 'वार्ता उपरांत डेबिट नोट')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600">
             <CheckCircle2 className="w-6 h-6" />
@@ -307,9 +324,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">ट्रांसपोर्टर बचत (Savings)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Transporter Defence Savings', 'ट्रांसपोर्टर बचत (Savings)')}
+            </span>
             <div className="text-2xl font-bold text-cyan-600 mt-0.5">₹{(totalClaimed - totalSettled).toLocaleString('en-IN')}</div>
-            <span className="text-xs text-cyan-600 mt-1 inline-block">डॉक्यूमेंटेड डिफेंस बचत</span>
+            <span className="text-xs text-cyan-600 mt-1 inline-block">
+              {t('Audit Documented Savings', 'डॉक्यूमेंटेड डिफेंस बचत')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center text-cyan-600">
             <ShieldCheck className="w-6 h-6" />
@@ -328,7 +349,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                 <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="टिकट क्र / कॉर्पोरेट शिपर / इनवॉइस..."
+                  placeholder={t('Search ticket / corporate shipper / invoice...', 'टिकट क्र / कॉर्पोरेट शिपर / इनवॉइस...')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 text-stone-800 dark:text-stone-100"
@@ -347,10 +368,10 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                         : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
                     }`}
                   >
-                    {st === 'ALL' ? 'सभी क्लेम' :
-                     st === 'REGISTERED_UNDER_REVIEW' ? 'नया दर्ज' :
-                     st === 'SURVEYOR_INSPECTION' ? 'सर्वेक्षण अधीन' :
-                     st === 'DEBIT_NOTE_ISSUED' ? 'डेबिट नोट' : 'खारिज (Rejected)'}
+                    {st === 'ALL' ? t('All Claims', 'सभी क्लेम') :
+                     st === 'REGISTERED_UNDER_REVIEW' ? t('Registered', 'नया दर्ज') :
+                     st === 'SURVEYOR_INSPECTION' ? t('Survey Inspection', 'सर्वेक्षण अधीन') :
+                     st === 'DEBIT_NOTE_ISSUED' ? t('Debit Note Issued', 'डेबिट नोट') : t('Repudiated', 'खारिज (Rejected)')}
                   </button>
                 ))}
               </div>
@@ -358,7 +379,9 @@ export const CorporateCargoClaimsManager: React.FC = () => {
 
             <div className="mt-4 space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
               {filteredClaims.length === 0 ? (
-                <div className="text-center py-8 text-stone-400 text-sm">कोई डिस्प्यूट क्लेम नहीं मिला</div>
+                <div className="text-center py-8 text-stone-400 text-sm">
+                  {t('No dispute claims found', 'कोई डिस्प्यूट क्लेम नहीं मिला')}
+                </div>
               ) : (
                 filteredClaims.map(claim => {
                   const isSelected = selectedClaim.id === claim.id;
@@ -381,8 +404,8 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                           claim.status === 'REJECTED_UNJUSTIFIED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' :
                           'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
                         }`}>
-                          {claim.status === 'DEBIT_NOTE_ISSUED' ? 'डेबिट नोट जारी' :
-                           claim.status === 'REJECTED_UNJUSTIFIED' ? 'दावा खारिज' : 'सर्वेक्षण अधीन'}
+                          {claim.status === 'DEBIT_NOTE_ISSUED' ? t('Debit Note Issued', 'डेबिट नोट जारी') :
+                           claim.status === 'REJECTED_UNJUSTIFIED' ? t('Repudiated', 'दावा खारिज') : t('Survey Inspection', 'सर्वेक्षण अधीन')}
                         </span>
                       </div>
 
@@ -391,8 +414,8 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                       </div>
 
                       <div className="mt-1 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 border-t border-stone-100 dark:border-stone-800 pt-2">
-                        <span>कारण: <b>{claim.reason.replace(/_/g, ' ')}</b></span>
-                        <span className="font-bold text-rose-600">दावा: ₹{claim.claimAmountInr.toLocaleString('en-IN')}</span>
+                        <span>{t('Reason:', 'कारण:')} <b>{claim.reason.replace(/_/g, ' ')}</b></span>
+                        <span className="font-bold text-rose-600">{t('Claim:', 'दावा:')} ₹{claim.claimAmountInr.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   );
@@ -410,25 +433,23 @@ export const CorporateCargoClaimsManager: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Building2 className="w-5 h-5 text-cyan-600" />
                 <h3 className="font-bold text-stone-800 dark:text-stone-100 text-sm">
-                  क्लेम केस ऑडिट • {selectedClaim.claimTicketNo}
+                  {t('Claim Case Audit', 'क्लेम केस ऑडिट')} • {selectedClaim.claimTicketNo}
                 </h3>
               </div>
 
               <div className="flex items-center gap-2">
                 {selectedClaim.status !== 'DEBIT_NOTE_ISSUED' && selectedClaim.status !== 'REJECTED_UNJUSTIFIED' && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setDebitRefInput(`DN-${selectedClaim.claimTicketNo.substring(4)}`);
-                        setAgreedAmountInput(Math.round(selectedClaim.claimAmountInr * 0.5));
-                        setShowDebitModal(true);
-                      }}
-                      className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
-                    >
-                      <FileCheck className="w-3.5 h-3.5" />
-                      <span>वार्ता डेबिट नोट जारी करें</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={() => {
+                      setDebitRefInput(`DN-${selectedClaim.claimTicketNo.substring(4)}`);
+                      setAgreedAmountInput(Math.round(selectedClaim.claimAmountInr * 0.5));
+                      setShowDebitModal(true);
+                    }}
+                    className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
+                  >
+                    <FileCheck className="w-3.5 h-3.5" />
+                    <span>{t('Issue Negotiated Debit Note', 'वार्ता डेबिट नोट जारी करें')}</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -439,20 +460,20 @@ export const CorporateCargoClaimsManager: React.FC = () => {
               {/* Shipper & Consignment Details */}
               <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/60 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <span className="text-stone-400 block">कॉर्पोरेट शिपर</span>
+                  <span className="text-stone-400 block">{t('Corporate Shipper', 'कॉर्पोरेट शिपर')}</span>
                   <span className="font-bold text-stone-800 dark:text-stone-200 text-sm">{selectedClaim.shipperCorporateName}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block">कन्साइनमेंट नंबर</span>
+                  <span className="text-stone-400 block">{t('Consignment Number', 'कन्साइनमेंट नंबर')}</span>
                   <span className="font-semibold text-stone-800 dark:text-stone-200">{selectedClaim.consignmentNo}</span>
-                  <span className="text-[11px] text-stone-500 block">इनवॉइस: {selectedClaim.invoiceNo}</span>
+                  <span className="text-[11px] text-stone-500 block">{t('Invoice:', 'इनवॉइस:')} {selectedClaim.invoiceNo}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block">कुल कंसाइनमेंट मूल्य</span>
+                  <span className="text-stone-400 block">{t('Total Invoice Value', 'कुल कंसाइनमेंट मूल्य')}</span>
                   <span className="font-bold text-stone-800 dark:text-stone-200">₹{selectedClaim.invoiceValueInr.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block">दावा की गई राशि</span>
+                  <span className="text-stone-400 block">{t('Claimed Amount', 'दावा की गई राशि')}</span>
                   <span className="font-black text-rose-600 text-sm">₹{selectedClaim.claimAmountInr.toLocaleString('en-IN')}</span>
                 </div>
               </div>
@@ -461,23 +482,23 @@ export const CorporateCargoClaimsManager: React.FC = () => {
               <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3 bg-cyan-50/20 dark:bg-cyan-950/10">
                 <div className="flex items-center justify-between pb-2 border-b border-stone-200 dark:border-stone-800">
                   <span className="font-bold text-xs text-stone-800 dark:text-stone-200">
-                    घटना स्थल एवं स्वतंत्र बीमा सर्वेक्षक रिपोर्ट (Independent Surveyor Audit)
+                    {t('Incident Location & Marine Insurance Surveyor Audit', 'घटना स्थल एवं स्वतंत्र बीमा सर्वेक्षक रिपोर्ट (Independent Surveyor Audit)')}
                   </span>
-                  <span className="text-xs text-stone-500">स्थान: {selectedClaim.incidentLocation}</span>
+                  <span className="text-xs text-stone-500">{t('Location:', 'स्थान:')} {selectedClaim.incidentLocation}</span>
                 </div>
 
                 <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
-                  {selectedClaim.surveyorReportDetails || 'सर्वेक्षण प्रक्रिया अभी जारी है।'}
+                  {selectedClaim.surveyorReportDetails || t('Survey inspection is currently in progress.', 'सर्वेक्षण प्रक्रिया अभी जारी है।')}
                 </p>
 
                 <div className="flex items-center gap-4 text-xs pt-2">
                   <div className="flex items-center gap-1.5 text-stone-600 dark:text-stone-400">
                     <Camera className="w-4 h-4 text-cyan-600" />
-                    <span><b>{selectedClaim.cargoPhotosUploadedCount}</b> जियो-टैग्ड क्षति फोटो संलग्न</span>
+                    <span><b>{selectedClaim.cargoPhotosUploadedCount}</b> {t('Geo-tagged damage photos attached', 'जियो-टैग्ड क्षति फोटो संलग्न')}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-stone-600 dark:text-stone-400">
                     <Clock className="w-4 h-4 text-cyan-600" />
-                    <span>SLA देरी: <b>{selectedClaim.delayHours} घंटे</b></span>
+                    <span>{t('SLA Delay:', 'SLA देरी:')} <b>{selectedClaim.delayHours} {t('hours', 'घंटे')}</b></span>
                   </div>
                 </div>
               </div>
@@ -487,14 +508,14 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                 <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-emerald-700 dark:text-emerald-300 font-bold block">
-                      स्वीकृत डेबिट नोट जारी (Settlement Reached)
+                      {t('Settlement Debit Note Issued', 'स्वीकृत डेबिट नोट जारी (Settlement Reached)')}
                     </span>
                     <span className="text-sm font-mono font-bold text-emerald-900 dark:text-emerald-100">
-                      रेफरेंस क्र: {selectedClaim.debitNoteRefNo}
+                      {t('Reference No:', 'रेफरेंस क्र:')} {selectedClaim.debitNoteRefNo}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-emerald-600 block">वार्ता उपरांत कटौती राशि</span>
+                    <span className="text-xs text-emerald-600 block">{t('Agreed Recovery Amount', 'वार्ता उपरांत कटौती राशि')}</span>
                     <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">
                       ₹{selectedClaim.settledAmountInr.toLocaleString('en-IN')}
                     </span>
@@ -502,9 +523,14 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                 </div>
               ) : selectedClaim.status === 'REJECTED_UNJUSTIFIED' ? (
                 <div className="p-4 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700">
-                  <span className="text-xs font-bold text-emerald-600 block">दावा ट्रांसपोर्टर द्वारा खारिज (Repudiated)</span>
+                  <span className="text-xs font-bold text-emerald-600 block">
+                    {t('Claim Repudiated by Transporter (Defended)', 'दावा ट्रांसपोर्टर द्वारा खारिज (Repudiated)')}
+                  </span>
                   <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">
-                    यह क्लेम अनुबंध की धारा 14.2 (फोर्स मेज्योर / सरकारी रोक) के अंतर्गत आता है। शून्य कटौती लागू।
+                    {t(
+                      'This claim falls under Force Majeure clause 14.2 (State barrier / official order). Zero deduction applied.',
+                      'यह क्लेम अनुबंध की धारा 14.2 (फोर्स मेज्योर / सरकारी रोक) के अंतर्गत आता है। शून्य कटौती लागू।'
+                    )}
                   </p>
                 </div>
               ) : null}
@@ -512,11 +538,11 @@ export const CorporateCargoClaimsManager: React.FC = () => {
               {/* Action Bar */}
               <div className="pt-2 flex justify-end gap-2">
                 <button
-                  onClick={() => showToast('info', `कार्गो क्षति रिपोर्ट एवं फोटो डोजियर पीडीएफ तैयार हो रहा है...`)}
+                  onClick={() => showToast('info', t('Exporting cargo damage report and surveyor dossier PDF...', 'कार्गो क्षति रिपोर्ट एवं फोटो डोजियर पीडीएफ तैयार हो रहा है...'))}
                   className="px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center gap-1.5"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
-                  <span>सर्वेक्षक रिपोर्ट एक्सपोर्ट करें</span>
+                  <span>{t('Export Surveyor Dossier (PDF)', 'सर्वेक्षक रिपोर्ट एक्सपोर्ट करें')}</span>
                 </button>
               </div>
 
@@ -533,7 +559,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
             <div className="p-4 bg-cyan-700 text-white flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <FileCheck className="w-4 h-4" />
-                <span>वार्ता उपरांत डेबिट नोट जारी करें</span>
+                <span>{t('Issue Negotiated Debit Note', 'वार्ता उपरांत डेबिट नोट जारी करें')}</span>
               </h3>
               <button onClick={() => setShowDebitModal(false)} className="text-white/80 hover:text-white">
                 <X className="w-5 h-5" />
@@ -542,7 +568,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
 
             <form onSubmit={handleIssueDebitNote} className="p-6 space-y-4 text-xs">
               <div>
-                <label className="block text-stone-500 mb-1">डेबिट नोट रेफरेंस नंबर *</label>
+                <label className="block text-stone-500 mb-1">{t('Debit Note Reference Number *', 'डेबिट नोट रेफरेंस नंबर *')}</label>
                 <input
                   type="text"
                   value={debitRefInput}
@@ -553,7 +579,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-stone-500 mb-1">अंतिम तय राशि (Agreed Settlement INR) *</label>
+                <label className="block text-stone-500 mb-1">{t('Agreed Settlement Amount (INR) *', 'अंतिम तय राशि (Agreed Settlement INR) *')}</label>
                 <input
                   type="number"
                   value={agreedAmountInput}
@@ -561,7 +587,9 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   required
                   className="w-full p-2 border rounded-lg bg-stone-50 dark:bg-stone-800 border-stone-300 dark:border-stone-700"
                 />
-                <span className="text-[11px] text-stone-400 mt-1 block">मूल दावा राशि: ₹{selectedClaim.claimAmountInr.toLocaleString('en-IN')}</span>
+                <span className="text-[11px] text-stone-400 mt-1 block">
+                  {t('Original Claim Amount:', 'मूल दावा राशि:')} ₹{selectedClaim.claimAmountInr.toLocaleString('en-IN')}
+                </span>
               </div>
 
               <div className="pt-4 flex justify-end gap-2 border-t border-stone-200 dark:border-stone-800">
@@ -570,13 +598,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   onClick={() => setShowDebitModal(false)}
                   className="px-4 py-2 border rounded-lg text-stone-600 dark:text-stone-300"
                 >
-                  रद्द करें
+                  {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-cyan-700 hover:bg-cyan-600 text-white font-bold rounded-lg shadow"
                 >
-                  डेबिट नोट स्वीकृत करें
+                  {t('Approve Debit Note', 'डेबिट नोट स्वीकृत करें')}
                 </button>
               </div>
             </form>
@@ -591,7 +619,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
             <div className="p-4 bg-cyan-700 text-white flex items-center justify-between">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <PlusCircle className="w-4 h-4" />
-                <span>नया कॉर्पोरेट कार्गो डिस्प्यूट टिकट दर्ज करें</span>
+                <span>{t('Record New Cargo Dispute Ticket', 'नया कॉर्पोरेट कार्गो डिस्प्यूट टिकट दर्ज करें')}</span>
               </h3>
               <button onClick={() => setShowNewModal(false)} className="text-white/80 hover:text-white">
                 <X className="w-5 h-5" />
@@ -601,10 +629,10 @@ export const CorporateCargoClaimsManager: React.FC = () => {
             <form onSubmit={handleCreateClaim} className="p-6 space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-stone-500 mb-1">कॉर्पोरेट शिपर का नाम *</label>
+                  <label className="block text-stone-500 mb-1">{t('Corporate Shipper Name *', 'कॉर्पोरेट शिपर का नाम *')}</label>
                   <input
                     type="text"
-                    placeholder="जैसे: Tata Motors / Nestle"
+                    placeholder="e.g. Tata Motors / Nestle"
                     value={newShipper}
                     onChange={e => setNewShipper(e.target.value)}
                     required
@@ -612,7 +640,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">कन्साइनमेंट नंबर *</label>
+                  <label className="block text-stone-500 mb-1">{t('Consignment Number *', 'कन्साइनमेंट नंबर *')}</label>
                   <input
                     type="text"
                     placeholder="CN-2026-..."
@@ -623,7 +651,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">इनवॉइस नंबर</label>
+                  <label className="block text-stone-500 mb-1">{t('Invoice Number', 'इनवॉइस नंबर')}</label>
                   <input
                     type="text"
                     value={newInv}
@@ -632,7 +660,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">घटना स्थल / हाईवे</label>
+                  <label className="block text-stone-500 mb-1">{t('Incident Location / Highway', 'घटना स्थल / हाईवे')}</label>
                   <input
                     type="text"
                     value={newLocation}
@@ -641,7 +669,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">इनवॉइस मूल्य (INR)</label>
+                  <label className="block text-stone-500 mb-1">{t('Total Invoice Value (INR)', 'इनवॉइस मूल्य (INR)')}</label>
                   <input
                     type="number"
                     value={newInvVal}
@@ -650,7 +678,7 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-500 mb-1">दावा राशि (Claimed INR) *</label>
+                  <label className="block text-stone-500 mb-1">{t('Claimed Loss Amount (INR) *', 'दावा राशि (Claimed INR) *')}</label>
                   <input
                     type="number"
                     value={newClaimVal}
@@ -662,17 +690,17 @@ export const CorporateCargoClaimsManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-stone-500 mb-1">क्षति / विवाद का मुख्य कारण *</label>
+                <label className="block text-stone-500 mb-1">{t('Dispute Reason *', 'क्षति / विवाद का मुख्य कारण *')}</label>
                 <select
                   value={newReason}
                   onChange={e => setNewReason(e.target.value as ClaimDisputeReason)}
                   className="w-full p-2 border rounded-lg bg-stone-50 dark:bg-stone-800 border-stone-300 dark:border-stone-700"
                 >
-                  <option value="WATER_RAIN_DAMAGE">बारिश / जल रिसाव (Water / Rain Damage)</option>
-                  <option value="TRANSIT_IMPACT_BREAKAGE">पारगमन प्रभाव / टूट-फूट (Transit Impact / Breakage)</option>
-                  <option value="SHORTAGE_PILFERAGE">माल कमी / चोरी (Shortage / Pilferage)</option>
-                  <option value="DELAYED_DELIVERY_SLA">SLA डिलीवरी देरी पेनल्टी (Delayed Delivery SLA)</option>
-                  <option value="TEMPERATURE_EXCURSION">कोल्ड चेन तापमान विचलन (Temperature Excursion)</option>
+                  <option value="WATER_RAIN_DAMAGE">{t('Water / Rain Damage Ingress', 'बारिश / जल रिसाव (Water / Rain Damage)')}</option>
+                  <option value="TRANSIT_IMPACT_BREAKAGE">{t('Transit Impact / Breakage', 'पारगमन प्रभाव / टूट-फूट (Transit Impact / Breakage)')}</option>
+                  <option value="SHORTAGE_PILFERAGE">{t('Shortage / Pilferage', 'माल कमी / चोरी (Shortage / Pilferage)')}</option>
+                  <option value="DELAYED_DELIVERY_SLA">{t('Delayed Delivery SLA Penalty', 'SLA डिलीवरी देरी पेनल्टी (Delayed Delivery SLA)')}</option>
+                  <option value="TEMPERATURE_EXCURSION">{t('Cold-Chain Temperature Breach', 'कोल्ड चेन तापमान विचलन (Temperature Excursion)')}</option>
                 </select>
               </div>
 
@@ -682,13 +710,13 @@ export const CorporateCargoClaimsManager: React.FC = () => {
                   onClick={() => setShowNewModal(false)}
                   className="px-4 py-2 border rounded-lg text-stone-600 dark:text-stone-300"
                 >
-                  रद्द करें
+                  {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-cyan-700 hover:bg-cyan-600 text-white font-bold rounded-lg shadow"
                 >
-                  दावा दर्ज करें
+                  {t('Register Claim Ticket', 'दावा दर्ज करें')}
                 </button>
               </div>
             </form>

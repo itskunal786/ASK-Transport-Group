@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   CheckCircle2, 
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { RtoBorderInspectionDossier } from '../types/transportOperations';
 import { getAllRtoDossiers, verifyRtoDossier } from '../api/rtoVaultApi';
+import { useLanguage } from '../context/LanguageContext';
 
 const SEED_DOSSIERS: RtoBorderInspectionDossier[] = [
   {
@@ -43,17 +44,17 @@ const SEED_DOSSIERS: RtoBorderInspectionDossier[] = [
     driverDlNumber: 'HR55-20120044192 (TRANS)',
     driverDlExpiry: '2027-04-10',
     rcNumber: 'HR55AN8102 / Tata Signa 4825.T',
-    rcFitnessExpiry: '2026-11-12', // Expiring in 13 days!
+    rcFitnessExpiry: '2026-11-12',
     nationalPermitExpiry: '2027-09-18',
     insurancePolicyNo: 'ICICI-LOMBARD-TRK-77401',
     insuranceExpiry: '2027-06-30',
-    pucPollutionExpiry: '2026-11-02', // Critical: Expiring in 3 days!
+    pucPollutionExpiry: '2026-11-02',
     activeEwbNo: '2411-9012-7634 (Part-B Updated)',
     activeBiltyNo: 'LR-2026-ASK-8810',
     taxTokenReceiptNo: 'HR-MVT-2026-11092',
     isAllClearForInterstate: false,
     verifiedAt: '2026-10-29T18:15:00',
-    flaggedComplianceNotes: 'चेतावनी: PUC प्रदूषण प्रमाण पत्र 3 दिन में समाप्त हो रहा है। रिन्यूअल अनिवार्य।'
+    flaggedComplianceNotes: 'Warning: PUC pollution certificate expiring in 3 days. Mandatory renewal required.'
   },
   {
     id: 'dossier-3',
@@ -78,6 +79,7 @@ const SEED_DOSSIERS: RtoBorderInspectionDossier[] = [
 ];
 
 export const RtoBorderCheckpostVault: React.FC = () => {
+  const { t } = useLanguage();
   const [dossiers, setDossiers] = useState<RtoBorderInspectionDossier[]>(SEED_DOSSIERS);
   const [selectedDossier, setSelectedDossier] = useState<RtoBorderInspectionDossier>(SEED_DOSSIERS[0]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,13 +119,13 @@ export const RtoBorderCheckpostVault: React.FC = () => {
       if (selectedDossier.id === id) {
         setSelectedDossier(prev => ({ ...prev, isAllClearForInterstate: true, verifiedAt: new Date().toISOString() }));
       }
-      showToast('success', `वाहन ${selectedDossier.vehicleNumber} का RTO चेक-पोस्ट डॉजियर सफलतापूर्वक री-वेरीफाई हुआ!`);
+      showToast('success', t(`RTO check-post dossier re-verified for vehicle ${selectedDossier.vehicleNumber}!`, `वाहन ${selectedDossier.vehicleNumber} का RTO चेक-पोस्ट डॉजियर सफलतापूर्वक री-वेरीफाई हुआ!`));
     } catch {
       setDossiers(prev => prev.map(d => d.id === id ? { ...d, isAllClearForInterstate: true, verifiedAt: new Date().toISOString() } : d));
       if (selectedDossier.id === id) {
         setSelectedDossier(prev => ({ ...prev, isAllClearForInterstate: true, verifiedAt: new Date().toISOString() }));
       }
-      showToast('success', `RTO चेक-पोस्ट डॉजियर री-वेरीफाई हुआ!`);
+      showToast('success', t('RTO check-post dossier verified!', 'RTO चेक-पोस्ट डॉजियर री-वेरीफाई हुआ!'));
     }
   };
 
@@ -169,10 +171,13 @@ export const RtoBorderCheckpostVault: React.FC = () => {
             <span>National Interstate Border RTO Shield</span>
           </div>
           <h1 className="text-2xl font-bold mt-1 text-white">
-            1-क्लिक बॉर्डर आरटीओ चेक-पोस्ट डॉक्यूमेंट वॉल्ट
+            {t('1-Click Border RTO Check-Post Document Vault', '1-क्लिक बॉर्डर आरटीओ चेक-पोस्ट डॉक्यूमेंट वॉल्ट')}
           </h1>
           <p className="text-teal-100/80 text-sm mt-1">
-            RC, फिटनेस, नेशनल परमिट, PUC, इंश्योरेंस, ड्राइवर DL व ई-वे बिल का एकल डिजिटल QR टोकन डॉजियर।
+            {t(
+              'Unified digital QR dossier for RC, Fitness, National Permit, Insurance, PUC, Driver DL, and active E-Way Bill.',
+              'RC, फिटनेस, नेशनल परमिट, PUC, इंश्योरेंस, ड्राइवर DL व ई-वे बिल का एकल डिजिटल QR टोकन डॉजियर।'
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -182,14 +187,14 @@ export const RtoBorderCheckpostVault: React.FC = () => {
             className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>रिफ्रेश</span>
+            <span>{t('Refresh', 'रिफ्रेश')}</span>
           </button>
           <button
             onClick={() => setShowQrModal(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-teal-400 hover:bg-teal-300 text-stone-950 font-bold rounded-xl text-sm shadow-md transition"
           >
             <QrCode className="w-4 h-4" />
-            <span>चेक-पोस्ट QR टोकन दिखाएं</span>
+            <span>{t('Show Check-Post QR Token', 'चेक-पोस्ट QR टोकन दिखाएं')}</span>
           </button>
         </div>
       </div>
@@ -198,9 +203,13 @@ export const RtoBorderCheckpostVault: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">कुल सक्रिय वाहन डॉजियर</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Total Vehicle Dossiers', 'कुल सक्रिय वाहन डॉजियर')}
+            </span>
             <div className="text-2xl font-bold text-stone-800 dark:text-stone-100 mt-0.5">{dossiers.length}</div>
-            <span className="text-xs text-teal-600 dark:text-teal-400 mt-1 inline-block">वाहन एवं सारथी सिंक</span>
+            <span className="text-xs text-teal-600 dark:text-teal-400 mt-1 inline-block">
+              {t('Vahan & Sarathi API Sync', 'वाहन एवं सारथी सिंक')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center text-teal-600">
             <FileBadge className="w-6 h-6" />
@@ -209,9 +218,13 @@ export const RtoBorderCheckpostVault: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">इंटरस्टेट हरी झंडी (All-Clear)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Interstate Cleared (All-Clear)', 'इंटरस्टेट हरी झंडी (All-Clear)')}
+            </span>
             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{clearCount}</div>
-            <span className="text-xs text-emerald-600 mt-1 inline-block">शून्य चालान जोखिम (100% Valid)</span>
+            <span className="text-xs text-emerald-600 mt-1 inline-block">
+              {t('Zero Challan Risk (100% Valid)', 'शून्य चालान जोखिम (100% Valid)')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600">
             <CheckCircle2 className="w-6 h-6" />
@@ -220,9 +233,13 @@ export const RtoBorderCheckpostVault: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">ध्यान देने योग्य चेतावनी (Expiring)</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              {t('Renewal Due / Expiring', 'ध्यान देने योग्य चेतावनी (Expiring)')}
+            </span>
             <div className="text-2xl font-bold text-amber-600 mt-0.5">{flaggedCount}</div>
-            <span className="text-xs text-amber-500 mt-1 inline-block">PUC / फिटनेस नवीनीकरण आवश्यक</span>
+            <span className="text-xs text-amber-500 mt-1 inline-block">
+              {t('PUC / Fitness Action Required', 'PUC / फिटनेस नवीनीकरण आवश्यक')}
+            </span>
           </div>
           <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
             <AlertTriangle className="w-6 h-6" />
@@ -241,7 +258,7 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                 <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="गाड़ी संख्या / ड्राइवर नाम / बिल्टी..."
+                  placeholder={t('Search vehicle plate / driver / bilty no...', 'गाड़ी संख्या / ड्राइवर नाम / बिल्टी...')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-stone-800 dark:text-stone-100"
@@ -260,7 +277,7 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                         : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
                     }`}
                   >
-                    {tab === 'ALL' ? 'सभी गाड़ियां' : tab === 'CLEAR' ? 'हरी झंडी (Valid)' : 'चेतावनी युक्त'}
+                    {tab === 'ALL' ? t('All Vehicles', 'सभी गाड़ियां') : tab === 'CLEAR' ? t('All Clear (Valid)', 'हरी झंडी (Valid)') : t('Renewal Due', 'चेतावनी युक्त')}
                   </button>
                 ))}
               </div>
@@ -268,7 +285,9 @@ export const RtoBorderCheckpostVault: React.FC = () => {
 
             <div className="mt-4 space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
               {filteredDossiers.length === 0 ? (
-                <div className="text-center py-8 text-stone-400 text-sm">कोई डॉजियर नहीं मिला</div>
+                <div className="text-center py-8 text-stone-400 text-sm">
+                  {t('No vehicle dossiers found', 'कोई डॉजियर नहीं मिला')}
+                </div>
               ) : (
                 filteredDossiers.map(dossier => {
                   const isSelected = selectedDossier.id === dossier.id;
@@ -302,8 +321,8 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                       </div>
 
                       <div className="mt-1 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 border-t border-stone-100 dark:border-stone-800 pt-2">
-                        <span>बिल्टी: <b>{dossier.activeBiltyNo}</b></span>
-                        <span>RC वैध: {dossier.rcFitnessExpiry}</span>
+                        <span>{t('LR / Bilty:', 'बिल्टी:')} <b>{dossier.activeBiltyNo}</b></span>
+                        <span>{t('RC Valid Till:', 'RC वैध:')} {dossier.rcFitnessExpiry}</span>
                       </div>
                     </div>
                   );
@@ -322,10 +341,10 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                 <ShieldCheck className="w-5 h-5 text-teal-300" />
                 <div>
                   <h3 className="font-bold text-sm">
-                    RTO चेक-पोस्ट निरीक्षण डॉजियर • {selectedDossier.vehicleNumber}
+                    {t('RTO Check-Post Inspection Dossier', 'RTO चेक-पोस्ट निरीक्षण डॉजियर')} • {selectedDossier.vehicleNumber}
                   </h3>
                   <span className="text-[11px] text-teal-200">
-                    डिजिटल टोकन: {selectedDossier.dossierQrToken}
+                    {t('Digital Token:', 'डिजिटल टोकन:')} {selectedDossier.dossierQrToken}
                   </span>
                 </div>
               </div>
@@ -336,14 +355,14 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>री-वेरीफाई</span>
+                  <span>{t('Re-Verify', 'री-वेरीफाई')}</span>
                 </button>
                 <button
                   onClick={() => setShowQrModal(true)}
                   className="px-3 py-1.5 bg-white text-teal-900 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
                 >
                   <QrCode className="w-3.5 h-3.5" />
-                  <span>QR दिखाएं</span>
+                  <span>{t('Show QR', 'QR दिखाएं')}</span>
                 </button>
               </div>
             </div>
@@ -366,8 +385,8 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                   <div>
                     <h4 className="font-bold text-sm">
                       {selectedDossier.isAllClearForInterstate
-                        ? '🟢 इंटरस्टेट बॉर्डर क्लीयरेंस: 100% वैध एवं चालान-मुक्त'
-                        : '🟡 कम्पलायंस चेतावनी: दस्तावेज नवीनीकरण आवश्यक'}
+                        ? t('🟢 Interstate Border Clearance: 100% Compliant & Valid', '🟢 इंटरस्टेट बॉर्डर क्लीयरेंस: 100% वैध एवं चालान-मुक्त')
+                        : t('🟡 Compliance Warning: Document Renewal Required', '🟡 कम्पलायंस चेतावनी: दस्तावेज नवीनीकरण आवश्यक')}
                     </h4>
                     <p className="text-xs opacity-90 mt-0.5">
                       {selectedDossier.flaggedComplianceNotes}
@@ -379,68 +398,80 @@ export const RtoBorderCheckpostVault: React.FC = () => {
               {/* 7-in-1 Document Grid */}
               <div className="space-y-3">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                  7 अनिवार्य राष्ट्रीय परमिट एवं परिवहन दस्तावेज (Interstate Checklist)
+                  {t('7 Mandatory Interstate Transport Compliance Documents', '7 अनिवार्य राष्ट्रीय परमिट एवं परिवहन दस्तावेज (Interstate Checklist)')}
                 </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                   {/* RC & Fitness */}
                   <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">1. RC एवं फिटनेस सर्टिफिकेट</span>
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
+                        {t('1. RC & Fitness Certificate', '1. RC एवं फिटनेस सर्टिफिकेट')}
+                      </span>
                       <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">VAHAN VERIFIED</span>
                     </div>
                     <div className="text-stone-600 dark:text-stone-400">{selectedDossier.rcNumber}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">वैधता तिथि: {selectedDossier.rcFitnessExpiry}</div>
+                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.rcFitnessExpiry}</div>
                   </div>
 
                   {/* National Permit */}
                   <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">2. नेशनल परमिट (Form 48 & 47)</span>
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
+                        {t('2. National Permit (Form 48 & 47)', '2. नेशनल परमिट (Form 48 & 47)')}
+                      </span>
                       <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">ALL INDIA PERMIT</span>
                     </div>
-                    <div className="text-stone-600 dark:text-stone-400">राष्ट्रीय गुड्स कैरिज परमिट</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">वैधता तिथि: {selectedDossier.nationalPermitExpiry}</div>
+                    <div className="text-stone-600 dark:text-stone-400">{t('National Goods Carriage Permit', 'राष्ट्रीय गुड्स कैरिज परमिट')}</div>
+                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.nationalPermitExpiry}</div>
                   </div>
 
                   {/* Commercial Insurance */}
                   <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">3. व्यापक कॉमर्शियल इंश्योरेंस</span>
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
+                        {t('3. Commercial Comprehensive Insurance', '3. व्यापक कॉमर्शियल इंश्योरेंस')}
+                      </span>
                       <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">POLICY ACTIVE</span>
                     </div>
                     <div className="text-stone-600 dark:text-stone-400">{selectedDossier.insurancePolicyNo}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">वैधता तिथि: {selectedDossier.insuranceExpiry}</div>
+                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.insuranceExpiry}</div>
                   </div>
 
                   {/* PUC Certificate */}
                   <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">4. PUC प्रदूषण प्रमाण पत्र</span>
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
+                        {t('4. PUC Emission Pass Certificate', '4. PUC प्रदूषण प्रमाण पत्र')}
+                      </span>
                       <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">EMISSION PASS</span>
                     </div>
-                    <div className="text-stone-600 dark:text-stone-400">BS-VI स्मोक डेंसिटी टेस्ट क्लीयर</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">वैधता तिथि: {selectedDossier.pucPollutionExpiry}</div>
+                    <div className="text-stone-600 dark:text-stone-400">{t('BS-VI Smoke Density Clearance', 'BS-VI स्मोक डेंसिटी टेस्ट क्लीयर')}</div>
+                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.pucPollutionExpiry}</div>
                   </div>
 
                   {/* Driver DL */}
                   <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">5. चालक ड्राइविंग लाइसेंस (DL)</span>
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
+                        {t('5. Driver Commercial License (DL)', '5. चालक ड्राइविंग लाइसेंस (DL)')}
+                      </span>
                       <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">SARATHI VERIFIED</span>
                     </div>
                     <div className="text-stone-600 dark:text-stone-400">{selectedDossier.driverName} • {selectedDossier.driverDlNumber}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">वैधता तिथि: {selectedDossier.driverDlExpiry}</div>
+                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.driverDlExpiry}</div>
                   </div>
 
                   {/* E-Way Bill & Bilty */}
                   <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">6. सक्रिय ई-वे बिल व बिल्टी</span>
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
+                        {t('6. Active E-Way Bill & Bilty (LR)', '6. सक्रिय ई-वे बिल व बिल्टी')}
+                      </span>
                       <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">NIC EWB SYNC</span>
                     </div>
                     <div className="text-stone-600 dark:text-stone-400">EWB: {selectedDossier.activeEwbNo}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">बिल्टी: {selectedDossier.activeBiltyNo}</div>
+                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('LR / Bilty:', 'बिल्टी:')} {selectedDossier.activeBiltyNo}</div>
                   </div>
                 </div>
               </div>
@@ -448,15 +479,15 @@ export const RtoBorderCheckpostVault: React.FC = () => {
               {/* Action Buttons: Bundle Download */}
               <div className="flex items-center justify-between pt-4 border-t border-stone-200 dark:border-stone-800">
                 <span className="text-xs text-stone-500">
-                  अंतिम सत्यापन: {new Date(selectedDossier.verifiedAt).toLocaleString('en-IN')}
+                  {t('Last Verification:', 'अंतिम सत्यापन:')} {new Date(selectedDossier.verifiedAt).toLocaleString('en-IN')}
                 </span>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => showToast('success', `गाड़ी ${selectedDossier.vehicleNumber} का समस्त दस्तावेज बंडल ZIP/PDF डाउनलोड हो गया!`)}
+                    onClick={() => showToast('success', t(`Document bundle ZIP downloaded for ${selectedDossier.vehicleNumber}!`, `गाड़ी ${selectedDossier.vehicleNumber} का समस्त दस्तावेज बंडल ZIP/PDF डाउनलोड हो गया!`))}
                     className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>दस्तावेज बंडल डाउनलोड करें (ZIP)</span>
+                    <span>{t('Download Document Bundle (ZIP)', 'दस्तावेज बंडल डाउनलोड करें (ZIP)')}</span>
                   </button>
                 </div>
               </div>
@@ -472,7 +503,9 @@ export const RtoBorderCheckpostVault: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-white text-stone-900 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-stone-300 text-center p-6 space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-xs uppercase tracking-wider text-teal-800">RTO Border Officer Token</span>
+              <span className="font-bold text-xs uppercase tracking-wider text-teal-800">
+                {t('RTO Border Officer Token', 'RTO चेक-पोस्ट ऑफिसर टोकन')}
+              </span>
               <button onClick={() => setShowQrModal(false)} className="text-stone-400 hover:text-stone-600">
                 <X className="w-5 h-5" />
               </button>
@@ -485,21 +518,24 @@ export const RtoBorderCheckpostVault: React.FC = () => {
 
             <div>
               <h3 className="font-black text-lg text-stone-900">{selectedDossier.vehicleNumber}</h3>
-              <p className="text-xs text-stone-500">चालक: {selectedDossier.driverName}</p>
+              <p className="text-xs text-stone-500">{t('Driver:', 'चालक:')} {selectedDossier.driverName}</p>
               <div className="mt-2 inline-block px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full">
                 ✓ ALL-INDIA INTERSTATE CLEARED
               </div>
             </div>
 
             <p className="text-[11px] text-stone-400">
-              RTO अधिकारी इस QR कोड को स्कैन करके वाहन, सारथी एवं GST पोर्टल पर त्वरित सत्यापन कर सकते हैं।
+              {t(
+                'RTO inspection officers can scan this QR code for instant Parivahan, Sarathi and GST portal verification.',
+                'RTO अधिकारी इस QR कोड को स्कैन करके वाहन, सारथी एवं GST पोर्टल पर त्वरित सत्यापन कर सकते हैं।'
+              )}
             </p>
 
             <button
               onClick={() => setShowQrModal(false)}
               className="w-full py-2 bg-teal-800 hover:bg-teal-700 text-white font-bold rounded-lg text-xs"
             >
-              पूर्ण हुआ (Done)
+              {t('Done', 'पूर्ण हुआ (Done)')}
             </button>
           </div>
         </div>
