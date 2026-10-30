@@ -1,0 +1,511 @@
+/* ============================================================================
+   COLD-CHAIN IOT REEFER TEMPERATURE & DOOR TAMPER RADAR CSS
+   Theme-Adaptive (Dark & Light Mode), Ultra-Responsive, Zero-Clipping
+   ============================================================================ */
+
+.coldchain-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--text-primary, #0f172a);
+}
+
+/* TOAST NOTIFICATION */
+.coldchain-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 99999;
+  background: #091322;
+  border: 1px solid #0284c7;
+  color: #ffffff;
+  padding: 14px 22px;
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: coldchainToastSlideIn 0.25s ease-out;
+}
+
+@keyframes coldchainToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   TOP HERO BANNER
+   ============================================================================ */
+.coldchain-banner {
+  background: linear-gradient(135deg, #091322 0%, #0369a1 50%, #0284c7 100%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.coldchain-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+  color: #e0f2fe;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.coldchain-banner h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.coldchain-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #bae6fd;
+  max-width: 760px;
+  line-height: 1.5;
+}
+
+.coldchain-btn-breach {
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: #ffffff;
+  border: 1px solid #f87171;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
+  transition: all 0.2s ease;
+}
+
+.coldchain-btn-breach:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* ============================================================================
+   KPI METRIC TILES (4 CARDS GRID)
+   ============================================================================ */
+.coldchain-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.coldchain-kpi-card {
+  background: var(--bg-surface, #ffffff);
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.coldchain-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.coldchain-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-secondary, #64748b);
+  letter-spacing: 0.5px;
+}
+
+.coldchain-kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.coldchain-kpi-value {
+  font-size: 26px;
+  font-weight: 900;
+  margin-top: 6px;
+  color: var(--text-primary, #0f172a);
+}
+
+.coldchain-kpi-sub {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ============================================================================
+   SUB-TABS NAVIGATION
+   ============================================================================ */
+.coldchain-subtabs-row {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+  padding-bottom: 2px;
+  flex-wrap: wrap;
+}
+
+.coldchain-subtab-btn {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  border-bottom: 3px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.coldchain-subtab-btn:hover {
+  color: var(--text-primary, #0f172a);
+}
+
+.coldchain-subtab-btn.active-blue {
+  color: #0284c7;
+  border-bottom-color: #0284c7;
+}
+
+.coldchain-subtab-btn.active-green {
+  color: #10b981;
+  border-bottom-color: #10b981;
+}
+
+.coldchain-subtab-btn.active-red {
+  color: #ef4444;
+  border-bottom-color: #ef4444;
+}
+
+/* ============================================================================
+   TAB 1: LIVE REEFER TELEMETRY (SPLIT VIEW)
+   ============================================================================ */
+.coldchain-split-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .coldchain-split-view {
+    grid-template-columns: 1fr;
+  }
+}
+
+.coldchain-filter-pill {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #475569);
+  transition: all 0.15s;
+}
+
+.coldchain-filter-pill.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.coldchain-truck-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coldchain-truck-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.coldchain-truck-card.selected {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+}
+
+.coldchain-truck-card.breach-border {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.coldchain-truck-card.warning-border {
+  border-color: #f59e0b !important;
+  background: rgba(245, 158, 11, 0.04);
+}
+
+/* SENSOR INSPECTION RIGHT CARD */
+.coldchain-inspect-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.coldchain-readout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: var(--bg-subtle, #f0f9ff);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #bae6fd);
+}
+
+.coldchain-log-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: var(--bg-subtle, #f8fafc);
+  color: var(--text-primary, #334155);
+  font-weight: 500;
+  border: 1px solid var(--border-color, #f1f5f9);
+}
+
+.coldchain-log-row.breach-alert {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ============================================================================
+   TAB 2: WHO-GDP DIGITAL CERTIFICATE
+   ============================================================================ */
+.coldchain-cert-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 850px;
+  margin: 0 auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.coldchain-cert-header {
+  border-bottom: 3px solid #0284c7;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.coldchain-cert-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: var(--bg-subtle, #f8fafc);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  margin-bottom: 20px;
+}
+
+.coldchain-cert-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.coldchain-cert-tile {
+  background: var(--bg-subtle, #f0f9ff);
+  padding: 14px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid var(--border-color, #bae6fd);
+}
+
+/* ============================================================================
+   TAB 3: DOOR TAMPER & BREACH FEED
+   ============================================================================ */
+.coldchain-tamper-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.coldchain-tamper-feed-item {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES (LUXURY HIGH-CONTRAST SLATE #111a2e / #090f1d)
+   ============================================================================ */
+[data-theme="dark"] .coldchain-container,
+body.dark .coldchain-container,
+.dark .coldchain-container {
+  --bg-surface: #111a2e;
+  --bg-subtle: #090f1d;
+  --bg-hover: rgba(2, 132, 199, 0.08);
+  --border-color: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+[data-theme="dark"] .coldchain-kpi-card,
+body.dark .coldchain-kpi-card,
+.dark .coldchain-kpi-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .coldchain-kpi-value,
+body.dark .coldchain-kpi-value,
+.dark .coldchain-kpi-value {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .coldchain-filter-pill,
+body.dark .coldchain-filter-pill,
+.dark .coldchain-filter-pill {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .coldchain-filter-pill.active,
+body.dark .coldchain-filter-pill.active,
+.dark .coldchain-filter-pill.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+[data-theme="dark"] .coldchain-truck-card,
+body.dark .coldchain-truck-card,
+.dark .coldchain-truck-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .coldchain-inspect-card,
+body.dark .coldchain-inspect-card,
+.dark .coldchain-inspect-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .coldchain-readout-grid,
+body.dark .coldchain-readout-grid,
+.dark .coldchain-readout-grid {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .coldchain-log-row,
+body.dark .coldchain-log-row,
+.dark .coldchain-log-row {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .coldchain-cert-card,
+body.dark .coldchain-cert-card,
+.dark .coldchain-cert-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-theme="dark"] .coldchain-cert-meta,
+body.dark .coldchain-cert-meta,
+.dark .coldchain-cert-meta {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .coldchain-cert-tile,
+body.dark .coldchain-cert-tile,
+.dark .coldchain-cert-tile {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .coldchain-tamper-card,
+body.dark .coldchain-tamper-card,
+.dark .coldchain-tamper-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .coldchain-subtab-btn,
+body.dark .coldchain-subtab-btn,
+.dark .coldchain-subtab-btn {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .coldchain-subtab-btn:hover,
+body.dark .coldchain-subtab-btn:hover,
+.dark .coldchain-subtab-btn:hover {
+  color: #f8fafc !important;
+}
