@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getWeighbridgeSlips, authorizeCrossDockDeLoad } from '../api/weighbridgeApi';
 
 // ============================================================================
 // WEIGHBRIDGE & DHARAM KANTA TYPES & MODELS
@@ -159,6 +160,12 @@ export default function ElectronicWeighbridgeDeck() {
   const [showCrossDockModal, setShowCrossDockModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    getWeighbridgeSlips().then(data => {
+      if (data && data.length > 0) setSlips(data);
+    }).catch(() => {});
+  }, []);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4500);
@@ -183,6 +190,7 @@ export default function ElectronicWeighbridgeDeck() {
   };
 
   const handleAuthorizeCrossDockDeload = (slipId: string) => {
+    authorizeCrossDockDeLoad(slipId).catch(() => {});
     setSlips(prev =>
       prev.map(s => {
         if (s.id === slipId) {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getFreightCorridors, getBrokerBids, acceptBrokerBid, broadcastLoadRequirement } from '../api/spotFreightApi';
 
 // ============================================================================
 // SPOT FREIGHT RATE & BROKER EXCHANGE MODELS
@@ -146,7 +147,7 @@ const INITIAL_BIDS: SpotBrokerBid[] = [
 ];
 
 export default function SpotFreightRateAiPredictor() {
-  const [corridors] = useState<FreightCorridorIndex[]>(INITIAL_CORRIDORS);
+  const [corridors, setCorridors] = useState<FreightCorridorIndex[]>(INITIAL_CORRIDORS);
   const [selectedCorridor, setSelectedCorridor] = useState<FreightCorridorIndex>(INITIAL_CORRIDORS[0]);
   const [bids, setBids] = useState<SpotBrokerBid[]>(INITIAL_BIDS);
   
@@ -162,6 +163,13 @@ export default function SpotFreightRateAiPredictor() {
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
   const [broadcastSent, setBroadcastSent] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([getFreightCorridors(), getBrokerBids()]).then(([cData, bData]) => {
+      if (cData && cData.length > 0) setCorridors(cData);
+      if (bData && bData.length > 0) setBids(bData);
+    }).catch(() => {});
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -186,6 +194,7 @@ export default function SpotFreightRateAiPredictor() {
   // ACTIONS
   // --------------------------------------------------------------------------
   const handleBroadcastLoad = () => {
+    broadcastLoadRequirement(selectedCorridor.lane, calcCargoTon, maxSpotMarketLorryHireCap).catch(() => {});
     setIsBroadcasting(true);
     showToast(`📲 Broadcasting load requirement on 65+ verified WhatsApp Transport Broker channels...`);
     setTimeout(() => {
@@ -196,6 +205,7 @@ export default function SpotFreightRateAiPredictor() {
   };
 
   const handleAcceptBid = (bidId: string) => {
+    acceptBrokerBid(bidId).catch(() => {});
     setBids(prev =>
       prev.map(b => (b.id === bidId ? { ...b, status: 'ACCEPTED' } : { ...b, status: 'REJECTED' }))
     );
