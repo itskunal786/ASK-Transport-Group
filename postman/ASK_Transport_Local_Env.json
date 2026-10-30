@@ -1,0 +1,25 @@
+{
+  "id": "e1f2a3b4-ask2-4912-98ab-askenvlocal2026",
+  "name": "ASK Transport Local & Cloud Env",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5208",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "jwtToken",
+      "value": "YOUR_ADMIN_OR_CUSTOMER_JWT_TOKEN",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "frontendUrl",
+      "value": "http://localhost:5173",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

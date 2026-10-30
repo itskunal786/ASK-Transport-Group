@@ -1,0 +1,299 @@
+{
+  "info": {
+    "_postman_id": "a9b8c7d6-ask1-4192-bcde-asktransport2026",
+    "name": "ASK Transport Group - Enterprise API Suite (.NET 10)",
+    "description": "Production Endpoints Collection for Clean Architecture Logistics ERP: Executive P&L Radar, CA Tax Vault, Physical POD Barcode Inward, Consignee Directory, AIS-140 Telematics, Gate Pass, Weighbridge & Bookings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health & Readiness",
+      "item": [
+        {
+          "name": "Health Check (Database & System)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Executive Route Profitability & P&L Margins",
+      "item": [
+        {
+          "name": "Get Corridor Profitability Radar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/executive-profitability/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "executive-profitability", "routes"]
+            }
+          }
+        },
+        {
+          "name": "Get Branch Performance Rankings",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/executive-profitability/branches",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "executive-profitability", "branches"]
+            }
+          }
+        },
+        {
+          "name": "Simulate Route Margin Recalculation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routeId\": \"corridor-1\",\n  \"dieselAdjustmentPercent\": 5.0,\n  \"freightHikePercent\": 3.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/executive-profitability/recalculate-margin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "executive-profitability", "recalculate-margin"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. CA 1-Click Tax & Audit Vault",
+      "item": [
+        {
+          "name": "Get Tax Audit Entries (GSTR-1, 3B, RCM, TDS 194C)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tax-audit-vault?quarter=Q3%20FY%202026-27",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tax-audit-vault"],
+              "query": [
+                { "key": "quarter", "value": "Q3 FY 2026-27" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Tax Audit Voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"auditPeriodQuarter\": \"Q3 FY 2026-27\",\n  \"taxFilingType\": \"Gstr1B2B\",\n  \"documentReferenceNo\": \"INV/2026/DEL-9912\",\n  \"partyGstin\": \"07AAACK1948Q1Z4\",\n  \"partyLegalName\": \"Tata Steel Tubes Division Ltd\",\n  \"taxableFreightAmountInr\": 540000,\n  \"cgstAmountInr\": 13500,\n  \"sgstAmountInr\": 13500,\n  \"igstAmountInr\": 0,\n  \"rcmApplicable\": false,\n  \"section194CTdsDeductedInr\": 10800,\n  \"tdsCertificateNumber\": \"TDS/26AS/OCT-9901\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tax-audit-vault",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tax-audit-vault"]
+            }
+          }
+        },
+        {
+          "name": "Mark Voucher Filed with GSTN ARN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tax-audit-vault/tax-001/mark-filed?acknowledgmentRef=AA071026001928M",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tax-audit-vault", "tax-001", "mark-filed"],
+              "query": [
+                { "key": "acknowledgmentRef", "value": "AA071026001928M" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Physical POD Inward & Breakdown SOS Rescue",
+      "item": [
+        {
+          "name": "Get Pending Physical POD Receipts",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/physical-pod/receipts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "physical-pod", "receipts"]
+            }
+          }
+        },
+        {
+          "name": "Scan Optical Barcode & Verify Consignee Stamp",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/physical-pod/scan-barcode?barcodeOrBiltyNo=BC-9012-DEL-BOM&operatorName=Hub%20Inward%20Executive",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "physical-pod", "scan-barcode"],
+              "query": [
+                { "key": "barcodeOrBiltyNo", "value": "BC-9012-DEL-BOM" },
+                { "key": "operatorName", "value": "Hub Inward Executive" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Release 30% Balance Payout to Broker/Transporter",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/physical-pod/receipts/pod-001/release-payment?transactionRef=UTR-HDFC-99182741",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "physical-pod", "receipts", "pod-001", "release-payment"],
+              "query": [
+                { "key": "transactionRef", "value": "UTR-HDFC-99182741" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Highway Breakdown SOS Rescues",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/physical-pod/transshipments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "physical-pod", "transshipments"]
+            }
+          }
+        },
+        {
+          "name": "Dispatch Emergency Transshipment & Rescue Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originalVehiclePlate\": \"NL 01 AB 8912\",\n  \"breakdownLocation\": \"NH-48 Near Behror, Rajasthan (KM 134)\",\n  \"breakdownReason\": \"EngineBreakdown\",\n  \"assignedRescueVehiclePlate\": \"RJ 02 GB 4120\",\n  \"rescueDriverName\": \"Mukesh Choudhary\",\n  \"rescueDriverPhone\": \"+91 98291 00291\",\n  \"craneMechanicDispatched\": true,\n  \"transshipmentCargoStatus\": \"Rescue Team Dispatched en-route\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/physical-pod/transshipments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "physical-pod", "transshipments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Customer Consignee Directory & Shareable Tracking",
+      "item": [
+        {
+          "name": "Get Consignee Address Book",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-directory/consignees?customerId=cust-default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-directory", "consignees"],
+              "query": [
+                { "key": "customerId", "value": "cust-default" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Save New Consignee Party",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consigneeLegalTitle\": \"Jindal Stainless Steel Logistics Yard\",\n  \"tradeBrandName\": \"Jindal Hisar CDC\",\n  \"gstinNumber\": \"06AAACJ1920B1Z9\",\n  \"completeAddress\": \"Industrial Sector 14, Delhi Road\",\n  \"destinationCity\": \"Hisar\",\n  \"pincode\": \"125005\",\n  \"contactPerson\": \"Ravi Verma\",\n  \"contactPhone\": \"+91 98120 44551\",\n  \"dockUnloadingInstructions\": \"Overhead crane bay available 24/7\",\n  \"isFavorite\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-directory/consignees",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-directory", "consignees"]
+            }
+          }
+        },
+        {
+          "name": "Generate 1-Click WhatsApp PIN Share Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-directory/generate-whatsapp-session?consignmentNo=CN-884920&receiverPhone=9829012345&receiverName=Sanjay%20Kumar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-directory", "generate-whatsapp-session"],
+              "query": [
+                { "key": "consignmentNo", "value": "CN-884920" },
+                { "key": "receiverPhone", "value": "9829012345" },
+                { "key": "receiverName", "value": "Sanjay Kumar" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Public Consignee Tracking Verification (PIN Required)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-directory/public-track/trk-tok-sample?pin=6492",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-directory", "public-track", "trk-tok-sample"],
+              "query": [
+                { "key": "pin", "value": "6492" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

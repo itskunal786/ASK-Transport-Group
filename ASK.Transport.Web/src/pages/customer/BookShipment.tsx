@@ -28,6 +28,7 @@ import type {
   PinCodeDetails
 } from '../../types/pinCode';
 import BulkBookingUpload from '../../components/BulkBookingUpload';
+import ConsigneeAddressBookModal from '../../components/ConsigneeAddressBookModal';
 import ConsignmentLRModal, { type ConsignmentLRData } from '../../components/ConsignmentLRModal';
 import GstTaxInvoiceModal, { type GstInvoiceData } from '../../components/GstTaxInvoiceModal';
 
@@ -120,6 +121,7 @@ export default function BookShipment() {
 
   // Modal State for adding new Address Book item
   const [showAddAddressModal, setShowAddAddressModal] = useState<'pickup' | 'delivery' | null>(null);
+  const [showConsigneeDirectoryModal, setShowConsigneeDirectoryModal] = useState(false);
   const [newAddrLabel, setNewAddrLabel] = useState('');
   const [newAddrName, setNewAddrName] = useState('');
   const [newAddrPhone, setNewAddrPhone] = useState('');
@@ -2621,6 +2623,20 @@ return (
           </form>
         </div>
       </div>
+    )}
+
+    {showConsigneeDirectoryModal && (
+      <ConsigneeAddressBookModal
+        isOpen={showConsigneeDirectoryModal}
+        onClose={() => setShowConsigneeDirectoryModal(false)}
+        onSelectConsignee={(item) => {
+          setReceiverName(item.contactPerson || item.consigneeLegalTitle);
+          setReceiverPhone(item.contactPhone);
+          setToAddress(item.completeAddress);
+          setToPinCode(item.pincode);
+          checkDeliveryPin(item.pincode);
+        }}
+      />
     )}
   </CustomerLayout>
 );

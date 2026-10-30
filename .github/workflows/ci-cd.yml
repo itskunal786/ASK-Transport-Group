@@ -1,0 +1,69 @@
+name: ASK Transport Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, feature/transport-work ]
+  pull_request:
+    branches: [ main, feature/transport-work ]
+
+jobs:
+  # ============================================================================
+  # 1. BACKEND ASP.NET CORE (.NET 10) BUILD & HEALTH CHECK
+  # ============================================================================
+  backend-ci:
+    name: Backend API (.NET 10) CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore ASK.Group.Api.csproj
+
+      - name: Build Backend (Release)
+        run: dotnet build ASK.Group.Api.csproj --configuration Release --no-restore
+
+  # ============================================================================
+  # 2. FRONTEND REACT 19 + TYPESCRIPT BUILD
+  # ============================================================================
+  frontend-ci:
+    name: Frontend (React 19 + TypeScript) CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ASK.Transport.Web
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: './ASK.Transport.Web/package-lock.json'
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: TypeScript Type-Check & Vite Production Build
+        run: npm run build
+
+  # ============================================================================
+  # 3. DOCKER CONTAINER IMAGE VALIDATION
+  # ============================================================================
+  docker-validation:
+    name: Docker Containers Validation
+    needs: [backend-ci, frontend-ci]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose config
