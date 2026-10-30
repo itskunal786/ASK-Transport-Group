@@ -24,6 +24,7 @@ import {
   createTransshipmentRescue
 } from '../api/physicalPodApi';
 import { useLanguage } from '../context/LanguageContext';
+import './PhysicalPodInwardDeck.css';
 
 const SEED_POD_RECEIPTS: PhysicalPodInwardReceipt[] = [
   {
@@ -310,7 +311,7 @@ export default function PhysicalPodInwardDeck() {
   const activeRescuesCount = transshipments.filter(r => !r.resolvedAt).length;
 
   return (
-    <div className="space-y-6 text-slate-800 dark:text-slate-100">
+    <div className="pod-deck-container space-y-6 text-slate-800 dark:text-slate-100">
       {/* Toast Notification */}
       {notification && (
         <div className={`fixed top-5 right-5 z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 text-white ${
