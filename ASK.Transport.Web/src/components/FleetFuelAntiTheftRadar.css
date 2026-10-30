@@ -1,0 +1,573 @@
+/* ============================================================================
+   FLEET FUEL SENSOR & DIESEL THEFT ANTI-PILFERAGE RADAR CSS
+   Theme-Adaptive (Dark & Light Mode), Ultra-Responsive, Zero-Clipping
+   ============================================================================ */
+
+.fuel-radar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--text-primary, #0f172a);
+}
+
+/* TOAST NOTIFICATION */
+.fuel-radar-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 99999;
+  background: #0f172a;
+  border: 1px solid #25D366;
+  color: #ffffff;
+  padding: 14px 22px;
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fuelToastSlideIn 0.25s ease-out;
+}
+
+@keyframes fuelToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   TOP HERO BANNER
+   ============================================================================ */
+.fuel-radar-banner {
+  background: linear-gradient(135deg, #091322 0%, #1e3a8a 60%, #0284c7 100%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.fuel-radar-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+  color: #93c5fd;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.fuel-radar-banner h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.fuel-radar-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #bfdbfe;
+  max-width: 760px;
+  line-height: 1.5;
+}
+
+.fuel-btn-simulate {
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: #ffffff;
+  border: 1px solid #f87171;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
+  transition: all 0.2s ease;
+}
+
+.fuel-btn-simulate:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* ============================================================================
+   KPI METRIC TILES (4 CARDS GRID)
+   ============================================================================ */
+.fuel-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.fuel-kpi-card {
+  background: var(--bg-surface, #ffffff);
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.fuel-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.fuel-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-secondary, #64748b);
+  letter-spacing: 0.5px;
+}
+
+.fuel-kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.fuel-kpi-value {
+  font-size: 26px;
+  font-weight: 900;
+  margin-top: 6px;
+  color: var(--text-primary, #0f172a);
+}
+
+.fuel-kpi-sub {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ============================================================================
+   SUB-TABS NAVIGATION
+   ============================================================================ */
+.fuel-subtabs-row {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+  padding-bottom: 2px;
+  flex-wrap: wrap;
+}
+
+.fuel-subtab-btn {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  border-bottom: 3px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.fuel-subtab-btn:hover {
+  color: var(--text-primary, #0f172a);
+}
+
+.fuel-subtab-btn.active-blue {
+  color: #0284c7;
+  border-bottom-color: #0284c7;
+}
+
+.fuel-subtab-btn.active-red {
+  color: #ef4444;
+  border-bottom-color: #ef4444;
+}
+
+.fuel-subtab-btn.active-green {
+  color: #10b981;
+  border-bottom-color: #10b981;
+}
+
+/* ============================================================================
+   TAB 1: LIVE FUEL ROD MONITORING (SPLIT VIEW)
+   ============================================================================ */
+.fuel-split-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .fuel-split-view {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fuel-search-input {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  font-size: 13px;
+  outline: none;
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #0f172a);
+}
+
+.fuel-filter-pill {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #475569);
+  transition: all 0.15s;
+}
+
+.fuel-filter-pill.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.fuel-truck-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fuel-truck-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.fuel-truck-card.selected {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+}
+
+.fuel-truck-card.theft-border {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.03);
+}
+
+/* SENSOR INSPECTION RIGHT CARD */
+.fuel-inspect-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.fuel-gauge-box {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fuel-history-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: var(--bg-subtle, #f1f5f9);
+  color: var(--text-primary, #334155);
+  font-weight: 500;
+}
+
+.fuel-history-row.event-alert {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ============================================================================
+   TAB 2: THEFT & PILFERAGE RADAR LOG CARDS
+   ============================================================================ */
+.fuel-incident-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid #f87171;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fuel-btn-whatsapp {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #25D366;
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.fuel-btn-whatsapp:hover {
+  background: #1eb956;
+}
+
+.fuel-btn-call {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #0284c7;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.fuel-btn-call:hover {
+  background: #0369a1;
+}
+
+/* ============================================================================
+   TAB 3: TRIP MILEAGE AUDIT TABLE (ZERO-CLIPPING)
+   ============================================================================ */
+.fuel-audit-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.fuel-audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.fuel-audit-table th {
+  background: var(--bg-subtle, #f8fafc);
+  padding: 12px 16px;
+  color: var(--text-secondary, #64748b);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  white-space: nowrap;
+}
+
+.fuel-audit-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  vertical-align: middle;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+}
+
+.fuel-audit-table tr:hover {
+  background: var(--bg-hover, rgba(2, 132, 199, 0.04));
+}
+
+.fuel-plate-text {
+  font-weight: 800;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--text-primary, #0f172a);
+}
+
+.fuel-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.fuel-rank-badge.rank-gold {
+  color: #eab308;
+}
+
+.fuel-rank-badge.rank-silver {
+  color: #94a3b8;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES (LUXURY HIGH-CONTRAST SLATE #111a2e / #090f1d)
+   ============================================================================ */
+[data-theme="dark"] .fuel-radar-container,
+body.dark .fuel-radar-container,
+.dark .fuel-radar-container {
+  --bg-surface: #111a2e;
+  --bg-subtle: #090f1d;
+  --bg-hover: rgba(2, 132, 199, 0.08);
+  --border-color: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+[data-theme="dark"] .fuel-kpi-card,
+body.dark .fuel-kpi-card,
+.dark .fuel-kpi-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .fuel-kpi-value,
+body.dark .fuel-kpi-value,
+.dark .fuel-kpi-value {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .fuel-search-input,
+body.dark .fuel-search-input,
+.dark .fuel-search-input {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .fuel-filter-pill,
+body.dark .fuel-filter-pill,
+.dark .fuel-filter-pill {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .fuel-filter-pill.active,
+body.dark .fuel-filter-pill.active,
+.dark .fuel-filter-pill.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+[data-theme="dark"] .fuel-truck-card,
+body.dark .fuel-truck-card,
+.dark .fuel-truck-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .fuel-inspect-card,
+body.dark .fuel-inspect-card,
+.dark .fuel-inspect-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .fuel-gauge-box,
+body.dark .fuel-gauge-box,
+.dark .fuel-gauge-box {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .fuel-history-row,
+body.dark .fuel-history-row,
+.dark .fuel-history-row {
+  background: #090f1d !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .fuel-incident-card,
+body.dark .fuel-incident-card,
+.dark .fuel-incident-card {
+  background: #111a2e !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .fuel-audit-card,
+body.dark .fuel-audit-card,
+.dark .fuel-audit-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .fuel-audit-table th,
+body.dark .fuel-audit-table th,
+.dark .fuel-audit-table th {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .fuel-audit-table td,
+body.dark .fuel-audit-table td,
+.dark .fuel-audit-table td {
+  border-color: #17243c !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .fuel-plate-text,
+body.dark .fuel-plate-text,
+.dark .fuel-plate-text {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .fuel-subtab-btn,
+body.dark .fuel-subtab-btn,
+.dark .fuel-subtab-btn {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .fuel-subtab-btn:hover,
+body.dark .fuel-subtab-btn:hover,
+.dark .fuel-subtab-btn:hover {
+  color: #f8fafc !important;
+}

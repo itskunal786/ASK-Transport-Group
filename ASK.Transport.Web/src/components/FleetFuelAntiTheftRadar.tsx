@@ -1,4 +1,24 @@
 import { useState } from 'react';
+import {
+  Fuel,
+  ShieldAlert,
+  AlertTriangle,
+  Radio,
+  BarChart3,
+  TrendingUp,
+  Gauge,
+  Award,
+  User,
+  Phone,
+  MessageSquare,
+  MapPin,
+  Clock,
+  Zap,
+  CheckCircle2,
+  Search,
+} from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import './FleetFuelAntiTheftRadar.css';
 
 // ==========================================
 // TYPES & INTERFACES
@@ -115,7 +135,7 @@ const DEFAULT_FUEL_TRUCKS: FuelTruckRecord[] = [
       { time: '01:00 AM', liters: 175 },
       { time: '02:00 AM', liters: 165 },
       { time: '02:40 AM', liters: 160, event: 'Parked at Dhaba' },
-      { time: '02:48 AM', liters: 112, event: '🚨 Sudden 48L Drop' },
+      { time: '02:48 AM', liters: 112, event: 'Sudden 48L Drop' },
       { time: '03:00 AM', liters: 112 }
     ]
   },
@@ -170,7 +190,7 @@ const DEFAULT_FUEL_TRUCKS: FuelTruckRecord[] = [
     fuelTheftRisk: 'Low',
     fuelDrainHistory: [
       { time: '08:00 AM', liters: 150 },
-      { time: '09:00 AM', liters: 330, event: '⛽ +180L Bunk Refill' },
+      { time: '09:00 AM', liters: 330, event: '+180L Bunk Refill' },
       { time: '10:00 AM', liters: 325 },
       { time: '11:00 AM', liters: 320 }
     ]
@@ -257,6 +277,7 @@ const DEFAULT_MILEAGE_AUDIT: MileageAuditItem[] = [
 ];
 
 export default function FleetFuelAntiTheftRadar() {
+  const { t } = useLanguage();
   const [trucksList, setTrucksList] = useState<FuelTruckRecord[]>(DEFAULT_FUEL_TRUCKS);
   const [theftIncidents, setTheftIncidents] = useState<TheftIncidentLog[]>(DEFAULT_THEFT_INCIDENTS);
   const [mileageAuditList] = useState<MileageAuditItem[]>(DEFAULT_MILEAGE_AUDIT);
@@ -320,7 +341,7 @@ export default function FleetFuelAntiTheftRadar() {
             fuelTheftRisk: 'Critical Detected',
             fuelDrainHistory: [
               ...t.fuelDrainHistory,
-              { time: 'Just Now', liters: newCurrent, event: `🚨 Sudden ${dropLiters}L Theft Drop` }
+              { time: 'Just Now', liters: newCurrent, event: `Sudden ${dropLiters}L Theft Drop` }
             ]
           };
         }
@@ -344,15 +365,15 @@ export default function FleetFuelAntiTheftRadar() {
     };
 
     setTheftIncidents(prev => [newIncident, ...prev]);
-    showToast(`🚨 CRITICAL: Sudden Diesel Drop (${dropLiters}L) detected on ${targetPlate}! Instant siren dispatched.`);
+    showToast(`CRITICAL: Sudden Diesel Drop (${dropLiters}L) detected on ${targetPlate}! Instant siren dispatched.`);
     setTimeout(() => setIsSirenActive(false), 5000);
   };
 
   const dispatchWhatsAppTheftAlert = (incident: TheftIncidentLog) => {
-    const text = `🚨 *ASK TRANSPORT FLEET THEFT ALERT* 🚨\n\n*Vehicle No:* ${incident.plateNo}\n*Driver:* ${incident.driverName} (${incident.driverPhone})\n*Stolen Diesel:* ${incident.stolenLiters} Liters in ${incident.drainDurationMinutes} mins!\n*Estimated Financial Loss:* ₹${incident.estimatedLossInr.toLocaleString('en-IN')}\n*Location:* ${incident.location}\n*GPS Map:* https://maps.google.com/?q=${incident.gpsCoordinates.lat},${incident.gpsCoordinates.lng}\n\n*Action:* Driver phone ringing & security dispatched.`;
+    const text = `*ASK TRANSPORT FLEET THEFT ALERT*\n\n*Vehicle No:* ${incident.plateNo}\n*Driver:* ${incident.driverName} (${incident.driverPhone})\n*Stolen Diesel:* ${incident.stolenLiters} Liters in ${incident.drainDurationMinutes} mins!\n*Estimated Financial Loss:* ₹${incident.estimatedLossInr.toLocaleString('en-IN')}\n*Location:* ${incident.location}\n*GPS Map:* https://maps.google.com/?q=${incident.gpsCoordinates.lat},${incident.gpsCoordinates.lng}\n\n*Action:* Driver phone ringing & security dispatched.`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
-    showToast(`✓ WhatsApp Theft Alert dispatched to SuperAdmin & Fleet Owner!`);
+    showToast(`WhatsApp Theft Alert dispatched to SuperAdmin & Fleet Owner!`);
   };
 
   const filteredTrucks = trucksList.filter(t => {
@@ -371,202 +392,135 @@ export default function FleetFuelAntiTheftRadar() {
   const activeTheftCount = trucksList.filter(t => t.status === 'Theft Alert').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="fuel-radar-container">
       {/* TOAST NOTIFICATION */}
       {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '24px',
-            background: '#07192b',
-            color: '#ffffff',
-            padding: '12px 20px',
-            borderRadius: '10px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-            zIndex: 99999,
-            fontSize: '13px',
-            fontWeight: 700,
-            borderLeft: '4px solid #ef4444'
-          }}
-        >
-          {toastMessage}
+        <div className="fuel-radar-toast">
+          <AlertTriangle style={{ width: '18px', height: '18px', color: '#ef4444', flexShrink: 0 }} />
+          <span>{toastMessage}</span>
         </div>
       )}
 
       {/* HEADER RADAR HERO BANNER */}
       <div
-        style={{
-          background: isSirenActive
-            ? 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 50%, #991b1b 100%)'
-            : 'linear-gradient(135deg, #091b2e 0%, #0f2c4a 50%, #1e3a5f 100%)',
-          borderRadius: '16px',
-          padding: '24px 28px',
-          color: '#ffffff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-          boxShadow: isSirenActive ? '0 0 35px rgba(239, 68, 68, 0.7)' : '0 10px 25px -5px rgba(15, 44, 74, 0.4)',
-          transition: 'all 0.3s ease',
-          border: isSirenActive ? '2px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.1)'
-        }}
+        className="fuel-radar-banner"
+        style={isSirenActive ? {
+          background: 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 50%, #991b1b 100%)',
+          borderColor: '#ef4444',
+          boxShadow: '0 0 35px rgba(239, 68, 68, 0.7)'
+        } : undefined}
       >
-        <div style={{ maxWidth: '650px' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(255, 255, 255, 0.12)',
-              backdropFilter: 'blur(4px)',
-              padding: '4px 12px',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: 800,
-              letterSpacing: '0.6px',
-              marginBottom: '8px'
-            }}
-          >
-            <span>🛡️</span> IOT FUEL ROD SENSOR TELEMETRY &amp; ANTI-PILFERAGE RADAR
+        <div>
+          <div className="fuel-radar-tag">
+            <ShieldAlert style={{ width: '14px', height: '14px', color: '#93c5fd' }} />
+            <span>{t('IOT FUEL ROD SENSOR TELEMETRY & ANTI-PILFERAGE RADAR', 'आईओटी फ्यूल रॉड सेंसर टेलीमेट्री एवं एंटी-चोरी रडार')}</span>
           </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 900, letterSpacing: '-0.5px' }}>
-            Fleet Fuel Sensor &amp; Diesel Theft Detection Engine
+          <h1>
+            {t('Fleet Fuel Sensor & Diesel Theft Detection Engine', 'फ्लीट फ्यूल सेंसर एवं डीजल चोरी पहचान इंजन')}
           </h1>
-          <p style={{ margin: 0, fontSize: '13px', color: '#93c5fd', lineHeight: 1.5 }}>
-            Digital Rod Sensors measure live Liters inside the diesel tank. Instant siren &amp; WhatsApp alerts trigger if fuel drops unexpectedly while parked. Audits trip KM vs actual diesel burn for driver KM/L rankings.
+          <p>
+            {t(
+              'Digital Rod Sensors measure live Liters inside the diesel tank. Instant siren & WhatsApp alerts trigger if fuel drops unexpectedly while parked. Audits trip KM vs actual diesel burn for driver KM/L rankings.',
+              'डिजिटल रॉड सेंसर डीजल टैंक के अंदर वास्तविक लीटर मापते हैं। पार्क किए जाने पर अचानक ईंधन कम होने पर त्वरित सायरन व व्हाट्सएप अलर्ट जारी होता है।'
+            )}
           </p>
         </div>
 
         {/* CONTROLS & SIMULATOR BUTTON */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div>
           <button
             type="button"
             onClick={simulateDieselTheft}
-            style={{
-              padding: '12px 20px',
-              borderRadius: '10px',
-              background: '#ef4444',
-              color: '#ffffff',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 14px rgba(239, 68, 68, 0.45)',
-              transition: 'transform 0.15s ease'
-            }}
+            className="fuel-btn-simulate"
             title="Simulate sudden 42L fuel theft on a parked truck to test instant siren and WhatsApp dispatch"
           >
-            <span>🚨</span> Simulate Diesel Theft Alert
+            <AlertTriangle style={{ width: '16px', height: '16px' }} />
+            <span>{t('Simulate Diesel Theft Alert', 'डीजल चोरी अलर्ट सिम्युलेट करें')}</span>
           </button>
         </div>
       </div>
 
       {/* METRIC KPI TILES */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px'
-        }}
-      >
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
-            <span>Total Fleet Fuel in Tanks</span>
-            <span>⛽ LIVE</span>
+      <div className="fuel-kpis-grid">
+        <div className="fuel-kpi-card">
+          <div className="fuel-kpi-head">
+            <span>{t('Total Fleet Fuel in Tanks', 'टैंकों में कुल फ्लीट ईंधन')}</span>
+            <span className="fuel-kpi-badge" style={{ color: '#0284c7' }}>
+              <Fuel style={{ width: '13px', height: '13px' }} /> LIVE
+            </span>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a', marginTop: '6px' }}>
-            788 <span style={{ fontSize: '14px', fontWeight: 700, color: '#64748b' }}>Liters</span>
+          <div className="fuel-kpi-value">
+            788 <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-secondary)' }}>{t('Liters', 'लीटर')}</span>
           </div>
-          <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 700, marginTop: '4px' }}>
-            Across 4 Active Heavy Vehicles
-          </div>
+          <span className="fuel-kpi-sub" style={{ color: '#10b981' }}>
+            {t('Across 4 Active Heavy Vehicles', '4 सक्रिय भारी वाहनों में')}
+          </span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
-            <span>Theft / Pilferage Alerts</span>
-            <span style={{ color: activeTheftCount > 0 ? '#ef4444' : '#10b981' }}>🔴 RADAR</span>
+        <div className="fuel-kpi-card">
+          <div className="fuel-kpi-head">
+            <span>{t('Theft / Pilferage Alerts', 'चोरी / रिसाव अलर्ट')}</span>
+            <span className="fuel-kpi-badge" style={{ color: activeTheftCount > 0 ? '#ef4444' : '#10b981' }}>
+              <AlertTriangle style={{ width: '13px', height: '13px' }} /> RADAR
+            </span>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: 900, color: activeTheftCount > 0 ? '#ef4444' : '#10b981', marginTop: '6px' }}>
-            {activeTheftCount} <span style={{ fontSize: '14px', fontWeight: 700 }}>Trucks Flagged</span>
+          <div className="fuel-kpi-value" style={{ color: activeTheftCount > 0 ? '#ef4444' : '#10b981' }}>
+            {activeTheftCount} <span style={{ fontSize: '14px', fontWeight: 700 }}>{t('Trucks Flagged', 'वाहन चिह्नित')}</span>
           </div>
-          <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 700, marginTop: '4px' }}>
-            {theftIncidents.length} Total Incidents Logged
-          </div>
+          <span className="fuel-kpi-sub" style={{ color: '#ef4444' }}>
+            {theftIncidents.length} {t('Total Incidents Logged', 'कुल दर्ज घटनाएं')}
+          </span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
-            <span>Fleet Avg Mileage</span>
-            <span>🛣️ BENCHMARK</span>
+        <div className="fuel-kpi-card">
+          <div className="fuel-kpi-head">
+            <span>{t('Fleet Avg Mileage', 'फ्लीट औसत माइलेज')}</span>
+            <span className="fuel-kpi-badge" style={{ color: '#0284c7' }}>
+              <Gauge style={{ width: '13px', height: '13px' }} /> BENCHMARK
+            </span>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a', marginTop: '6px' }}>
-            3.58 <span style={{ fontSize: '14px', fontWeight: 700, color: '#64748b' }}>KM / Liter</span>
+          <div className="fuel-kpi-value">
+            3.58 <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-secondary)' }}>KM / Liter</span>
           </div>
-          <div style={{ fontSize: '12px', color: '#3b82f6', fontWeight: 700, marginTop: '4px' }}>
+          <span className="fuel-kpi-sub" style={{ color: '#0284c7' }}>
             Top: 4.42 KM/L (Ramesh Yadav)
-          </div>
+          </span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
-            <span>Monthly Fuel Savings</span>
-            <span>💰 ROI GAIN</span>
+        <div className="fuel-kpi-card">
+          <div className="fuel-kpi-head">
+            <span>{t('Monthly Fuel Savings', 'मासिक ईंधन बचत')}</span>
+            <span className="fuel-kpi-badge" style={{ color: '#10b981' }}>
+              <TrendingUp style={{ width: '13px', height: '13px' }} /> ROI GAIN
+            </span>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: 900, color: '#059669', marginTop: '6px' }}>
+          <div className="fuel-kpi-value" style={{ color: '#10b981' }}>
             ₹92,400
           </div>
-          <div style={{ fontSize: '12px', color: '#059669', fontWeight: 700, marginTop: '4px' }}>
-            Saved via Zero Unauth Drains
-          </div>
+          <span className="fuel-kpi-sub" style={{ color: '#10b981' }}>
+            {t('Saved via Zero Unauth Drains', 'अनधिकृत निकासी रोककर बचत')}
+          </span>
         </div>
       </div>
 
       {/* NAVIGATION SUB-TABS */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px' }}>
+      <div className="fuel-subtabs-row">
         <button
           type="button"
           onClick={() => setActiveSubTab('live_monitoring')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeSubTab === 'live_monitoring' ? '#0b72e7' : '#64748b',
-            borderBottom: activeSubTab === 'live_monitoring' ? '3px solid #0b72e7' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`fuel-subtab-btn ${activeSubTab === 'live_monitoring' ? 'active-blue' : ''}`}
         >
-          <span>📡</span> Live Fuel Rod Monitoring ({trucksList.length})
+          <Radio style={{ width: '16px', height: '16px' }} />
+          <span>{t('Live Fuel Rod Monitoring', 'लाइव फ्यूल रॉड मॉनिटरिंग')} ({trucksList.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('theft_incidents')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeSubTab === 'theft_incidents' ? '#ef4444' : '#64748b',
-            borderBottom: activeSubTab === 'theft_incidents' ? '3px solid #ef4444' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`fuel-subtab-btn ${activeSubTab === 'theft_incidents' ? 'active-red' : ''}`}
         >
-          <span>🚨</span> Theft &amp; Pilferage Radar Log ({theftIncidents.length})
+          <AlertTriangle style={{ width: '16px', height: '16px', color: '#ef4444' }} />
+          <span>{t('Theft & Pilferage Radar Log', 'चोरी एवं रिसाव रडार लॉग')} ({theftIncidents.length})</span>
           {activeTheftCount > 0 && (
             <span style={{ background: '#ef4444', color: '#ffffff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px' }}>
               CRITICAL
@@ -577,62 +531,37 @@ export default function FleetFuelAntiTheftRadar() {
         <button
           type="button"
           onClick={() => setActiveSubTab('mileage_audit')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeSubTab === 'mileage_audit' ? '#10b981' : '#64748b',
-            borderBottom: activeSubTab === 'mileage_audit' ? '3px solid #10b981' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`fuel-subtab-btn ${activeSubTab === 'mileage_audit' ? 'active-green' : ''}`}
         >
-          <span>📊</span> Trip Mileage &amp; Driver Efficiency Audit
+          <BarChart3 style={{ width: '16px', height: '16px' }} />
+          <span>{t('Trip Mileage & Driver Efficiency Audit', 'ट्रिप माइलेज एवं ड्राइवर दक्षता ऑडिट')}</span>
         </button>
       </div>
 
       {/* TAB 1: LIVE FUEL SENSOR MONITORING */}
       {activeSubTab === 'live_monitoring' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
+        <div className="fuel-split-view">
           {/* LEFT: TRUCKS LIST & FILTERS */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input
-                type="text"
-                placeholder="Search plate, driver, or highway..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '9px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color, #cbd5e1)',
-                  fontSize: '13px',
-                  outline: 'none',
-                  background: 'var(--bg-surface, #ffffff)',
-                  color: 'inherit'
-                }}
-              />
+              <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
+                <Search style={{ width: '15px', height: '15px', position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <input
+                  type="text"
+                  placeholder={t('Search plate, driver, or highway...', 'गाड़ी नंबर, ड्राइवर या हाईवे खोजें...')}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="fuel-search-input"
+                  style={{ paddingLeft: '34px', width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {(['All', 'Theft Alert', 'Low Fuel', 'Normal'] as const).map(f => (
                   <button
                     key={f}
                     type="button"
                     onClick={() => setFilterType(f)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      border: '1px solid var(--border-color, #cbd5e1)',
-                      background: filterType === f ? '#0b72e7' : 'var(--bg-surface, #ffffff)',
-                      color: filterType === f ? '#ffffff' : '#64748b'
-                    }}
+                    className={`fuel-filter-pill ${filterType === f ? 'active' : ''}`}
                   >
                     {f}
                   </button>
@@ -650,27 +579,12 @@ export default function FleetFuelAntiTheftRadar() {
                   <div
                     key={truck.id}
                     onClick={() => setSelectedTruck(truck)}
-                    style={{
-                      background: isAlert
-                        ? 'rgba(239, 68, 68, 0.08)'
-                        : isSelected
-                        ? 'rgba(11, 114, 231, 0.06)'
-                        : 'var(--bg-surface, #ffffff)',
-                      border: isAlert
-                        ? '2px solid #ef4444'
-                        : isSelected
-                        ? '2px solid #0b72e7'
-                        : '1px solid var(--border-color, #e2e8f0)',
-                      borderRadius: '12px',
-                      padding: '16px 18px',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
+                    className={`fuel-truck-card ${isSelected ? 'selected' : ''} ${isAlert ? 'theft-border' : ''}`}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>{truck.plateNo}</strong>
+                          <strong className="fuel-plate-text">{truck.plateNo}</strong>
                           <span
                             style={{
                               background:
@@ -691,24 +605,25 @@ export default function FleetFuelAntiTheftRadar() {
                             {truck.status.toUpperCase()}
                           </span>
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
-                          👨‍✈️ {truck.driverName} • {truck.vehicleModel}
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <User style={{ width: '13px', height: '13px' }} />
+                          <span>{truck.driverName} • {truck.vehicleModel}</span>
                         </div>
                       </div>
 
                       {/* CURRENT FUEL STATS */}
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '18px', fontWeight: 900, color: isAlert ? '#ef4444' : '#0f172a' }}>
-                          {truck.currentFuelLiters} <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>/ {truck.tankCapacityLiters} L</span>
+                        <div style={{ fontSize: '18px', fontWeight: 900, color: isAlert ? '#ef4444' : 'var(--text-primary)' }}>
+                          {truck.currentFuelLiters} <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>/ {truck.tankCapacityLiters} L</span>
                         </div>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: truck.fuelPercent < 20 ? '#ef4444' : '#10b981' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: truck.fuelPercent < 20 ? '#ef4444' : '#10b981' }}>
                           {truck.fuelPercent}% Capacity
                         </div>
                       </div>
                     </div>
 
                     {/* PROGRESS BAR */}
-                    <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', margin: '8px 0' }}>
+                    <div style={{ width: '100%', height: '8px', background: 'var(--border-color, #e2e8f0)', borderRadius: '4px', overflow: 'hidden', margin: '4px 0' }}>
                       <div
                         style={{
                           width: `${truck.fuelPercent}%`,
@@ -720,16 +635,22 @@ export default function FleetFuelAntiTheftRadar() {
                               ? '#dc2626'
                               : truck.fuelPercent > 70
                               ? '#10b981'
-                              : '#3b82f6',
+                              : '#0284c7',
                           transition: 'width 0.4s ease'
                         }}
                       />
                     </div>
 
                     {/* DETAILS ROW */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#64748b', marginTop: '6px' }}>
-                      <div>📍 {truck.currentLocation}</div>
-                      <div>⚡ {truck.engineStatus} ({truck.speedKmH} km/h)</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin style={{ width: '12px', height: '12px' }} />
+                        <span>{truck.currentLocation}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Zap style={{ width: '12px', height: '12px', color: truck.speedKmH > 0 ? '#10b981' : '#f59e0b' }} />
+                        <span>{truck.engineStatus} ({truck.speedKmH} km/h)</span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -739,29 +660,21 @@ export default function FleetFuelAntiTheftRadar() {
 
           {/* RIGHT: SELECTED TRUCK TANK INSPECTOR */}
           {selectedTruck ? (
-            <div
-              style={{
-                background: 'var(--bg-surface, #ffffff)',
-                border: '1px solid var(--border-color, #e2e8f0)',
-                borderRadius: '14px',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+            <div className="fuel-inspect-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px' }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Digital Tank Visualizer</h3>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>Plate: {selectedTruck.plateNo}</div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 900 }}>{t('Digital Tank Visualizer', 'डिजिटल टैंक विजुअलाइज़र')}</h3>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    Plate: <strong style={{ fontFamily: 'monospace' }}>{selectedTruck.plateNo}</strong>
+                  </div>
                 </div>
-                <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.1)', color: '#059669' }}>
-                  Sensor: {selectedTruck.sensorType}
+                <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  {selectedTruck.sensorType}
                 </span>
               </div>
 
               {/* TANK GRAPHIC */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', background: '#f8fafc', padding: '16px', borderRadius: '12px' }}>
+              <div className="fuel-gauge-box">
                 <div
                   style={{
                     width: '90px',
@@ -796,43 +709,37 @@ export default function FleetFuelAntiTheftRadar() {
                 </div>
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>Current Diesel Level:</div>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: selectedTruck.status === 'Theft Alert' ? '#ef4444' : '#0f172a' }}>
-                    {selectedTruck.currentFuelLiters} <span style={{ fontSize: '14px', color: '#64748b' }}>Liters</span>
+                  <div style={{ fontSize: '24px', fontWeight: 900, color: selectedTruck.status === 'Theft Alert' ? '#ef4444' : 'var(--text-primary)' }}>
+                    {selectedTruck.currentFuelLiters} <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Liters</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
                     Tank Full Mark: <strong>{selectedTruck.tankCapacityLiters} Liters</strong>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
                     Sensor Accuracy: <strong>99.8% (Digital Capacitive)</strong>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Driver Contact: <strong>{selectedTruck.driverPhone}</strong>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Phone style={{ width: '12px', height: '12px', color: '#0284c7' }} />
+                    <span>Driver: <strong>{selectedTruck.driverPhone}</strong></span>
                   </div>
                 </div>
               </div>
 
               {/* DRAIN / REFUEL TIMELINE */}
               <div>
-                <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: '#334155' }}>
-                  Fuel Level Timeline (Last 6 Hours)
+                <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800 }}>
+                  {t('Fuel Level Timeline (Last 6 Hours)', 'ईंधन स्तर टाइमलाइन (पिछले 6 घंटे)')}
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {selectedTruck.fuelDrainHistory.map((point, idx) => (
                     <div
                       key={idx}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: '12px',
-                        padding: '6px 10px',
-                        background: point.event ? 'rgba(239, 68, 68, 0.1)' : '#f1f5f9',
-                        borderRadius: '6px',
-                        color: point.event ? '#b91c1c' : '#334155',
-                        fontWeight: point.event ? 700 : 500
-                      }}
+                      className={`fuel-history-row ${point.event ? 'event-alert' : ''}`}
                     >
-                      <span>{point.time}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock style={{ width: '12px', height: '12px' }} />
+                        {point.time}
+                      </span>
                       <span>{point.liters} Liters</span>
                       {point.event && <span>{point.event}</span>}
                     </div>
@@ -848,28 +755,17 @@ export default function FleetFuelAntiTheftRadar() {
                     const match = theftIncidents.find(i => i.plateNo === selectedTruck.plateNo);
                     if (match) dispatchWhatsAppTheftAlert(match);
                   }}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: '#25D366',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
+                  className="fuel-btn-whatsapp"
+                  style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
                 >
-                  <span>📲</span> Dispatch Emergency WhatsApp to SuperAdmin
+                  <MessageSquare style={{ width: '16px', height: '16px' }} />
+                  <span>{t('Dispatch Emergency WhatsApp to SuperAdmin', 'सुपर-एडमिन को आपातकालीन व्हाट्सएप भेजें')}</span>
                 </button>
               )}
             </div>
           ) : (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-              Select a truck from the left to inspect its digital fuel rod sensor data.
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              {t('Select a truck from the left to inspect its digital fuel rod sensor data.', 'डिजिटल फ्यूल रॉड सेंसर डेटा देखने के लिए बाईं ओर से ट्रक चुनें।')}
             </div>
           )}
         </div>
@@ -878,94 +774,73 @@ export default function FleetFuelAntiTheftRadar() {
       {/* TAB 2: THEFT & PILFERAGE RADAR LOG */}
       {activeSubTab === 'theft_incidents' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '16px 20px', color: '#991b1b', fontSize: '13px' }}>
-            <strong>Anti-Theft Radar Principle:</strong> If fuel levels suddenly drop more than 25 Liters within 10 minutes while the vehicle is parked (Ignition OFF), an automatic critical theft alert is triggered, siren sounds, and WhatsApp dispatch is initiated.
+          <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '16px 20px', color: '#dc2626', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertTriangle style={{ width: '20px', height: '20px', flexShrink: 0 }} />
+            <div>
+              <strong>{t('Anti-Theft Radar Principle:', 'एंटी-चोरी रडार सिद्धांत:') }</strong>{' '}
+              {t(
+                'If fuel levels suddenly drop more than 25 Liters within 10 minutes while the vehicle is parked (Ignition OFF), an automatic critical theft alert is triggered, siren sounds, and WhatsApp dispatch is initiated.',
+                'यदि वाहन पार्क होने पर (इग्निशन बंद) 10 मिनट के अंदर ईंधन स्तर में 25 लीटर से अधिक की अचानक गिरावट होती है, तो स्वचालित सायरन और व्हाट्सएप डिस्पैच सक्रिय होता है।'
+              )}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {theftIncidents.map(incident => (
-              <div
-                key={incident.id}
-                style={{
-                  background: 'var(--bg-surface, #ffffff)',
-                  border: '1px solid #f87171',
-                  borderRadius: '12px',
-                  padding: '18px 20px',
-                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.08)'
-                }}
-              >
+              <div key={incident.id} className="fuel-incident-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ background: '#ef4444', color: '#ffffff', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px' }}>
                         THEFT DETECTED
                       </span>
-                      <strong style={{ fontSize: '15px', color: '#0f172a' }}>{incident.plateNo}</strong>
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>({incident.timestamp})</span>
+                      <strong style={{ fontSize: '15px', color: 'var(--text-primary)', fontFamily: 'monospace' }}>{incident.plateNo}</strong>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>({incident.timestamp})</span>
                     </div>
-                    <div style={{ fontSize: '13px', color: '#334155', marginTop: '4px' }}>
-                      👨‍✈️ Driver: <strong>{incident.driverName}</strong> ({incident.driverPhone})
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <User style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                      <span>{t('Driver:', 'ड्राइवर:')} <strong>{incident.driverName}</strong> ({incident.driverPhone})</span>
                     </div>
-                    <div style={{ fontSize: '12.5px', color: '#b91c1c', marginTop: '4px', fontWeight: 600 }}>
-                      📍 Location: {incident.location}
+                    <div style={{ fontSize: '12.5px', color: '#dc2626', marginTop: '4px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin style={{ width: '13px', height: '13px' }} />
+                      <span>{incident.location}</span>
                     </div>
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#dc2626' }}>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: '#dc2626' }}>
                       -{incident.stolenLiters} Liters
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
                       Loss: ₹{incident.estimatedLossInr.toLocaleString('en-IN')} (@ ₹92/L)
                     </div>
-                    <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600 }}>
+                    <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 700, marginTop: '2px' }}>
                       Drain Duration: {incident.drainDurationMinutes} mins
                     </div>
                   </div>
                 </div>
 
-                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #fee2e2', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>
-                    Engine State: <strong>{incident.engineStateDuringDrop}</strong>
+                <div style={{ marginTop: '8px', paddingTop: '12px', borderTop: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    Engine State: <strong style={{ color: 'var(--text-primary)' }}>{incident.engineStateDuringDrop}</strong>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                       type="button"
                       onClick={() => dispatchWhatsAppTheftAlert(incident)}
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: '6px',
-                        background: '#25D366',
-                        color: '#ffffff',
-                        border: 'none',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
+                      className="fuel-btn-whatsapp"
                     >
-                      <span>📲</span> Send WhatsApp Alert
+                      <MessageSquare style={{ width: '14px', height: '14px' }} />
+                      <span>{t('Send WhatsApp Alert', 'व्हाट्सएप अलर्ट भेजें')}</span>
                     </button>
 
                     <a
                       href={`tel:${incident.driverPhone}`}
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: '6px',
-                        background: '#0b72e7',
-                        color: '#ffffff',
-                        textDecoration: 'none',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
+                      className="fuel-btn-call"
                     >
-                      <span>📞</span> Call Driver Immediately
+                      <Phone style={{ width: '14px', height: '14px' }} />
+                      <span>{t('Call Driver Immediately', 'ड्राइवर को कॉल करें')}</span>
                     </a>
                   </div>
                 </div>
@@ -978,84 +853,113 @@ export default function FleetFuelAntiTheftRadar() {
       {/* TAB 3: TRIP MILEAGE & DRIVER EFFICIENCY AUDIT */}
       {activeSubTab === 'mileage_audit' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px 20px', color: '#166534', fontSize: '13px' }}>
-            <strong>Trip Mileage Audit Engine:</strong> Calculates true KM/Liter by comparing official GPS odometer distance against fuel rod sensor consumption. Drivers who save diesel receive Gold status, while abnormal low mileage signals excessive AC idling or secret siphoning.
+          <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px', padding: '16px 20px', color: '#059669', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Gauge style={{ width: '20px', height: '20px', flexShrink: 0 }} />
+            <div>
+              <strong>{t('Trip Mileage Audit Engine:', 'ट्रिप माइलेज ऑडिट इंजन:') }</strong>{' '}
+              {t(
+                'Calculates true KM/Liter by comparing official GPS odometer distance against fuel rod sensor consumption. Drivers who save diesel receive Gold status, while abnormal low mileage signals excessive AC idling or secret siphoning.',
+                'आधिकारिक जीपीएस ओडोमीटर दूरी की तुलना फ्यूल रॉड सेंसर से करके वास्तविक माइलेज की गणना करता है। डीजल बचाने वाले ड्राइवरों को गोल्ड स्टेटस दिया जाता है।'
+              )}
+            </div>
           </div>
 
-          <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '12px', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: '11px', textTransform: 'uppercase' }}>
-                  <th style={{ padding: '12px 16px' }}>Rank</th>
-                  <th style={{ padding: '12px 16px' }}>Vehicle &amp; Driver</th>
-                  <th style={{ padding: '12px 16px' }}>Route Corridor</th>
-                  <th style={{ padding: '12px 16px' }}>GPS KM</th>
-                  <th style={{ padding: '12px 16px' }}>Actual Diesel</th>
-                  <th style={{ padding: '12px 16px' }}>Actual KM/L</th>
-                  <th style={{ padding: '12px 16px' }}>Benchmark</th>
-                  <th style={{ padding: '12px 16px' }}>Performance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mileageAuditList.map(item => {
-                  const isPositive = item.variancePercent >= 0;
-                  return (
-                    <tr key={item.plateNo} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '14px 16px', fontWeight: 800 }}>
-                        {item.rank === 1 ? '🥇 #1' : item.rank === 2 ? '🥈 #2' : `#${item.rank}`}
-                      </td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>{item.plateNo}</div>
-                        <div style={{ fontSize: '11.5px', color: '#64748b' }}>👨‍✈️ {item.driverName}</div>
-                      </td>
-                      <td style={{ padding: '14px 16px', color: '#64748b' }}>
-                        {item.routeCorridor}
-                      </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 700 }}>
-                        {item.gpsDistanceKm} KM
-                      </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 700 }}>
-                        {item.fuelConsumedLiters} L
-                      </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 900, color: isPositive ? '#059669' : '#dc2626' }}>
-                        {item.actualMileageKmpl} KM/L
-                      </td>
-                      <td style={{ padding: '14px 16px', color: '#64748b' }}>
-                        {item.benchmarkKmpl} KM/L
-                      </td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <span
-                          style={{
-                            background:
-                              item.badge === 'Gold Saver'
-                                ? 'rgba(5, 150, 105, 0.15)'
-                                : item.badge === 'Silver Normal'
-                                ? 'rgba(59, 130, 246, 0.15)'
-                                : item.badge === 'Heavy Foot'
-                                ? 'rgba(245, 158, 11, 0.15)'
-                                : 'rgba(239, 68, 68, 0.15)',
-                            color:
-                              item.badge === 'Gold Saver'
-                                ? '#059669'
-                                : item.badge === 'Silver Normal'
-                                ? '#2563eb'
-                                : item.badge === 'Heavy Foot'
-                                ? '#d97706'
-                                : '#dc2626',
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: 800
-                          }}
-                        >
-                          {isPositive ? `+${item.variancePercent}% (${item.badge})` : `${item.variancePercent}% (${item.badge})`}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="fuel-audit-card">
+            <div style={{ width: '100%', overflowX: 'auto' }}>
+              <table className="fuel-audit-table">
+                <thead>
+                  <tr>
+                    <th>{t('Rank', 'रैंक')}</th>
+                    <th>{t('Vehicle & Driver', 'वाहन एवं चालक')}</th>
+                    <th>{t('Route Corridor', 'रूट कॉरिडोर')}</th>
+                    <th>{t('GPS KM', 'जीपीएस किमी')}</th>
+                    <th>{t('Actual Diesel', 'वास्तविक डीजल')}</th>
+                    <th>{t('Actual KM/L', 'वास्तविक किमी/लीटर')}</th>
+                    <th>{t('Benchmark', 'बेंचमार्क')}</th>
+                    <th>{t('Performance', 'प्रदर्शन')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mileageAuditList.map(item => {
+                    const isPositive = item.variancePercent >= 0;
+                    return (
+                      <tr key={item.plateNo}>
+                        <td>
+                          {item.rank === 1 ? (
+                            <span className="fuel-rank-badge rank-gold">
+                              <Award style={{ width: '16px', height: '16px', color: '#eab308' }} /> #1
+                            </span>
+                          ) : item.rank === 2 ? (
+                            <span className="fuel-rank-badge rank-silver">
+                              <Award style={{ width: '16px', height: '16px', color: '#94a3b8' }} /> #2
+                            </span>
+                          ) : (
+                            <span className="fuel-rank-badge">
+                              #{item.rank}
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="fuel-plate-text">{item.plateNo}</div>
+                          <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                            <User style={{ width: '12px', height: '12px' }} />
+                            <span>{item.driverName}</span>
+                          </div>
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)' }}>
+                          {item.routeCorridor}
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {item.gpsDistanceKm} KM
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {item.fuelConsumedLiters} L
+                        </td>
+                        <td style={{ fontWeight: 900, color: isPositive ? '#10b981' : '#dc2626' }}>
+                          {item.actualMileageKmpl} KM/L
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)' }}>
+                          {item.benchmarkKmpl} KM/L
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              background:
+                                item.badge === 'Gold Saver'
+                                  ? 'rgba(16, 185, 129, 0.15)'
+                                  : item.badge === 'Silver Normal'
+                                  ? 'rgba(2, 132, 199, 0.15)'
+                                  : item.badge === 'Heavy Foot'
+                                  ? 'rgba(245, 158, 11, 0.15)'
+                                  : 'rgba(239, 68, 68, 0.15)',
+                              color:
+                                item.badge === 'Gold Saver'
+                                  ? '#10b981'
+                                  : item.badge === 'Silver Normal'
+                                  ? '#0284c7'
+                                  : item.badge === 'Heavy Foot'
+                                  ? '#f59e0b'
+                                  : '#ef4444',
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            {isPositive && <CheckCircle2 style={{ width: '12px', height: '12px' }} />}
+                            {isPositive ? `+${item.variancePercent}% (${item.badge})` : `${item.variancePercent}% (${item.badge})`}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
