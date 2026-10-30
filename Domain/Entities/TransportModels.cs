@@ -243,18 +243,32 @@ public class CorporateCargoClaim
     public string ClaimTicketNo { get; set; } = string.Empty;
     public string ConsignmentNo { get; set; } = string.Empty;
     public string ClientCorporateName { get; set; } = string.Empty;
+    public string ShipperCorporateName { get => ClientCorporateName; set => ClientCorporateName = value; }
     public string ConsigneeName { get; set; } = string.Empty;
+    public string InvoiceNo { get; set; } = string.Empty;
     public ClaimDisputeReason DisputeReason { get; set; }
+    public string Reason { get => DisputeReason.ToString(); set {} }
     public CargoClaimStatus Status { get; set; } = CargoClaimStatus.Logged;
     public decimal InvoiceDeclaredValueInr { get; set; }
+    public decimal InvoiceValueInr { get => InvoiceDeclaredValueInr; set => InvoiceDeclaredValueInr = value; }
     public decimal ClaimAmountDemandedInr { get; set; }
+    public decimal ClaimAmountInr { get => ClaimAmountDemandedInr; set => ClaimAmountDemandedInr = value; }
     public decimal SurveyorApprovedAmountInr { get; set; }
     public decimal DebitNoteDeductionInr { get; set; }
+    public decimal SettledAmountInr { get => DebitNoteDeductionInr; set => DebitNoteDeductionInr = value; }
     public string DamageDescription { get; set; } = string.Empty;
+    public string SurveyorReportDetails { get => DamageDescription; set => DamageDescription = value; }
     public List<string> DamagePhotoUrls { get; set; } = [];
+    public int CargoPhotosUploadedCount { get => DamagePhotoUrls.Count; set {} }
     public string SurveyorName { get; set; } = "National Marine Surveyor";
     public string? SurveyorReportUrl { get; set; }
+    public string? DebitNoteRefNo { get; set; }
+    public string IncidentLocation { get; set; } = "National Highway Corridor";
+    public DateTime? SlaTargetDeliveryTime { get; set; } = DateTime.UtcNow;
+    public DateTime? ActualDeliveryTime { get; set; } = DateTime.UtcNow;
+    public double DelayHours { get; set; } = 0;
     public DateTime LoggedDate { get; set; } = DateTime.UtcNow;
+    public string FiledDate { get => LoggedDate.ToString("yyyy-MM-dd"); set {} }
 }
 
 

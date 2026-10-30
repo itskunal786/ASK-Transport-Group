@@ -54,4 +54,16 @@ public class CorporateCargoClaimsController : ControllerBase
         if (settled == null) return NotFound(new { success = false, message = "Claim not found" });
         return Ok(new { success = true, message = "Claim settled with debit note", data = settled });
     }
+
+    [HttpPost("{id}/issue-debit-note")]
+    public async Task<IActionResult> IssueDebitNote(string id, [FromQuery] string? debitRef = null, [FromQuery] decimal agreedAmount = 0)
+    {
+        var settled = await _claimsService.SettleClaimAsync(id, agreedAmount);
+        if (settled == null) return NotFound(new { success = false, message = "Claim not found" });
+        if (!string.IsNullOrWhiteSpace(debitRef))
+        {
+            settled.DebitNoteRefNo = debitRef;
+        }
+        return Ok(new { success = true, message = "Debit note issued successfully", data = settled });
+    }
 }

@@ -4870,7 +4870,9 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'cargo_claims' && (
           <div className="admin-content-pad">
-            <CorporateCargoClaimsManager />
+            <ErrorBoundary fallbackTitle="Corporate Cargo Claims & SLA Dispute Shield Error">
+              <CorporateCargoClaimsManager />
+            </ErrorBoundary>
           </div>
         )}
 
