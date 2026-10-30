@@ -79,6 +79,100 @@ public class TyreManagementService : ITyreManagementService
                     Stage = TyreLifecycleStage.Virgin,
                     PurchaseCostInr = 25000m,
                     TotalKmRun = 42100
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-105",
+                    SerialNumber = "MRF-77212-MUSC",
+                    Brand = "MRF Steel Muscle",
+                    Position = TyreWheelPosition.R1_RI,
+                    PositionName = "Axle 1 Right Inner (Drive)",
+                    PressurePsi = 114,
+                    TemperatureC = 56,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 8.2,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 25000m,
+                    TotalKmRun = 42100
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-106",
+                    SerialNumber = "MRF-77213-MUSC",
+                    Brand = "MRF Steel Muscle",
+                    Position = TyreWheelPosition.R1_RO,
+                    PositionName = "Axle 1 Right Outer (Drive)",
+                    PressurePsi = 115,
+                    TemperatureC = 55,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 8.0,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 25000m,
+                    TotalKmRun = 42100
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-107",
+                    SerialNumber = "JK-44101-JET",
+                    Brand = "JK Tyre Jetsteel",
+                    Position = TyreWheelPosition.R2_LO,
+                    PositionName = "Axle 2 Left Outer (Drive)",
+                    PressurePsi = 110,
+                    TemperatureC = 54,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 6.4,
+                    Stage = TyreLifecycleStage.FirstRetread,
+                    PurchaseCostInr = 24000m,
+                    RetreadingCostsInr = 4500m,
+                    TotalKmRun = 54000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-108",
+                    SerialNumber = "JK-44102-JET",
+                    Brand = "JK Tyre Jetsteel",
+                    Position = TyreWheelPosition.R2_LI,
+                    PositionName = "Axle 2 Left Inner (Drive)",
+                    PressurePsi = 112,
+                    TemperatureC = 53,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 6.8,
+                    Stage = TyreLifecycleStage.FirstRetread,
+                    PurchaseCostInr = 24000m,
+                    RetreadingCostsInr = 4500m,
+                    TotalKmRun = 54000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-109",
+                    SerialNumber = "JK-44103-JET",
+                    Brand = "JK Tyre Jetsteel",
+                    Position = TyreWheelPosition.R2_RI,
+                    PositionName = "Axle 2 Right Inner (Drive)",
+                    PressurePsi = 116,
+                    TemperatureC = 52,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 7.1,
+                    Stage = TyreLifecycleStage.FirstRetread,
+                    PurchaseCostInr = 24000m,
+                    RetreadingCostsInr = 4500m,
+                    TotalKmRun = 54000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-110",
+                    SerialNumber = "JK-44104-JET",
+                    Brand = "JK Tyre Jetsteel",
+                    Position = TyreWheelPosition.R2_RO,
+                    PositionName = "Axle 2 Right Outer (Drive)",
+                    PressurePsi = 115,
+                    TemperatureC = 53,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 6.9,
+                    Stage = TyreLifecycleStage.FirstRetread,
+                    PurchaseCostInr = 24000m,
+                    RetreadingCostsInr = 4500m,
+                    TotalKmRun = 54000
                 }
             ]
         },
@@ -106,6 +200,171 @@ public class TyreManagementService : ITyreManagementService
                     Stage = TyreLifecycleStage.Virgin,
                     PurchaseCostInr = 27000m,
                     TotalKmRun = 12400
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-202",
+                    SerialNumber = "CEAT-8813-WINM",
+                    Brand = "CEAT Winmile",
+                    Position = TyreWheelPosition.FR,
+                    PositionName = "Front Right (Steer 1)",
+                    PressurePsi = 119,
+                    TemperatureC = 49,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 14.8,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 27000m,
+                    TotalKmRun = 12400
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-203",
+                    SerialNumber = "CEAT-8814-WINM",
+                    Brand = "CEAT Winmile",
+                    Position = TyreWheelPosition.LIFT_L,
+                    PositionName = "Lift Axle Left (Steer 2)",
+                    PressurePsi = 115,
+                    TemperatureC = 46,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 13.5,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 26500m,
+                    TotalKmRun = 18200
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-204",
+                    SerialNumber = "CEAT-8815-WINM",
+                    Brand = "CEAT Winmile",
+                    Position = TyreWheelPosition.LIFT_R,
+                    PositionName = "Lift Axle Right (Steer 2)",
+                    PressurePsi = 116,
+                    TemperatureC = 47,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 13.2,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 26500m,
+                    TotalKmRun = 18200
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-205",
+                    SerialNumber = "AP-66101-ENDU",
+                    Brand = "Apollo EnduRace",
+                    Position = TyreWheelPosition.R1_LO,
+                    PositionName = "Axle 1 Left Outer (Drive)",
+                    PressurePsi = 114,
+                    TemperatureC = 50,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 10.2,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 26000m,
+                    TotalKmRun = 25000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-206",
+                    SerialNumber = "AP-66102-ENDU",
+                    Brand = "Apollo EnduRace",
+                    Position = TyreWheelPosition.R1_LI,
+                    PositionName = "Axle 1 Left Inner (Drive)",
+                    PressurePsi = 112,
+                    TemperatureC = 51,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 10.0,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 26000m,
+                    TotalKmRun = 25000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-207",
+                    SerialNumber = "AP-66103-ENDU",
+                    Brand = "Apollo EnduRace",
+                    Position = TyreWheelPosition.R1_RI,
+                    PositionName = "Axle 1 Right Inner (Drive)",
+                    PressurePsi = 115,
+                    TemperatureC = 49,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 10.5,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 26000m,
+                    TotalKmRun = 25000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-208",
+                    SerialNumber = "AP-66104-ENDU",
+                    Brand = "Apollo EnduRace",
+                    Position = TyreWheelPosition.R1_RO,
+                    PositionName = "Axle 1 Right Outer (Drive)",
+                    PressurePsi = 113,
+                    TemperatureC = 50,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 10.1,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 26000m,
+                    TotalKmRun = 25000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-209",
+                    SerialNumber = "MRF-5501-MUSC",
+                    Brand = "MRF Steel Muscle",
+                    Position = TyreWheelPosition.R2_LO,
+                    PositionName = "Axle 2 Left Outer (Drive)",
+                    PressurePsi = 111,
+                    TemperatureC = 52,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 8.5,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 25500m,
+                    TotalKmRun = 31000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-210",
+                    SerialNumber = "MRF-5502-MUSC",
+                    Brand = "MRF Steel Muscle",
+                    Position = TyreWheelPosition.R2_LI,
+                    PositionName = "Axle 2 Left Inner (Drive)",
+                    PressurePsi = 112,
+                    TemperatureC = 53,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 8.7,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 25500m,
+                    TotalKmRun = 31000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-211",
+                    SerialNumber = "MRF-5503-MUSC",
+                    Brand = "MRF Steel Muscle",
+                    Position = TyreWheelPosition.R2_RI,
+                    PositionName = "Axle 2 Right Inner (Drive)",
+                    PressurePsi = 114,
+                    TemperatureC = 51,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 8.9,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 25500m,
+                    TotalKmRun = 31000
+                },
+                new TyreRecord
+                {
+                    Id = "TYRE-212",
+                    SerialNumber = "MRF-5504-MUSC",
+                    Brand = "MRF Steel Muscle",
+                    Position = TyreWheelPosition.R2_RO,
+                    PositionName = "Axle 2 Right Outer (Drive)",
+                    PressurePsi = 115,
+                    TemperatureC = 50,
+                    Status = TyreConditionStatus.Optimal,
+                    TreadDepthMm = 8.6,
+                    Stage = TyreLifecycleStage.Virgin,
+                    PurchaseCostInr = 25500m,
+                    TotalKmRun = 31000
                 }
             ]
         }

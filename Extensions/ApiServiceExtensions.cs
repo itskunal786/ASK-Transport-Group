@@ -17,6 +17,7 @@ public static class ApiServiceExtensions
         // 1. Controllers & Standardized API Validation Responses
         services
             .AddControllers()
+            .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()); })
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>
