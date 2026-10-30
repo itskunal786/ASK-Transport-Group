@@ -6,6 +6,7 @@
 export { default as DockYardGatePassManager } from './DockYardGatePassManager';
 export { default as ElectronicWeighbridgeDeck } from './ElectronicWeighbridgeDeck';
 export { default as NicEwayBillAutoExtensionSuite } from './NicEwayBillAutoExtensionSuite';
+export { default as RtoBorderCheckpostVault } from './RtoBorderCheckpostVault';
 export { default as ConsignmentLRModal } from './ConsignmentLRModal';
 export type { ConsignmentLRData } from './ConsignmentLRModal';
 export { default as DispatchChallanModal } from './DispatchChallanModal';
@@ -18,6 +19,8 @@ export { default as DigitalPodVerifyModal } from './DigitalPodVerifyModal';
 // 2. FLEET, DRIVERS & TELEMATICS
 export { default as FleetOperationsDeck } from './FleetOperationsDeck';
 export { default as TyreLifecycleTpmsRadar } from './TyreLifecycleTpmsRadar';
+export { default as DriverTripSettlementHisaab } from './DriverTripSettlementHisaab';
+export { default as Ais140SafetyTelematicsRadar } from './Ais140SafetyTelematicsRadar';
 export { default as FleetFuelAntiTheftRadar } from './FleetFuelAntiTheftRadar';
 export { default as ColdChainTemperatureRadar } from './ColdChainTemperatureRadar';
 export { default as VehicleMaintenanceRadar } from './VehicleMaintenanceRadar';
@@ -47,6 +50,7 @@ export { default as BulkBookingUpload } from './BulkBookingUpload';
 export { default as BulkExcelBookingEngine } from './BulkExcelBookingEngine';
 export { default as FreightBiddingMarketplace } from './FreightBiddingMarketplace';
 export { default as ReverseLogisticsRtoManager } from './ReverseLogisticsRtoManager';
+export { default as CorporateCargoClaimsManager } from './CorporateCargoClaimsManager';
 
 // 6. COMMON & CORE INFRASTRUCTURE
 export { default as ErrorBoundary } from './ErrorBoundary';

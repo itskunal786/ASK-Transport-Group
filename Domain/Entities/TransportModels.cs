@@ -142,3 +142,97 @@ public class SpotBrokerBid
     public SpotBidStatus Status { get; set; } = SpotBidStatus.Pending;
     public DateTime BidReceivedTime { get; set; } = DateTime.UtcNow;
 }
+
+public class DriverTripSettlement
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string TripNumber { get; set; } = string.Empty;
+    public string VehicleNumber { get; set; } = string.Empty;
+    public string DriverName { get; set; } = string.Empty;
+    public string DriverPhone { get; set; } = string.Empty;
+    public string TripRoute { get; set; } = string.Empty;
+    public DateTime TripCompletedAt { get; set; } = DateTime.UtcNow;
+    
+    // Financial Breakdown
+    public decimal AdvanceCashGivenInr { get; set; }
+    public decimal DieselFuelExpensesInr { get; set; }
+    public decimal FastagTollsInr { get; set; }
+    public decimal FoodBhattaInr { get; set; }
+    public decimal UnloadingPettyExpenseInr { get; set; }
+    public decimal TotalExpensesInr => DieselFuelExpensesInr + FastagTollsInr + FoodBhattaInr + UnloadingPettyExpenseInr;
+    public decimal NetBalanceInr => AdvanceCashGivenInr - TotalExpensesInr;
+    
+    public DriverSettlementStatus Status { get; set; } = DriverSettlementStatus.Draft;
+    public string SettlementVoucherNo { get; set; } = string.Empty;
+    public string AuditedBy { get; set; } = "Senior Fleet Auditor";
+    public DateTime? AuditedAt { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class Ais140SafetyTelemetry
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string VehicleNumber { get; set; } = string.Empty;
+    public string DriverName { get; set; } = string.Empty;
+    public double GpsLatitude { get; set; }
+    public double GpsLongitude { get; set; }
+    public double CurrentSpeedKmh { get; set; }
+    public double SpeedLimitKmh { get; set; } = 80.0;
+    public bool SosEmergencyTriggered { get; set; }
+    public DateTime? SosTriggeredAt { get; set; }
+    public double ContinuousNightDrivingHours { get; set; }
+    public int HarshBrakingCount { get; set; }
+    public int HarshAccelerationCount { get; set; }
+    public bool IgnitionOn { get; set; } = true;
+    public double BatteryVoltage { get; set; } = 24.2;
+    public string LocationAddress { get; set; } = string.Empty;
+    public Ais140AlertSeverity Severity { get; set; } = Ais140AlertSeverity.Normal;
+    public DateTime LastTelemetryTimestamp { get; set; } = DateTime.UtcNow;
+}
+
+public class RtoBorderInspectionDossier
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string VehicleNumber { get; set; } = string.Empty;
+    public string TripNumber { get; set; } = string.Empty;
+    public string DriverName { get; set; } = string.Empty;
+    public string DriverPhone { get; set; } = string.Empty;
+    public string TransporterName { get; set; } = "ASK Dedicated Fleet";
+    
+    // Core Compliance Documents
+    public string EwayBillNo { get; set; } = string.Empty;
+    public DateTime EwayBillValidTill { get; set; } = DateTime.UtcNow.AddDays(2);
+    public string BiltyNo { get; set; } = string.Empty;
+    public string ConsignorName { get; set; } = string.Empty;
+    public string ConsigneeName { get; set; } = string.Empty;
+    public string RcNumber { get; set; } = string.Empty;
+    public string RcOwnerName { get; set; } = "ASK Transport Group Ltd";
+    public DateTime FitnessValidTill { get; set; } = DateTime.UtcNow.AddMonths(8);
+    public string NationalPermitNo { get; set; } = string.Empty;
+    public DateTime NationalPermitValidTill { get; set; } = DateTime.UtcNow.AddMonths(11);
+    public string InsurancePolicyNo { get; set; } = string.Empty;
+    public DateTime InsuranceValidTill { get; set; } = DateTime.UtcNow.AddMonths(6);
+    public DateTime PucValidTill { get; set; } = DateTime.UtcNow.AddMonths(4);
+    public string QrVerificationToken { get; set; } = Guid.NewGuid().ToString("N");
+    public bool AllDocumentsCompliant => DateTime.UtcNow < EwayBillValidTill && DateTime.UtcNow < FitnessValidTill && DateTime.UtcNow < InsuranceValidTill;
+}
+
+public class CorporateCargoClaim
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string ClaimTicketNo { get; set; } = string.Empty;
+    public string ConsignmentNo { get; set; } = string.Empty;
+    public string ClientCorporateName { get; set; } = string.Empty;
+    public string ConsigneeName { get; set; } = string.Empty;
+    public ClaimDisputeReason DisputeReason { get; set; }
+    public CargoClaimStatus Status { get; set; } = CargoClaimStatus.Logged;
+    public decimal InvoiceDeclaredValueInr { get; set; }
+    public decimal ClaimAmountDemandedInr { get; set; }
+    public decimal SurveyorApprovedAmountInr { get; set; }
+    public decimal DebitNoteDeductionInr { get; set; }
+    public string DamageDescription { get; set; } = string.Empty;
+    public List<string> DamagePhotoUrls { get; set; } = [];
+    public string SurveyorName { get; set; } = "National Marine Surveyor";
+    public string? SurveyorReportUrl { get; set; }
+    public DateTime LoggedDate { get; set; } = DateTime.UtcNow;
+}

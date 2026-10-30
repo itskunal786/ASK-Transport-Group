@@ -77,6 +77,10 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IDockYardGatePassService, DockYardGatePassService>();
         services.AddScoped<IElectronicWeighbridgeService, ElectronicWeighbridgeService>();
         services.AddScoped<ISpotFreightRateService, SpotFreightRateService>();
+        services.AddScoped<IDriverTripSettlementService, DriverTripSettlementService>();
+        services.AddScoped<IAis140SafetyService, Ais140SafetyService>();
+        services.AddScoped<IRtoBorderVaultService, RtoBorderVaultService>();
+        services.AddScoped<ICorporateCargoClaimsService, CorporateCargoClaimsService>();
 
         return services;
     }

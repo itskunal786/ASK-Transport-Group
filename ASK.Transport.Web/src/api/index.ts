@@ -26,3 +26,7 @@ export * from './tyreApi';
 export * from './dockYardApi';
 export * from './weighbridgeApi';
 export * from './spotFreightApi';
+export * from './driverSettlementApi';
+export * from './ais140SafetyApi';
+export * from './rtoVaultApi';
+export * from './cargoClaimsApi';

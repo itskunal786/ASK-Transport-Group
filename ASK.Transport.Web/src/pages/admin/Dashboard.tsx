@@ -40,6 +40,10 @@ import FinanceAccountingDeck from '../../components/FinanceAccountingDeck';
 import NicEwayBillAutoExtensionSuite from '../../components/NicEwayBillAutoExtensionSuite';
 import DockYardGatePassManager from '../../components/DockYardGatePassManager';
 import ElectronicWeighbridgeDeck from '../../components/ElectronicWeighbridgeDeck';
+import DriverTripSettlementHisaab from '../../components/DriverTripSettlementHisaab';
+import Ais140SafetyTelematicsRadar from '../../components/Ais140SafetyTelematicsRadar';
+import RtoBorderCheckpostVault from '../../components/RtoBorderCheckpostVault';
+import CorporateCargoClaimsManager from '../../components/CorporateCargoClaimsManager';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -433,7 +437,7 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
   }
 ];
 
-type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge';
+type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge' | 'rto_vault' | 'driver_settlement' | 'ais140_safety' | 'cargo_claims';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -465,11 +469,11 @@ export default function Dashboard() {
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
     switch (group) {
       case 'operations':
-        return ['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge'].includes(activeTab);
+        return ['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault'].includes(activeTab);
       case 'fleet':
-        return ['fleet_mgmt', 'vehicles', 'drivers', 'telematics'].includes(activeTab);
+        return ['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(activeTab);
       case 'enterprise':
-        return ['enterprise_b2b', 'finance_accounting', 'tariff'].includes(activeTab);
+        return ['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims'].includes(activeTab);
       case 'ai':
         return activeTab === 'ai_automation';
       case 'governance':
@@ -480,11 +484,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge'].includes(activeTab)) {
+    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.operations ? prev : { ...prev, operations: true }));
-    } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics'].includes(activeTab)) {
+    } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.fleet ? prev : { ...prev, fleet: true }));
-    } else if (['enterprise_b2b', 'finance_accounting', 'tariff'].includes(activeTab)) {
+    } else if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims'].includes(activeTab)) {
       setOpenNavGroups(prev => (prev.enterprise ? prev : { ...prev, enterprise: true }));
     } else if (activeTab === 'ai_automation') {
       setOpenNavGroups(prev => (prev.ai ? prev : { ...prev, ai: true }));
@@ -658,7 +662,11 @@ export default function Dashboard() {
       enterprise_b2b: { modules: ['Enterprise'], codes: ['Enterprise.View'] },
       finance_accounting: { modules: ['Finance'], codes: ['Finance.View'] },
       dock_yard: { modules: ['Hubs', 'Terminal', 'Yard'], codes: ['Hubs.View'] },
-      weighbridge: { modules: ['Weighbridge', 'Fleet'], codes: ['Fleet.View'] }
+      weighbridge: { modules: ['Weighbridge', 'Fleet'], codes: ['Fleet.View'] },
+      rto_vault: { modules: ['Fleet', 'Operations'], codes: ['Fleet.View'] },
+      driver_settlement: { modules: ['Fleet', 'Expenses'], codes: ['Expenses.Approve'] },
+      ais140_safety: { modules: ['Telematics', 'Fleet'], codes: ['Telematics.View'] },
+      cargo_claims: { modules: ['Enterprise', 'Finance'], codes: ['Enterprise.View'] }
     };
 
     const mapping = tabModuleMap[tab];
@@ -1709,6 +1717,16 @@ export default function Dashboard() {
                   <span>Dharam Kanta &amp; Weighbridge</span>
                   {isTabRevoked('weighbridge').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'rto_vault' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('rto_vault')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>RTO Check-Post Vault</span>
+                  {isTabRevoked('rto_vault').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
               </div>
             )}
           </div>
@@ -1817,6 +1835,26 @@ export default function Dashboard() {
                   <span>GPS Telematics Radar</span>
                   {isTabRevoked('telematics').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'driver_settlement' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('driver_settlement')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Trip Settlement &amp; Hisaab</span>
+                  {isTabRevoked('driver_settlement').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'ais140_safety' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('ais140_safety')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>AIS-140 Highway Safety</span>
+                  {isTabRevoked('ais140_safety').revoked && <span className="nav-revoked-pill">🔒</span>}
+                </button>
               </div>
             )}
           </div>
@@ -1858,6 +1896,16 @@ export default function Dashboard() {
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>GST E-Invoice &amp; ERP Ledgers</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'cargo_claims' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('cargo_claims')}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>Cargo Claims &amp; SLA Shield</span>
+                  {isTabRevoked('cargo_claims').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
 
                 <button
@@ -4749,6 +4797,42 @@ export default function Dashboard() {
         {activeTab === 'weighbridge' && (
           <div className="admin-content-pad">
             <ElectronicWeighbridgeDeck />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: 1-CLICK RTO BORDER CHECK-POST COMPLIANCE VAULT */}
+        {/* ============================================================== */}
+        {activeTab === 'rto_vault' && (
+          <div className="admin-content-pad">
+            <RtoBorderCheckpostVault />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: DRIVER FINAL TRIP SETTLEMENT & HISAAB PARCHI */}
+        {/* ============================================================== */}
+        {activeTab === 'driver_settlement' && (
+          <div className="admin-content-pad">
+            <DriverTripSettlementHisaab />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: GOVT AIS-140 GPS & HIGHWAY SAFETY RADAR */}
+        {/* ============================================================== */}
+        {activeTab === 'ais140_safety' && (
+          <div className="admin-content-pad">
+            <Ais140SafetyTelematicsRadar />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW: CORPORATE SHIPPER SLA & CARGO CLAIMS DISPUTE SHIELD */}
+        {/* ============================================================== */}
+        {activeTab === 'cargo_claims' && (
+          <div className="admin-content-pad">
+            <CorporateCargoClaimsManager />
           </div>
         )}
 

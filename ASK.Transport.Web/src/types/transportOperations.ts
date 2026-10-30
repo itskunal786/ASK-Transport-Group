@@ -155,3 +155,128 @@ export interface SpotBrokerBid {
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   bidReceivedTime: string;
 }
+
+
+// 5. DRIVER TRIP SETTLEMENT & HISAAB PARCHI
+export type DriverSettlementStatus = 
+  | 'DRAFT_PENDING_APPROVAL' 
+  | 'SETTLED_CASH_PAID' 
+  | 'RECOVERED_FROM_NEXT_TRIP' 
+  | 'DISPUTED_AUDIT';
+
+export interface DriverTripSettlement {
+  id: string;
+  settlementNo: string;
+  tripSheetNo: string;
+  vehicleNumber: string;
+  driverName: string;
+  driverPhone: string;
+  originCity: string;
+  destinationCity: string;
+  totalTripKm: number;
+  standardKmpl: number;
+  actualKmpl: number;
+  dieselLitersActual: number;
+  dieselLitersStandard: number;
+  dieselPenaltyBonusInr: number;
+  advanceCashGivenInr: number;
+  dieselCardAdvanceInr: number;
+  fastagTollActualInr: number;
+  driverBhattaFoodInr: number;
+  loadingUnloadingExpensesInr: number;
+  enrouteMaintenanceRtoInr: number;
+  totalAuthorizedExpensesInr: number;
+  netPayableToDriverInr: number;
+  recoverableFromDriverInr: number;
+  status: DriverSettlementStatus;
+  settledDate?: string;
+  auditedBy: string;
+  notes?: string;
+}
+
+// 6. GOVT AIS-140 GPS & HIGHWAY SAFETY RADAR
+export type Ais140AlertSeverity = 
+  | 'NORMAL_COMPLIANT' 
+  | 'WARNING_SPEED' 
+  | 'FATIGUE_REST_REQUIRED' 
+  | 'EMERGENCY_PANIC_SOS';
+
+export interface Ais140SafetyTelemetry {
+  id: string;
+  vehicleNumber: string;
+  driverName: string;
+  driverPhone: string;
+  currentSpeedKmph: number;
+  speedLimitKmph: number;
+  latitude: number;
+  longitude: number;
+  currentHighwayLocation: string;
+  continuousDrivingHours: number;
+  isNightDriving: boolean;
+  fatigueWarning: boolean;
+  panicButtonTriggered: boolean;
+  gpsTamperAlert: boolean;
+  harshBrakingCount: number;
+  rapidAccelerationCount: number;
+  severity: Ais140AlertSeverity;
+  lastPingAt: string;
+  nearestPoliceEmergencyContact: string;
+}
+
+// 7. RTO BORDER CHECK-POST COMPLIANCE VAULT
+export interface RtoBorderInspectionDossier {
+  id: string;
+  dossierQrToken: string;
+  vehicleNumber: string;
+  driverName: string;
+  driverDlNumber: string;
+  driverDlExpiry: string;
+  rcNumber: string;
+  rcFitnessExpiry: string;
+  nationalPermitExpiry: string;
+  insurancePolicyNo: string;
+  insuranceExpiry: string;
+  pucPollutionExpiry: string;
+  activeEwbNo: string;
+  activeBiltyNo: string;
+  taxTokenReceiptNo: string;
+  isAllClearForInterstate: boolean;
+  flaggedComplianceNotes?: string;
+  verifiedAt: string;
+}
+
+// 8. CORPORATE CLAIMS & SLA DISPUTE SHIELD
+export type CargoClaimStatus = 
+  | 'REGISTERED_UNDER_REVIEW' 
+  | 'SURVEYOR_INSPECTION' 
+  | 'DEBIT_NOTE_ISSUED' 
+  | 'APPROVED_SETTLED' 
+  | 'REJECTED_UNJUSTIFIED';
+
+export type ClaimDisputeReason = 
+  | 'WATER_RAIN_DAMAGE' 
+  | 'TRANSIT_IMPACT_BREAKAGE' 
+  | 'SHORTAGE_PILFERAGE' 
+  | 'DELAYED_DELIVERY_SLA' 
+  | 'TEMPERATURE_EXCURSION';
+
+export interface CorporateCargoClaim {
+  id: string;
+  claimTicketNo: string;
+  shipperCorporateName: string;
+  consignmentNo: string;
+  invoiceNo: string;
+  invoiceValueInr: number;
+  claimAmountInr: number;
+  settledAmountInr: number;
+  reason: ClaimDisputeReason;
+  status: CargoClaimStatus;
+  incidentLocation: string;
+  surveyorReportDetails?: string;
+  debitNoteRefNo?: string;
+  cargoPhotosUploadedCount: number;
+  slaTargetDeliveryTime: string;
+  actualDeliveryTime: string;
+  delayHours: number;
+  filedDate: string;
+}

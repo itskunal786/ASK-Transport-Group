@@ -108,3 +108,49 @@ public enum SpotBidStatus
     Accepted,
     Rejected
 }
+
+public enum DriverSettlementStatus
+{
+    Draft,
+    AuditApproved,
+    PaidOut,
+    RecoveredFromDriver
+}
+
+public enum Ais140AlertSeverity
+{
+    Normal,
+    Warning,
+    CriticalSosPanic,
+    OverSpeeding,
+    NightDrivingFatigue
+}
+
+public enum RtoDocumentType
+{
+    EwayBill,
+    BiltyLr,
+    RcBook,
+    FitnessCert,
+    NationalPermit,
+    PucCert,
+    InsurancePolicy
+}
+
+public enum CargoClaimStatus
+{
+    Logged,
+    UnderSurveyorInspection,
+    InsuranceApproved,
+    SettledDebitNote,
+    Rejected
+}
+
+public enum ClaimDisputeReason
+{
+    WaterDamage,
+    HandlingBreakage,
+    ShortageCartons,
+    TemperatureBreach,
+    AccidentImpact
+}
