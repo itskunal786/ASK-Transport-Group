@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { getWeighbridgeSlips, authorizeCrossDockDeLoad } from '../api/weighbridgeApi';
+import './ElectronicWeighbridgeDeck.css';
 
 // ============================================================================
 // WEIGHBRIDGE & DHARAM KANTA TYPES & MODELS
@@ -152,6 +154,7 @@ const INITIAL_SLIPS: WeighbridgeSlipRecord[] = [
 ];
 
 export default function ElectronicWeighbridgeDeck() {
+  const { t } = useLanguage();
   const [slips, setSlips] = useState<WeighbridgeSlipRecord[]>(INITIAL_SLIPS);
   const [selectedSlip, setSelectedSlip] = useState<WeighbridgeSlipRecord | null>(INITIAL_SLIPS[1]); // Default to the overloaded truck to demonstrate fine shield
   const [liveScaleReadingKg, setLiveScaleReadingKg] = useState<number>(34600);
@@ -232,44 +235,32 @@ export default function ElectronicWeighbridgeDeck() {
   const totalOverloadFinesShielded = slips.reduce((sum, s) => sum + (s.status === 'OVERLOAD_CRITICAL' ? s.potentialRtoFineInr : 0), 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* HEADER BANNER */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)',
-          borderRadius: '16px',
-          padding: '24px 28px',
-          color: '#ffffff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-          boxShadow: '0 10px 25px -5px rgba(28, 25, 23, 0.4)'
-        }}
-      >
+    <div className="weighbridge-container">
+      {/* 1. TOP HEADER BANNER */}
+      <div className="weighbridge-banner">
         <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '8px' }}>
-            <span>⚖️</span> HUB WEIGHBRIDGE &amp; RTO COMPLIANCE SHIELD
+          <div className="weighbridge-banner-tag">
+            <span>⚖️</span> {t('HUB WEIGHBRIDGE & RTO COMPLIANCE SHIELD', 'हब वेईब्रिज एवं आरटीओ अनुपालन शील्ड')}
           </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 900, letterSpacing: '-0.5px' }}>
-            Electronic Weighbridge (Dharam Kanta) &amp; Overload Shield
-          </h1>
-          <p style={{ margin: 0, fontSize: '13px', color: '#d6d3d1', lineHeight: 1.5 }}>
-            Govt calibrated digital load-cell telemetry, Gross / Tare / Net cargo validation, Motor Vehicles Act 1988 (Sec 113/194) permissible axle load limits, and automated exit gate-locks.
-          </p>
+          <div className="weighbridge-banner-titles">
+            <h1>{t('Electronic Weighbridge (Dharam Kanta) & Overload Shield', 'इलेक्ट्रॉनिक वेईब्रिज (धर्म कांटा) एवं ओवरलोड शील्ड')}</h1>
+            <p>
+              {t(
+                'Govt calibrated digital load-cell telemetry, Gross / Tare / Net cargo validation, Motor Vehicles Act 1988 (Sec 113/194) permissible axle load limits, and automated exit gate-locks.',
+                'सरकारी कैलिब्रेटेड डिजिटल लोड-सेल टेलीमेट्री, ग्रॉस / वेयर / नेट कार्गो सत्यापन, मोटर वाहन अधिनियम 1988 (धारा 113/194) अनुमेय एक्सल लोड सीमा और स्वचालित निकास गेट-लॉक।'
+              )}
+            </p>
+          </div>
         </div>
 
         {/* TOP STATUS */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '10px', textAlign: 'center' }}>
-            <span style={{ fontSize: '10px', color: '#a8a29e', textTransform: 'uppercase', fontWeight: 700 }}>Scale Calibration</span>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#4ade80', marginTop: '2px' }}>✓ W&amp;M Govt Certified</div>
-          </div>
+        <div className="weighbridge-calib-badge">
+          <span className="weighbridge-calib-sub">{t('Scale Calibration', 'कांटा कैलिब्रेशन')}</span>
+          <div className="weighbridge-calib-val">{t('✓ W&M Govt Certified', '✓ विधिक माप विज्ञान प्रमाणित')}</div>
         </div>
       </div>
 
-      {/* TOAST ALERT */}
+      {/* 2. TOAST ALERT */}
       {toastMessage && (
         <div
           style={{
@@ -287,80 +278,81 @@ export default function ElectronicWeighbridgeDeck() {
         </div>
       )}
 
-      {/* KPI STATS ROW */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Overload Fine Shielded</span>
-            <span style={{ fontSize: '18px' }}>🛡️</span>
+      {/* 3. 4 KPI STATS ROW */}
+      <div className="weighbridge-kpis-grid">
+        <div className="weighbridge-kpi-card">
+          <div className="weighbridge-kpi-head">
+            <span className="weighbridge-kpi-label">{t('Overload Fine Shielded', 'बचत ओवरलोड जुर्माना')}</span>
+            <span className="weighbridge-kpi-icon">🛡️</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#dc2626', marginTop: '6px' }}>
-            ₹{totalOverloadFinesShielded.toLocaleString('en-IN')} <span style={{ fontSize: '11px', fontWeight: 700, color: '#ef4444' }}>Fine Prevented</span>
+          <div className="weighbridge-kpi-value" style={{ color: '#dc2626' }}>
+            ₹{totalOverloadFinesShielded.toLocaleString('en-IN')}{' '}
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#ef4444' }}>
+              {t('Fine Prevented', 'जुर्माना रोका गया')}
+            </span>
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>Sec 194 MV Act: ₹20k base + ₹2k/T</small>
+          <span className="weighbridge-kpi-sub">
+            {t('Sec 194 MV Act: ₹20k base + ₹2k/T', 'धारा 194 एमवी एक्ट: ₹20,000 मूल + ₹2,000/टन')}
+          </span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Today's Total Tonnage Weighed</span>
-            <span style={{ fontSize: '18px' }}>⚖️</span>
+        <div className="weighbridge-kpi-card">
+          <div className="weighbridge-kpi-head">
+            <span className="weighbridge-kpi-label">{t("Today's Total Tonnage Weighed", 'आज का कुल तौला गया भार')}</span>
+            <span className="weighbridge-kpi-icon">⚖️</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', marginTop: '6px' }}>
-            163.4 Tonnes
+          <div className="weighbridge-kpi-value">
+            163.4 {t('Tonnes', 'टन')}
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>4 Trucks completed • 1 on ramp</small>
+          <span className="weighbridge-kpi-sub">
+            {t('4 Trucks completed • 1 on ramp', '4 ट्रक पूर्ण • 1 कांटे पर')}
+          </span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>RTO Compliance Ratio</span>
-            <span style={{ fontSize: '18px' }}>📋</span>
+        <div className="weighbridge-kpi-card">
+          <div className="weighbridge-kpi-head">
+            <span className="weighbridge-kpi-label">{t('RTO Compliance Ratio', 'आरटीओ अनुपालन दर')}</span>
+            <span className="weighbridge-kpi-icon">📋</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#16a34a', marginTop: '6px' }}>
-            75% First-Pass
+          <div className="weighbridge-kpi-value" style={{ color: '#16a34a' }}>
+            75% {t('First-Pass', 'प्रथम पास')}
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>1 Overload blocked at Hub ramp</small>
+          <span className="weighbridge-kpi-sub">
+            {t('1 Overload blocked at Hub ramp', '1 ओवरलोड हब कांटे पर रोका गया')}
+          </span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Scale Accuracy &amp; Drift</span>
-            <span style={{ fontSize: '18px' }}>🎯</span>
+        <div className="weighbridge-kpi-card">
+          <div className="weighbridge-kpi-head">
+            <span className="weighbridge-kpi-label">{t('Scale Accuracy & Drift', 'कांटे की सटीकता')}</span>
+            <span className="weighbridge-kpi-icon">🎯</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: '#0284c7', marginTop: '6px' }}>
-            ±0.02% Error
+          <div className="weighbridge-kpi-value" style={{ color: '#0284c7' }}>
+            ±0.02% {t('Error', 'त्रुटि')}
           </div>
-          <small style={{ fontSize: '11px', color: '#64748b' }}>Legal limit allowed: ±0.1%</small>
+          <span className="weighbridge-kpi-sub">
+            {t('Legal limit allowed: ±0.1%', 'कानूनी स्वीकार्य सीमा: ±0.1%')}
+          </span>
         </div>
       </div>
 
-      {/* LIVE WEIGHBRIDGE ELECTRONIC SCALE PLATFORM */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+      {/* 4. LIVE WEIGHBRIDGE ELECTRONIC SCALE PLATFORM */}
+      <div className="weighbridge-console-card">
+        <div className="weighbridge-console-head">
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 900, color: 'var(--text-primary, #0f172a)' }}>
-              📟 Live Weighbridge Digital Console (Hub-01 Pune Scale Ramp)
-            </h3>
-            <small style={{ color: '#64748b', fontSize: '12px' }}>Real-time 60-Ton electronic pitless scale terminal with Avery Weigh-Tronix load cell interface</small>
+            <h3>📟 {t('Live Weighbridge Digital Console (Hub-01 Pune Scale Ramp)', 'लाइव वेईब्रिज डिजिटल कंसोल (हब-01 पुणे कांटा रैंप)')}</h3>
+            <small style={{ color: 'var(--text-secondary, #64748b)', fontSize: '12px' }}>
+              {t('Real-time 60-Ton electronic pitless scale terminal with Avery Weigh-Tronix load cell interface', 'एवरी वे-ट्रॉनिक्स लोड सेल इंटरफेस के साथ रीयल-टाइम 60-टन इलेक्ट्रॉनिक पिटलेस स्केल टर्मिनल')}
+            </small>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {slips.map(s => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => handleSimulateWeighing(s.vehicleNumber)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  border: '1px solid',
-                  borderColor: selectedSlip?.vehicleNumber === s.vehicleNumber ? '#0f172a' : '#cbd5e1',
-                  background: selectedSlip?.vehicleNumber === s.vehicleNumber ? '#0f172a' : '#f8fafc',
-                  color: selectedSlip?.vehicleNumber === s.vehicleNumber ? '#ffffff' : '#334155'
-                }}
+                className={`weighbridge-sim-pill ${selectedSlip?.vehicleNumber === s.vehicleNumber ? 'active' : ''}`}
               >
                 🚛 {s.vehicleNumber}
               </button>
@@ -369,21 +361,7 @@ export default function ElectronicWeighbridgeDeck() {
         </div>
 
         {/* SCALE HARDWARE LED DISPLAY SIMULATOR */}
-        <div
-          style={{
-            background: '#09090b',
-            borderRadius: '14px',
-            padding: '24px',
-            color: '#22c55e',
-            fontFamily: 'monospace',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '20px',
-            boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8)'
-          }}
-        >
+        <div className="weighbridge-scale-led">
           <div>
             <div style={{ fontSize: '11px', color: '#a1a1aa', letterSpacing: '1px' }}>
               ELECTRONIC WEIGH SCALE • STATION #01 PUNE
@@ -391,10 +369,10 @@ export default function ElectronicWeighbridgeDeck() {
             <div style={{ fontSize: '42px', fontWeight: 900, letterSpacing: '2px', color: isScaleStabilized ? '#22c55e' : '#f59e0b', marginTop: '4px' }}>
               {liveScaleReadingKg.toLocaleString('en-IN')} <span style={{ fontSize: '20px' }}>KG</span>
             </div>
-            <div style={{ fontSize: '13px', color: '#e4e4e7', display: 'flex', gap: '14px', marginTop: '4px' }}>
+            <div style={{ fontSize: '13px', color: '#e4e4e7', display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '4px' }}>
               <span>STATUS: {isScaleStabilized ? 'STABILIZED (✓)' : 'WEIGHING IN PROGRESS...'}</span>
-              <span>TARE: {selectedSlip ? `${selectedSlip.tareWeightKg} KG` : 'N/A'}</span>
-              <span>NET: {selectedSlip ? `${selectedSlip.netCargoWeightKg} KG` : 'N/A'}</span>
+              <span>TARE: {selectedSlip ? `${selectedSlip.tareWeightKg.toLocaleString('en-IN')} KG` : 'N/A'}</span>
+              <span>NET: {selectedSlip ? `${selectedSlip.netCargoWeightKg.toLocaleString('en-IN')} KG` : 'N/A'}</span>
             </div>
           </div>
 
@@ -413,41 +391,39 @@ export default function ElectronicWeighbridgeDeck() {
                 onClick={() => selectedSlip && handleSimulateWeighing(selectedSlip.vehicleNumber)}
                 style={{ flex: 1, padding: '8px', background: '#27272a', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
               >
-                🔄 Re-Zero / Tare
+                🔄 {t('Re-Zero / Tare', 'री-ज़ीरो / वेयर')}
               </button>
               <button
                 type="button"
                 onClick={() => setShowPrintModal(true)}
                 style={{ flex: 1, padding: '8px', background: '#22c55e', color: '#000000', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }}
               >
-                🖨️ Print Slip
+                🖨️ {t('Print Slip', 'पर्ची प्रिंट')}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* TABLE OF SLIPS & RTO AXLE LOAD AUDIT */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(360px, 1fr)', gap: '20px', alignItems: 'start' }}>
+      {/* 5. TABLE OF SLIPS & RTO AXLE LOAD AUDIT */}
+      <div className="weighbridge-split-row">
         {/* SLIPS TABLE */}
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
-              📑 Dharam Kanta Weighment Ledger
-            </h3>
-            <span style={{ fontSize: '12px', color: '#64748b' }}>Govt Sec 113 / 194 MV Act</span>
+        <div className="weighbridge-card-left">
+          <div className="weighbridge-card-header">
+            <h3>📑 {t('Dharam Kanta Weighment Ledger', 'धर्म कांटा वजन बहीखाता')}</h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Govt Sec 113 / 194 MV Act</span>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <div className="weighbridge-table-wrap">
+            <table className="weighbridge-data-table">
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', textAlign: 'left' }}>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>SLIP NO</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>VEHICLE &amp; AXLE</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>GROSS / PERMISSIBLE</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>NET CARGO</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800 }}>COMPLIANCE</th>
-                  <th style={{ padding: '10px 12px', fontWeight: 800, textAlign: 'right' }}>ACTION</th>
+                <tr>
+                  <th>{t('SLIP NO', 'पर्ची सं.')}</th>
+                  <th>{t('VEHICLE & AXLE', 'वाहन एवं एक्सल')}</th>
+                  <th>{t('GROSS / PERMISSIBLE', 'सकल / अनुमेय')}</th>
+                  <th>{t('NET CARGO', 'शुद्ध कार्गो')}</th>
+                  <th>{t('COMPLIANCE', 'अनुपालन')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('ACTION', 'कार्रवाई')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -459,79 +435,53 @@ export default function ElectronicWeighbridgeDeck() {
                     <tr
                       key={slip.id}
                       onClick={() => setSelectedSlip(slip)}
-                      style={{
-                        borderBottom: '1px solid #f1f5f9',
-                        background: isSelected ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'background 0.15s ease'
-                      }}
+                      className={`weighbridge-table-row ${isSelected ? 'selected' : ''}`}
                     >
-                      <td style={{ padding: '12px', fontWeight: 800, color: '#0f172a' }}>
-                        <div>{slip.slipNumber}</div>
-                        <small style={{ color: '#64748b' }}>{slip.weighedAt.split(',')[1]}</small>
+                      <td>
+                        <div className="weighbridge-slip-no">{slip.slipNumber}</div>
+                        <small style={{ color: 'var(--text-secondary, #64748b)', fontSize: '10px' }}>{slip.weighedAt.split(',')[1]}</small>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <div style={{ fontWeight: 800, color: '#0f172a' }}>{slip.vehicleNumber}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>{slip.axleLabel}</div>
+                      <td>
+                        <div className="weighbridge-plate-text">{slip.vehicleNumber}</div>
+                        <div className="weighbridge-axle-text">{slip.axleLabel}</div>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <div style={{ fontWeight: 800, color: isOverload ? '#dc2626' : '#0f172a' }}>
-                          {(slip.grossWeightKg / 1000).toFixed(1)}T Gross
+                      <td>
+                        <div style={{ fontWeight: 800, color: isOverload ? '#dc2626' : 'var(--text-primary, #0f172a)' }}>
+                          {(slip.grossWeightKg / 1000).toFixed(1)}T {t('Gross', 'सकल')}
                         </div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>
-                          Limit: {(slip.permissibleGvwKg / 1000).toFixed(1)}T
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                          {t('Limit:', 'सीमा:')} {(slip.permissibleGvwKg / 1000).toFixed(1)}T
                         </div>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
+                      <td>
                         <div style={{ fontWeight: 800, color: '#059669' }}>
-                          {(slip.netCargoWeightKg / 1000).toFixed(1)}T Net
+                          {(slip.netCargoWeightKg / 1000).toFixed(1)}T {t('Net', 'शुद्ध')}
                         </div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>
-                          Tare: {(slip.tareWeightKg / 1000).toFixed(1)}T
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                          {t('Tare:', 'वेयर:')} {(slip.tareWeightKg / 1000).toFixed(1)}T
                         </div>
                       </td>
 
-                      <td style={{ padding: '12px' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            background: isOverload ? '#fee2e2' : '#ecfdf5',
-                            color: isOverload ? '#dc2626' : '#059669',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          {isOverload ? `🚨 +${(slip.overloadKg / 1000).toFixed(1)}T Overload` : '✓ Legal Compliant'}
+                      <td>
+                        <span className={`weighbridge-status-pill ${isOverload ? 'overload' : 'legal'}`}>
+                          {isOverload ? `🚨 +${(slip.overloadKg / 1000).toFixed(1)}T ${t('Overload', 'ओवरलोड')}` : `✓ ${t('Legal Compliant', 'वैध अनुपालन')}`}
                         </span>
                       </td>
 
-                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                      <td style={{ textAlign: 'right' }}>
                         <button
                           type="button"
+                          className="weighbridge-btn-slip"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedSlip(slip);
                             setShowPrintModal(true);
                           }}
-                          style={{
-                            background: '#f1f5f9',
-                            color: '#0f172a',
-                            border: '1px solid #cbd5e1',
-                            borderRadius: '6px',
-                            padding: '4px 8px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                          }}
                         >
-                          🖨️ Slip
+                          🖨️ {t('Slip', 'पर्ची')}
                         </button>
                       </td>
                     </tr>
@@ -543,255 +493,191 @@ export default function ElectronicWeighbridgeDeck() {
         </div>
 
         {/* RIGHT COLUMN: OVERLOAD SHIELD & GATE INTERLOCK */}
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '22px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div className="weighbridge-card-right">
           {selectedSlip ? (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px' }}>
+              <div className="weighbridge-shield-head">
                 <div>
-                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    AXLE LOAD &amp; PENALTY SHIELD
+                  <span className="weighbridge-shield-tag">
+                    {t('AXLE LOAD & PENALTY SHIELD', 'एक्सल लोड एवं जुर्माना शील्ड')}
                   </span>
-                  <h3 style={{ margin: '2px 0 0', fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                  <div className="weighbridge-shield-title">
                     {selectedSlip.vehicleNumber}
-                  </h3>
+                  </div>
                 </div>
-                <span
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    background: selectedSlip.status === 'OVERLOAD_CRITICAL' ? '#fee2e2' : '#ecfdf5',
-                    color: selectedSlip.status === 'OVERLOAD_CRITICAL' ? '#dc2626' : '#059669'
-                  }}
-                >
-                  {selectedSlip.status === 'OVERLOAD_CRITICAL' ? '🚨 EXIT LOCKED' : '✓ EXIT CLEARED'}
+                <span className={`weighbridge-exit-badge ${selectedSlip.status === 'OVERLOAD_CRITICAL' ? 'locked' : 'cleared'}`}>
+                  {selectedSlip.status === 'OVERLOAD_CRITICAL' ? `🚨 ${t('EXIT LOCKED', 'निकास लॉक')}` : `✓ ${t('EXIT CLEARED', 'निकास स्वीकृत')}`}
                 </span>
               </div>
 
               {/* OVERLOAD ALERT BOX */}
               {selectedSlip.status === 'OVERLOAD_CRITICAL' ? (
-                <div style={{ background: '#fff1f2', border: '1.5px solid #fecaca', borderRadius: '12px', padding: '16px', margin: '16px 0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="weighbridge-alert-box">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 900, color: '#b91c1c' }}>
-                      ⚠️ RTO MOTOR VEHICLE ACT OVERLOAD ALERT
+                      ⚠️ {t('RTO MOTOR VEHICLE ACT OVERLOAD ALERT', 'आरटीओ मोटर वाहन अधिनियम ओवरलोड अलर्ट')}
                     </span>
                     <span style={{ fontSize: '13px', fontWeight: 900, color: '#b91c1c' }}>
                       +{selectedSlip.overloadKg} KG (+{selectedSlip.overloadPercent}%)
                     </span>
                   </div>
                   <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#991b1b', lineHeight: 1.5 }}>
-                    This vehicle exceeds the permissible Gross Vehicle Weight of {(selectedSlip.permissibleGvwKg / 1000).toFixed(1)}T by <strong>{(selectedSlip.overloadKg / 1000).toFixed(1)} Tonnes</strong>.
+                    {t('This vehicle exceeds the permissible Gross Vehicle Weight of', 'यह वाहन अनुमेय सकल भार')} {(selectedSlip.permissibleGvwKg / 1000).toFixed(1)}T {t('by', 'से')} <strong>{(selectedSlip.overloadKg / 1000).toFixed(1)} {t('Tonnes', 'टन')}</strong> {t('excess.', 'अधिक है।')}
                   </p>
 
-                  <div style={{ background: '#ffffff', padding: '10px', borderRadius: '8px', border: '1px solid #fecdd3', marginTop: '10px' }}>
-                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>POTENTIAL RTO CHALLAN IF DISPATCHED:</div>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#dc2626', marginTop: '2px' }}>
-                      ₹{selectedSlip.potentialRtoFineInr.toLocaleString('en-IN')} Fine
+                  <div className="weighbridge-challan-calc">
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 700 }}>
+                      {t('POTENTIAL RTO CHALLAN IF DISPATCHED:', 'यदि रवाना किया गया तो संभावित आरटीओ चालान:')}
                     </div>
-                    <div style={{ fontSize: '10px', color: '#71717a' }}>
-                      Calculation: Section 194 MV Act ₹20,000 Base Penalty + ₹2,000/Tonne excess
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#dc2626', marginTop: '2px' }}>
+                      ₹{selectedSlip.potentialRtoFineInr.toLocaleString('en-IN')} {t('Fine', 'जुर्माना')}
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary, #71717a)' }}>
+                      {t('Calculation: Section 194 MV Act ₹20,000 Base Penalty + ₹2,000/Tonne excess', 'गणना: धारा 194 एमवी एक्ट ₹20,000 मूल जुर्माना + ₹2,000/अतिरिक्त टन')}
                     </div>
                   </div>
 
                   <div style={{ marginTop: '14px' }}>
                     <button
                       type="button"
+                      className="weighbridge-btn-deload"
                       onClick={() => setShowCrossDockModal(true)}
-                      style={{
-                        width: '100%',
-                        background: '#dc2626',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '11px',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                      }}
                     >
-                      <span>🚜</span> Authorize Forklift Cross-Dock De-Load
+                      <span>🚜</span> {t('Authorize Forklift Cross-Dock De-Load', 'फोर्कलिफ्ट क्रॉस-डॉक डी-लोड अधिकृत करें')}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: '12px', padding: '16px', margin: '16px 0' }}>
+                <div className="weighbridge-alert-box safe">
                   <div style={{ fontSize: '12px', fontWeight: 900, color: '#166534' }}>
-                    ✓ 100% LEGAL &amp; AXLE COMPLIANT
+                    ✓ {t('100% LEGAL & AXLE COMPLIANT', '100% वैध एवं एक्सल अनुपालन')}
                   </div>
                   <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#15803d' }}>
-                    Gross weight is {selectedSlip.permissibleGvwKg - selectedSlip.grossWeightKg} KG safely under the legal permissible limit. Digital Gate-Out pass unlocked.
+                    {t('Gross weight is', 'सकल भार')} {selectedSlip.permissibleGvwKg - selectedSlip.grossWeightKg} KG {t('safely under the legal permissible limit. Digital Gate-Out pass unlocked.', 'कानूनी सीमा के सुरक्षित अंतर्गत है। डिजिटल गेट-आउट पास अनलॉक है।')}
                   </p>
                 </div>
               )}
 
               {/* WEIGHT BREAKDOWN GRID */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '12px' }}>
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Gross Weight (Loaded)</span>
-                  <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>{selectedSlip.grossWeightKg.toLocaleString('en-IN')} KG</div>
-                  <small style={{ color: '#64748b' }}>{(selectedSlip.grossWeightKg / 1000).toFixed(2)} Ton</small>
+              <div className="weighbridge-metrics-2x2">
+                <div className="weighbridge-mini-tile">
+                  <span>{t('Gross Weight (Loaded)', 'सकल भार (भरा हुआ)')}</span>
+                  <strong>{selectedSlip.grossWeightKg.toLocaleString('en-IN')} KG</strong>
+                  <small>{(selectedSlip.grossWeightKg / 1000).toFixed(2)} {t('Ton', 'टन')}</small>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Tare Weight (Unloaded)</span>
-                  <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>{selectedSlip.tareWeightKg.toLocaleString('en-IN')} KG</div>
-                  <small style={{ color: '#64748b' }}>{(selectedSlip.tareWeightKg / 1000).toFixed(2)} Ton</small>
+                <div className="weighbridge-mini-tile">
+                  <span>{t('Tare Weight (Unloaded)', 'खाली भार (खाली गाड़ी)')}</span>
+                  <strong>{selectedSlip.tareWeightKg.toLocaleString('en-IN')} KG</strong>
+                  <small>{(selectedSlip.tareWeightKg / 1000).toFixed(2)} {t('Ton', 'टन')}</small>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Net Cargo Pay-Load</span>
-                  <div style={{ fontWeight: 900, fontSize: '16px', color: '#059669' }}>{selectedSlip.netCargoWeightKg.toLocaleString('en-IN')} KG</div>
-                  <small style={{ color: '#059669', fontWeight: 700 }}>{(selectedSlip.netCargoWeightKg / 1000).toFixed(2)} Ton</small>
+                <div className="weighbridge-mini-tile">
+                  <span>{t('Net Cargo Pay-Load', 'शुद्ध माल भार')}</span>
+                  <strong style={{ color: '#059669' }}>{selectedSlip.netCargoWeightKg.toLocaleString('en-IN')} KG</strong>
+                  <small style={{ color: '#059669', fontWeight: 700 }}>{(selectedSlip.netCargoWeightKg / 1000).toFixed(2)} {t('Ton', 'टन')}</small>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>RTO Legal GVW Cap</span>
-                  <div style={{ fontWeight: 900, fontSize: '16px', color: '#0284c7' }}>{selectedSlip.permissibleGvwKg.toLocaleString('en-IN')} KG</div>
-                  <small style={{ color: '#64748b' }}>{(selectedSlip.permissibleGvwKg / 1000).toFixed(2)} Ton Max</small>
+                <div className="weighbridge-mini-tile">
+                  <span>{t('RTO Legal GVW Cap', 'आरटीओ कानूनी सीमा')}</span>
+                  <strong style={{ color: '#0284c7' }}>{selectedSlip.permissibleGvwKg.toLocaleString('en-IN')} KG</strong>
+                  <small>{(selectedSlip.permissibleGvwKg / 1000).toFixed(2)} {t('Ton Max', 'टन अधिकतम')}</small>
                 </div>
               </div>
 
               {/* RTO AXLE REGULATIONS INFO */}
-              <div style={{ marginTop: '16px', padding: '12px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '11px', color: '#64748b' }}>
-                <div style={{ fontWeight: 800, color: '#334155', marginBottom: '4px' }}>
-                  📜 Govt of India Gazette Notification S.O. 3467(E) Max Axle Norms:
+              <div style={{ marginTop: '16px', padding: '12px', background: 'var(--bg-subtle, #f8fafc)', borderRadius: '10px', border: '1px solid var(--border-color, #e2e8f0)', fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                <div style={{ fontWeight: 800, color: 'var(--text-primary, #334155)', marginBottom: '4px' }}>
+                  📜 {t('Govt of India Gazette Notification S.O. 3467(E) Max Axle Norms:', 'भारत का राजपत्र अधिसूचना S.O. 3467(E) अधिकतम एक्सल मानक:')}
                 </div>
                 • 2-Axle (18.5T) | 3-Axle (28T) | 4-Axle (35T) | 5-Axle (43.5T) | 6-Axle Trailer (55T).
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-              Select a weighment slip to audit compliance.
+            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary, #64748b)' }}>
+              {t('Select a weighment slip to audit compliance.', 'अनुपालन जांचने के लिए वजन पर्ची का चयन करें।')}
             </div>
           )}
         </div>
       </div>
 
-      {/* CROSS DOCK DE-LOAD MODAL */}
+      {/* 6. CROSS DOCK DE-LOAD MODAL */}
       {showCrossDockModal && selectedSlip && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.7)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              padding: '24px',
-              maxWidth: '520px',
-              width: '100%',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)'
-            }}
-          >
+        <div className="weighbridge-modal-overlay">
+          <div className="weighbridge-modal-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#dc2626' }}>
-                🚜 Cross-Dock Cargo De-Load Interlock
+                🚜 {t('Cross-Dock Cargo De-Load Interlock', 'क्रॉस-डॉक कार्गो डी-लोड इंटरलॉक')}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowCrossDockModal(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}
+                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--text-secondary, #64748b)' }}
               >
                 ✕
               </button>
             </div>
 
-            <p style={{ fontSize: '13px', color: '#334155', lineHeight: 1.5 }}>
-              Vehicle <strong>{selectedSlip.vehicleNumber}</strong> has <strong>{selectedSlip.overloadKg} KG</strong> excess cargo.
-              Dispatching forklift team to transfer {(selectedSlip.overloadKg / 1000).toFixed(1)} Tonnes of {selectedSlip.materialName} to <strong>Hub Bay-4 (Cross-dock staging)</strong> for next scheduled convoy.
+            <p style={{ fontSize: '13px', color: 'var(--text-primary, #334155)', lineHeight: 1.5 }}>
+              {t('Vehicle', 'वाहन')} <strong>{selectedSlip.vehicleNumber}</strong> {t('has', 'में')} <strong>{selectedSlip.overloadKg} KG</strong> {t('excess cargo.', 'अतिरिक्त माल है।')}
+              {' '}{t('Dispatching forklift team to transfer', 'फोर्कलिफ्ट टीम')} {(selectedSlip.overloadKg / 1000).toFixed(1)} {t('Tonnes of', 'टन')} {selectedSlip.materialName} {t('to', 'को')} <strong>{t('Hub Bay-4 (Cross-dock staging)', 'हब बे-4 (क्रॉस-डॉक स्टेजिंग)')}</strong> {t('for next scheduled convoy.', 'में स्थानांतरित कर रही है।')}
             </p>
 
-            <div style={{ background: '#fef2f2', padding: '12px', borderRadius: '10px', border: '1px solid #fecaca', margin: '14px 0', fontSize: '12px' }}>
-              <strong>Fine Shield Impact:</strong> Prevents <strong>₹{selectedSlip.potentialRtoFineInr.toLocaleString('en-IN')}</strong> penalty and vehicle seizure at Maharashtra-Gujarat RTO highway check-post.
+            <div style={{ background: 'rgba(239, 68, 68, 0.08)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.25)', margin: '14px 0', fontSize: '12px', color: 'var(--text-primary, #334155)' }}>
+              <strong>{t('Fine Shield Impact:', 'जुर्माना सुरक्षा प्रभाव:')}</strong> {t('Prevents', 'रोकता है')} <strong>₹{selectedSlip.potentialRtoFineInr.toLocaleString('en-IN')}</strong> {t('penalty and vehicle seizure at highway check-post.', 'का चालान एवं राजमार्ग चेक-पोस्ट पर वाहन जब्ती।')}
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => setShowCrossDockModal(false)}
-                style={{ flex: 1, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', color: '#475569' }}
+                style={{ flex: 1, padding: '10px', background: 'var(--bg-subtle, #f1f5f9)', border: '1px solid var(--border-color, #cbd5e1)', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', color: 'var(--text-primary, #475569)' }}
               >
-                Cancel
+                {t('Cancel', 'रद्द करें')}
               </button>
               <button
                 type="button"
                 onClick={() => handleAuthorizeCrossDockDeload(selectedSlip.id)}
                 style={{ flex: 2, padding: '10px', background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
               >
-                Confirm Cross-Dock &amp; Unlock Gate-Out
+                {t('Confirm Cross-Dock & Unlock Gate-Out', 'क्रॉस-डॉक पुष्टि करें एवं गेट-आउट अनलॉक करें')}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* PRINT OFFICIAL DHARAM KANTA SLIP MODAL */}
+      {/* 7. PRINT OFFICIAL DHARAM KANTA SLIP MODAL */}
       {showPrintModal && selectedSlip && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.7)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              padding: '28px',
-              maxWidth: '520px',
-              width: '100%',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)',
-              fontFamily: 'monospace'
-            }}
-          >
-            <div style={{ textAlign: 'center', borderBottom: '2px dashed #000', paddingBottom: '12px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 900 }}>ASK ELECTRONIC WEIGHBRIDGE (DHARAM KANTA)</div>
-              <div style={{ fontSize: '11px' }}>HUB TERMINAL-01 PUNE (GOVT APPROVED 60-TON SCALE)</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px' }}>COMPUTERIZED WEIGHMENT CERTIFICATE</div>
-              <div style={{ fontSize: '11px' }}>SLIP NO: {selectedSlip.slipNumber} • CALIB ID: {selectedSlip.calibrationCertificateId}</div>
+        <div className="weighbridge-modal-overlay">
+          <div className="weighbridge-modal-card print-card">
+            <div style={{ textAlign: 'center', borderBottom: '2px dashed var(--border-color, #000)', paddingBottom: '12px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary, #0f172a)' }}>ASK ELECTRONIC WEIGHBRIDGE (DHARAM KANTA)</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>HUB TERMINAL-01 PUNE (GOVT APPROVED 60-TON SCALE)</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px', color: 'var(--text-primary, #0f172a)' }}>COMPUTERIZED WEIGHMENT CERTIFICATE</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>SLIP NO: {selectedSlip.slipNumber} • CALIB ID: {selectedSlip.calibrationCertificateId}</div>
             </div>
 
-            <div style={{ padding: '16px 0', fontSize: '12px', lineHeight: '1.8', borderBottom: '2px dashed #000' }}>
+            <div style={{ padding: '16px 0', fontSize: '12px', lineHeight: '1.8', borderBottom: '2px dashed var(--border-color, #000)', color: 'var(--text-primary, #0f172a)' }}>
               <div><strong>TRUCK NO:</strong> {selectedSlip.vehicleNumber} ({selectedSlip.axleLabel})</div>
               <div><strong>DRIVER:</strong> {selectedSlip.driverName} ({selectedSlip.driverPhone})</div>
               <div><strong>CONSIGNMENT / BILTY:</strong> {selectedSlip.consignmentNo}</div>
               <div><strong>COMMODITY:</strong> {selectedSlip.materialName}</div>
               <div><strong>TIMESTAMP:</strong> {selectedSlip.weighedAt}</div>
-              <hr style={{ border: 'none', borderTop: '1px dashed #cbd5e1', margin: '8px 0' }} />
+              <hr style={{ border: 'none', borderTop: '1px dashed var(--border-color, #cbd5e1)', margin: '8px 0' }} />
               <div style={{ fontSize: '14px' }}><strong>GROSS WEIGHT:</strong> {selectedSlip.grossWeightKg.toLocaleString('en-IN')} KG</div>
               <div style={{ fontSize: '14px' }}><strong>TARE WEIGHT:</strong> {selectedSlip.tareWeightKg.toLocaleString('en-IN')} KG</div>
-              <div style={{ fontSize: '15px', color: '#000', fontWeight: 900 }}>
+              <div style={{ fontSize: '15px', color: '#059669', fontWeight: 900 }}>
                 <strong>NET CARGO WEIGHT:</strong> {selectedSlip.netCargoWeightKg.toLocaleString('en-IN')} KG ({(selectedSlip.netCargoWeightKg / 1000).toFixed(2)} Ton)
               </div>
-              <div style={{ fontSize: '11px' }}>PERMISSIBLE GVW: {selectedSlip.permissibleGvwKg.toLocaleString('en-IN')} KG (Sec 113 MV Act)</div>
-              <div style={{ fontSize: '12px', fontWeight: 800 }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>PERMISSIBLE GVW: {selectedSlip.permissibleGvwKg.toLocaleString('en-IN')} KG (Sec 113 MV Act)</div>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: selectedSlip.status === 'OVERLOAD_CRITICAL' ? '#dc2626' : '#059669' }}>
                 STATUS: {selectedSlip.status === 'OVERLOAD_CRITICAL' ? '🚨 OVERLOAD EXCEEDED' : '✓ LEGAL COMPLIANT'}
               </div>
               <div><strong>SCALE OPERATOR:</strong> {selectedSlip.operatorName}</div>
             </div>
 
-            <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: '2px dashed #000', fontSize: '10px' }}>
+            <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: '2px dashed var(--border-color, #000)', fontSize: '10px', color: 'var(--text-secondary, #64748b)' }}>
               [ SEAL OF ACCREDITATION: WEIGHTS &amp; MEASURES DEPT MAHARASHTRA ]
             </div>
 
@@ -799,9 +685,9 @@ export default function ElectronicWeighbridgeDeck() {
               <button
                 type="button"
                 onClick={() => setShowPrintModal(false)}
-                style={{ flex: 1, padding: '9px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '9px', background: 'var(--bg-subtle, #f1f5f9)', border: '1px solid var(--border-color, #cbd5e1)', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', color: 'var(--text-primary, #0f172a)' }}
               >
-                Close
+                {t('Close', 'बंद करें')}
               </button>
               <button
                 type="button"
@@ -809,9 +695,9 @@ export default function ElectronicWeighbridgeDeck() {
                   window.print();
                   setShowPrintModal(false);
                 }}
-                style={{ flex: 1, padding: '9px', background: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '9px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
               >
-                🖨️ Print Dharam Kanta Slip
+                🖨️ {t('Print Dharam Kanta Slip', 'धर्म कांटा पर्ची प्रिंट करें')}
               </button>
             </div>
           </div>
