@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getFleetTyres, inflateTyre, sendTyreForColdRetread } from '../api/tyreApi';
 
 // ============================================================================
 // TYRE TELEMATICS & RETREADING MODELS
@@ -324,6 +325,12 @@ export default function TyreLifecycleTpmsRadar() {
   const [selectedTyre, setSelectedTyre] = useState<TyreItem | null>(INITIAL_TRUCK_TYRES[0].tyres[2]); // Default to the critical tyre
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    getFleetTyres().then(data => {
+      if (data && data.length > 0) setFleetList(data);
+    }).catch(() => {});
+  }, []);
+
   const activeTruck = fleetList[selectedTruckIndex] || fleetList[0];
 
   const showToast = (msg: string) => {
@@ -335,6 +342,7 @@ export default function TyreLifecycleTpmsRadar() {
   // ACTIONS
   // --------------------------------------------------------------------------
   const handleSimulateInflate = (tyreId: string) => {
+    inflateTyre(activeTruck.plateNo, tyreId, 118).catch(() => {});
     setFleetList(prev => prev.map((trk, tIdx) => {
       if (tIdx !== selectedTruckIndex) return trk;
       const updatedTyres = trk.tyres.map(ty => {
@@ -371,6 +379,7 @@ export default function TyreLifecycleTpmsRadar() {
   };
 
   const handleSendForRetreading = (tyreId: string) => {
+    sendTyreForColdRetread(activeTruck.plateNo, tyreId).catch(() => {});
     setFleetList(prev => prev.map((trk, tIdx) => {
       if (tIdx !== selectedTruckIndex) return trk;
       const updatedTyres = trk.tyres.map(ty => {

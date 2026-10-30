@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getDockBays, getGatePasses, generateGateInPass, expediteDockLoading, authorizeGateOut } from '../api/dockYardApi';
 
 // ============================================================================
 // DOCK YARD & GATE PASS TYPES & MODELS
@@ -243,6 +244,13 @@ export default function DockYardGatePassManager() {
   const [showSlipPrintModal, setShowSlipPrintModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    Promise.all([getDockBays(), getGatePasses()]).then(([baysData, passesData]) => {
+      if (baysData && baysData.length > 0) setBays(baysData);
+      if (passesData && passesData.length > 0) setGatePasses(passesData);
+    }).catch(() => {});
+  }, []);
+
   // New Gate In Form State
   const [newVehicle, setNewVehicle] = useState('MH-04-KD-8819');
   const [newDriver, setNewDriver] = useState('Santosh Kumar Verma');
@@ -291,6 +299,7 @@ export default function DockYardGatePassManager() {
       odometerReadingKm: Number(newOdo)
     };
 
+    generateGateInPass(newRecord).catch(() => {});
     setGatePasses([newRecord, ...gatePasses]);
     setSelectedPass(newRecord);
 
@@ -316,6 +325,7 @@ export default function DockYardGatePassManager() {
   };
 
   const handleExpediteDock = (passId: string) => {
+    expediteDockLoading(passId).catch(() => {});
     setGatePasses(prev =>
       prev.map(p => {
         if (p.id === passId) {
@@ -333,6 +343,7 @@ export default function DockYardGatePassManager() {
   };
 
   const handleGateOutRelease = (passId: string) => {
+    authorizeGateOut(passId).catch(() => {});
     const nowTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
     setGatePasses(prev =>
       prev.map(p => {
