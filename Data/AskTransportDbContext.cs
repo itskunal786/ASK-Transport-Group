@@ -1,9 +1,11 @@
 using ASK.Group.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
+using ASK.Group.Api.Application.Common.Interfaces;
+
 namespace ASK.Group.Api.Data;
 
-public class AskTransportDbContext : DbContext
+public class AskTransportDbContext : DbContext, IAskTransportDbContext
 {
     public AskTransportDbContext(
         DbContextOptions<AskTransportDbContext> options)
