@@ -311,30 +311,27 @@ export default function PhysicalPodInwardDeck() {
   const activeRescuesCount = transshipments.filter(r => !r.resolvedAt).length;
 
   return (
-    <div className="pod-deck-container space-y-6 text-slate-800 dark:text-slate-100">
+    <div className="pod-deck-container">
       {/* Toast Notification */}
       {notification && (
-        <div className={`fixed top-5 right-5 z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 text-white ${
-          notification.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
-        }`}>
-          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-          <span className="font-medium text-sm">{notification.message}</span>
+        <div className={`pod-deck-toast ${notification.type === 'error' ? 'error' : 'success'}`}>
+          <CheckCircle2 style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+          <span>{notification.message}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-emerald-800/40 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+      <div className="pod-deck-banner">
+        <div className="pod-deck-banner-content">
           <div>
-            <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs tracking-wider uppercase mb-1">
-              <Barcode className="w-4 h-4 text-emerald-400" />
+            <div className="pod-deck-tag">
+              <Barcode style={{ width: '14px', height: '14px' }} />
               <span>{t('Terminal Operations & Fleet Payouts', 'टर्मिनल संचालन और फ्लीट भुगतान')}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h1>
               {t('Physical POD Inward & Breakdown Rescue Deck', 'फिजिकल POD इनवर्ड और ब्रेकडाउन रेस्क्यू डेक')}
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p>
               {t(
                 'Optical barcode inward scanner, signed & stamped POD validation, 30% balance payout release & highway SOS emergency transshipments.',
                 'ऑप्टिकल बारकोड इनवर्ड स्कैनर, हस्ताक्षरित व मुहरबंद POD सत्यापन, 30% शेष भुगतान जारी व हाईवे SOS आपातकालीन ट्रांसशिपमेंट।'
@@ -342,55 +339,49 @@ export default function PhysicalPodInwardDeck() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="pod-deck-banner-actions">
             <button
               onClick={() => setShowRescueModal(true)}
-              className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg transition"
+              className="pod-btn-sos"
+              type="button"
             >
-              <AlertTriangle className="w-4 h-4" />
-              {t('Highway SOS Breakdown', 'हाईवे आपातकालीन ब्रेकडाउन')}
+              <AlertTriangle style={{ width: '16px', height: '16px' }} />
+              <span>{t('Highway SOS Breakdown', 'हाईवे आपातकालीन ब्रेकडाउन')}</span>
             </button>
 
             <button
               onClick={loadData}
               disabled={loading}
-              className="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl transition"
+              className="pod-btn-refresh"
               title={t('Refresh', 'रीफ़्रेश')}
+              type="button"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw style={{ width: '16px', height: '16px', animation: loading ? 'spin 1s linear infinite' : 'none' }} />
             </button>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-2 mt-6 pt-4 border-t border-slate-800">
+        <div className="pod-deck-tabs">
           <button
             onClick={() => setActiveTab('POD_INWARD')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
-              activeTab === 'POD_INWARD'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
-            }`}
+            className={`pod-deck-tab ${activeTab === 'POD_INWARD' ? 'active-green' : ''}`}
+            type="button"
           >
-            <Barcode className="w-4 h-4" />
-            {t('Physical POD Optical Inward Queue', 'फिजिकल POD ऑप्टिकल इनवर्ड कतार')}
-            <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-emerald-800 text-emerald-200">
-              {podList.length}
-            </span>
+            <Barcode style={{ width: '16px', height: '16px' }} />
+            <span>{t('Physical POD Optical Inward Queue', 'फिजिकल POD ऑप्टिकल इनवर्ड कतार')}</span>
+            <span className="pod-pill-count">{podList.length}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('TRANSSHIPMENT_SOS')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
-              activeTab === 'TRANSSHIPMENT_SOS'
-                ? 'bg-rose-600 text-white shadow-md'
-                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
-            }`}
+            className={`pod-deck-tab ${activeTab === 'TRANSSHIPMENT_SOS' ? 'active-rose' : ''}`}
+            type="button"
           >
-            <AlertTriangle className="w-4 h-4" />
-            {t('Highway Breakdown & Rescue Radar', 'हाईवे ब्रेकडाउन और रेस्क्यू रडार')}
+            <AlertTriangle style={{ width: '16px', height: '16px' }} />
+            <span>{t('Highway Breakdown & Rescue Radar', 'हाईवे ब्रेकडाउन और रेस्क्यू रडार')}</span>
             {activeRescuesCount > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-rose-800 text-rose-100 animate-pulse">
+              <span className="pod-pill-count" style={{ background: '#be123c', color: '#fff' }}>
                 {activeRescuesCount} SOS
               </span>
             )}
@@ -399,230 +390,227 @@ export default function PhysicalPodInwardDeck() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">{t('Pending Inward PODs', 'प्रतीक्षारत इनवर्ड PODs')}</span>
-            <Clock className="w-4 h-4 text-amber-500" />
+      <div className="pod-deck-kpis-grid">
+        <div className="pod-kpi-card">
+          <div className="pod-kpi-head">
+            <span>{t('Pending Inward PODs', 'प्रतीक्षारत इनवर्ड PODs')}</span>
+            <Clock style={{ width: '16px', height: '16px', color: '#f59e0b' }} />
           </div>
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {pendingInwardCount}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="pod-kpi-value amber">{pendingInwardCount}</div>
+          <span className="pod-kpi-sub">
             {t('Awaiting physical transit delivery', 'भौतिक पारगमन डिलीवरी की प्रतीक्षा')}
-          </div>
+          </span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">{t('Stamped & Scanned Verified', 'मुहरबंद व सत्यापित')}</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+        <div className="pod-kpi-card">
+          <div className="pod-kpi-head">
+            <span>{t('Stamped & Scanned Verified', 'मुहरबंद व सत्यापित')}</span>
+            <CheckCircle2 style={{ width: '16px', height: '16px', color: '#10b981' }} />
           </div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {verifiedCount}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="pod-kpi-value emerald">{verifiedCount}</div>
+          <span className="pod-kpi-sub">
             {t('Ready for 30% balance release', '30% शेष भुगतान हेतु तैयार')}
-          </div>
+          </span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">{t('Balance Due to Transporters', 'ट्रांसपोर्टरों को देय शेष')}</span>
-            <IndianRupee className="w-4 h-4 text-sky-500" />
+        <div className="pod-kpi-card">
+          <div className="pod-kpi-head">
+            <span>{t('Balance Due to Transporters', 'ट्रांसपोर्टरों को देय शेष')}</span>
+            <IndianRupee style={{ width: '16px', height: '16px', color: '#0284c7' }} />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="pod-kpi-value sky">
             ₹{totalBalanceDue.toLocaleString('en-IN')}
           </div>
-          <div className="text-xs text-slate-500 mt-1">
+          <span className="pod-kpi-sub">
             {paymentReleasedCount} {t('payouts released this week', 'भुगतान इस सप्ताह जारी किए गए')}
-          </div>
+          </span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">{t('Highway Breakdowns (SOS)', 'हाईवे ब्रेकडाउन (SOS)')}</span>
-            <AlertTriangle className="w-4 h-4 text-rose-500" />
+        <div className="pod-kpi-card">
+          <div className="pod-kpi-head">
+            <span>{t('Highway Breakdowns (SOS)', 'हाईवे ब्रेकडाउन (SOS)')}</span>
+            <AlertTriangle style={{ width: '16px', height: '16px', color: '#f43f5e' }} />
           </div>
-          <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">
-            {activeRescuesCount}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="pod-kpi-value rose">{activeRescuesCount}</div>
+          <span className="pod-kpi-sub">
             {t('Rescue vehicles dispatched en route', 'रेस्क्यू वाहन रास्ते में रवाना')}
-          </div>
+          </span>
         </div>
       </div>
 
       {/* TAB 1: Optical Barcode Scanner & POD Inward Queue */}
       {activeTab === 'POD_INWARD' && (
-        <div className="space-y-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Optical Scanner Action Strip */}
-          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/20 dark:via-slate-900 dark:to-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-4 shadow-sm">
-            <form onSubmit={handleScanBarcode} className="flex flex-col md:flex-row items-center gap-3">
-              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-xs whitespace-nowrap">
-                <Barcode className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="pod-scanner-strip">
+            <form onSubmit={handleScanBarcode} className="pod-scanner-form">
+              <div className="pod-scanner-label">
+                <Barcode style={{ width: '18px', height: '18px' }} />
                 <span>{t('Barcode Inward Reader:', 'बारकोड इनवर्ड रीडर:')}</span>
               </div>
 
-              <div className="relative flex-1 w-full">
-                <input
-                  type="text"
-                  value={barcodeInput}
-                  onChange={(e) => setBarcodeInput(e.target.value)}
-                  placeholder={t('Scan optical barcode with laser gun or enter LR/Bilty No...', 'लेजर गन से बारकोड स्कैन करें या LR/बिल्टी सं. दर्ज करें...')}
-                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-xs rounded-xl outline-none font-mono focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
+              <input
+                type="text"
+                value={barcodeInput}
+                onChange={(e) => setBarcodeInput(e.target.value)}
+                placeholder={t('Scan optical barcode with laser gun or enter LR/Bilty No...', 'लेजर गन से बारकोड स्कैन करें या LR/बिल्टी सं. दर्ज करें...')}
+                className="pod-input-field"
+                style={{ fontFamily: 'monospace' }}
+              />
 
-              <div className="w-full md:w-56">
-                <input
-                  type="text"
-                  value={operatorInput}
-                  onChange={(e) => setOperatorInput(e.target.value)}
-                  placeholder={t('Operator Name', 'ऑपरेटर का नाम')}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-xs rounded-xl outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
+              <input
+                type="text"
+                value={operatorInput}
+                onChange={(e) => setOperatorInput(e.target.value)}
+                placeholder={t('Operator Name', 'ऑपरेटर का नाम')}
+                className="pod-input-operator"
+              />
 
               <button
                 type="submit"
                 disabled={!barcodeInput.trim()}
-                className="w-full md:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-md transition whitespace-nowrap flex items-center justify-center gap-2"
+                className="pod-btn-verify"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                {t('Inward & Verify Stamp', 'इनवर्ड करें व मुहर सत्यापित करें')}
+                <CheckCircle2 style={{ width: '16px', height: '16px' }} />
+                <span>{t('Inward & Verify Stamp', 'इनवर्ड करें व मुहर सत्यापित करें')}</span>
               </button>
             </form>
           </div>
 
           {/* Table Container */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+          <div className="pod-table-card">
+            <div className="pod-table-toolbar">
+              <div className="pod-search-wrap">
+                <Search style={{ width: '16px', height: '16px' }} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('Search by LR #, Barcode, Vehicle, Transporter...', 'LR #, बारकोड, वाहन, ट्रांसपोर्टर से खोजें...')}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-xl outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
-              <div className="text-xs text-slate-500">
+              <div className="pod-table-records-count">
                 {t('Total Records:', 'कुल रिकॉर्ड्स:')} <b>{filteredPods.length}</b>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+            <div className="pod-table-wrap">
+              <table className="pod-data-table">
+                <thead>
                   <tr>
-                    <th className="py-3 px-4">{t('Bilty / LR & Barcode', 'बिल्टी / LR व बारकोड')}</th>
-                    <th className="py-3 px-4">{t('Consignor & Consignee', 'प्रेषक एवं प्राप्तकर्ता')}</th>
-                    <th className="py-3 px-4">{t('Transporter & Vehicle', 'ट्रांसपोर्टर व वाहन')}</th>
-                    <th className="py-3 px-4 text-right">{t('Total Freight', 'कुल भाड़ा')}</th>
-                    <th className="py-3 px-4 text-right">{t('Bal 30% Due', 'शेष 30% देय')}</th>
-                    <th className="py-3 px-4 text-center">{t('Physical POD Stamp', 'फिजिकल POD मुहर')}</th>
-                    <th className="py-3 px-4 text-center">{t('Status', 'स्थिति')}</th>
-                    <th className="py-3 px-4 text-right">{t('Action', 'कार्रवाई')}</th>
+                    <th>{t('Bilty / LR & Barcode', 'बिल्टी / LR व बारकोड')}</th>
+                    <th>{t('Consignor & Consignee', 'प्रेषक एवं प्राप्तकर्ता')}</th>
+                    <th>{t('Transporter & Vehicle', 'ट्रांसपोर्टर व वाहन')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('Total Freight', 'कुल भाड़ा')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('Bal 30% Due', 'शेष 30% देय')}</th>
+                    <th style={{ textAlign: 'center' }}>{t('Physical POD Stamp', 'फिजिकल POD मुहर')}</th>
+                    <th style={{ textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('Action', 'कार्रवाई')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <tbody>
                   {filteredPods.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <tr key={item.id}>
+                      <td>
+                        <div className="pod-bilty-text">
+                          <FileCheck2 style={{ width: '15px', height: '15px', color: '#10b981' }} />
                           <span>{item.biltyLrNumber}</span>
                         </div>
-                        <div className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
+                        <div className="pod-barcode-token">
                           {item.barcodeToken}
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="pod-cn-text">
                           CN: {item.consignmentNo}
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 max-w-xs">
-                        <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{item.consignorName}</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                      <td style={{ maxWidth: '280px' }}>
+                        <div className="pod-party-name">{item.consignorName}</div>
+                        <div className="pod-party-dest">
+                          <MapPin style={{ width: '13px', height: '13px', color: '#94a3b8', flexShrink: 0 }} />
                           <span>To: {item.consigneeName} ({item.destinationCity})</span>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{item.vehicleNumber}</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">{item.transporterBrokerName}</div>
-                        <div className="text-[10px] text-slate-400">{item.driverName}</div>
+                      <td>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{item.transporterBrokerName}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                          <span className="pod-vehicle-pill">{item.vehicleNumber}</span>
+                        </div>
+                        <div className="pod-driver-text">{item.driverName}</div>
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          ₹{item.totalFreightInr.toLocaleString('en-IN')}
-                        </div>
-                        <div className="text-[10px] text-emerald-600">
-                          {t('Adv 70% Paid:', '70% अग्रिम:')} ₹{item.advance70PercentPaidInr.toLocaleString('en-IN')}
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontWeight: 800, fontSize: '13px' }}>₹{item.totalFreightInr.toLocaleString('en-IN')}</div>
+                        <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
+                          70% Adv: ₹{item.advance70PercentPaidInr.toLocaleString('en-IN')}
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-bold text-sky-600 dark:text-sky-400 text-sm">
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontWeight: 900, color: '#10b981', fontSize: '13.5px' }}>
                           ₹{item.balance30PercentDueInr.toLocaleString('en-IN')}
                         </div>
                         {item.payoutReleaseTransactionRef && (
-                          <div className="text-[10px] text-slate-400 font-mono truncate max-w-[120px] ml-auto">
-                            {item.payoutReleaseTransactionRef}
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                            Ref: {item.payoutReleaseTransactionRef}
                           </div>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center">
+                      <td style={{ textAlign: 'center' }}>
                         {item.consigneeStampVerified ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-                            <ShieldCheck className="w-3 h-3" />
-                            {t('Stamp Verified', 'मुहर सत्यापित')}
+                          <span className="pod-badge verified">
+                            <ShieldCheck style={{ width: '14px', height: '14px' }} />
+                            <span>{t('Signed & Stamped', 'हस्ताक्षरित व मुहरबंद')}</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
-                            <Clock className="w-3 h-3" />
-                            {t('Pending Stamp', 'मुहर प्रतीक्षारत')}
+                          <span className="pod-badge pending">
+                            <Clock style={{ width: '14px', height: '14px' }} />
+                            <span>{t('Stamp Pending', 'मुहर प्रतीक्षारत')}</span>
                           </span>
+                        )}
+                        {item.opticalBarcodeScannedAt && (
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '3px' }}>
+                            Scanned: {item.opticalBarcodeScannedAt}
+                          </div>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center">
+                      <td style={{ textAlign: 'center' }}>
                         {item.verificationStatus === 'PaymentReleased' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                            <CheckCircle2 className="w-3 h-3" />
-                            {t('Paid 100%', '100% भुगतान')}
+                          <span className="pod-badge released">
+                            <CheckCircle2 style={{ width: '14px', height: '14px' }} />
+                            <span>{t('30% Released', '30% भुगतान जारी')}</span>
                           </span>
                         )}
                         {item.verificationStatus === 'ScannedVerified' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-                            <CheckCircle2 className="w-3 h-3" />
-                            {t('Verified', 'सत्यापित')}
+                          <span className="pod-badge verified">
+                            <CheckCircle2 style={{ width: '14px', height: '14px' }} />
+                            <span>{t('Verified', 'सत्यापित')}</span>
                           </span>
                         )}
                         {item.verificationStatus === 'PendingInward' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-                            <Clock className="w-3 h-3" />
-                            {t('Pending Inward', 'इनवर्ड प्रतीक्षारत')}
+                          <span className="pod-badge pending">
+                            <Clock style={{ width: '14px', height: '14px' }} />
+                            <span>{t('Pending Inward', 'इनवर्ड प्रतीक्षारत')}</span>
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                         {item.verificationStatus === 'ScannedVerified' && (
                           <button
                             onClick={() => {
                               setPayoutTarget(item);
                               setUtrInput(`UTR-HDFC-${Math.floor(10000000 + Math.random() * 90000000)}`);
                             }}
-                            className="px-3 py-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm transition"
+                            className="pod-btn-payout"
+                            type="button"
                           >
-                            {t('Release 30% Pay', '30% भुगतान जारी')}
+                            <IndianRupee style={{ width: '13px', height: '13px' }} />
+                            <span>{t('Release 30% Pay', '30% भुगतान जारी')}</span>
                           </button>
                         )}
                         {item.verificationStatus === 'PendingInward' && (
@@ -630,14 +618,15 @@ export default function PhysicalPodInwardDeck() {
                             onClick={() => {
                               setBarcodeInput(item.barcodeToken);
                             }}
-                            className="px-2.5 py-1 text-[11px] font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition"
+                            className="pod-btn-scan-now"
+                            type="button"
                           >
                             {t('Scan Now', 'स्कैन करें')}
                           </button>
                         )}
                         {item.verificationStatus === 'PaymentReleased' && (
-                          <span className="text-[11px] text-slate-400">
-                            {t('Settled', 'निपटारा संपन्न')}
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                            ✓ {t('Settled', 'निपटारा संपन्न')}
                           </span>
                         )}
                       </td>
@@ -652,79 +641,74 @@ export default function PhysicalPodInwardDeck() {
 
       {/* TAB 2: Highway Breakdown & Emergency Transshipment Rescue Radar */}
       {activeTab === 'TRANSSHIPMENT_SOS' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Truck className="w-5 h-5 text-rose-500" />
-              {t('Highway Breakdown & Rescue Incidents', 'हाईवे ब्रेकडाउन व आपातकालीन रेस्क्यू घटनाएं')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="pod-sos-header">
+            <h2>
+              <Truck style={{ width: '20px', height: '20px', color: '#f43f5e' }} />
+              <span>{t('Highway Breakdown & Rescue Incidents', 'हाईवे ब्रेकडाउन व आपातकालीन रेस्क्यू घटनाएं')}</span>
             </h2>
             <button
               onClick={() => setShowRescueModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl shadow-md transition"
+              className="pod-btn-sos"
+              type="button"
             >
-              <AlertTriangle className="w-4 h-4" />
-              {t('Log Breakdown & Dispatch Rescue', 'ब्रेकडाउन दर्ज करें व रेस्क्यू भेजें')}
+              <AlertTriangle style={{ width: '16px', height: '16px' }} />
+              <span>{t('Log Breakdown & Dispatch Rescue', 'ब्रेकडाउन दर्ज करें व रेस्क्यू भेजें')}</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="pod-sos-grid">
             {transshipments.map((rescue) => (
-              <div
-                key={rescue.id}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3"
-              >
-                <div className="flex items-start justify-between">
+              <div key={rescue.id} className="pod-sos-card">
+                <div className="pod-sos-card-head">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">{rescue.breakdownIncidentNo}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">
-                        {rescue.breakdownReason}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="pod-sos-incident-tag">{rescue.breakdownIncidentNo}</span>
+                      <span className="pod-sos-reason-pill">{rescue.breakdownReason}</span>
                     </div>
-                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock style={{ width: '12px', height: '12px' }} />
                       <span>{t('Reported At:', 'रिपोर्ट समय:')} {rescue.incidentReportedAt}</span>
                     </div>
                   </div>
 
                   {rescue.resolvedAt ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {t('Resolved', 'समाधान हो गया')}
+                    <span className="pod-badge verified">
+                      <CheckCircle2 style={{ width: '14px', height: '14px' }} />
+                      <span>{t('Resolved', 'समाधान हो गया')}</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 animate-pulse">
-                      <Wrench className="w-3.5 h-3.5" />
-                      {t('Active SOS Rescue', 'सक्रिय SOS रेस्क्यू')}
+                    <span className="pod-badge" style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
+                      <Wrench style={{ width: '14px', height: '14px' }} />
+                      <span>{t('Active SOS Rescue', 'सक्रिय SOS रेस्क्यू')}</span>
                     </span>
                   )}
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500">{t('Broken Down Vehicle:', 'खराब हुआ वाहन:')}</span>
-                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{rescue.originalVehiclePlate}</span>
+                <div className="pod-sos-box-gray">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{t('Broken Down Vehicle:', 'खराब हुआ वाहन:')}</span>
+                    <strong style={{ fontFamily: 'monospace', fontSize: '13px' }}>{rescue.originalVehiclePlate}</strong>
                   </div>
-                  <div className="flex items-start justify-between">
-                    <span className="text-slate-500">{t('Highway Location:', 'हाईवे स्थान:')}</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300 text-right max-w-xs">{rescue.breakdownLocation}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{t('Highway Location:', 'हाईवे स्थान:')}</span>
+                    <span style={{ fontWeight: 600, textAlign: 'right', maxWidth: '260px' }}>{rescue.breakdownLocation}</span>
                   </div>
                 </div>
 
-                {/* Rescue Vehicle Dispatched */}
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-emerald-800 dark:text-emerald-300 font-semibold">{t('Assigned Rescue Vehicle:', 'सौंपा गया रेस्क्यू वाहन:')}</span>
-                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{rescue.assignedRescueVehiclePlate}</span>
+                <div className="pod-sos-box-green">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#059669', fontWeight: 800 }}>{t('Assigned Rescue Vehicle:', 'सौंपा गया रेस्क्यू वाहन:')}</span>
+                    <strong style={{ fontFamily: 'monospace', color: '#059669', fontSize: '13px' }}>{rescue.assignedRescueVehiclePlate}</strong>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">{t('Rescue Driver & Contact:', 'रेस्क्यू ड्राइवर व संपर्क:')}</span>
-                    <span className="font-medium flex items-center gap-1 text-slate-800 dark:text-slate-200">
-                      <PhoneCall className="w-3 h-3 text-emerald-600" />
-                      {rescue.rescueDriverName} ({rescue.rescueDriverPhone})
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{t('Rescue Driver & Contact:', 'रेस्क्यू ड्राइवर व संपर्क:')}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
+                      <PhoneCall style={{ width: '13px', height: '13px', color: '#059669' }} />
+                      <span>{rescue.rescueDriverName} ({rescue.rescueDriverPhone})</span>
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-600 dark:text-slate-300 pt-1 border-t border-emerald-200 dark:border-emerald-800/40">
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', paddingTop: '6px', borderTop: '1px solid rgba(16, 185, 129, 0.2)' }}>
                     <b>{t('Cargo Transshipment Status:', 'कार्गो ट्रांसफर स्थिति:')}</b> {rescue.transshipmentCargoStatus}
                   </div>
                 </div>
@@ -736,40 +720,49 @@ export default function PhysicalPodInwardDeck() {
 
       {/* MODAL: Balance 30% Payout Release */}
       {payoutTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                {t('Release Transporter Balance 30%', 'ट्रांसपोर्टर का शेष 30% भुगतान जारी करें')}
+        <div className="pod-modal-overlay">
+          <div className="pod-modal-card">
+            <div className="pod-modal-head">
+              <h3>
+                <CheckCircle2 style={{ width: '18px', height: '18px', color: '#10b981' }} />
+                <span>{t('Release Transporter Balance 30%', 'ट्रांसपोर्टर का शेष 30% भुगतान जारी करें')}</span>
               </h3>
               <button
                 onClick={() => setPayoutTarget(null)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                className="pod-modal-close"
+                type="button"
               >
-                <X className="w-5 h-5" />
+                <X style={{ width: '18px', height: '18px' }} />
               </button>
             </div>
 
-            <div className="text-xs space-y-2 text-slate-600 dark:text-slate-300">
-              <p>
-                <b>{t('LR / Bilty No:', 'LR / बिल्टी सं:')}</b> {payoutTarget.biltyLrNumber}
-              </p>
-              <p>
-                <b>{t('Transporter / Broker:', 'ट्रांसपोर्टर / ब्रोकर:')}</b> {payoutTarget.transporterBrokerName}
-              </p>
-              <p>
-                <b>{t('Vehicle & Driver:', 'वाहन व ड्राइवर:')}</b> {payoutTarget.vehicleNumber} ({payoutTarget.driverName})
-              </p>
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                <div className="text-slate-500 text-[11px]">{t('Balance Payout Amount to Release:', 'जारी करने योग्य शेष राशि:')}</div>
-                <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="pod-modal-body">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t('LR / Bilty No:', 'LR / बिल्टी सं:')} </span>
+                  <strong>{payoutTarget.biltyLrNumber}</strong>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t('Transporter / Broker:', 'ट्रांसपोर्टर / ब्रोकर:')} </span>
+                  <strong>{payoutTarget.transporterBrokerName}</strong>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t('Vehicle & Driver:', 'वाहन व ड्राइवर:')} </span>
+                  <strong>{payoutTarget.vehicleNumber} ({payoutTarget.driverName})</strong>
+                </div>
+              </div>
+
+              <div className="pod-payout-box">
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                  {t('Balance Payout Amount to Release:', 'जारी करने योग्य शेष राशि:')}
+                </div>
+                <div style={{ fontSize: '22px', fontWeight: 900, color: '#10b981', marginTop: '2px' }}>
                   ₹{payoutTarget.balance30PercentDueInr.toLocaleString('en-IN')}
                 </div>
               </div>
 
-              <div className="pt-2">
-                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+              <div>
+                <label style={{ display: 'block', fontWeight: 700, marginBottom: '6px' }}>
                   {t('Bank NEFT / RTGS / IMPS UTR Reference *', 'बैंक NEFT / RTGS / IMPS UTR संदर्भ *')}
                 </label>
                 <input
@@ -777,27 +770,28 @@ export default function PhysicalPodInwardDeck() {
                   value={utrInput}
                   onChange={(e) => setUtrInput(e.target.value)}
                   placeholder="e.g. UTR-HDFC-99182741"
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono rounded-xl outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="pod-input-field"
+                  style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'monospace' }}
                 />
               </div>
-            </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setPayoutTarget(null)}
-                className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-              >
-                {t('Cancel', 'रद्द करें')}
-              </button>
-              <button
-                type="button"
-                onClick={handleReleasePayment}
-                disabled={!utrInput}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold shadow-md transition disabled:opacity-50"
-              >
-                {t('Confirm Release', 'भुगतान जारी करें')}
-              </button>
+              <div className="pod-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setPayoutTarget(null)}
+                  className="pod-btn-cancel"
+                >
+                  {t('Cancel', 'रद्द करें')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReleasePayment}
+                  disabled={!utrInput}
+                  className="pod-btn-confirm"
+                >
+                  {t('Confirm Release', 'भुगतान जारी करें')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -805,25 +799,26 @@ export default function PhysicalPodInwardDeck() {
 
       {/* MODAL: Emergency Breakdown SOS Rescue */}
       {showRescueModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-rose-500" />
-                {t('Dispatch Highway Breakdown SOS Rescue', 'हाईवे ब्रेकडाउन आपातकालीन रेस्क्यू भेजें')}
+        <div className="pod-modal-overlay">
+          <div className="pod-modal-card" style={{ maxWidth: '580px' }}>
+            <div className="pod-modal-head">
+              <h3>
+                <AlertTriangle style={{ width: '18px', height: '18px', color: '#f43f5e' }} />
+                <span>{t('Dispatch Highway Breakdown SOS Rescue', 'हाईवे ब्रेकडाउन आपातकालीन रेस्क्यू भेजें')}</span>
               </h3>
               <button
                 onClick={() => setShowRescueModal(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                className="pod-modal-close"
+                type="button"
               >
-                <X className="w-5 h-5" />
+                <X style={{ width: '18px', height: '18px' }} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateRescue} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleCreateRescue} className="pod-modal-body">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '6px' }}>
                     {t('Broken Down Vehicle Plate *', 'खराब हुआ वाहन नंबर *')}
                   </label>
                   <input
@@ -832,18 +827,20 @@ export default function PhysicalPodInwardDeck() {
                     value={newRescue.originalVehiclePlate}
                     onChange={(e) => setNewRescue({ ...newRescue, originalVehiclePlate: e.target.value.toUpperCase() })}
                     placeholder="e.g. HR 55 AF 4410"
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 uppercase font-mono rounded-xl outline-none focus:ring-2 focus:ring-rose-500"
+                    className="pod-input-field"
+                    style={{ width: '100%', boxSizing: 'border-box', textTransform: 'uppercase', fontFamily: 'monospace' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '6px' }}>
                     {t('Breakdown Reason', 'ब्रेकडाउन का कारण')}
                   </label>
                   <select
                     value={newRescue.breakdownReason}
                     onChange={(e) => setNewRescue({ ...newRescue, breakdownReason: e.target.value as TransshipmentReason })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-rose-500"
+                    className="pod-input-field"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
                   >
                     <option value="EngineBreakdown">Engine Breakdown / Overheating</option>
                     <option value="AxlePuncture">Axle Broken / Multiple Puncture</option>
@@ -854,7 +851,7 @@ export default function PhysicalPodInwardDeck() {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                <label style={{ display: 'block', fontWeight: 700, marginBottom: '6px' }}>
                   {t('Highway Location / Landmark / Milestone *', 'हाईवे स्थान / लैंडमार्क / मील का पत्थर *')}
                 </label>
                 <input
@@ -863,13 +860,14 @@ export default function PhysicalPodInwardDeck() {
                   value={newRescue.breakdownLocation}
                   onChange={(e) => setNewRescue({ ...newRescue, breakdownLocation: e.target.value })}
                   placeholder="e.g. NH-48 Near Shahpura Toll Plaza, KM 180"
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-rose-500"
+                  className="pod-input-field"
+                  style={{ width: '100%', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '6px' }}>
                     {t('Assigned Rescue Vehicle', 'सौंपा गया रेस्क्यू वाहन')}
                   </label>
                   <input
@@ -877,12 +875,13 @@ export default function PhysicalPodInwardDeck() {
                     value={newRescue.assignedRescueVehiclePlate}
                     onChange={(e) => setNewRescue({ ...newRescue, assignedRescueVehiclePlate: e.target.value.toUpperCase() })}
                     placeholder="e.g. RJ 14 GB 9901"
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 uppercase font-mono rounded-xl outline-none focus:ring-2 focus:ring-rose-500"
+                    className="pod-input-field"
+                    style={{ width: '100%', boxSizing: 'border-box', textTransform: 'uppercase', fontFamily: 'monospace' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '6px' }}>
                     {t('Rescue Driver Name & Phone', 'रेस्क्यू ड्राइवर व मोबाइल')}
                   </label>
                   <input
@@ -890,35 +889,37 @@ export default function PhysicalPodInwardDeck() {
                     value={newRescue.rescueDriverPhone}
                     onChange={(e) => setNewRescue({ ...newRescue, rescueDriverPhone: e.target.value })}
                     placeholder="+91 98290 12345"
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-rose-500"
+                    className="pod-input-field"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
                 <input
                   type="checkbox"
                   id="craneDispatched"
                   checked={newRescue.craneMechanicDispatched}
                   onChange={(e) => setNewRescue({ ...newRescue, craneMechanicDispatched: e.target.checked })}
-                  className="rounded text-rose-600 focus:ring-rose-500"
+                  style={{ width: '16px', height: '16px', accentColor: '#e11d48', cursor: 'pointer' }}
                 />
-                <label htmlFor="craneDispatched" className="text-slate-700 dark:text-slate-300 font-medium">
+                <label htmlFor="craneDispatched" style={{ fontWeight: 600, cursor: 'pointer' }}>
                   {t('Dispatch Hydraulic Crane & Mechanic Team Immediately', 'हाइड्रोलिक क्रेन व मैकेनिक टीम तुरंत रवाना करें')}
                 </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="pod-modal-footer">
                 <button
                   type="button"
                   onClick={() => setShowRescueModal(false)}
-                  className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                  className="pod-btn-cancel"
                 >
                   {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-semibold shadow-md transition"
+                  className="pod-btn-sos"
+                  style={{ padding: '10px 22px' }}
                 >
                   {t('Dispatch SOS Rescue', 'SOS रेस्क्यू रवाना करें')}
                 </button>

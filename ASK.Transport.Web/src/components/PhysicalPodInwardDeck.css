@@ -1,6 +1,6 @@
 /* ============================================================================
-   PHYSICAL POD INWARD & BREAKDOWN RESCUE DECK CSS
-   Theme-Adaptive (Dark & Light Mode), Ultra-Responsive, Zero-Clipping
+   PHYSICAL POD INWARD & HIGHWAY BREAKDOWN RESCUE DECK CSS
+   Ultra-Responsive, Zero-Clipping, Theme-Adaptive (Dark & Light Mode)
    ============================================================================ */
 
 .pod-deck-container {
@@ -13,33 +13,35 @@
 /* TOAST NOTIFICATION */
 .pod-deck-toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  padding: 14px 20px;
+  top: 24px;
+  right: 24px;
+  z-index: 99999;
+  padding: 14px 22px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   gap: 12px;
   color: #ffffff;
   font-size: 13px;
-  font-weight: 600;
-  animation: slideIn 0.25s ease-out;
+  font-weight: 700;
+  animation: podToastSlideIn 0.25s ease-out;
 }
 
 .pod-deck-toast.success {
   background: #059669;
+  border: 1px solid #10b981;
 }
 
 .pod-deck-toast.error {
   background: #dc2626;
+  border: 1px solid #ef4444;
 }
 
-@keyframes slideIn {
+@keyframes podToastSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-12px);
   }
   to {
     opacity: 1;
@@ -47,17 +49,19 @@
   }
 }
 
-/* HEADER BANNER */
+/* ============================================================================
+   TOP HERO BANNER
+   ============================================================================ */
 .pod-deck-banner {
-  background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #022c22 100%);
+  background: linear-gradient(135deg, #091322 0%, #064e3b 50%, #022c22 100%);
   border-radius: 16px;
   padding: 24px 28px;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 10px 25px -5px rgba(2, 44, 34, 0.4);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 10px 30px -5px rgba(2, 44, 34, 0.5);
+  border: 1px solid rgba(16, 185, 129, 0.35);
   position: relative;
   overflow: hidden;
 }
@@ -67,19 +71,23 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 18px;
 }
 
 .pod-deck-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
   color: #34d399;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 8px;
 }
 
 .pod-deck-banner h1 {
@@ -87,20 +95,22 @@
   font-size: 24px;
   font-weight: 900;
   letter-spacing: -0.5px;
+  color: #ffffff;
 }
 
 .pod-deck-banner p {
   margin: 0;
   font-size: 13px;
   color: #cbd5e1;
-  max-width: 720px;
+  max-width: 780px;
   line-height: 1.5;
 }
 
 .pod-deck-banner-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .pod-btn-sos {
@@ -109,14 +119,14 @@
   gap: 8px;
   background: #e11d48;
   color: #ffffff;
-  border: none;
+  border: 1px solid #f43f5e;
   padding: 10px 18px;
   border-radius: 10px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
 }
 
 .pod-btn-sos:hover {
@@ -125,7 +135,7 @@
 }
 
 .pod-btn-refresh {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #e2e8f0;
   padding: 10px 14px;
@@ -134,17 +144,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .pod-btn-refresh:hover {
   background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 /* TAB SWITCHER */
 .pod-deck-tabs {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   padding-top: 16px;
   flex-wrap: wrap;
@@ -154,10 +165,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 800;
   border: 1px solid transparent;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.08);
@@ -166,34 +177,38 @@
 }
 
 .pod-deck-tab:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
 }
 
 .pod-deck-tab.active-green {
   background: #059669;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+  border-color: #10b981;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45);
 }
 
 .pod-deck-tab.active-rose {
   background: #e11d48;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4);
+  border-color: #f43f5e;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.45);
 }
 
 .pod-pill-count {
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  font-weight: 800;
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  font-weight: 900;
 }
 
-/* KPI CARDS */
+/* ============================================================================
+   KPI METRIC CARDS (4 CARDS GRID)
+   ============================================================================ */
 .pod-deck-kpis-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 16px;
 }
 
@@ -208,7 +223,7 @@
 
 .pod-kpi-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
 }
 
 .pod-kpi-head {
@@ -217,11 +232,11 @@
   align-items: center;
   color: var(--text-secondary, #64748b);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .pod-kpi-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 900;
   margin-top: 6px;
   color: var(--text-primary, #0f172a);
@@ -229,15 +244,19 @@
 
 .pod-kpi-value.amber { color: #f59e0b; }
 .pod-kpi-value.emerald { color: #10b981; }
+.pod-kpi-value.sky { color: #0284c7; }
 .pod-kpi-value.rose { color: #f43f5e; }
 
 .pod-kpi-sub {
   font-size: 11px;
   color: var(--text-secondary, #64748b);
   margin-top: 4px;
+  display: block;
 }
 
-/* OPTICAL SCANNER STRIP */
+/* ============================================================================
+   OPTICAL SCANNER ACTION STRIP
+   ============================================================================ */
 .pod-scanner-strip {
   background: var(--bg-surface, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
@@ -256,16 +275,33 @@
 .pod-scanner-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 12.5px;
   color: #059669;
   white-space: nowrap;
 }
 
 .pod-input-field {
   flex: 1;
-  min-width: 220px;
+  min-width: 240px;
+  padding: 10px 16px;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--text-primary, #0f172a);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.pod-input-field:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+}
+
+.pod-input-operator {
+  width: 220px;
   padding: 10px 14px;
   background: var(--bg-subtle, #f8fafc);
   border: 1px solid var(--border-color, #cbd5e1);
@@ -275,29 +311,26 @@
   outline: none;
 }
 
-.pod-input-field:focus {
-  border-color: #059669;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
-}
-
 .pod-btn-verify {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background: #059669;
   color: #ffffff;
   border: none;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 10px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
 }
 
 .pod-btn-verify:hover:not(:disabled) {
   background: #047857;
+  transform: translateY(-1px);
 }
 
 .pod-btn-verify:disabled {
@@ -305,7 +338,9 @@
   cursor: not-allowed;
 }
 
-/* TABLE CARD */
+/* ============================================================================
+   TABLE DIRECTORY (ZERO CLIPPING, FIXED HEADERS)
+   ============================================================================ */
 .pod-table-card {
   background: var(--bg-surface, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
@@ -351,6 +386,15 @@
   box-sizing: border-box;
 }
 
+.pod-search-wrap input:focus {
+  border-color: #059669;
+}
+
+.pod-table-records-count {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+}
+
 .pod-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -386,15 +430,67 @@
   background: var(--bg-hover, rgba(5, 150, 105, 0.04));
 }
 
-/* BADGES & BUTTONS */
+.pod-bilty-text {
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.pod-barcode-token {
+  font-family: monospace;
+  font-size: 11px;
+  color: #6366f1;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.pod-cn-text {
+  font-size: 10.5px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 1px;
+}
+
+.pod-party-name {
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+}
+
+.pod-party-dest {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.pod-vehicle-pill {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 11.5px;
+  color: #0284c7;
+}
+
+.pod-driver-text {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 1px;
+}
+
+/* BADGES & ACTION BUTTONS */
 .pod-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 4px 10px;
   border-radius: 12px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -423,12 +519,14 @@
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
   transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
 }
 
 .pod-btn-payout:hover {
@@ -436,13 +534,118 @@
   transform: translateY(-1px);
 }
 
-/* MODAL */
+.pod-btn-scan-now {
+  background: var(--bg-subtle, #f1f5f9);
+  color: var(--text-primary, #334155);
+  border: 1px solid var(--border-color, #cbd5e1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pod-btn-scan-now:hover {
+  background: #059669;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+/* ============================================================================
+   TAB 2: HIGHWAY BREAKDOWN SOS RESCUE CARDS
+   ============================================================================ */
+.pod-sos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pod-sos-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary, #0f172a);
+}
+
+.pod-sos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 16px;
+}
+
+.pod-sos-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pod-sos-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pod-sos-incident-tag {
+  font-weight: 900;
+  color: #f43f5e;
+  font-size: 14px;
+}
+
+.pod-sos-reason-pill {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  font-weight: 800;
+  background: rgba(244, 63, 94, 0.12);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.pod-sos-box-gray {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.pod-sos-box-green {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* ============================================================================
+   MODALS: RELEASE PAYOUT & SOS DISPATCH
+   ============================================================================ */
 .pod-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
+  backdrop-filter: blur(5px);
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,25 +656,57 @@
   background: var(--bg-surface, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 20px;
-  max-width: 580px;
+  max-width: 540px;
   width: 100%;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+  animation: podModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes podModalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .pod-modal-head {
   padding: 18px 24px;
-  background: #0f172a;
+  background: #091322;
   color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .pod-modal-head h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pod-modal-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.pod-modal-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .pod-modal-body {
@@ -479,10 +714,58 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  font-size: 12.5px;
+}
+
+.pod-payout-box {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 14px 18px;
+  border-radius: 12px;
+}
+
+.pod-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.pod-btn-cancel {
+  background: var(--bg-subtle, #f1f5f9);
+  color: var(--text-secondary, #475569);
+  border: 1px solid var(--border-color, #cbd5e1);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pod-btn-confirm {
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+}
+
+.pod-btn-confirm:hover:not(:disabled) {
+  background: #047857;
+}
+
+.pod-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ============================================================================
-   DARK MODE OVERRIDES (HIGH CONTRAST & LUXURY DARK SLATE)
+   DARK MODE OVERRIDES (LUXURY HIGH-CONTRAST SLATE #111a2e / #090f1d)
    ============================================================================ */
 [data-theme="dark"] .pod-deck-container,
 body.dark .pod-deck-container,
@@ -508,11 +791,15 @@ body.dark .pod-scanner-strip,
 .dark .pod-scanner-strip {
   background: #111a2e !important;
   border-color: #1e2c47 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
 }
 
 [data-theme="dark"] .pod-input-field,
+[data-theme="dark"] .pod-input-operator,
 body.dark .pod-input-field,
-.dark .pod-input-field {
+body.dark .pod-input-operator,
+.dark .pod-input-field,
+.dark .pod-input-operator {
   background: #090f1d !important;
   border-color: #1e2c47 !important;
   color: #f8fafc !important;
@@ -555,6 +842,48 @@ body.dark .pod-data-table td,
   color: #f1f5f9 !important;
 }
 
+[data-theme="dark"] .pod-party-name,
+body.dark .pod-party-name,
+.dark .pod-party-name {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .pod-bilty-text,
+body.dark .pod-bilty-text,
+.dark .pod-bilty-text {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .pod-btn-scan-now,
+body.dark .pod-btn-scan-now,
+.dark .pod-btn-scan-now {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .pod-sos-card,
+body.dark .pod-sos-card,
+.dark .pod-sos-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .pod-sos-box-gray,
+body.dark .pod-sos-box-gray,
+.dark .pod-sos-box-gray {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .pod-sos-box-green,
+body.dark .pod-sos-box-green,
+.dark .pod-sos-box-green {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
 [data-theme="dark"] .pod-modal-card,
 body.dark .pod-modal-card,
 .dark .pod-modal-card {
@@ -563,85 +892,10 @@ body.dark .pod-modal-card,
   color: #f8fafc !important;
 }
 
-
-/* ============================================================================
-   TAILWIND COMPATIBILITY SHIM FOR POD INWARD DECK
-   ============================================================================ */
-.pod-deck-container .space-y-6 > * + * { margin-top: 1.5rem; }
-.pod-deck-container .space-y-4 > * + * { margin-top: 1rem; }
-.pod-deck-container .space-y-3 > * + * { margin-top: 0.75rem; }
-.pod-deck-container .space-y-1\.5 > * + * { margin-top: 0.375rem; }
-.pod-deck-container .flex { display: flex; }
-.pod-deck-container .inline-flex { display: inline-flex; }
-.pod-deck-container .flex-col { flex-direction: column; }
-.pod-deck-container .items-center { align-items: center; }
-.pod-deck-container .items-start { align-items: flex-start; }
-.pod-deck-container .justify-between { justify-content: space-between; }
-.pod-deck-container .gap-1 { gap: 0.25rem; }
-.pod-deck-container .gap-1\.5 { gap: 0.375rem; }
-.pod-deck-container .gap-2 { gap: 0.5rem; }
-.pod-deck-container .gap-3 { gap: 0.75rem; }
-.pod-deck-container .gap-4 { gap: 1rem; }
-.pod-deck-container .grid { display: grid; }
-.pod-deck-container .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.pod-deck-container .overflow-x-auto { overflow-x: auto; }
-.pod-deck-container .w-full { width: 100%; }
-.pod-deck-container .rounded-2xl { border-radius: 1rem; }
-.pod-deck-container .rounded-xl { border-radius: 0.75rem; }
-.pod-deck-container .rounded-lg { border-radius: 0.5rem; }
-.pod-deck-container .p-4 { padding: 1rem; }
-.pod-deck-container .p-5 { padding: 1.25rem; }
-.pod-deck-container .p-6 { padding: 1.5rem; }
-.pod-deck-container .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
-
-@media (min-width: 640px) {
-  .pod-deck-container .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pod-deck-container .sm\:flex-row { flex-direction: row; }
-}
-
-@media (min-width: 768px) {
-  .pod-deck-container .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pod-deck-container .md\:flex-row { flex-direction: row; }
-}
-
-@media (min-width: 1024px) {
-  .pod-deck-container .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-
-/* THEME ADAPTATION */
-[data-theme="dark"] .pod-deck-container .bg-white,
-body.dark .pod-deck-container .bg-white,
-.dark .pod-deck-container .bg-white {
-  background-color: #111a2e !important;
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] .pod-deck-container .bg-slate-50,
-body.dark .pod-deck-container .bg-slate-50,
-.dark .pod-deck-container .bg-slate-50 {
-  background-color: #090f1d !important;
-}
-
-[data-theme="dark"] .pod-deck-container .border-slate-200,
-body.dark .pod-deck-container .border-slate-200,
-.dark .pod-deck-container .border-slate-200 {
+[data-theme="dark"] .pod-btn-cancel,
+body.dark .pod-btn-cancel,
+.dark .pod-btn-cancel {
+  background: #090f1d !important;
   border-color: #1e2c47 !important;
-}
-
-[data-theme="dark"] .pod-deck-container .text-slate-900,
-body.dark .pod-deck-container .text-slate-900,
-.dark .pod-deck-container .text-slate-900 {
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] .pod-deck-container .text-slate-800,
-body.dark .pod-deck-container .text-slate-800,
-.dark .pod-deck-container .text-slate-800 {
-  color: #e2e8f0 !important;
-}
-
-[data-theme="dark"] .pod-deck-container .text-slate-500,
-body.dark .pod-deck-container .text-slate-500,
-.dark .pod-deck-container .text-slate-500 {
   color: #94a3b8 !important;
 }
