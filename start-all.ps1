@@ -9,8 +9,19 @@ Write-Host "==========================================" -ForegroundColor Cyan
 $projectRoot = $PSScriptRoot
 $webRoot = Join-Path $projectRoot "ASK.Transport.Web"
 
+# Auto-check and install frontend dependencies if node_modules is missing
+$nodeModulesPath = Join-Path $webRoot "node_modules"
+if (-not (Test-Path $nodeModulesPath)) {
+    Write-Host "`n[!] node_modules not found in ASK.Transport.Web." -ForegroundColor Yellow
+    Write-Host "[*] Automatically running 'npm install' (this only happens once)..." -ForegroundColor Cyan
+    Push-Location $webRoot
+    npm install
+    Pop-Location
+    Write-Host "[+] Dependencies installed successfully!`n" -ForegroundColor Green
+}
+
 # 1. Start Backend API in a new PowerShell window
-Write-Host "`n[1/2] Starting ASP.NET Core Web API (Port: 5208)..." -ForegroundColor Yellow
+Write-Host "[1/2] Starting ASP.NET Core Web API (Port: 5208)..." -ForegroundColor Yellow
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '--- ASK TRANSPORT API (Port 5208) ---' -ForegroundColor Cyan; dotnet run --urls 'http://localhost:5208'"
 
 # 2. Start Frontend in a new PowerShell window
