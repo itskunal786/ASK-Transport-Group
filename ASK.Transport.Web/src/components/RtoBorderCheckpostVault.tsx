@@ -14,6 +14,7 @@ import {
 import type { RtoBorderInspectionDossier } from '../types/transportOperations';
 import { getAllRtoDossiers, verifyRtoDossier } from '../api/rtoVaultApi';
 import { useLanguage } from '../context/LanguageContext';
+import './RtoBorderCheckpostVault.css';
 
 const SEED_DOSSIERS: RtoBorderInspectionDossier[] = [
   {
@@ -144,54 +145,57 @@ export const RtoBorderCheckpostVault: React.FC = () => {
   const flaggedCount = dossiers.filter(d => !d.isAllClearForInterstate).length;
 
   return (
-    <div className="space-y-6">
-      {/* Toast Notification */}
+    <div className="rto-vault-container">
+      {/* 1. TOAST NOTIFICATION */}
       {notification && (
-        <div className={`p-4 rounded-xl flex items-center justify-between text-sm font-medium shadow-lg transition-all ${
-          notification.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' :
-          notification.type === 'error' ? 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800' :
-          'bg-indigo-50 text-indigo-800 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
-        }`}>
-          <div className="flex items-center space-x-2">
-            {notification.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-            {notification.type === 'error' && <AlertTriangle className="w-5 h-5 text-rose-500" />}
+        <div className={`rto-vault-toast ${notification.type}`}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {notification.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
+            {notification.type === 'error' && <AlertTriangle className="w-5 h-5 text-rose-400" />}
             <span>{notification.message}</span>
           </div>
-          <button onClick={() => setNotification(null)} className="opacity-70 hover:opacity-100">
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: '4px' }}
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Main Header Banner */}
-      <div className="bg-gradient-to-r from-teal-800 via-teal-900 to-stone-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* 2. TOP HEADER BANNER */}
+      <div className="rto-vault-banner">
         <div>
-          <div className="flex items-center space-x-2 text-teal-300 text-xs font-bold tracking-wider uppercase">
+          <div className="rto-vault-banner-tag">
             <ShieldCheck className="w-4 h-4" />
-            <span>National Interstate Border RTO Shield</span>
+            <span>{t('National Interstate Border RTO Shield', 'राष्ट्रीय अंतरराज्यीय सीमा आरटीओ सुरक्षा शील्ड')}</span>
           </div>
-          <h1 className="text-2xl font-bold mt-1 text-white">
-            {t('1-Click Border RTO Check-Post Document Vault', '1-क्लिक बॉर्डर आरटीओ चेक-पोस्ट डॉक्यूमेंट वॉल्ट')}
-          </h1>
-          <p className="text-teal-100/80 text-sm mt-1">
-            {t(
-              'Unified digital QR dossier for RC, Fitness, National Permit, Insurance, PUC, Driver DL, and active E-Way Bill.',
-              'RC, फिटनेस, नेशनल परमिट, PUC, इंश्योरेंस, ड्राइवर DL व ई-वे बिल का एकल डिजिटल QR टोकन डॉजियर।'
-            )}
-          </p>
+          <div className="rto-vault-banner-titles">
+            <h1>{t('1-Click Border RTO Check-Post Document Vault', '1-क्लिक बॉर्डर आरटीओ चेक-पोस्ट डॉक्यूमेंट वॉल्ट')}</h1>
+            <p>
+              {t(
+                'Unified digital QR dossier for RC, Fitness, National Permit, Insurance, PUC, Driver DL, and active E-Way Bill.',
+                'RC, फिटनेस, नेशनल परमिट, PUC, इंश्योरेंस, ड्राइवर DL व ई-वे बिल का एकल डिजिटल QR टोकन डॉजियर।'
+              )}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="rto-vault-banner-actions">
           <button 
+            type="button"
             onClick={fetchDossiers}
             disabled={isLoading}
-            className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
+            className="rto-vault-btn-refresh"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             <span>{t('Refresh', 'रिफ्रेश')}</span>
           </button>
           <button
+            type="button"
             onClick={() => setShowQrModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-teal-400 hover:bg-teal-300 text-stone-950 font-bold rounded-xl text-sm shadow-md transition"
+            className="rto-vault-btn-qr-top"
           >
             <QrCode className="w-4 h-4" />
             <span>{t('Show Check-Post QR Token', 'चेक-पोस्ट QR टोकन दिखाएं')}</span>
@@ -199,332 +203,312 @@ export const RtoBorderCheckpostVault: React.FC = () => {
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+      {/* 3. 3 KPI METRIC CARDS */}
+      <div className="rto-vault-kpis-grid">
+        <div className="rto-vault-kpi-card">
+          <div className="rto-vault-kpi-info">
+            <span className="rto-vault-kpi-label">
               {t('Total Vehicle Dossiers', 'कुल सक्रिय वाहन डॉजियर')}
             </span>
-            <div className="text-2xl font-bold text-stone-800 dark:text-stone-100 mt-0.5">{dossiers.length}</div>
-            <span className="text-xs text-teal-600 dark:text-teal-400 mt-1 inline-block">
+            <div className="rto-vault-kpi-val">{dossiers.length}</div>
+            <span className="rto-vault-kpi-sub" style={{ color: '#059669' }}>
               {t('Vahan & Sarathi API Sync', 'वाहन एवं सारथी सिंक')}
             </span>
           </div>
-          <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center text-teal-600">
+          <div className="rto-vault-kpi-icon-box" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669' }}>
             <FileBadge className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+        <div className="rto-vault-kpi-card">
+          <div className="rto-vault-kpi-info">
+            <span className="rto-vault-kpi-label">
               {t('Interstate Cleared (All-Clear)', 'इंटरस्टेट हरी झंडी (All-Clear)')}
             </span>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{clearCount}</div>
-            <span className="text-xs text-emerald-600 mt-1 inline-block">
-              {t('Zero Challan Risk (100% Valid)', 'शून्य चालान जोखिम (100% Valid)')}
+            <div className="rto-vault-kpi-val" style={{ color: '#10b981' }}>{clearCount}</div>
+            <span className="rto-vault-kpi-sub" style={{ color: '#10b981' }}>
+              {t('Zero Challan Risk (100% Valid)', 'शून्य चालान जोखिम (100% वैध)')}
             </span>
           </div>
-          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600">
+          <div className="rto-vault-kpi-icon-box" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981' }}>
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+        <div className="rto-vault-kpi-card">
+          <div className="rto-vault-kpi-info">
+            <span className="rto-vault-kpi-label">
               {t('Renewal Due / Expiring', 'ध्यान देने योग्य चेतावनी (Expiring)')}
             </span>
-            <div className="text-2xl font-bold text-amber-600 mt-0.5">{flaggedCount}</div>
-            <span className="text-xs text-amber-500 mt-1 inline-block">
+            <div className="rto-vault-kpi-val" style={{ color: '#f59e0b' }}>{flaggedCount}</div>
+            <span className="rto-vault-kpi-sub" style={{ color: '#f59e0b' }}>
               {t('PUC / Fitness Action Required', 'PUC / फिटनेस नवीनीकरण आवश्यक')}
             </span>
           </div>
-          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
+          <div className="rto-vault-kpi-icon-box" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
             <AlertTriangle className="w-6 h-6" />
           </div>
         </div>
       </div>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* 4. SPLIT LAYOUT: LEFT DIRECTORY & RIGHT INSPECTION VIEW */}
+      <div className="rto-vault-split-row">
 
-        {/* Left Side: Vehicle Dossier List */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 shadow-sm">
-            <div className="space-y-3">
-              <div className="relative">
-                <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  placeholder={t('Search vehicle plate / driver / bilty no...', 'गाड़ी संख्या / ड्राइवर नाम / बिल्टी...')}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-stone-800 dark:text-stone-100"
-                />
+        {/* LEFT COLUMN: VEHICLE DOSSIER DIRECTORY */}
+        <div className="rto-vault-left-card">
+          <div className="rto-vault-search-box">
+            <Search className="w-4 h-4 rto-vault-search-icon" />
+            <input
+              type="text"
+              placeholder={t('Search vehicle plate / driver / bilty no...', 'गाड़ी संख्या / ड्राइवर नाम / बिल्टी...')}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="rto-vault-search-input"
+            />
+          </div>
+
+          {/* FILTER PILLS */}
+          <div className="rto-vault-filters-bar">
+            {(['ALL', 'CLEAR', 'FLAGGED'] as const).map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setFilterMode(tab)}
+                className={`rto-vault-filter-pill ${filterMode === tab ? 'active' : ''}`}
+              >
+                {tab === 'ALL' ? t('All Vehicles', 'सभी गाड़ियां') : tab === 'CLEAR' ? t('All Clear (Valid)', 'हरी झंडी (Valid)') : t('Renewal Due', 'चेतावनी युक्त')}
+              </button>
+            ))}
+          </div>
+
+          <div className="rto-vault-dossiers-list">
+            {filteredDossiers.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>
+                {t('No vehicle dossiers found', 'कोई डॉजियर नहीं मिला')}
               </div>
-
-              {/* Filter Pills */}
-              <div className="flex gap-2 pb-1 text-xs">
-                {(['ALL', 'CLEAR', 'FLAGGED'] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setFilterMode(tab)}
-                    className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition ${
-                      filterMode === tab
-                        ? 'bg-teal-700 text-white shadow'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
-                    }`}
+            ) : (
+              filteredDossiers.map(dossier => {
+                const isSelected = selectedDossier.id === dossier.id;
+                return (
+                  <div
+                    key={dossier.id}
+                    onClick={() => setSelectedDossier(dossier)}
+                    className={`rto-vault-dossier-item ${isSelected ? 'selected' : ''}`}
                   >
-                    {tab === 'ALL' ? t('All Vehicles', 'सभी गाड़ियां') : tab === 'CLEAR' ? t('All Clear (Valid)', 'हरी झंडी (Valid)') : t('Renewal Due', 'चेतावनी युक्त')}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
-              {filteredDossiers.length === 0 ? (
-                <div className="text-center py-8 text-stone-400 text-sm">
-                  {t('No vehicle dossiers found', 'कोई डॉजियर नहीं मिला')}
-                </div>
-              ) : (
-                filteredDossiers.map(dossier => {
-                  const isSelected = selectedDossier.id === dossier.id;
-                  return (
-                    <div
-                      key={dossier.id}
-                      onClick={() => setSelectedDossier(dossier)}
-                      className={`p-3.5 rounded-xl border cursor-pointer transition ${
-                        isSelected
-                          ? 'border-teal-500 bg-teal-50/70 dark:bg-teal-950/20 shadow-sm'
-                          : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-teal-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
-                          <Truck className="w-3.5 h-3.5 text-teal-600" />
-                          <span>{dossier.vehicleNumber}</span>
-                        </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          dossier.isAllClearForInterstate
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                        }`}>
-                          {dossier.isAllClearForInterstate ? 'ALL-CLEAR' : 'RENEWAL DUE'}
-                        </span>
-                      </div>
-
-                      <div className="mt-2 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
-                        <span>{dossier.driverName}</span>
-                        <span className="font-mono text-[11px] text-teal-700 dark:text-teal-400">{dossier.dossierQrToken}</span>
-                      </div>
-
-                      <div className="mt-1 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 border-t border-stone-100 dark:border-stone-800 pt-2">
-                        <span>{t('LR / Bilty:', 'बिल्टी:')} <b>{dossier.activeBiltyNo}</b></span>
-                        <span>{t('RC Valid Till:', 'RC वैध:')} {dossier.rcFitnessExpiry}</span>
-                      </div>
+                    <div className="rto-vault-item-top">
+                      <span className="rto-vault-plate-tag">
+                        <Truck className="w-4 h-4 text-emerald-500" />
+                        <span>{dossier.vehicleNumber}</span>
+                      </span>
+                      <span className={`rto-vault-clear-badge ${dossier.isAllClearForInterstate ? 'clear' : 'flagged'}`}>
+                        {dossier.isAllClearForInterstate ? 'ALL-CLEAR' : 'RENEWAL DUE'}
+                      </span>
                     </div>
-                  );
-                })
-              )}
-            </div>
+
+                    <div className="rto-vault-item-driver">
+                      <span>{dossier.driverName}</span>
+                      <span className="rto-vault-qr-token-pill">{dossier.dossierQrToken}</span>
+                    </div>
+
+                    <div className="rto-vault-item-footer">
+                      <span>{t('LR / Bilty:', 'बिल्टी:')} <strong>{dossier.activeBiltyNo}</strong></span>
+                      <span>{t('RC Valid:', 'RC वैध:')} {dossier.rcFitnessExpiry}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
-        {/* Right Side: High-Contrast RTO Officer Inspection Dossier View */}
-        <div className="lg:col-span-7">
-          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="p-4 bg-teal-800 text-white flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-5 h-5 text-teal-300" />
-                <div>
-                  <h3 className="font-bold text-sm">
-                    {t('RTO Check-Post Inspection Dossier', 'RTO चेक-पोस्ट निरीक्षण डॉजियर')} • {selectedDossier.vehicleNumber}
-                  </h3>
-                  <span className="text-[11px] text-teal-200">
-                    {t('Digital Token:', 'डिजिटल टोकन:')} {selectedDossier.dossierQrToken}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleVerify(selectedDossier.id)}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>{t('Re-Verify', 'री-वेरीफाई')}</span>
-                </button>
-                <button
-                  onClick={() => setShowQrModal(true)}
-                  className="px-3 py-1.5 bg-white text-teal-900 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
-                >
-                  <QrCode className="w-3.5 h-3.5" />
-                  <span>{t('Show QR', 'QR दिखाएं')}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Dossier Body */}
-            <div className="p-6 space-y-6">
-
-              {/* Status Banner */}
-              <div className={`p-4 rounded-xl flex items-center justify-between ${
-                selectedDossier.isAllClearForInterstate
-                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
-                  : 'bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'
-              }`}>
-                <div className="flex items-center space-x-3">
-                  {selectedDossier.isAllClearForInterstate ? (
-                    <CheckCircle2 className="w-8 h-8 text-emerald-600 shrink-0" />
-                  ) : (
-                    <AlertTriangle className="w-8 h-8 text-amber-600 shrink-0" />
-                  )}
-                  <div>
-                    <h4 className="font-bold text-sm">
-                      {selectedDossier.isAllClearForInterstate
-                        ? t('🟢 Interstate Border Clearance: 100% Compliant & Valid', '🟢 इंटरस्टेट बॉर्डर क्लीयरेंस: 100% वैध एवं चालान-मुक्त')
-                        : t('🟡 Compliance Warning: Document Renewal Required', '🟡 कम्पलायंस चेतावनी: दस्तावेज नवीनीकरण आवश्यक')}
-                    </h4>
-                    <p className="text-xs opacity-90 mt-0.5">
-                      {selectedDossier.flaggedComplianceNotes}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 7-in-1 Document Grid */}
-              <div className="space-y-3">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                  {t('7 Mandatory Interstate Transport Compliance Documents', '7 अनिवार्य राष्ट्रीय परमिट एवं परिवहन दस्तावेज (Interstate Checklist)')}
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  {/* RC & Fitness */}
-                  <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">
-                        {t('1. RC & Fitness Certificate', '1. RC एवं फिटनेस सर्टिफिकेट')}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">VAHAN VERIFIED</span>
-                    </div>
-                    <div className="text-stone-600 dark:text-stone-400">{selectedDossier.rcNumber}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.rcFitnessExpiry}</div>
-                  </div>
-
-                  {/* National Permit */}
-                  <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">
-                        {t('2. National Permit (Form 48 & 47)', '2. नेशनल परमिट (Form 48 & 47)')}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">ALL INDIA PERMIT</span>
-                    </div>
-                    <div className="text-stone-600 dark:text-stone-400">{t('National Goods Carriage Permit', 'राष्ट्रीय गुड्स कैरिज परमिट')}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.nationalPermitExpiry}</div>
-                  </div>
-
-                  {/* Commercial Insurance */}
-                  <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">
-                        {t('3. Commercial Comprehensive Insurance', '3. व्यापक कॉमर्शियल इंश्योरेंस')}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">POLICY ACTIVE</span>
-                    </div>
-                    <div className="text-stone-600 dark:text-stone-400">{selectedDossier.insurancePolicyNo}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.insuranceExpiry}</div>
-                  </div>
-
-                  {/* PUC Certificate */}
-                  <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">
-                        {t('4. PUC Emission Pass Certificate', '4. PUC प्रदूषण प्रमाण पत्र')}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">EMISSION PASS</span>
-                    </div>
-                    <div className="text-stone-600 dark:text-stone-400">{t('BS-VI Smoke Density Clearance', 'BS-VI स्मोक डेंसिटी टेस्ट क्लीयर')}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.pucPollutionExpiry}</div>
-                  </div>
-
-                  {/* Driver DL */}
-                  <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">
-                        {t('5. Driver Commercial License (DL)', '5. चालक ड्राइविंग लाइसेंस (DL)')}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">SARATHI VERIFIED</span>
-                    </div>
-                    <div className="text-stone-600 dark:text-stone-400">{selectedDossier.driverName} • {selectedDossier.driverDlNumber}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.driverDlExpiry}</div>
-                  </div>
-
-                  {/* E-Way Bill & Bilty */}
-                  <div className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-800 dark:text-stone-200">
-                        {t('6. Active E-Way Bill & Bilty (LR)', '6. सक्रिय ई-वे बिल व बिल्टी')}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold rounded">NIC EWB SYNC</span>
-                    </div>
-                    <div className="text-stone-600 dark:text-stone-400">EWB: {selectedDossier.activeEwbNo}</div>
-                    <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium">{t('LR / Bilty:', 'बिल्टी:')} {selectedDossier.activeBiltyNo}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons: Bundle Download */}
-              <div className="flex items-center justify-between pt-4 border-t border-stone-200 dark:border-stone-800">
-                <span className="text-xs text-stone-500">
-                  {t('Last Verification:', 'अंतिम सत्यापन:')} {new Date(selectedDossier.verifiedAt).toLocaleString('en-IN')}
+        {/* RIGHT COLUMN: HIGH-CONTRAST RTO INSPECTION DOSSIER */}
+        <div className="rto-vault-right-card">
+          {/* HEADER */}
+          <div className="rto-vault-inspect-header">
+            <div className="rto-vault-inspect-title-box">
+              <ShieldCheck className="w-6 h-6 text-emerald-300" />
+              <div>
+                <h3>
+                  {t('RTO Check-Post Inspection Dossier', 'RTO चेक-पोस्ट निरीक्षण डॉजियर')} • {selectedDossier.vehicleNumber}
+                </h3>
+                <span className="rto-vault-inspect-token">
+                  {t('Digital Token:', 'डिजिटल टोकन:')} {selectedDossier.dossierQrToken}
                 </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => showToast('success', t(`Document bundle ZIP downloaded for ${selectedDossier.vehicleNumber}!`, `गाड़ी ${selectedDossier.vehicleNumber} का समस्त दस्तावेज बंडल ZIP/PDF डाउनलोड हो गया!`))}
-                    className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>{t('Download Document Bundle (ZIP)', 'दस्तावेज बंडल डाउनलोड करें (ZIP)')}</span>
-                  </button>
-                </div>
+              </div>
+            </div>
+
+            <div className="rto-vault-inspect-actions">
+              <button
+                type="button"
+                onClick={() => handleVerify(selectedDossier.id)}
+                className="rto-vault-btn-verify"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{t('Re-Verify', 'री-वेरीफाई')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowQrModal(true)}
+                className="rto-vault-btn-show-qr"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>{t('Show QR', 'QR दिखाएं')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* DOSSIER BODY */}
+          <div className="rto-vault-inspect-body">
+
+            {/* STATUS HERO BANNER */}
+            <div className={`rto-vault-clearance-hero ${selectedDossier.isAllClearForInterstate ? 'compliant' : 'warning'}`}>
+              {selectedDossier.isAllClearForInterstate ? (
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-8 h-8 text-amber-500 shrink-0" />
+              )}
+              <div>
+                <h4>
+                  {selectedDossier.isAllClearForInterstate
+                    ? t('🟢 Interstate Border Clearance: 100% Compliant & Valid', '🟢 इंटरस्टेट बॉर्डर क्लीयरेंस: 100% वैध एवं चालान-मुक्त')
+                    : t('🟡 Compliance Warning: Document Renewal Required', '🟡 कम्पलायंस चेतावनी: दस्तावेज नवीनीकरण आवश्यक')}
+                </h4>
+                <p>
+                  {selectedDossier.flaggedComplianceNotes}
+                </p>
+              </div>
+            </div>
+
+            {/* 7-IN-1 DOCUMENT GRID */}
+            <div>
+              <div className="rto-vault-docs-header">
+                {t('7 Mandatory Interstate Transport Compliance Documents', '7 अनिवार्य राष्ट्रीय परमिट एवं परिवहन दस्तावेज (Interstate Checklist)')}
               </div>
 
+              <div className="rto-vault-docs-grid">
+                {/* 1. RC & Fitness */}
+                <div className="rto-vault-doc-tile">
+                  <div className="rto-vault-doc-tile-top">
+                    <span className="rto-vault-doc-name">
+                      {t('1. RC & Fitness Certificate', '1. RC एवं फिटनेस सर्टिफिकेट')}
+                    </span>
+                    <span className="rto-vault-doc-badge">VAHAN VERIFIED</span>
+                  </div>
+                  <div className="rto-vault-doc-detail">{selectedDossier.rcNumber}</div>
+                  <div className="rto-vault-doc-validity">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.rcFitnessExpiry}</div>
+                </div>
+
+                {/* 2. National Permit */}
+                <div className="rto-vault-doc-tile">
+                  <div className="rto-vault-doc-tile-top">
+                    <span className="rto-vault-doc-name">
+                      {t('2. National Permit (Form 48 & 47)', '2. नेशनल परमिट (Form 48 & 47)')}
+                    </span>
+                    <span className="rto-vault-doc-badge">ALL INDIA PERMIT</span>
+                  </div>
+                  <div className="rto-vault-doc-detail">{t('National Goods Carriage Permit', 'राष्ट्रीय गुड्स कैरिज परमिट')}</div>
+                  <div className="rto-vault-doc-validity">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.nationalPermitExpiry}</div>
+                </div>
+
+                {/* 3. Commercial Insurance */}
+                <div className="rto-vault-doc-tile">
+                  <div className="rto-vault-doc-tile-top">
+                    <span className="rto-vault-doc-name">
+                      {t('3. Commercial Comprehensive Insurance', '3. व्यापक कॉमर्शियल इंश्योरेंस')}
+                    </span>
+                    <span className="rto-vault-doc-badge">POLICY ACTIVE</span>
+                  </div>
+                  <div className="rto-vault-doc-detail">{selectedDossier.insurancePolicyNo}</div>
+                  <div className="rto-vault-doc-validity">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.insuranceExpiry}</div>
+                </div>
+
+                {/* 4. PUC Certificate */}
+                <div className="rto-vault-doc-tile">
+                  <div className="rto-vault-doc-tile-top">
+                    <span className="rto-vault-doc-name">
+                      {t('4. PUC Emission Pass Certificate', '4. PUC प्रदूषण प्रमाण पत्र')}
+                    </span>
+                    <span className="rto-vault-doc-badge">EMISSION PASS</span>
+                  </div>
+                  <div className="rto-vault-doc-detail">{t('BS-VI Smoke Density Clearance', 'BS-VI स्मोक डेंसिटी टेस्ट क्लीयर')}</div>
+                  <div className="rto-vault-doc-validity">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.pucPollutionExpiry}</div>
+                </div>
+
+                {/* 5. Driver DL */}
+                <div className="rto-vault-doc-tile">
+                  <div className="rto-vault-doc-tile-top">
+                    <span className="rto-vault-doc-name">
+                      {t('5. Driver Commercial License (DL)', '5. चालक ड्राइविंग लाइसेंस (DL)')}
+                    </span>
+                    <span className="rto-vault-doc-badge">SARATHI VERIFIED</span>
+                  </div>
+                  <div className="rto-vault-doc-detail">{selectedDossier.driverName} • {selectedDossier.driverDlNumber}</div>
+                  <div className="rto-vault-doc-validity">{t('Valid Till:', 'वैधता तिथि:')} {selectedDossier.driverDlExpiry}</div>
+                </div>
+
+                {/* 6. E-Way Bill & Bilty */}
+                <div className="rto-vault-doc-tile">
+                  <div className="rto-vault-doc-tile-top">
+                    <span className="rto-vault-doc-name">
+                      {t('6. Active E-Way Bill & Bilty (LR)', '6. सक्रिय ई-वे बिल व बिल्टी')}
+                    </span>
+                    <span className="rto-vault-doc-badge">NIC EWB SYNC</span>
+                  </div>
+                  <div className="rto-vault-doc-detail">EWB: {selectedDossier.activeEwbNo}</div>
+                  <div className="rto-vault-doc-validity">{t('LR / Bilty:', 'बिल्टी:')} {selectedDossier.activeBiltyNo}</div>
+                </div>
+              </div>
             </div>
+
+            {/* ACTION BUTTONS & VERIFICATION STAMP */}
+            <div className="rto-vault-footer-row">
+              <span className="rto-vault-last-verified">
+                {t('Last Verification:', 'अंतिम सत्यापन:')} {new Date(selectedDossier.verifiedAt).toLocaleString('en-IN')}
+              </span>
+              <button
+                type="button"
+                onClick={() => showToast('success', t(`Document bundle ZIP downloaded for ${selectedDossier.vehicleNumber}!`, `गाड़ी ${selectedDossier.vehicleNumber} का समस्त दस्तावेज बंडल ZIP/PDF डाउनलोड हो गया!`))}
+                className="rto-vault-btn-zip"
+              >
+                <Download className="w-4 h-4 text-emerald-500" />
+                <span>{t('Download Document Bundle (ZIP)', 'दस्तावेज बंडल डाउनलोड करें (ZIP)')}</span>
+              </button>
+            </div>
+
           </div>
         </div>
 
       </div>
 
-      {/* QR Token Modal */}
+      {/* 5. QR TOKEN MODAL */}
       {showQrModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white text-stone-900 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-stone-300 text-center p-6 space-y-4">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-xs uppercase tracking-wider text-teal-800">
-                {t('RTO Border Officer Token', 'RTO चेक-पोस्ट ऑफिसर टोकन')}
-              </span>
-              <button onClick={() => setShowQrModal(false)} className="text-stone-400 hover:text-stone-600">
+        <div className="rto-vault-modal-overlay">
+          <div className="rto-vault-modal-card">
+            <div className="rto-vault-modal-head">
+              <span>{t('RTO Border Officer Token', 'RTO चेक-पोस्ट ऑफिसर टोकन')}</span>
+              <button
+                type="button"
+                onClick={() => setShowQrModal(false)}
+                className="rto-vault-modal-close"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="w-48 h-48 mx-auto bg-stone-100 border-2 border-dashed border-teal-600 rounded-xl flex flex-col items-center justify-center p-2">
+            <div className="rto-vault-qr-box">
               <QrCode className="w-32 h-32 text-stone-900" />
-              <span className="font-mono text-[10px] font-bold text-stone-600 mt-1">{selectedDossier.dossierQrToken}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 800, color: '#064e3b', marginTop: '6px' }}>
+                {selectedDossier.dossierQrToken}
+              </span>
             </div>
 
-            <div>
-              <h3 className="font-black text-lg text-stone-900">{selectedDossier.vehicleNumber}</h3>
-              <p className="text-xs text-stone-500">{t('Driver:', 'चालक:')} {selectedDossier.driverName}</p>
-              <div className="mt-2 inline-block px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full">
-                ✓ ALL-INDIA INTERSTATE CLEARED
-              </div>
+            <h3 className="rto-vault-modal-plate">{selectedDossier.vehicleNumber}</h3>
+            <p className="rto-vault-modal-driver">{t('Driver:', 'चालक:')} {selectedDossier.driverName}</p>
+            <div className="rto-vault-modal-badge">
+              ✓ ALL-INDIA INTERSTATE CLEARED
             </div>
 
-            <p className="text-[11px] text-stone-400">
+            <p className="rto-vault-modal-desc">
               {t(
                 'RTO inspection officers can scan this QR code for instant Parivahan, Sarathi and GST portal verification.',
                 'RTO अधिकारी इस QR कोड को स्कैन करके वाहन, सारथी एवं GST पोर्टल पर त्वरित सत्यापन कर सकते हैं।'
@@ -532,8 +516,9 @@ export const RtoBorderCheckpostVault: React.FC = () => {
             </p>
 
             <button
+              type="button"
               onClick={() => setShowQrModal(false)}
-              className="w-full py-2 bg-teal-800 hover:bg-teal-700 text-white font-bold rounded-lg text-xs"
+              className="rto-vault-btn-done"
             >
               {t('Done', 'पूर्ण हुआ (Done)')}
             </button>
