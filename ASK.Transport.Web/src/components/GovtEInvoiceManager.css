@@ -1,0 +1,462 @@
+/* ============================================================================
+   GST E-INVOICE IRN & ERP LEDGERS - HIGH CONTRAST THEME ADAPTIVE CSS
+   ============================================================================ */
+
+.einv-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Hero Header */
+.einv-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+}
+
+.einv-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.einv-hero-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.einv-hero-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.einv-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.einv-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.einv-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.einv-btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  transition: all 0.2s ease;
+}
+
+.einv-btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* KPI 4-Card Grid */
+.einv-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .einv-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .einv-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.einv-metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.einv-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.einv-metric-card.emerald::before {
+  background: #10b981;
+}
+
+.einv-metric-card.blue::before {
+  background: #2563eb;
+}
+
+.einv-metric-card.purple::before {
+  background: #8b5cf6;
+}
+
+.einv-metric-card.amber::before {
+  background: #f59e0b;
+}
+
+.einv-metric-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.einv-metric-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.einv-metric-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 4px 0 2px;
+}
+
+.einv-metric-value.emerald {
+  color: #10b981;
+}
+
+.einv-metric-value.blue {
+  color: #2563eb;
+}
+
+.einv-metric-value.purple {
+  color: #8b5cf6;
+}
+
+.einv-metric-value.amber {
+  color: #d97706;
+}
+
+.einv-metric-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.einv-metric-sub.muted {
+  color: #64748b;
+}
+
+.einv-metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.einv-metric-icon.emerald {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.einv-metric-icon.blue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.einv-metric-icon.purple {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.einv-metric-icon.amber {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* Table Card */
+.einv-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.einv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.einv-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 800;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.einv-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.einv-table tr:hover td {
+  background: #f8fafc;
+}
+
+/* Crisp Govt IRN Hash Pill (Never Blurry!) */
+.einv-irn-pill {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  letter-spacing: 0.03em;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.einv-copy-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.einv-copy-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.einv-status-verified {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #16a34a;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.einv-status-cancelled {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #dc2626;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* Action Buttons */
+.einv-action-view {
+  padding: 6px 12px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.einv-action-view:hover {
+  background: #1d4ed8;
+}
+
+.einv-action-cancel {
+  padding: 6px 12px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.einv-action-cancel:hover {
+  background: #fecaca;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES ([data-theme="dark"], body.dark, .dark)
+   ============================================================================ */
+
+[data-theme="dark"] .einv-metric-card,
+body.dark .einv-metric-card,
+.dark .einv-metric-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .einv-metric-label,
+body.dark .einv-metric-label,
+.dark .einv-metric-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .einv-metric-icon.emerald,
+body.dark .einv-metric-icon.emerald,
+.dark .einv-metric-icon.emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+[data-theme="dark"] .einv-metric-icon.blue,
+body.dark .einv-metric-icon.blue,
+.dark .einv-metric-icon.blue {
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .einv-metric-icon.purple,
+body.dark .einv-metric-icon.purple,
+.dark .einv-metric-icon.purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+[data-theme="dark"] .einv-metric-icon.amber,
+body.dark .einv-metric-icon.amber,
+.dark .einv-metric-icon.amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .einv-table-card,
+body.dark .einv-table-card,
+.dark .einv-table-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .einv-table th,
+body.dark .einv-table th,
+.dark .einv-table th {
+  background: #090f1d;
+  color: #94a3b8;
+  border-bottom-color: #1e2c47;
+}
+
+[data-theme="dark"] .einv-table td,
+body.dark .einv-table td,
+.dark .einv-table td {
+  border-bottom-color: #1e2c47;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .einv-table tr:hover td,
+body.dark .einv-table tr:hover td,
+.dark .einv-table tr:hover td {
+  background: #162238;
+}
+
+[data-theme="dark"] .einv-irn-pill,
+body.dark .einv-irn-pill,
+.dark .einv-irn-pill {
+  background: #090f1d;
+  color: #38bdf8;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .einv-copy-btn,
+body.dark .einv-copy-btn,
+.dark .einv-copy-btn {
+  background: #0d1526;
+  border-color: #1e2c47;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .einv-copy-btn:hover,
+body.dark .einv-copy-btn:hover,
+.dark .einv-copy-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
