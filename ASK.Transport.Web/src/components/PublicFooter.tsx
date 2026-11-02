@@ -12,8 +12,8 @@ export default function PublicFooter() {
               <span />
             </div>
             <div className="landing-brand-titles">
-              <strong>ASK TRANSPORT</strong>
-              <small>GROUP OF COMPANIES</small>
+              <strong>ASK GROUP</strong>
+              <small>TRANSPORT &amp; LOGISTICS</small>
             </div>
           </div>
           <p className="footer-brand-desc">
@@ -21,8 +21,8 @@ export default function PublicFooter() {
             Registered GSTIN &amp; IBA Approved Carrier.
           </p>
           <div className="footer-contact-item">
-            <span>Email: support@asktransport.com</span>
-            <span>Head Office: NH-8 Central Logistics Corridor, Gurugram, Haryana - 122001</span>
+            <span>Email: asktransportgroup@gmail.com</span>
+            <span>Head Office: ASK Group , Bhopal 462022</span>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export default function PublicFooter() {
       </div>
 
       <div className="footer-bottom-bar">
-        <p>© {new Date().getFullYear()} ASK Transport Group. All Rights Reserved. Move Together. Grow Further.</p>
+        <p>© {new Date().getFullYear()} ASK Transport Group. All Rights Reserved. Safe &amp; Reliable Freight Logistics.</p>
         <div className="footer-bottom-links">
           <span>ISO 9001:2015 Certified</span>
           <span>•</span>

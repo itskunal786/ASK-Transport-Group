@@ -173,8 +173,8 @@ export default function LandingPage() {
               {t('Trusted Logistics Partner for 10,000+ Businesses Across India', 'भारत भर के 10,000+ व्यवसायों का विश्वसनीय लॉजिस्टिक्स पार्टनर')}
             </div>
             <h1 className="landing-hero-title">
-              Move Together.<br />
-              <span className="highlight-text">Grow Further.</span>
+              {t("India's Trusted Road Freight &", "भारत का विश्वसनीय माल एवं")}<br />
+              <span className="highlight-text">{t("Supply Chain Logistics.", "सप्लाई चेन लॉजिस्टिक्स।")}</span>
             </h1>
             <p className="landing-hero-subtitle">
               Fast, secure, and digitally tracked freight transportation. Full Truckload (FTL),

@@ -95,8 +95,8 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             <Truck size={20} className="landing-brand-icon" strokeWidth={2.4} />
           </div>
           <div className="landing-brand-titles">
-            <span className="landing-brand-name">ASK TRANSPORT</span>
-            <span className="landing-brand-sub">LOGISTICS &amp; SUPPLY CHAIN</span>
+            <span className="landing-brand-name">ASK GROUP</span>
+            <span className="landing-brand-sub">TRANSPORT &amp; LOGISTICS</span>
           </div>
         </Link>
 
@@ -106,7 +106,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             to="/services"
             className={`landing-nav-link ${location.pathname === '/services' ? 'active' : ''}`}
           >
-            {t('Services', '??????')}
+            {t('Services', 'सेवाएं')}
           </Link>
 
           <a
@@ -117,7 +117,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               handleRateCalcClick();
             }}
           >
-            {t('Rate Calculator', '????? ?????????')}
+            {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
           </a>
 
           <a
@@ -128,7 +128,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               handleNetworkClick();
             }}
           >
-            {t('Pan-India Network', '???? ?????? ???????')}
+            {t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}
           </a>
 
           <a
@@ -139,14 +139,14 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               handleTrackClick();
             }}
           >
-            {t('Track Consignment', '?????????? ????? ????')}
+            {t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}
           </a>
 
           <Link
             to="/about"
             className={`landing-nav-link ${location.pathname === '/about' ? 'active' : ''}`}
           >
-            {t('About Us', '????? ???? ???')}
+            {t('About Us', 'हमारे बारे में')}
           </Link>
 
           <Link
@@ -156,7 +156,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             className="landing-nav-driver-pill"
           >
             <Smartphone size={13} />
-            <span>{t('Driver App', '???? ??')}</span>
+            <span>{t('Driver App', 'ड्राइवर ऐप')}</span>
           </Link>
         </nav>
 
@@ -177,13 +177,13 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 className="landing-btn-dashboard-pill"
               >
                 <LayoutDashboard size={15} />
-                <span>{user.name ? user.name.split(' ')[0] : 'User'} ({t('Dashboard', '????????')})</span>
+                <span>{user.name ? user.name.split(' ')[0] : 'User'} ({t('Dashboard', 'डैशबोर्ड')})</span>
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
                 className="landing-btn-logout-pill"
-                title={t('Sign Out', '???? ???')}
+                title={t('Sign Out', 'साइन आउट')}
               >
                 <LogOut size={15} />
               </button>
@@ -192,7 +192,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             /* GUEST AUTH ACTIONS */
             <div className="landing-guest-cluster">
               <Link to="/login" className="landing-btn-signin-link">
-                {t('Sign In', '???? ??')}
+                {t('Sign In', 'साइन इन')}
               </Link>
 
               {/* UNIFIED CLIENT PORTAL DROPDOWN */}
@@ -205,7 +205,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                   aria-label="Secure Client Portals"
                 >
                   <Shield size={15} />
-                  <span>{t('Client Portal', '??????? ??????')}</span>
+                  <span>{t('Client Portal', 'क्लाइंट पोर्टल')}</span>
                   <ChevronDown size={14} className={`portal-chevron ${showPortalMenu ? 'rotated' : ''}`} />
                 </button>
 
@@ -214,7 +214,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                     <div className="portal-dropdown-header">
                       <span className="portal-dropdown-badge">
                         <Shield size={13} />
-                        {t('SECURE ENTERPRISE HUBS', '???????? ?????????? ??????')}
+                        {t('SECURE ENTERPRISE HUBS', 'सुरक्षित एंटरप्राइज हब')}
                       </span>
                     </div>
 
@@ -229,8 +229,8 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           <User size={18} />
                         </div>
                         <div className="portal-card-body">
-                          <strong>{t('Corporate Shipper / Client', '????????? ?????? / ????')}</strong>
-                          <small>{t('Book loads, manage Bilties & track consignments', '??? ??????, ?????? ???? ? ??????')}</small>
+                          <strong>{t('Corporate Shipper / Client', 'कॉर्पोरेट शिपर / क्लाइंट')}</strong>
+                          <small>{t('Book loads, manage Bilties & track consignments', 'लोड बुक करें, बिल्टी और कंसाइनमेंट ट्रैक करें')}</small>
                         </div>
                       </Link>
 
@@ -247,10 +247,10 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         </div>
                         <div className="portal-card-body">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <strong>{t('Mobile Driver Console', '???? ? ????? ?????')}</strong>
+                            <strong>{t('Mobile Driver Console', 'मोबाइल ड्राइवर कंसोल')}</strong>
                             <ExternalLink size={12} style={{ opacity: 0.6 }} />
                           </div>
-                          <small>{t('Digital trip sheet, diesel advance & live e-POD', '?????? ????? ???, ???? ????? ? ?-?????')}</small>
+                          <small>{t('Digital trip sheet, diesel advance & live e-POD', 'डिजिटल ट्रिप शीट, डीज़ल एडवांस और e-POD')}</small>
                         </div>
                       </Link>
 
@@ -264,8 +264,8 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                           <Shield size={18} />
                         </div>
                         <div className="portal-card-body">
-                          <strong>{t('Operations & Super Admin', '?????? ??? ???? ?????')}</strong>
-                          <small>{t('Telematics, yard docks, P&L radar & governance', '???????????, ????? ??? ???, ??????? ? ????????')}</small>
+                          <strong>{t('Operations & Super Admin', 'ऑपरेशंस एवं सुपर एडमिन')}</strong>
+                          <small>{t('Telematics, yard docks, P&L radar & governance', 'टेलीमैटिक्स, यार्ड डॉक्स, P&L रडार और गवर्नेंस')}</small>
                         </div>
                       </Link>
                     </div>
@@ -278,7 +278,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         className="portal-register-btn"
                       >
                         <UserPlus size={14} />
-                        <span>{t('+ Create Verified Shipper Account', '+ ??? ???????? ?????? ???? ?????')}</span>
+                        <span>{t('+ Create Verified Shipper Account', '+ नया वेरिफाइड शिपर अकाउंट बनाएं')}</span>
                       </Link>
                     </div>
                   </div>
@@ -307,7 +307,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               to="/services"
               className={`mobile-drawer-link ${location.pathname === '/services' ? 'active' : ''}`}
             >
-              {t('Services', '??????')}
+              {t('Services', 'सेवाएं')}
             </Link>
 
             <a
@@ -318,7 +318,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 handleRateCalcClick();
               }}
             >
-              {t('Rate Calculator', '????? ?????????')}
+              {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
             </a>
 
             <a
@@ -329,7 +329,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 handleNetworkClick();
               }}
             >
-              {t('Pan-India Network', '???? ?????? ???????')}
+              {t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}
             </a>
 
             <a
@@ -340,14 +340,14 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 handleTrackClick();
               }}
             >
-              {t('Track Consignment', '?????????? ????? ????')}
+              {t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}
             </a>
 
             <Link
               to="/about"
               className={`mobile-drawer-link ${location.pathname === '/about' ? 'active' : ''}`}
             >
-              {t('About Us', '????? ???? ???')}
+              {t('About Us', 'हमारे बारे में')}
             </Link>
 
             <Link
@@ -357,7 +357,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               className="mobile-drawer-link driver-highlight"
             >
               <Smartphone size={15} />
-              <span>{t('Driver App', '???? ??')}</span>
+              <span>{t('Driver App', 'ड्राइवर ऐप')}</span>
             </Link>
           </div>
 
@@ -374,7 +374,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                   className="mobile-btn-primary"
                 >
                   <LayoutDashboard size={16} />
-                  <span>{t('Go to Dashboard', '???????? ?? ????')}</span>
+                  <span>{t('Go to Dashboard', 'डैशबोर्ड पर जाएं')}</span>
                 </Link>
                 <button
                   type="button"
@@ -382,17 +382,17 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                   className="mobile-btn-secondary"
                 >
                   <LogOut size={15} />
-                  <span>{t('Sign Out', '???? ???')}</span>
+                  <span>{t('Sign Out', 'साइन आउट')}</span>
                 </button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
                 <Link to="/login" className="mobile-btn-primary">
-                  {t('Sign In to Account', '???? ??? ???? ?? ????')}
+                  {t('Sign In to Account', 'अकाउंट में साइन इन करें')}
                 </Link>
                 <Link to="/register" className="mobile-btn-secondary">
                   <UserPlus size={15} />
-                  <span>{t('Create New Shipper Account', '??? ???? ???? ?????')}</span>
+                  <span>{t('Create New Shipper Account', 'नया शिपर अकाउंट बनाएं')}</span>
                 </Link>
               </div>
             )}

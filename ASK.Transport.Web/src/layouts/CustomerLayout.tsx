@@ -77,7 +77,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
           <div>
             <strong>ASK TRANSPORT</strong>
             <small>LOGISTICS</small>
-            <div className="sidebar-tagline">Move Together. Grow Further.</div>
+            <div className="sidebar-tagline">Safe &amp; Reliable Freight Logistics.</div>
           </div>
         </Link>
 
