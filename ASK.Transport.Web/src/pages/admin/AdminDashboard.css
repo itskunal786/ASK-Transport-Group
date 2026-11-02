@@ -2607,3 +2607,106 @@ body.dark .admin-notif-desc,
   border-color: rgba(245, 158, 11, 0.3);
   color: #fde68a;
 }
+/* ========================================================
+   ROLE & ACCESS CLEARANCE BADGES (LIGHT & DARK MODE)
+   ======================================================== */
+
+/* LIGHT MODE */
+.admin-badge-status.admin-role-superadmin,
+.admin-badge-status.admin-clearance-master {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+.admin-badge-status.admin-role-admin,
+.admin-badge-status.admin-clearance-admin {
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+.admin-badge-status.admin-role-user {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+}
+
+.admin-badge-status.admin-clearance-approved {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.admin-badge-status.admin-clearance-pending {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #f59e0b !important;
+}
+
+.admin-badge-status.admin-clearance-restricted {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+/* DARK MODE */
+[data-theme='dark'] .admin-badge-status.admin-role-superadmin,
+body.dark .admin-badge-status.admin-role-superadmin,
+.dark .admin-badge-status.admin-role-superadmin,
+[data-theme='dark'] .admin-badge-status.admin-clearance-master,
+body.dark .admin-badge-status.admin-clearance-master,
+.dark .admin-badge-status.admin-clearance-master {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.6) !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-role-admin,
+body.dark .admin-badge-status.admin-role-admin,
+.dark .admin-badge-status.admin-role-admin,
+[data-theme='dark'] .admin-badge-status.admin-clearance-admin,
+body.dark .admin-badge-status.admin-clearance-admin,
+.dark .admin-badge-status.admin-clearance-admin {
+  background: rgba(139, 92, 246, 0.22) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(192, 132, 252, 0.6) !important;
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-role-user,
+body.dark .admin-badge-status.admin-role-user,
+.dark .admin-badge-status.admin-role-user {
+  background: rgba(14, 165, 233, 0.22) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-clearance-approved,
+body.dark .admin-badge-status.admin-clearance-approved,
+.dark .admin-badge-status.admin-clearance-approved {
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.6) !important;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-clearance-pending,
+body.dark .admin-badge-status.admin-clearance-pending,
+.dark .admin-badge-status.admin-clearance-pending {
+  background: rgba(245, 158, 11, 0.25) !important;
+  color: #fbbf24 !important;
+  border: 1px solid #f59e0b !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-clearance-restricted,
+body.dark .admin-badge-status.admin-clearance-restricted,
+.dark .admin-badge-status.admin-clearance-restricted {
+  background: rgba(234, 179, 8, 0.22) !important;
+  color: #facc15 !important;
+  border: 1px solid rgba(250, 204, 21, 0.6) !important;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.25) !important;
+}

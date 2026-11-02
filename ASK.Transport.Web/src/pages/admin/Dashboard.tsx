@@ -3264,27 +3264,23 @@ export default function Dashboard() {
                           <td style={{ verticalAlign: 'middle', color: 'var(--text-secondary, #94a3b8)' }}>{u.phone || '—'}</td>
                           <td style={{ verticalAlign: 'middle' }}>
                             <span
+                              className={`admin-badge-status ${
+                                u.role === 'SuperAdmin'
+                                  ? 'admin-role-superadmin'
+                                  : u.role === 'Admin'
+                                  ? 'admin-role-admin'
+                                  : 'admin-role-user'
+                              }`}
+                              data-role={u.role}
                               style={{
-                                padding: '3px 10px',
+                                padding: '4px 12px',
                                 borderRadius: '12px',
-                                fontSize: '11px',
+                                fontSize: '11.5px',
                                 fontWeight: 700,
                                 whiteSpace: 'nowrap',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                background:
-                                  u.role === 'SuperAdmin'
-                                    ? '#fef3c7'
-                                    : u.role === 'Admin'
-                                    ? '#ede9fe'
-                                    : '#e0f2fe',
-                                color:
-                                  u.role === 'SuperAdmin'
-                                    ? '#b45309'
-                                    : u.role === 'Admin'
-                                    ? '#6d28d9'
-                                    : '#0284c7'
+                                gap: '4px'
                               }}
                             >
                               {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Admin' : '👤 User'}
@@ -3293,13 +3289,13 @@ export default function Dashboard() {
                           <td style={{ verticalAlign: 'middle' }}>
                             {u.role === 'SuperAdmin' ? (
                               <span
+                                className="admin-badge-status admin-clearance-master"
+                                data-clearance="master"
                                 style={{
-                                  padding: '3px 10px',
+                                  padding: '4px 12px',
                                   borderRadius: '12px',
-                                  fontSize: '11px',
+                                  fontSize: '11.5px',
                                   fontWeight: 700,
-                                  background: '#fef3c7',
-                                  color: '#b45309',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px'
@@ -3309,13 +3305,13 @@ export default function Dashboard() {
                               </span>
                             ) : u.role === 'Admin' ? (
                               <span
+                                className="admin-badge-status admin-clearance-admin"
+                                data-clearance="admin"
                                 style={{
-                                  padding: '3px 10px',
+                                  padding: '4px 12px',
                                   borderRadius: '12px',
-                                  fontSize: '11px',
+                                  fontSize: '11.5px',
                                   fontWeight: 700,
-                                  background: '#ede9fe',
-                                  color: '#6d28d9',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px'
@@ -3325,34 +3321,33 @@ export default function Dashboard() {
                               </span>
                             ) : userApproved ? (
                               <span
+                                className="admin-badge-status admin-clearance-approved"
+                                data-clearance="approved"
                                 style={{
-                                  padding: '3px 10px',
+                                  padding: '4px 12px',
                                   borderRadius: '12px',
-                                  fontSize: '11px',
+                                  fontSize: '11.5px',
                                   fontWeight: 700,
-                                  background: '#edfdf4',
-                                  color: '#16a34a',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px'
                                 }}
-                                title="Payments, Invoices &amp; Documents Unlocked"
+                                title="Payments, Invoices & Documents Unlocked"
                               >
                                 🟢 Full Access (Approved)
                               </span>
                             ) : isApprovalPending(u.id, u.email) ? (
                               <span
+                                className="admin-badge-status admin-clearance-pending"
+                                data-clearance="pending"
                                 style={{
-                                  padding: '3px 10px',
+                                  padding: '4px 12px',
                                   borderRadius: '12px',
-                                  fontSize: '11px',
+                                  fontSize: '11.5px',
                                   fontWeight: 700,
-                                  background: '#fef3c7',
-                                  color: '#b45309',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px',
-                                  border: '1px solid #f59e0b',
                                   animation: 'notifPulse 2s infinite ease-in-out'
                                 }}
                                 title="User requested account clearance"
@@ -3361,20 +3356,20 @@ export default function Dashboard() {
                               </span>
                             ) : (
                               <span
+                                className="admin-badge-status admin-clearance-restricted"
+                                data-clearance="restricted"
                                 style={{
-                                  padding: '3px 10px',
+                                  padding: '4px 12px',
                                   borderRadius: '12px',
-                                  fontSize: '11px',
+                                  fontSize: '11.5px',
                                   fontWeight: 700,
-                                  background: '#fef3c7',
-                                  color: '#b45309',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px'
                                 }}
-                                title="New User Restricted to Book &amp; Track only"
+                                title="New User Restricted to Book & Track only"
                               >
-                                🟡 Book &amp; Track Only
+                                🟡 Book & Track Only
                               </span>
                             )}
                           </td>
@@ -4226,13 +4221,16 @@ export default function Dashboard() {
                         <td style={{ color: '#0b72e7' }}>{staff.email}</td>
                         <td>
                           <span
+                            className={`admin-badge-status ${staff.role === 'SuperAdmin' ? 'admin-role-superadmin' : 'admin-role-admin'}`}
+                            data-role={staff.role}
                             style={{
-                              padding: '3px 10px',
+                              padding: '4px 12px',
                               borderRadius: '12px',
-                              fontSize: '11px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
-                              background: staff.role === 'SuperAdmin' ? '#fef3c7' : '#ede9fe',
-                              color: staff.role === 'SuperAdmin' ? '#b45309' : '#6d28d9'
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}
                           >
                             {staff.role === 'SuperAdmin' ? '👑 Super Admin' : '⚡ Operational Admin'}
