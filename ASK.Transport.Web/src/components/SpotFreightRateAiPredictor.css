@@ -1,0 +1,670 @@
+/* ============================================================================
+   SPOT FREIGHT RATE AI PREDICTOR CSS
+   Compact, Perfectly Proportioned, Theme Adaptive
+   ============================================================================ */
+
+.spot-deck-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  color: var(--text-primary, #0f172a);
+}
+
+/* ============================================================================
+   HIGHWAY CORRIDOR SELECTOR STRIP (COMPACT)
+   ============================================================================ */
+.spot-corridors-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spot-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spot-section-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: -0.2px;
+}
+
+.spot-section-subtitle {
+  font-size: 11.5px;
+  color: var(--text-secondary, #64748b);
+  font-weight: 600;
+}
+
+.spot-corridors-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 1024px) {
+  .spot-corridors-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .spot-corridors-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spot-corridor-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.spot-corridor-card:hover {
+  border-color: #6366f1;
+  transform: translateY(-1px);
+}
+
+.spot-corridor-card.selected {
+  border-color: #4f46e5;
+  background: rgba(79, 70, 229, 0.04);
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.15);
+}
+
+.spot-corridor-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.spot-corridor-lane {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spot-trend-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.spot-trend-badge.up {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.spot-trend-badge.down {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.spot-trend-badge.stable {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.spot-corridor-meta {
+  font-size: 10.5px;
+  color: var(--text-secondary, #64748b);
+  font-weight: 600;
+}
+
+.spot-corridor-rates {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 5px;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+}
+
+.spot-corridor-price {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text-primary, #0f172a);
+}
+
+.spot-corridor-avg {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+}
+
+/* ============================================================================
+   MAIN SPLIT: CALCULATOR & BIDDING EXCHANGE (PERFECTLY PROPORTIONED)
+   ============================================================================ */
+.spot-split-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (max-width: 960px) {
+  .spot-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spot-main-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.spot-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spot-card-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.spot-selected-chip {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #4f46e5;
+  background: #e0e7ff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #c7d2fe;
+}
+
+/* INPUTS 4-COLUMN COMPACT ROW */
+.spot-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .spot-inputs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.spot-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.spot-input-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-secondary, #475569);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spot-input-field {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color, #cbd5e1);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #0f172a);
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.spot-input-field:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+/* TRIP COST DECOMPOSITION COMPACT BOX */
+.spot-cost-box {
+  background: var(--bg-subtle, #f8fafc);
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spot-cost-header {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.spot-cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 11px;
+}
+
+.spot-cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.spot-cost-item-label {
+  color: var(--text-secondary, #64748b);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+}
+
+.spot-cost-item-val {
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+.spot-breakeven-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 5px;
+  border-top: 1.5px dashed var(--border-color, #cbd5e1);
+  font-size: 11.5px;
+}
+
+.spot-breakeven-label {
+  font-weight: 800;
+  color: var(--text-primary, #1e293b);
+}
+
+.spot-breakeven-val {
+  font-size: 14.5px;
+  font-weight: 900;
+  color: #dc2626;
+}
+
+/* RECOMMENDATIONS GRID */
+.spot-recom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.spot-recom-card {
+  border-radius: 9px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spot-recom-card.green {
+  background: #ecfdf5;
+  border: 1.5px solid #a7f3d0;
+}
+
+.spot-recom-card.blue {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+}
+
+.spot-recom-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.spot-recom-card.green .spot-recom-label { color: #059669; }
+.spot-recom-card.blue .spot-recom-label { color: #1d4ed8; }
+
+.spot-recom-val {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.spot-recom-card.green .spot-recom-val { color: #065f46; }
+.spot-recom-card.blue .spot-recom-val { color: #1e40af; }
+
+.spot-recom-meta {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.spot-recom-card.green .spot-recom-meta { color: #059669; }
+.spot-recom-card.blue .spot-recom-meta { color: #2563eb; }
+
+/* ============================================================================
+   RIGHT COLUMN: SPOT REVERSE BIDDING
+   ============================================================================ */
+.spot-bids-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.spot-bid-item {
+  border-radius: 9px;
+  padding: 8px 11px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-subtle, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.spot-bid-item.accepted {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: #10b981;
+}
+
+.spot-bid-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.spot-bid-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+.spot-bid-meta {
+  font-size: 10px;
+  color: var(--text-secondary, #64748b);
+  display: block;
+  margin-top: 1px;
+}
+
+.spot-bid-price-box {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.spot-bid-price {
+  font-size: 14.5px;
+  font-weight: 900;
+}
+
+.spot-bid-variance {
+  font-size: 9.5px;
+  font-weight: 800;
+  display: block;
+}
+
+.spot-bid-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 5px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  font-size: 10px;
+}
+
+.spot-bid-vehicle {
+  color: var(--text-secondary, #475569);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spot-btn-accept {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spot-btn-accept:hover {
+  background: #2563eb;
+}
+
+.spot-badge-accepted {
+  background: #ecfdf5;
+  color: #059669;
+  padding: 2px 7px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid #a7f3d0;
+}
+
+.spot-btn-broadcast {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 11px;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.spot-btn-broadcast:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.spot-btn-broadcast:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spot-note-footer {
+  padding: 7px 9px;
+  background: var(--bg-subtle, #f8fafc);
+  border-radius: 7px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  font-size: 10px;
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.35;
+}
+
+/* ============================================================================
+   DARK MODE ADAPTABILITY
+   ============================================================================ */
+[data-theme="dark"] .spot-main-card,
+body.dark .spot-main-card,
+.dark .spot-main-card,
+[data-theme="dark"] .spot-corridor-card,
+body.dark .spot-corridor-card,
+.dark .spot-corridor-card {
+  background: #0f172a !important;
+  border-color: #1e2c47 !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .spot-corridor-card.selected,
+body.dark .spot-corridor-card.selected,
+.dark .spot-corridor-card.selected {
+  border-color: #818cf8 !important;
+  background: #172440 !important;
+}
+
+[data-theme="dark"] .spot-cost-box,
+body.dark .spot-cost-box,
+.dark .spot-cost-box,
+[data-theme="dark"] .spot-bid-item,
+body.dark .spot-bid-item,
+.dark .spot-bid-item,
+[data-theme="dark"] .spot-note-footer,
+body.dark .spot-note-footer,
+.dark .spot-note-footer {
+  background: #0b1120 !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .spot-input-field,
+body.dark .spot-input-field,
+.dark .spot-input-field {
+  background: #0b1120 !important;
+  border-color: #1e2c47 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .spot-card-title,
+body.dark .spot-card-title,
+.dark .spot-card-title,
+[data-theme="dark"] .spot-section-title,
+body.dark .spot-section-title,
+.dark .spot-section-title,
+[data-theme="dark"] .spot-corridor-lane,
+body.dark .spot-corridor-lane,
+.dark .spot-corridor-lane,
+[data-theme="dark"] .spot-corridor-price,
+body.dark .spot-corridor-price,
+.dark .spot-corridor-price,
+[data-theme="dark"] .spot-bid-name,
+body.dark .spot-bid-name,
+.dark .spot-bid-name,
+[data-theme="dark"] .spot-cost-item-val,
+body.dark .spot-cost-item-val,
+.dark .spot-cost-item-val,
+[data-theme="dark"] .spot-breakeven-label,
+body.dark .spot-breakeven-label,
+.dark .spot-breakeven-label {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .spot-section-subtitle,
+body.dark .spot-section-subtitle,
+.dark .spot-section-subtitle,
+[data-theme="dark"] .spot-corridor-meta,
+body.dark .spot-corridor-meta,
+.dark .spot-corridor-meta,
+[data-theme="dark"] .spot-corridor-avg,
+body.dark .spot-corridor-avg,
+.dark .spot-corridor-avg,
+[data-theme="dark"] .spot-input-label,
+body.dark .spot-input-label,
+.dark .spot-input-label,
+[data-theme="dark"] .spot-cost-item-label,
+body.dark .spot-cost-item-label,
+.dark .spot-cost-item-label,
+[data-theme="dark"] .spot-bid-meta,
+body.dark .spot-bid-meta,
+.dark .spot-bid-meta,
+[data-theme="dark"] .spot-bid-vehicle,
+body.dark .spot-bid-vehicle,
+.dark .spot-bid-vehicle,
+[data-theme="dark"] .spot-note-footer,
+body.dark .spot-note-footer,
+.dark .spot-note-footer {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .spot-recom-card.green,
+body.dark .spot-recom-card.green,
+.dark .spot-recom-card.green {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+[data-theme="dark"] .spot-recom-card.green .spot-recom-val,
+body.dark .spot-recom-card.green .spot-recom-val,
+.dark .spot-recom-card.green .spot-recom-val {
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .spot-recom-card.green .spot-recom-meta,
+body.dark .spot-recom-card.green .spot-recom-meta,
+.dark .spot-recom-card.green .spot-recom-meta {
+  color: #6ee7b7 !important;
+}
+
+[data-theme="dark"] .spot-recom-card.blue,
+body.dark .spot-recom-card.blue,
+.dark .spot-recom-card.blue {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+[data-theme="dark"] .spot-recom-card.blue .spot-recom-val,
+body.dark .spot-recom-card.blue .spot-recom-val,
+.dark .spot-recom-card.blue .spot-recom-val {
+  color: #60a5fa !important;
+}
+
+[data-theme="dark"] .spot-recom-card.blue .spot-recom-meta,
+body.dark .spot-recom-card.blue .spot-recom-meta,
+.dark .spot-recom-card.blue .spot-recom-meta {
+  color: #93c5fd !important;
+}
+
+[data-theme="dark"] .spot-btn-accept,
+body.dark .spot-btn-accept,
+.dark .spot-btn-accept {
+  background: #2563eb !important;
+}
+
+[data-theme="dark"] .spot-btn-accept:hover,
+body.dark .spot-btn-accept:hover,
+.dark .spot-btn-accept:hover {
+  background: #1d4ed8 !important;
+}
