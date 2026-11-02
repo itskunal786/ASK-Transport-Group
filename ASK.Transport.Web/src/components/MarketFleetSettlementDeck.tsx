@@ -492,7 +492,7 @@ export default function MarketFleetSettlementDeck() {
     const text = encodeURIComponent(
       `🧾 *ASK TRANSPORT GROUP - HIRED FLEET SETTLEMENT ADVICE*\n\n` +
       `Respected Transporter *${f.transporterName}*,\n` +
-      `Aapke Truck *${f.vehiclePlate}* ka trip hisaab settle kar diya gaya hai:\n\n` +
+      `Your freight settlement for Truck *${f.vehiclePlate}* has been processed:\n\n` +
       `📋 *Bilty No:* ${f.biltyNo} | *Trip:* ${f.tripNo}\n` +
       `📍 *Route:* ${f.route}\n` +
       `💰 *Total Agreed Freight:* ₹${f.agreedFreightInr.toLocaleString('en-IN')}\n\n` +
@@ -503,7 +503,7 @@ export default function MarketFleetSettlementDeck() {
       `2️⃣ *30% Balance:* ₹${f.grossBalanceInr.toLocaleString('en-IN')}\n` +
       `   • Section 194C TDS (${f.tdsRatePercent}%): -₹${f.tdsDeductedInr.toLocaleString('en-IN')}\n` +
       (f.shortageDamagePenaltyInr > 0 ? `   • Shortage Deduction: -₹${f.shortageDamagePenaltyInr.toLocaleString('en-IN')}\n` : '') +
-      (f.haltingDetentionInr > 0 ? `   • Halting Bhatta: +₹${f.haltingDetentionInr.toLocaleString('en-IN')}\n` : '') +
+      (f.haltingDetentionInr > 0 ? `   • Halting Allowance: +₹${f.haltingDetentionInr.toLocaleString('en-IN')}\n` : '') +
       `✅ *NET BANK TRANSFERRED:* *₹${f.netBalancePayableInr.toLocaleString('en-IN')}*\n\n` +
       `🏦 *Bank A/c:* ${f.bankDetails.accountNo.slice(-4).padStart(f.bankDetails.accountNo.length, '*')} (${f.bankDetails.ifsc})\n` +
       `📜 *Form 16A TDS Credit:* Reconciled under PAN ${f.panNumber}\n\n` +

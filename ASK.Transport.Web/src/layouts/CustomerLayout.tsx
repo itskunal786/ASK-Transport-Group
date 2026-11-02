@@ -253,7 +253,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             <div className="ribbon-content">
               <span className="ribbon-pill">🟡 Basic Shipper Access</span>
               <span>
-                Naye accounts ke liye abhi sirf <strong>Book Shipment</strong> aur <strong>Track Shipment</strong> unlocked hain. Admin dwara account verification ke baad Payments, Invoices aur Documents activate ho jayenge.
+                New accounts currently have access to <strong>Book Shipment</strong> and <strong>Track Shipment</strong> only. Payments, Invoices, and Documents will be unlocked upon administrative account verification.
               </span>
             </div>
             {isPending ? (

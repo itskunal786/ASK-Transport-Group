@@ -2923,14 +2923,14 @@ export default function Dashboard() {
               <div className="admin-revoked-icon">🔒</div>
               <h2>Module Access Revoked</h2>
               <p className="admin-revoked-desc">
-                Aapke account (<strong>{user?.name || user?.email}</strong>) se iss module ka right Super Admin dwara revoke kar diya gaya hai.
+                Access to this module for your account (<strong>{user?.name || user?.email}</strong>) has been revoked by the Super Administrator.
               </p>
               <div className="admin-revoked-details">
                 <strong>Revoked Security Policy:</strong>
                 <span>{isTabRevoked(activeTab).reason}</span>
               </div>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', marginTop: '14px' }}>
-                Aap iss subsystem ke data ya features ko operate nahi kar sakte. Agar aapko access chahiye, toh kripya Super Admin se rights delegate karwayein.
+                You do not have permission to view or operate data in this subsystem. Please contact a Super Administrator if you require access rights to be delegated.
               </p>
               <button
                 type="button"

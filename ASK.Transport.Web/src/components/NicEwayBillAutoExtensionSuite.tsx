@@ -571,13 +571,13 @@ export default function NicEwayBillAutoExtensionSuite() {
   const handleDispatchWhatsAppToDriver = (item: EwayBillItem) => {
     const message = encodeURIComponent(
       `🚨 *ASK TRANSPORT FLEET COMPLIANCE NOTICE*\n\n` +
-      `Namaste Driver *${item.driverName}*,\n` +
-      `Aapke truck *${item.vehicleNo}* ka Government E-Way Bill update kar diya gaya hai:\n\n` +
+      `Hello Driver *${item.driverName}*,\n` +
+      `The Government E-Way Bill for truck *${item.vehicleNo}* has been updated successfully:\n\n` +
       `📄 *EWB No:* ${item.ewbNo}\n` +
       `⏳ *Extended Validity:* ${item.validUntil}\n` +
       `📍 *Route:* ${item.supplierPlace} ➔ ${item.recipientPlace}\n` +
       `📦 *Consignment:* ${item.cargoDescription}\n\n` +
-      `✅ *RTO Checkpost Par Dikhaane Hetu Digital Copy Link:*\n` +
+      `✅ *Official Digital Copy for RTO & Transit Checkpost Verification:*\n` +
       `https://asktransport.com/ewb/verify/${item.ewbNo.replace(/-/g, '')}\n\n` +
       `_Safe Drive & Happy Journey! - ASK Fleet Control Room (HQ)_`
     );

@@ -63,7 +63,7 @@ export default function MobileDriverConsole() {
     try {
       const res = await startDriverTrip(odo);
       setTrip(res.activeTrip);
-      alert('🚀 Trip Shuru Ho Gaya! Happy & Safe Journey.');
+      alert('🚀 Trip Started! Wishing you a safe and smooth journey.');
     } catch (err: any) {
       alert(err?.message || 'Failed to start trip');
     }
@@ -88,7 +88,7 @@ export default function MobileDriverConsole() {
         receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400',
         odometerReading: expenseOdo ? Number(expenseOdo) : undefined
       });
-      setExpenseMsg('✓ Kharcha safalta-purvak add ho gaya! Admin review karega.');
+      setExpenseMsg('✓ Expense submitted successfully! Pending admin verification.');
       setAmount('');
       setLiters('');
       setPumpName('');
@@ -255,10 +255,10 @@ export default function MobileDriverConsole() {
             {trip?.tripStatus === 'Planned' && (
               <div style={{ background: '#1e293b', borderRadius: '14px', padding: '18px', border: '1px solid #334155' }}>
                 <strong style={{ fontSize: '14px', color: '#ffffff', display: 'block', marginBottom: '8px' }}>
-                  🚀 Trip Shuru Karein (Start Trip)
+                  🚀 Start Trip
                 </strong>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px' }}>
-                  Trip shuru karne se pehle truck ke meter ka Starting Odometer KM daalein.
+                  Enter the vehicle starting odometer reading (KM) before beginning the trip.
                 </p>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -296,8 +296,8 @@ export default function MobileDriverConsole() {
                 }}
               >
                 <div style={{ fontSize: '22px', marginBottom: '4px' }}>⛽</div>
-                <strong style={{ fontSize: '13.5px', display: 'block' }}>Diesel / Kharcha</strong>
-                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Slip photo upload karein</span>
+                <strong style={{ fontSize: '13.5px', display: 'block' }}>Fuel &amp; Trip Expenses</strong>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Upload receipt or fuel slip</span>
               </button>
 
               <button
@@ -314,8 +314,8 @@ export default function MobileDriverConsole() {
                 }}
               >
                 <div style={{ fontSize: '22px', marginBottom: '4px' }}>🔐</div>
-                <strong style={{ fontSize: '13.5px', display: 'block' }}>OTP &amp; POD Bilty</strong>
-                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Delivery confirm karein</span>
+                <strong style={{ fontSize: '13.5px', display: 'block' }}>Delivery POD &amp; OTP</strong>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Confirm consignment delivery</span>
               </button>
             </div>
           </div>
@@ -327,7 +327,7 @@ export default function MobileDriverConsole() {
         {activeTab === 'expense' && (
           <div style={{ background: '#1e293b', borderRadius: '14px', padding: '18px', border: '1px solid #334155' }}>
             <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>⛽</span> Trip Kharcha / Diesel Entry
+              <span>⛽</span> Trip Expense &amp; Fuel Entry
             </h3>
 
             {expenseMsg && (
@@ -414,9 +414,9 @@ export default function MobileDriverConsole() {
               {/* RECEIPT ATTACHMENT */}
               <div style={{ background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px dashed #64748b', textAlign: 'center' }}>
                 <span style={{ fontSize: '18px', display: 'block' }}>📸</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>Slip / Receipt Photo Camera Se Kheenche</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>Capture Slip / Receipt Photo with Camera</span>
                 <div style={{ marginTop: '6px' }}>
-                  <button type="button" onClick={() => alert('Photo attach ho gayi!')} style={{ padding: '6px 14px', background: '#334155', color: '#38bdf8', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                  <button type="button" onClick={() => alert('Receipt photo attached successfully!')} style={{ padding: '6px 14px', background: '#334155', color: '#38bdf8', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
                     Capture Slip Photo
                   </button>
                 </div>
@@ -427,7 +427,7 @@ export default function MobileDriverConsole() {
                 disabled={expenseLoading}
                 style={{ padding: '14px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', marginTop: '6px' }}
               >
-                {expenseLoading ? 'Uploading...' : '✓ Kharcha Submit Karein'}
+                {expenseLoading ? 'Uploading...' : '✓ Submit Expense Entry'}
               </button>
             </form>
           </div>
@@ -446,7 +446,7 @@ export default function MobileDriverConsole() {
               </div>
 
               <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px' }}>
-                Maal deliver hone par consignee ke phone par aaya 4-digit code yahan daalein (Demo code: <strong>4821</strong>).
+                Enter the 4-digit verification OTP received on the consignee phone upon cargo handover (Demo code: <strong>4821</strong>).
               </p>
 
               {otpMsg && (
@@ -483,7 +483,7 @@ export default function MobileDriverConsole() {
               </div>
 
               <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px' }}>
-                Receiver ke signature aur rubber stamp lagi hui physical Bilty/POD ki clear photo kheenche.
+                Capture a clear, legible photo of the physical Proof of Delivery (POD) signed and stamped by the receiver.
               </p>
 
               {podMsg && (
@@ -542,24 +542,24 @@ export default function MobileDriverConsole() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ background: '#1e293b', borderRadius: '14px', padding: '18px', border: '1px solid #334155' }}>
               <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: '#38bdf8' }}>
-                💰 Driver Petty Cash Hisaab-Kitab
+                💰 Driver Petty Cash &amp; Trip Ledger
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                 <div style={{ background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #334155' }}>
-                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Trip Advance Mila:</span>
+                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Trip Advance Received:</span>
                   <strong style={{ fontSize: '18px', color: '#22c55e' }}>₹{(pnl?.financials?.driverAdvanceGiven ?? 15000).toLocaleString('en-IN')}</strong>
                 </div>
 
                 <div style={{ background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #334155' }}>
-                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Cash Kharcha Hua:</span>
+                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Cash Expense Incurred:</span>
                   <strong style={{ fontSize: '18px', color: '#f87171' }}>₹{(pnl?.financials?.driverCashSpent ?? 0).toLocaleString('en-IN')}</strong>
                 </div>
               </div>
 
-              <div style={{ background: '#1e1b4b', padding: '14px', borderRadius: '10px', border: '1px solid #4338ca', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#1e1b4b', padding: '14px', borderRadius: '10px', border: '1px solid #4338ca', display: 'flex', borderBottom: 'none', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#c7d2fe', textTransform: 'uppercase' }}>Bacha Hua Cash Balance:</span>
+                  <span style={{ fontSize: '11px', color: '#c7d2fe', textTransform: 'uppercase' }}>Remaining Cash Balance:</span>
                   <div style={{ fontSize: '20px', fontWeight: 900, color: '#38bdf8' }}>
                     ₹{(pnl?.financials?.driverPettyCashBalance ?? 15000).toLocaleString('en-IN')}
                   </div>
@@ -577,9 +577,9 @@ export default function MobileDriverConsole() {
       <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', background: '#1e293b', borderTop: '1px solid #334155', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '6px 0', zIndex: 100 }}>
         {[
           { id: 'trip', label: 'Trip', icon: '🛣️' },
-          { id: 'expense', label: 'Kharcha', icon: '⛽' },
+          { id: 'expense', label: 'Expenses', icon: '⛽' },
           { id: 'pod', label: 'OTP & POD', icon: '🔐' },
-          { id: 'hisaab', label: 'Hisaab', icon: '💰' }
+          { id: 'hisaab', label: 'Ledger', icon: '💰' }
         ].map(item => (
           <button
             key={item.id}

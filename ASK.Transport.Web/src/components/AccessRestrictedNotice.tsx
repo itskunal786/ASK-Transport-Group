@@ -54,16 +54,16 @@ export default function AccessRestrictedNotice({
             <strong>⚠️ Security Notice &amp; Role Clearance:</strong>
           </div>
           <p>
-            Namaste <strong>{user?.name || 'Shipper'}</strong>, aapka account successfully registered hai. Hamari security policy ke tahat naye accounts ko shuruat mein sirf <strong>Shipment Booking</strong> aur <strong>Live Tracking</strong> ka access diya jata hai.
+            Hello <strong>{user?.name || 'Shipper'}</strong>, your account is successfully registered. Under our security compliance policy, new accounts are initially granted access to <strong>Shipment Booking</strong> and <strong>Live Tracking</strong> only.
           </p>
           <p style={{ marginTop: '8px' }}>
-            <strong>Payments, GST Invoices, aur Regulatory Documents</strong> access karne ke liye <strong>Admin</strong> ya <strong>Super Admin</strong> dwara role verification &amp; approval required hai. Approval milte hi yeh module auto-unlock ho jayega.
+            To access <strong>Payments, GST Invoices, and Regulatory Documents</strong>, administrative verification and role approval from an <strong>Admin</strong> or <strong>Super Admin</strong> is required. This module will automatically unlock once your account is verified.
           </p>
         </div>
 
         {/* ALLOWED QUICK ACTIONS */}
         <div className="access-allowed-heading">
-          Aap abhi in features ko bina kisi rukawat ke use kar sakte hain:
+          You can immediately access and use the following features:
         </div>
 
         <div className="access-actions-grid">
@@ -99,7 +99,7 @@ export default function AccessRestrictedNotice({
         <div className="access-helpdesk-footer">
           <div>
             <strong>Need Immediate Full Role Access for Commercial Billing?</strong>
-            <p>Admin team se sampark karein account clearance approve karwane ke liye:</p>
+            <p>Contact our administrative team to expedite your account verification and clearance:</p>
           </div>
           <div className="helpdesk-contact-pills">
             <a href="tel:+919876543210" className="helpdesk-pill">

@@ -178,7 +178,7 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)', lineHeight: '1.4' }}>
-                  Naye accounts ke liye abhi sirf <strong>Shipment Booking</strong> aur <strong>Tracking</strong> open hain. Admin dwara account approval ke baad Payments, GST Invoices aur Documents activate ho jayenge.
+                  New accounts currently have access to <strong>Shipment Booking</strong> and <strong>Tracking</strong> only. Payments, GST Invoices, and Documents will be activated upon administrative account approval.
                 </p>
               </div>
             </div>
