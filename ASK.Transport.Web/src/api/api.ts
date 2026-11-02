@@ -42,7 +42,11 @@ export async function request<T>(
   const responseText = await response.text();
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (
+      response.status === 401 &&
+      !url.includes('/Auth/login') &&
+      !url.includes('/Token/logout')
+    ) {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');

@@ -23,6 +23,12 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
 
+  // Clear inputs on mount & role switch to prevent browser password auto-fill on logout
+  useState(() => {
+    setEmail('');
+    setPassword('');
+  });
+
   function handleEmailChange(val: string) {
     setEmail(val);
     const trimmed = val.trim().toLowerCase();
@@ -216,6 +222,7 @@ export default function Login() {
         <form
           className="transport-form"
           onSubmit={handleSubmit}
+          autoComplete="off"
         >
 
           <div className="mobile-logo">
@@ -299,12 +306,13 @@ export default function Login() {
 
               <input
                 id="email"
+                name="ask_no_autofill_email"
                 type="email"
-                placeholder={loginRole === 'admin' ? 'admin@asktransport.com' : 'you@company.com'}
+                placeholder={loginRole === 'admin' ? 'admin@askgroup.com' : 'you@company.com'}
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={() => handleEmailChange(email)}
-                autoComplete="email"
+                autoComplete="off"
                 required
               />
 
@@ -333,13 +341,14 @@ export default function Login() {
 
               <input
                 id="password"
+                name="ask_no_autofill_pwd"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) =>
                   setPassword(e.target.value)
                 }
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
               />
 
