@@ -59,6 +59,20 @@ button {
   cursor: pointer;
 }
 
+/* Unified Navbar Links Global Reset & Enforce Single Line */
+.landing-header,
+.landing-header *,
+.landing-nav-container,
+.landing-nav-links,
+.landing-nav-link,
+.landing-nav-driver-pill,
+.landing-btn-signin-link,
+.landing-btn-portal,
+.landing-btn-dashboard-pill,
+.landing-brand {
+  white-space: nowrap !important;
+}
+
 /* Unified Navbar Links Global Reset */
 .landing-nav-links a,
 .landing-nav-links button,
