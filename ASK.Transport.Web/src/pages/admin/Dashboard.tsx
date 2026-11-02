@@ -3721,7 +3721,7 @@ export default function Dashboard() {
                         <span
                           className={`admin-badge-status ${
                             d.status === 'Active' ? 'admin-badge-available' :
-                            d.status === 'On Trip' ? 'admin-badge-on-route' : 'admin-badge-maintenance'
+                            d.status === 'On Trip' ? 'admin-badge-on-route' : 'admin-badge-off-duty'
                           }`}
                           data-status={d.status}
                           style={{
@@ -3731,10 +3731,10 @@ export default function Dashboard() {
                             fontWeight: 700,
                             background:
                               d.status === 'Active' ? '#edfdf4' :
-                              d.status === 'On Trip' ? '#e0f2fe' : '#fee2e2',
+                              d.status === 'On Trip' ? '#e0f2fe' : '#f1f5f9',
                             color:
                               d.status === 'Active' ? '#10b981' :
-                              d.status === 'On Trip' ? '#0b72e7' : '#dc2626'
+                              d.status === 'On Trip' ? '#0b72e7' : '#64748b'
                           }}
                         >
                           {d.status}
