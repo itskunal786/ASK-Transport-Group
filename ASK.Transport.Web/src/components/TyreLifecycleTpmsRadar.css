@@ -16,7 +16,7 @@
   border-radius: 16px;
   padding: 24px 28px;
   display: flex;
-  justify-content: space-between;
+  content: '';
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
@@ -80,7 +80,7 @@
 /* Truck Selector Bar */
 .tyre-selector-card {
   display: flex;
-  justify-content: space-between;
+  content: '';
   align-items: center;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -248,25 +248,26 @@
 }
 
 .tyre-axle-steer-badge {
-  background: #0f172a;
-  color: #38bdf8;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
   font-size: 11px;
   font-weight: 900;
-  padding: 6px 18px;
+  padding: 7px 20px;
   border-radius: 20px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tyre-axle-group {
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  content: '';
   align-items: center;
   position: relative;
 }
@@ -302,23 +303,61 @@
   gap: 6px;
 }
 
-/* Individual Wheel Node */
+/* Individual Wheel Node - Ultra-Realistic Tyre with Tread Grooves */
 .tyre-wheel-unit {
   position: relative;
-  width: 48px;
-  height: 74px;
+  width: 50px;
+  height: 76px;
   border-radius: 12px;
   background: #1e293b;
   color: #ffffff;
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  content: '';
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+/* Rubber Tread Pattern Grips on Outer Sides */
+.tyre-wheel-unit::before {
+  content: '';
+ position: absolute;
+ left: -3px;
+ top: 10px;
+ bottom: 10px;
+ width: 3px;
+ background: repeating-linear-gradient(
+ 180deg,
+ rgba(255, 255, 255, 0.5) 0px,
+ rgba(255, 255, 255, 0.5) 4px,
+ transparent 4px,
+ transparent 8px
+ );
+ border-radius: 2px;
+ pointer-events: none;
+}
+
+.tyre-wheel-unit::after {
+  content: '';
+ position: absolute;
+ right: -3px;
+ top: 10px;
+ bottom: 10px;
+ width: 3px;
+ background: repeating-linear-gradient(
+ 180deg,
+ rgba(255, 255, 255, 0.5) 0px,
+ rgba(255, 255, 255, 0.5) 4px,
+ transparent 4px,
+ transparent 8px
+ );
+ border-radius: 2px;
+ pointer-events: none;
 }
 
 .tyre-wheel-unit:hover {
@@ -378,23 +417,28 @@
 }
 
 .tyre-wheel-pos {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .tyre-wheel-psi {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
   line-height: 1.1;
   margin-top: 2px;
+  color: #ffffff;
+  font-family: monospace;
 }
 
 .tyre-wheel-unit-label {
   font-size: 8px;
-  opacity: 0.8;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  opacity: 0.85;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #cbd5e1;
 }
 
 .tyre-tailgate-marker {
@@ -427,7 +471,7 @@
 
 .tyre-inspect-header {
   display: flex;
-  justify-content: space-between;
+  content: '';
   align-items: center;
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 16px;
@@ -647,7 +691,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
+  content: '';
   gap: 8px;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
