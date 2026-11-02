@@ -1,0 +1,712 @@
+/* ============================================================================
+   CA 1-CLICK TAX & AUDIT VAULT CSS
+   Theme Adaptive: Ultra High Contrast Light Mode & Dark Mode
+   ============================================================================ */
+
+.tax-vault-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  color: var(--text-primary, #0f172a);
+}
+
+/* ============================================================================
+   BANNER HEADER
+   ============================================================================ */
+.tax-header-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  border-radius: 16px;
+  padding: 24px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 10px 25px -5px rgba(30, 27, 75, 0.4);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.tax-banner-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.tax-banner-left {
+  max-width: 720px;
+}
+
+.tax-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #818cf8;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.tax-banner-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.tax-banner-desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #c7d2fe;
+  line-height: 1.5;
+}
+
+.tax-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tax-quarter-select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.tax-quarter-select:focus {
+  border-color: #818cf8;
+}
+
+.tax-btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.tax-btn-export:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.tax-btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s ease;
+}
+
+.tax-btn-new:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.tax-btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tax-btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* QUICK FILTER TABS */
+.tax-tabs-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  z-index: 2;
+}
+
+.tax-tab-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.tax-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.tax-tab-btn.active {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+/* ============================================================================
+   TOAST NOTIFICATION
+   ============================================================================ */
+.tax-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 12px 18px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: taxToastSlideIn 0.25s ease-out;
+}
+
+@keyframes taxToastSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.tax-toast.success {
+  background: #065f46;
+  color: #ffffff;
+  border: 1px solid #10b981;
+}
+
+.tax-toast.error {
+  background: #9f1239;
+  color: #ffffff;
+  border: 1px solid #f43f5e;
+}
+
+.tax-toast.info {
+  background: #1e1b4b;
+  color: #ffffff;
+  border: 1px solid #6366f1;
+}
+
+/* ============================================================================
+   5 KPI METRIC CARDS
+   ============================================================================ */
+.tax-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.tax-kpi-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tax-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.tax-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.tax-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tax-kpi-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-primary, #0f172a);
+  margin-top: 2px;
+}
+
+.tax-kpi-sub {
+  font-size: 11px;
+  margin-top: 4px;
+  display: block;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+}
+
+/* ============================================================================
+   MAIN TABLE CARD & CONTROL BAR
+   ============================================================================ */
+.tax-table-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.tax-control-bar {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-subtle, #f8fafc);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tax-search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+}
+
+.tax-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary, #94a3b8);
+  pointer-events: none;
+}
+
+.tax-search-input {
+  width: 100%;
+  padding: 9px 12px 9px 38px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text-primary, #0f172a);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.tax-search-input:focus {
+  border-color: #6366f1;
+}
+
+.tax-count-badge {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* RESPONSIVE TABLE */
+.tax-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tax-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.tax-data-table th {
+  background: var(--bg-subtle, #f8fafc);
+  padding: 11px 14px;
+  color: var(--text-secondary, #64748b);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  white-space: nowrap;
+}
+
+.tax-data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  vertical-align: middle;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+}
+
+.tax-data-table tr:hover {
+  background: var(--bg-hover, rgba(99, 102, 241, 0.04));
+}
+
+.tax-gstin-chip {
+  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4f46e5;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+/* FILING TYPE PILLS */
+.tax-type-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tax-type-pill.gstr1 {
+  background: rgba(2, 132, 199, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.3);
+}
+
+.tax-type-pill.gstr3b {
+  background: rgba(147, 51, 234, 0.12);
+  color: #9333ea;
+  border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+.tax-type-pill.rcm {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.tax-type-pill.tds {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* STATUS CHIPS */
+.tax-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tax-status-chip.filed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.tax-status-chip.ready {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.tax-status-chip.reconciliation {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.tax-btn-mark-filed {
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tax-btn-mark-filed:hover {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+}
+
+/* ============================================================================
+   MODALS
+   ============================================================================ */
+.tax-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+
+.tax-modal-dialog {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: taxModalFadeIn 0.2s ease-out;
+}
+
+@keyframes taxModalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.tax-modal-header {
+  padding: 16px 20px;
+  background: #4f46e5;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tax-modal-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tax-modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.tax-modal-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tax-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tax-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tax-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.tax-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tax-form-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+}
+
+.tax-form-input,
+.tax-form-select {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-subtle, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tax-form-input:focus,
+.tax-form-select:focus {
+  border-color: #6366f1;
+  background: var(--bg-surface, #ffffff);
+}
+
+.tax-modal-footer {
+  padding: 14px 20px;
+  background: var(--bg-subtle, #f8fafc);
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tax-btn-cancel {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tax-btn-submit {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.tax-btn-submit:hover {
+  background: #4338ca;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES
+   ============================================================================ */
+[data-theme="dark"] .tax-kpi-card,
+body.dark .tax-kpi-card,
+.dark .tax-kpi-card,
+[data-theme="dark"] .tax-table-card,
+body.dark .tax-table-card,
+.dark .tax-table-card,
+[data-theme="dark"] .tax-modal-dialog,
+body.dark .tax-modal-dialog,
+.dark .tax-modal-dialog {
+  background: #0f172a !important;
+  border-color: #1e2c47 !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .tax-control-bar,
+body.dark .tax-control-bar,
+.dark .tax-control-bar,
+[data-theme="dark"] .tax-data-table th,
+body.dark .tax-data-table th,
+.dark .tax-data-table th,
+[data-theme="dark"] .tax-modal-footer,
+body.dark .tax-modal-footer,
+.dark .tax-modal-footer {
+  background: #0b1120 !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .tax-data-table td,
+body.dark .tax-data-table td,
+.dark .tax-data-table td {
+  border-color: #17243c !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .tax-data-table tr:hover,
+body.dark .tax-data-table tr:hover,
+.dark .tax-data-table tr:hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+}
+
+[data-theme="dark"] .tax-search-input,
+body.dark .tax-search-input,
+.dark .tax-search-input,
+[data-theme="dark"] .tax-form-input,
+body.dark .tax-form-input,
+.dark .tax-form-input,
+[data-theme="dark"] .tax-form-select,
+body.dark .tax-form-select,
+.dark .tax-form-select {
+  background: #0b1120 !important;
+  border-color: #1e2c47 !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .tax-gstin-chip,
+body.dark .tax-gstin-chip,
+.dark .tax-gstin-chip {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: #a5b4fc !important;
+}
+
+[data-theme="dark"] .tax-kpi-value,
+body.dark .tax-kpi-value,
+.dark .tax-kpi-value {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .tax-btn-cancel,
+body.dark .tax-btn-cancel,
+.dark .tax-btn-cancel {
+  background: #131d33 !important;
+  border-color: #1e2c47 !important;
+  color: #cbd5e1 !important;
+}

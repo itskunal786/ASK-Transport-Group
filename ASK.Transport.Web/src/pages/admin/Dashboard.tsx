@@ -4892,7 +4892,9 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'tax_audit' && (
           <div className="admin-content-pad">
-            <CaTaxAuditVault />
+            <ErrorBoundary fallbackTitle="CA 1-Click Tax & Audit Vault Error">
+              <CaTaxAuditVault />
+            </ErrorBoundary>
           </div>
         )}
 
