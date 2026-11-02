@@ -535,7 +535,18 @@ export default function Dashboard() {
   const [ticketResolutionNote, setTicketResolutionNote] = useState('');
 
   // 6. Telematics & GPS Radar State
-  const [telematicsFleet, setTelematicsFleet] = useState<TelematicsVehicle[]>(INITIAL_TELEMATICS_FLEET);
+  const [telematicsFleet, setTelematicsFleet] = useState<TelematicsVehicle[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ask_telematics_fleet');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return INITIAL_TELEMATICS_FLEET;
+  });
   const [telematicsFilter, setTelematicsFilter] = useState<'All' | 'Alerts' | 'Moving' | 'Stationary'>('All');
   const [telematicsSearch, setTelematicsSearch] = useState('');
   const [selectedRadarShipment, setSelectedRadarShipment] = useState<Shipment | null>(null);
@@ -779,7 +790,18 @@ export default function Dashboard() {
   const [newDriverHub, setNewDriverHub] = useState('Delhi Hub');
 
   // Vehicles state
-  const [vehiclesList, setVehiclesList] = useState<VehicleRow[]>(INITIAL_VEHICLES);
+  const [vehiclesList, setVehiclesList] = useState<VehicleRow[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ask_fleet_vehicles');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return INITIAL_VEHICLES;
+  });
   const [vehicleSearch, setVehicleSearch] = useState('');
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [newPlateNo, setNewPlateNo] = useState('');
@@ -787,6 +809,8 @@ export default function Dashboard() {
   const [newVehicleType, setNewVehicleType] = useState('32ft Multi-Axle (MXL)');
   const [newVehicleCapacity, setNewVehicleCapacity] = useState('16');
   const [newVehicleHub, setNewVehicleHub] = useState('Delhi Hub');
+  const [newVehicleDriver, setNewVehicleDriver] = useState('');
+  const [newVehicleCorridor, setNewVehicleCorridor] = useState('Delhi ⇄ Mumbai High-Speed Freight Corridor');
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState('');
@@ -1560,21 +1584,60 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newPlateNo.trim() || !newVehicleModel.trim()) return;
 
+    const plateNo = newPlateNo.trim().toUpperCase();
+    const model = newVehicleModel.trim();
+    const capacity = parseFloat(newVehicleCapacity) || 16;
+    const hub = newVehicleHub || 'Delhi Hub';
+    const driverName = newVehicleDriver.trim() || 'Assigned Fleet Pilot';
+    const corridor = newVehicleCorridor.trim() || `${hub} Logistics Corridor`;
+
     const newVeh: VehicleRow = {
-      plateNo: newPlateNo.trim().toUpperCase(),
-      model: newVehicleModel.trim(),
+      plateNo,
+      model,
       type: newVehicleType,
-      capacityTons: parseFloat(newVehicleCapacity) || 10,
-      currentHub: newVehicleHub,
+      capacityTons: capacity,
+      currentHub: hub,
       status: 'Available',
       fuelLevel: '100%'
     };
 
-    setVehiclesList(prev => [newVeh, ...prev]);
+    const newTelem: TelematicsVehicle = {
+      plateNo,
+      driverName,
+      driverPhone: '+91 98765 43210',
+      speedKmH: 52,
+      locationName: `${hub} Transit Terminal`,
+      lat: 28.6139,
+      lng: 77.2090,
+      engineStatus: 'Running',
+      geofenceStatus: 'Within Corridor',
+      haltDurationMinutes: 0,
+      fuelPercent: 100,
+      lastPing: 'Just now',
+      routeCorridor: corridor
+    };
+
+    setVehiclesList(prev => {
+      const updated = [newVeh, ...prev.filter(v => v.plateNo !== plateNo)];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_fleet_vehicles', JSON.stringify(updated));
+      }
+      return updated;
+    });
+
+    setTelematicsFleet(prev => {
+      const updated = [newTelem, ...prev.filter(t => t.plateNo !== plateNo)];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_telematics_fleet', JSON.stringify(updated));
+      }
+      return updated;
+    });
+
     setShowAddVehicleModal(false);
     setNewPlateNo('');
     setNewVehicleModel('');
-    showToast(`Vehicle ${newVeh.plateNo} registered into fleet!`);
+    setNewVehicleDriver('');
+    showToast(`✓ Commercial Truck ${plateNo} registered into fleet & GPS Telematics Radar!`);
   }
 
   // Monthly trends data for Bookings Trend chart
@@ -5064,6 +5127,14 @@ export default function Dashboard() {
                 >
                   🔄 Ping Satellite Feeds
                 </button>
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={() => setShowAddVehicleModal(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>➕</span> Add New Truck
+                </button>
               </div>
             </div>
 
@@ -6264,7 +6335,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="st-form-field">
-                    <label>Assigned Terminal</label>
+                    <label>Assigned Terminal Hub</label>
                     <select
                       value={newVehicleHub}
                       onChange={e => setNewVehicleHub(e.target.value)}
@@ -6277,6 +6348,26 @@ export default function Dashboard() {
                       <option>Ahmedabad Hub</option>
                       <option>Pune Hub</option>
                     </select>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Assigned Driver (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Suresh Kumar Gurjar"
+                      value={newVehicleDriver}
+                      onChange={e => setNewVehicleDriver(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Active Freight Corridor (GPS Telematics Route)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Delhi ⇄ Mumbai High-Speed Freight Corridor"
+                      value={newVehicleCorridor}
+                      onChange={e => setNewVehicleCorridor(e.target.value)}
+                    />
                   </div>
                 </div>
 
