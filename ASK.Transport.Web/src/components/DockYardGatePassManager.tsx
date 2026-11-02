@@ -1650,11 +1650,11 @@ export default function DockYardGatePassManager() {
       </div>
 
       {/* 5. SPLIT SECTION: YARD TRAFFIC TABLE + AUDIT CLEARANCE CARD */}
-      <div className="dockyard-split-wrap">
+      <div className="dockyard-split-row">
         
         {/* LEFT: DIGITAL GATE PASSES TABLE */}
         <div className="dockyard-card-left">
-          <div className="dockyard-passes-header">
+          <div className="dockyard-card-header">
             <div>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
                 📋 {t("Digital Gate Passes (Today's Yard Traffic)", "डिजिटल गेट पास (आज का यार्ड ट्रैफिक)")} • {currentHub.name}
@@ -1664,31 +1664,31 @@ export default function DockYardGatePassManager() {
               </small>
             </div>
 
-            <div className="dockyard-filter-tabs">
+            <div className="dockyard-filter-group">
               <button
                 type="button"
-                className={`dockyard-tab-btn ${activeTabFilter === 'ALL' ? 'active' : ''}`}
+                className={'dockyard-filter-pill ' + (activeTabFilter === 'ALL' ? 'active' : '')}
                 onClick={() => setActiveTabFilter('ALL')}
               >
                 {t('All Passes', 'सभी पास')}
               </button>
               <button
                 type="button"
-                className={`dockyard-tab-btn ${activeTabFilter === 'ACTIVE_DOCKS' ? 'active' : ''}`}
+                className={'dockyard-filter-pill ' + (activeTabFilter === 'ACTIVE_DOCKS' ? 'active' : '')}
                 onClick={() => setActiveTabFilter('ACTIVE_DOCKS')}
               >
                 {t('Docked', 'डॉक्ड')} ({currentBays.filter(b => b.status === 'OCCUPIED').length})
               </button>
               <button
                 type="button"
-                className={`dockyard-tab-btn ${activeTabFilter === 'DETENTION_ALERTS' ? 'active' : ''}`}
+                className={'dockyard-filter-pill ' + (activeTabFilter === 'DETENTION_ALERTS' ? 'active' : '')}
                 onClick={() => setActiveTabFilter('DETENTION_ALERTS')}
               >
                 {t('Detention', 'डिटेंशन')} ({detentionPassesCount})
               </button>
               <button
                 type="button"
-                className={`dockyard-tab-btn ${activeTabFilter === 'GATE_OUT' ? 'active' : ''}`}
+                className={'dockyard-filter-pill ' + (activeTabFilter === 'GATE_OUT' ? 'active' : '')}
                 onClick={() => setActiveTabFilter('GATE_OUT')}
               >
                 {t('Cleared', 'स्वीकृत')}
@@ -1697,15 +1697,15 @@ export default function DockYardGatePassManager() {
           </div>
 
           <div className="dockyard-table-wrap">
-            <table className="dockyard-table">
+            <table className="dockyard-data-table">
               <thead>
                 <tr>
-                  <th>{t('PASS #', 'पास सं.')}</th>
-                  <th>{t('VEHICLE & DRIVER', 'वाहन एवं चालक')}</th>
-                  <th>{t('BAY & CARGO', 'बे एवं कार्गो')}</th>
-                  <th>{t('TAT STATUS', 'TAT स्थिति')}</th>
-                  <th>{t('SEAL INTEGRITY', 'सील स्थिति')}</th>
-                  <th style={{ textAlign: 'right' }}>{t('ACTION', 'कार्यवाही')}</th>
+                  <th style={{ width: '110px', minWidth: '100px' }}>{t('PASS #', 'पास सं.')}</th>
+                  <th style={{ minWidth: '120px' }}>{t('VEHICLE & DRIVER', 'वाहन एवं चालक')}</th>
+                  <th style={{ minWidth: '130px' }}>{t('BAY & CARGO', 'बे एवं कार्गो')}</th>
+                  <th style={{ minWidth: '95px' }}>{t('TAT STATUS', 'TAT स्थिति')}</th>
+                  <th style={{ minWidth: '85px' }}>{t('SEAL', 'सील')}</th>
+                  <th style={{ width: '70px', minWidth: '70px', textAlign: 'right' }}>{t('ACTION', 'कार्यवाही')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1725,11 +1725,11 @@ export default function DockYardGatePassManager() {
                       <tr
                         key={pass.id}
                         onClick={() => setSelectedPass(pass)}
-                        className={`dockyard-table-row ${isSelected ? 'selected' : ''}`}
+                        className={'dockyard-table-row ' + (isSelected ? 'selected' : '')}
                       >
-                        <td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
                           <div className="dockyard-pass-no">{pass.passNumber}</div>
-                          <span className="dockyard-type-badge">{pass.type}</span>
+                          <div className="dockyard-type-badge">{pass.type.replace('_', ' ')}</div>
                         </td>
 
                         <td>
@@ -1739,24 +1739,24 @@ export default function DockYardGatePassManager() {
 
                         <td>
                           <div className="dockyard-bay-badge">{pass.assignedBay}</div>
-                          <div className="dockyard-cargo-text" title={`${pass.materialType} (${pass.cargoWeightTon}T)`}>
+                          <div className="dockyard-cargo-text" title={pass.materialType + ' (' + pass.cargoWeightTon + 'T)'}>
                             {pass.materialType} ({pass.cargoWeightTon}T)
                           </div>
                         </td>
 
                         <td>
-                          <span className={`dockyard-tat-pill ${isDetention ? 'detention' : isCleared ? 'cleared' : 'safe'}`}>
-                            {isDetention ? `⚠️ ${pass.elapsedMinutes}m (${t('Overdue', 'अतिदेय')})` : isCleared ? `✓ ${t('Cleared', 'स्वीकृत')}` : `⏱️ ${pass.elapsedMinutes}m / ${pass.targetTatMinutes}m`}
+                          <span className={'dockyard-tat-pill ' + (isDetention ? 'detention' : isCleared ? 'cleared' : 'safe')}>
+                            {isDetention ? '⚠️ ' + pass.elapsedMinutes + 'm (' + t('Overdue', 'अतिदेय') + ')' : isCleared ? '✓ ' + t('Cleared', 'स्वीकृत') : '⏱️ ' + pass.elapsedMinutes + 'm / ' + pass.targetTatMinutes + 'm'}
                           </span>
                         </td>
 
                         <td>
-                          <span className={`dockyard-seal-pill ${pass.sealStatus === 'INTACT_VERIFIED' ? 'intact' : 'tampered'}`}>
-                            {pass.sealStatus === 'INTACT_VERIFIED' ? `🔒 ${t('Intact', 'अक्षुण्ण')}` : `⚠️ ${t('Tampered', 'छेड़छाड़')}`}
+                          <span className={'dockyard-seal-pill ' + (pass.sealStatus === 'INTACT_VERIFIED' ? 'intact' : 'tampered')}>
+                            {pass.sealStatus === 'INTACT_VERIFIED' ? '🔒 ' + t('Intact', 'अक्षुण्ण') : '⚠️ ' + t('Tampered', 'छेड़छाड़')}
                           </span>
                         </td>
 
-                        <td style={{ textAlign: 'right' }}>
+                        <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                           <button
                             type="button"
                             className="dockyard-btn-slip"
@@ -1782,35 +1782,29 @@ export default function DockYardGatePassManager() {
         <div className="dockyard-card-right">
           {selectedPass ? (
             <div>
-              <div className="dockyard-detail-top">
+              <div className="dockyard-audit-header">
                 <div>
-                  <span className="dockyard-detail-eyebrow">
+                  <span className="dockyard-audit-tag">
                     {t('GATE PASS AUDIT & CLEARANCE', 'गेट पास ऑडिट एवं निकास')} • {currentHub.code}
                   </span>
-                  <h3 className="dockyard-detail-pass-no">{selectedPass.passNumber}</h3>
+                  <div className="dockyard-audit-title">{selectedPass.passNumber}</div>
                 </div>
-                <span className={`dockyard-detail-status-pill ${selectedPass.status === 'GATE_OUT_CLEARED' ? 'cleared' : selectedPass.status === 'DETENTION_WARNING' ? 'detention' : 'active'}`}>
+                <span className={'dockyard-status-pill-big ' + (selectedPass.status === 'GATE_OUT_CLEARED' ? 'cleared' : selectedPass.status === 'DETENTION_WARNING' ? 'detention' : 'docked')}>
                   {selectedPass.status}
                 </span>
               </div>
 
-              <div className="dockyard-driver-card">
-                <div className="dockyard-driver-icon">📱</div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
-                    {selectedPass.vehicleNumber}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
-                    {selectedPass.driverName} • {selectedPass.driverPhone}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#0284c7', fontWeight: 600 }}>
-                    {t('Transporter', 'ट्रांसपोर्टर')}: {selectedPass.transporterName}
-                  </div>
+              <div className="dockyard-vehicle-banner">
+                <div className="dockyard-qr-thumb">📱</div>
+                <div className="dockyard-vehicle-info-text">
+                  <div className="dockyard-plate-big">{selectedPass.vehicleNumber}</div>
+                  <div className="dockyard-driver-contact">{selectedPass.driverName} • {selectedPass.driverPhone}</div>
+                  <div className="dockyard-transporter-name">{t('Transporter', 'ट्रांसपोर्टर')}: {selectedPass.transporterName}</div>
                 </div>
               </div>
 
               {/* MINI TILES GRID */}
-              <div className="dockyard-mini-grid">
+              <div className="dockyard-metrics-2x2">
                 <div className="dockyard-mini-tile">
                   <span>{t('CONSIGNMENT / LR', 'बिल्टी / एलआर')}</span>
                   <strong>{selectedPass.consignmentNo}</strong>
@@ -1870,10 +1864,10 @@ export default function DockYardGatePassManager() {
                   <>
                     <button
                       type="button"
-                      className="dockyard-btn-authorize"
+                      className="dockyard-btn-gateout"
                       onClick={() => handleGateOutRelease(selectedPass.id)}
                     >
-                      <span>🚪</span> {t('Authorize Gate-Out & Print Exit Slip', 'गेट-आउट अधिकृत करें व निकास पर्ची छापें')}
+                      <span>🚪</span> {t('Authorize Gate-Out Exit & Print Slip', 'गेट-आउट अधिकृत करें व निकास पर्ची छापें')}
                     </button>
 
                     <button
@@ -1891,7 +1885,7 @@ export default function DockYardGatePassManager() {
                   className="dockyard-btn-doc"
                   onClick={() => setShowSlipPrintModal(true)}
                 >
-                  <span>🖨️</span> {t('View Printable Official Gate Pass', 'प्रिंट करने योग्य आधिकारिक गेट पास देखें')}
+                  <span>🖨️</span> {t('View Official Digital Gate Pass Document', 'आधिकारिक डिजिटल गेट पास दस्तावेज देखें')}
                 </button>
               </div>
             </div>

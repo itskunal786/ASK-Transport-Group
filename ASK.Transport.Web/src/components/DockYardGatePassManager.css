@@ -264,12 +264,13 @@
    ============================================================================ */
 .dockyard-split-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(360px, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.95fr);
+  gap: 18px;
   align-items: start;
+  width: 100%;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1220px) {
   .dockyard-split-row {
     grid-template-columns: 1fr;
   }
@@ -330,6 +331,25 @@
   width: 100%;
   overflow-x: auto;
   border-radius: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+.dockyard-table-wrap::-webkit-scrollbar {
+  height: 5px;
+}
+
+.dockyard-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dockyard-table-wrap::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.dockyard-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
 }
 
 .dockyard-data-table {
@@ -376,9 +396,11 @@
 .dockyard-pass-no {
   font-weight: 800;
   font-family: monospace;
-  font-size: 12.5px;
+  font-size: 12px;
   color: #0284c7;
-  white-space: nowrap;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  display: inline-block;
 }
 
 .dockyard-type-badge {
@@ -1130,3 +1152,31 @@ body.dark .hub-meta-item strong,
   color: #f8fafc !important;
 }
 
+
+/* Table Dark Mode Overrides */
+[data-theme="dark"] .dockyard-data-table th,
+body.dark .dockyard-data-table th,
+.dark .dockyard-data-table th {
+  background: #090f1d !important;
+  color: #94a3b8 !important;
+  border-bottom-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .dockyard-data-table td,
+body.dark .dockyard-data-table td,
+.dark .dockyard-data-table td {
+  border-bottom-color: #17243c !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .dockyard-data-table tr:hover td,
+body.dark .dockyard-data-table tr:hover td,
+.dark .dockyard-data-table tr:hover td {
+  background: #17243c !important;
+}
+
+[data-theme="dark"] .dockyard-table-row.selected td,
+body.dark .dockyard-data-table tr:hover td,
+.dark .dockyard-table-row.selected td {
+  background: #192a4a !important;
+}
