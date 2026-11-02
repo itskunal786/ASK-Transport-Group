@@ -1180,3 +1180,38 @@ body.dark .dockyard-data-table tr:hover td,
 .dark .dockyard-table-row.selected td {
   background: #192a4a !important;
 }
+
+
+/* Add Hub Button */
+.dockyard-btn-add-hub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.dockyard-btn-add-hub:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.dockyard-btn-add-hub:active {
+  transform: translateY(0);
+}
+
+[data-theme="dark"] .dockyard-btn-add-hub,
+body.dark .dockyard-btn-add-hub,
+.dark .dockyard-btn-add-hub {
+  background: #0284c7;
+  color: #ffffff;
+}

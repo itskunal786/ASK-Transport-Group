@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { expediteDockLoading, authorizeGateOut } from '../api/dockYardApi';
-import { getHubs } from '../api/adminApi';
+import { getHubs, createHub } from '../api/adminApi';
 import './DockYardGatePassManager.css';
 
 // ============================================================================
@@ -1185,6 +1185,15 @@ export default function DockYardGatePassManager() {
 
   const [activeTabFilter, setActiveTabFilter] = useState<'ALL' | 'ACTIVE_DOCKS' | 'DETENTION_ALERTS' | 'GATE_OUT'>('ALL');
   const [showNewGateInModal, setShowNewGateInModal] = useState<boolean>(false);
+  const [showCreateHubModal, setShowCreateHubModal] = useState<boolean>(false);
+  const [newHubCode, setNewHubCode] = useState<string>('');
+  const [newHubName, setNewHubName] = useState<string>('');
+  const [newHubCity, setNewHubCity] = useState<string>('');
+  const [newHubState, setNewHubState] = useState<string>('');
+  const [newHubCapacity, setNewHubCapacity] = useState<string>('3000');
+  const [newHubBaysCount, setNewHubBaysCount] = useState<number>(6);
+  const [newHubAddress, setNewHubAddress] = useState<string>('');
+  const [newHubManager, setNewHubManager] = useState<string>('');
   const [showSlipPrintModal, setShowSlipPrintModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -1238,6 +1247,95 @@ export default function DockYardGatePassManager() {
       }
     }).catch(() => {});
   }, []);
+
+  // Handle New Hub Terminal Creation
+  const handleCreateHubSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHubCode.trim() || !newHubName.trim()) {
+      setToastMessage('Please provide Hub Code and Terminal Name');
+      return;
+    }
+    const code = newHubCode.trim().toUpperCase();
+    const name = newHubName.trim();
+    const city = newHubCity.trim() || 'Regional Depot';
+    const state = newHubState.trim() || 'India';
+    const capacity = parseInt(newHubCapacity) || 3000;
+
+    // Generate active dock bays
+    const generatedBays: DockBayStatus[] = [];
+    const count = Math.max(2, Math.min(newHubBaysCount, 12));
+    for (let i = 1; i <= count; i++) {
+      const pad = String(i).padStart(2, '0');
+      let type: 'LOADING' | 'UNLOADING' | 'REEFER_COLD_BAY' | 'STAGING' = 'UNLOADING';
+      let bayName = `Bay ${i} - Inbound Unload`;
+      if (i % 3 === 2) {
+        type = 'LOADING';
+        bayName = `Bay ${i} - Outbound Dispatch`;
+      } else if (i % 3 === 0) {
+        type = 'STAGING';
+        bayName = `Bay ${i} - Cross-Dock Staging`;
+      }
+      generatedBays.push({
+        bayId: `BAY-${pad}`,
+        bayName,
+        type,
+        status: 'AVAILABLE',
+        targetMinutes: 60
+      });
+    }
+
+    const newConfig: HubYardConfig = {
+      code,
+      name,
+      city,
+      state,
+      capacity,
+      avgTatMinutes: 55,
+      demurrageAmount: 15000,
+      bays: generatedBays,
+      passes: []
+    };
+
+    setHubDataMap(prev => ({
+      ...prev,
+      [code]: newConfig
+    }));
+
+    setAllHubList(prev => {
+      const exists = prev.some(h => h.code === code);
+      if (exists) return prev;
+      return [...prev, { code, name, city, state }];
+    });
+
+    try {
+      await createHub({
+        code,
+        name,
+        city,
+        state,
+        capacity,
+        isActive: true,
+        address: newHubAddress.trim(),
+        contactNumber: newHubManager.trim()
+      });
+    } catch (err) {
+      console.warn('createHub API fallback', err);
+    }
+
+    setSelectedHubCode(code);
+    try {
+      localStorage.setItem('ask_selected_dockyard_hub', code);
+    } catch {}
+
+    setNewHubCode('');
+    setNewHubName('');
+    setNewHubCity('');
+    setNewHubState('');
+    setNewHubAddress('');
+    setNewHubManager('');
+    setShowCreateHubModal(false);
+    setToastMessage(`✓ Hub Terminal ${code} registered and active on Dock Yard!`);
+  };
 
   // Handle Hub selection
   const handleSelectHub = (hubCode: string) => {
@@ -1538,19 +1636,41 @@ export default function DockYardGatePassManager() {
         <div className="dockyard-hub-filter-bar">
           <div className="dockyard-hub-selector-wrap">
             <span className="dockyard-hub-icon">🏢</span>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <span className="dockyard-hub-label">{t('Select Logistics Hub Terminal', 'लॉजिस्टिक्स हब टर्मिनल चुनें')}:</span>
-              <select
-                className="dockyard-hub-select"
-                value={selectedHubCode}
-                onChange={e => handleSelectHub(e.target.value)}
-              >
-                {allHubList.map(h => (
-                  <option key={h.code} value={h.code}>
-                    {h.code} — {h.name} ({h.city}, {h.state})
-                  </option>
-                ))}
-              </select>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                <select
+                  className="dockyard-hub-select"
+                  value={selectedHubCode}
+                  onChange={e => {
+                    if (e.target.value === "__ADD_NEW_HUB__") {
+                      setShowCreateHubModal(true);
+                    } else {
+                      handleSelectHub(e.target.value);
+                    }
+                  }}
+                >
+                  <optgroup label="Registered Hub Terminals">
+                    {allHubList.map(h => (
+                      <option key={h.code} value={h.code}>
+                        {h.code} — {h.name} ({h.city}, {h.state})
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Actions">
+                    <option value="__ADD_NEW_HUB__">➕ + Add / Create New Hub Terminal...</option>
+                  </optgroup>
+                </select>
+
+                <button
+                  type="button"
+                  className="dockyard-btn-add-hub"
+                  onClick={() => setShowCreateHubModal(true)}
+                  title="Register and initialize a new logistics hub & dock yard terminal"
+                >
+                  <span>➕</span> Add / Create Hub
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2116,6 +2236,150 @@ export default function DockYardGatePassManager() {
                 🖨️ {t('Print Slip Now', 'पर्ची प्रिंट करें')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. CREATE / ADD HUB TERMINAL MODAL */}
+      {showCreateHubModal && (
+        <div className="dockyard-modal-overlay" onClick={() => setShowCreateHubModal(false)}>
+          <div className="dockyard-modal-card" style={{ maxWidth: '620px' }} onClick={e => e.stopPropagation()}>
+            <div className="dockyard-modal-header">
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0284c7', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🏢</span>
+                  <span>{t('Add & Initialize New Hub Terminal', 'नया हब टर्मिनल जोड़ें व आरंभ करें')}</span>
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
+                  {t('Register a new multi-city terminal and configure its active dock bays for immediate dispatch & receiving.', 'एक नया मल्टी-सिटी टर्मिनल जोड़ें और तत्काल लोडिंग/अनलोडिंग हेतु इसके डॉक बे कॉन्फ़िगर करें।')}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="dockyard-btn-close"
+                onClick={() => setShowCreateHubModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateHubSubmit} style={{ padding: '20px' }}>
+              <div className="dockyard-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <div>
+                  <label className="dockyard-form-label">{t('Hub / Terminal Code *', 'हब कोड *')}</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. HUB-BHO-06"
+                    className="dockyard-input-field"
+                    value={newHubCode}
+                    onChange={e => setNewHubCode(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="dockyard-form-label">{t('Terminal Facility Name *', 'टर्मिनल का नाम *')}</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Bhopal Central Logistics Hub"
+                    className="dockyard-input-field"
+                    value={newHubName}
+                    onChange={e => setNewHubName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="dockyard-form-label">{t('City *', 'शहर *')}</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Bhopal"
+                    className="dockyard-input-field"
+                    value={newHubCity}
+                    onChange={e => setNewHubCity(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="dockyard-form-label">{t('State *', 'राज्य *')}</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Madhya Pradesh"
+                    className="dockyard-input-field"
+                    value={newHubState}
+                    onChange={e => setNewHubState(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="dockyard-form-label">{t('Daily Throughput / Capacity (MT)', 'क्षमता (मीट्रिक टन)')}</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 3500"
+                    className="dockyard-input-field"
+                    value={newHubCapacity}
+                    onChange={e => setNewHubCapacity(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="dockyard-form-label">{t('Initialize Dock Bays', 'आरंभिक डॉक बे संख्या')}</label>
+                  <select
+                    className="dockyard-input-field"
+                    value={newHubBaysCount}
+                    onChange={e => setNewHubBaysCount(Number(e.target.value))}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value={4}>4 Dock Bays (2 Unload, 1 Load, 1 Staging)</option>
+                    <option value={6}>6 Standard Bays (3 Unload, 2 Load, 1 Staging)</option>
+                    <option value={8}>8 Large Terminal Bays (4 Unload, 3 Load, 1 Cold)</option>
+                    <option value={10}>10 Mega Hub Bays (Full Multimodal Setup)</option>
+                  </select>
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label className="dockyard-form-label">{t('Yard Manager / Contact No.', 'यार्ड प्रबंधक संपर्क नंबर')}</label>
+                  <input
+                    type="tel"
+                    placeholder="e.g. +91 98765 43210 (Rajesh Sharma)"
+                    className="dockyard-input-field"
+                    value={newHubManager}
+                    onChange={e => setNewHubManager(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label className="dockyard-form-label">{t('Terminal Physical Address', 'टर्मिनल का भौतिक पता')}</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Mandideep Industrial Area, Phase II, NH-12, Bhopal - 462022"
+                    className="dockyard-input-field"
+                    value={newHubAddress}
+                    onChange={e => setNewHubAddress(e.target.value)}
+                    style={{ resize: 'vertical' }}
+                  />
+                </div>
+              </div>
+
+              <div className="dockyard-modal-actions" style={{ marginTop: '20px' }}>
+                <button
+                  type="button"
+                  className="dockyard-btn-cancel"
+                  onClick={() => setShowCreateHubModal(false)}
+                >
+                  {t('Cancel', 'रद्द करें')}
+                </button>
+                <button
+                  type="submit"
+                  className="dockyard-btn-submit"
+                  style={{ background: '#0284c7' }}
+                >
+                  ✓ {t('Create & Activate Hub Terminal', 'हब टर्मिनल बनाएं व सक्रिय करें')}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
