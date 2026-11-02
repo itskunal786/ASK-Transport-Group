@@ -3034,7 +3034,8 @@ export default function Dashboard() {
                       <td style={{ color: '#64748b' }}>{b.date}</td>
                       <td>
                         <span
-                          className="admin-badge-status"
+                          className={`admin-badge-status admin-badge-${b.status.toLowerCase().replace(/\s+/g, '-')}`}
+                          data-status={b.status}
                           style={{
                             background:
                               b.status === 'Delivered' ? '#edfdf4' :
@@ -3569,7 +3570,8 @@ export default function Dashboard() {
                       </td>
                       <td>
                         <span
-                          className="admin-badge-status"
+                          className={`admin-badge-status admin-badge-${s.status.toLowerCase().replace(/\s+/g, '-')}`}
+                          data-status={s.status}
                           style={{
                             background:
                               s.status === 'Delivered' ? '#edfdf4' :
@@ -5117,21 +5119,21 @@ export default function Dashboard() {
                 <small>Total Open Tickets</small>
                 <strong>{supportTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length} Active</strong>
               </div>
-              <div className="support-kpi-card" style={{ borderColor: '#fca5a5' }}>
-                <small style={{ color: '#dc2626' }}>Critical Escalations</small>
-                <strong style={{ color: '#dc2626' }}>{supportTickets.filter(t => t.priority === 'Critical' && t.status !== 'Resolved').length} High Priority</strong>
+              <div className="support-kpi-card kpi-critical">
+                <small>Critical Escalations</small>
+                <strong>{supportTickets.filter(t => t.priority === 'Critical' && t.status !== 'Resolved').length} High Priority</strong>
               </div>
-              <div className="support-kpi-card">
+              <div className="support-kpi-card kpi-inprogress">
                 <small>In Progress</small>
-                <strong style={{ color: '#0284c7' }}>{supportTickets.filter(t => t.status === 'In Progress').length} Assigned</strong>
+                <strong>{supportTickets.filter(t => t.status === 'In Progress').length} Assigned</strong>
               </div>
-              <div className="support-kpi-card">
+              <div className="support-kpi-card kpi-resolved">
                 <small>Resolved Today</small>
-                <strong style={{ color: '#059669' }}>{supportTickets.filter(t => t.status === 'Resolved').length} Solved</strong>
+                <strong>{supportTickets.filter(t => t.status === 'Resolved').length} Solved</strong>
               </div>
-              <div className="support-kpi-card">
+              <div className="support-kpi-card kpi-sla">
                 <small>Average Resolution SLA</small>
-                <strong style={{ color: '#4338ca' }}>28 Mins</strong>
+                <strong>28 Mins</strong>
               </div>
             </div>
 
@@ -5161,9 +5163,8 @@ export default function Dashboard() {
                     <button
                       key={prio}
                       type="button"
-                      className={`admin-filter-pill ${ticketFilterPriority === prio ? 'active' : ''}`}
+                      className={`admin-filter-pill filter-pill-${prio.toLowerCase()} ${ticketFilterPriority === prio ? 'active' : ''}`}
                       onClick={() => setTicketFilterPriority(ticketFilterPriority === prio ? 'All' : prio)}
-                      style={{ color: prio === 'Critical' ? '#dc2626' : '#ea580c' }}
                     >
                       {prio === 'Critical' ? '🔴 Critical' : '🟠 High'}
                     </button>
@@ -5212,28 +5213,16 @@ export default function Dashboard() {
                         </td>
                         <td>
                           <span
-                            className={
-                              t.priority === 'Critical'
-                                ? 'ticket-prio-critical'
-                                : t.priority === 'High'
-                                ? 'ticket-prio-high'
-                                : t.priority === 'Medium'
-                                ? 'ticket-prio-medium'
-                                : 'ticket-prio-low'
-                            }
+                            className={`admin-badge-status ticket-prio-badge ticket-prio-${t.priority.toLowerCase()} admin-priority-${t.priority.toLowerCase()}`}
+                            data-priority={t.priority}
                           >
                             {t.priority}
                           </span>
                         </td>
                         <td>
                           <span
-                            className="admin-badge-status"
-                            style={{
-                              background:
-                                t.status === 'Resolved' ? '#ecfdf5' : t.status === 'In Progress' ? '#eff6ff' : '#fffbeb',
-                              color:
-                                t.status === 'Resolved' ? '#059669' : t.status === 'In Progress' ? '#2563eb' : '#b45309'
-                            }}
+                            className={`admin-badge-status admin-support-status admin-support-status-${t.status.toLowerCase().replace(/\s+/g, '-')}`}
+                            data-status={t.status}
                           >
                             {t.status}
                           </span>
@@ -5241,7 +5230,7 @@ export default function Dashboard() {
                         <td>
                           <button
                             type="button"
-                            className="admin-btn-view"
+                            className="admin-btn-view admin-btn-manage-ticket"
                             onClick={() => {
                               setEditingTicket(t);
                               setTicketResolutionNote(t.resolutionNotes || '');
@@ -5271,9 +5260,9 @@ export default function Dashboard() {
                   </div>
 
                   <div className="st-drawer-body">
-                    <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                    <div className="ticket-modal-summary-box">
                       <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Issue Summary</div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>{editingTicket.subject}</div>
+                      <div className="summary-title">{editingTicket.subject}</div>
                       <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
                         Category: {editingTicket.category} | Logged: {editingTicket.createdAt}
                       </div>
@@ -5286,19 +5275,8 @@ export default function Dashboard() {
                           <button
                             key={st}
                             type="button"
+                            className={`ticket-modal-status-btn ${editingTicket.status === st ? 'active' : ''}`}
                             onClick={() => handleUpdateTicketStatus(editingTicket.id, st)}
-                            style={{
-                              flex: 1,
-                              padding: '8px',
-                              borderRadius: '6px',
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              border: '1px solid',
-                              borderColor: editingTicket.status === st ? '#2563eb' : '#cbd5e1',
-                              background: editingTicket.status === st ? '#2563eb' : '#ffffff',
-                              color: editingTicket.status === st ? '#ffffff' : '#475569'
-                            }}
                           >
                             {st}
                           </button>

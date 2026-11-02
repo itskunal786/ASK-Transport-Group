@@ -1651,45 +1651,372 @@ body.dark .admin-badge-status[style*="f1f5f9"],
   margin-top: 4px;
 }
 
-.ticket-prio-critical {
-  background: #fee2e2;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-}
+/* ========================================================
+   SUPPORT DESK & LIVE ESCALATION MATRIX HIGH-CONTRAST STYLES
+   ======================================================== */
 
-.ticket-prio-high {
-  background: #ffedd5;
-  color: #ea580c;
-  border: 1px solid #fdba74;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.ticket-prio-medium {
-  background: #fef9c3;
-  color: #ca8a04;
-  border: 1px solid #fde047;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
+.ticket-prio-badge,
+.ticket-prio-critical,
+.ticket-prio-high,
+.ticket-prio-medium,
 .ticket-prio-low {
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 4px 12px !important;
+  border-radius: 9999px !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.3px !important;
+  text-transform: capitalize !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease !important;
 }
+
+/* Light mode priorities with crisp contrast */
+.ticket-prio-critical,
+.admin-priority-critical,
+[data-priority="Critical"] {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #f87171 !important;
+}
+
+.ticket-prio-high,
+.admin-priority-high,
+[data-priority="High"] {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+  border: 1px solid #fb923c !important;
+}
+
+.ticket-prio-medium,
+.admin-priority-medium,
+[data-priority="Medium"] {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #f59e0b !important;
+}
+
+.ticket-prio-low,
+.admin-priority-low,
+[data-priority="Low"] {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #4ade80 !important;
+}
+
+/* Dark mode priorities with vivid glow */
+[data-theme='dark'] .ticket-prio-critical,
+body.dark .ticket-prio-critical,
+.dark .ticket-prio-critical,
+[data-theme='dark'] .admin-priority-critical,
+body.dark .admin-priority-critical,
+.dark .admin-priority-critical,
+[data-theme='dark'] [data-priority="Critical"],
+body.dark [data-priority="Critical"],
+.dark [data-priority="Critical"] {
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(248, 113, 113, 0.6) !important;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.25) !important;
+}
+
+[data-theme='dark'] .ticket-prio-high,
+body.dark .ticket-prio-high,
+.dark .ticket-prio-high,
+[data-theme='dark'] .admin-priority-high,
+body.dark .admin-priority-high,
+.dark .admin-priority-high,
+[data-theme='dark'] [data-priority="High"],
+body.dark [data-priority="High"],
+.dark [data-priority="High"] {
+  background: rgba(249, 115, 22, 0.22) !important;
+  color: #fb923c !important;
+  border: 1px solid rgba(251, 146, 60, 0.6) !important;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.25) !important;
+}
+
+[data-theme='dark'] .ticket-prio-medium,
+body.dark .ticket-prio-medium,
+.dark .ticket-prio-medium,
+[data-theme='dark'] .admin-priority-medium,
+body.dark .admin-priority-medium,
+.dark .admin-priority-medium,
+[data-theme='dark'] [data-priority="Medium"],
+body.dark [data-priority="Medium"],
+.dark [data-priority="Medium"] {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.6) !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.25) !important;
+}
+
+[data-theme='dark'] .ticket-prio-low,
+body.dark .ticket-prio-low,
+.dark .ticket-prio-low,
+[data-theme='dark'] .admin-priority-low,
+body.dark .admin-priority-low,
+.dark .admin-priority-low,
+[data-theme='dark'] [data-priority="Low"],
+body.dark [data-priority="Low"],
+.dark [data-priority="Low"] {
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.6) !important;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.25) !important;
+}
+
+/* SUPPORT TICKET STATUS BADGES - LIGHT MODE */
+.admin-support-status-in-progress,
+.admin-badge-status[data-status="In Progress"] {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #7dd3fc !important;
+}
+
+.admin-support-status-resolved,
+.admin-badge-status[data-status="Resolved"] {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+.admin-support-status-open,
+.admin-badge-status[data-status="Open"] {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+.admin-support-status-closed,
+.admin-badge-status[data-status="Closed"] {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* DARK MODE FOR SUPPORT TICKET STATUSES */
+[data-theme='dark'] .admin-support-status-in-progress,
+body.dark .admin-support-status-in-progress,
+.dark .admin-support-status-in-progress,
+[data-theme='dark'] .admin-badge-status[data-status="In Progress"],
+body.dark .admin-badge-status[data-status="In Progress"],
+.dark .admin-badge-status[data-status="In Progress"] {
+  background: rgba(14, 165, 233, 0.22) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-support-status-resolved,
+body.dark .admin-support-status-resolved,
+.dark .admin-support-status-resolved,
+[data-theme='dark'] .admin-badge-status[data-status="Resolved"],
+body.dark .admin-badge-status[data-status="Resolved"],
+.dark .admin-badge-status[data-status="Resolved"] {
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.6) !important;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-support-status-open,
+body.dark .admin-support-status-open,
+.dark .admin-support-status-open,
+[data-theme='dark'] .admin-badge-status[data-status="Open"],
+body.dark .admin-badge-status[data-status="Open"],
+.dark .admin-badge-status[data-status="Open"] {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.6) !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-support-status-closed,
+body.dark .admin-support-status-closed,
+.dark .admin-support-status-closed,
+[data-theme='dark'] .admin-badge-status[data-status="Closed"],
+body.dark .admin-badge-status[data-status="Closed"],
+.dark .admin-badge-status[data-status="Closed"] {
+  background: rgba(148, 163, 184, 0.22) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(148, 163, 184, 0.5) !important;
+}
+
+/* SUPPORT KPI CARDS - DARK MODE */
+[data-theme='dark'] .support-kpi-card,
+body.dark .support-kpi-card,
+.dark .support-kpi-card {
+  background: #111a2e !important;
+  border: 1px solid #1e2c47 !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme='dark'] .support-kpi-card small,
+body.dark .support-kpi-card small,
+.dark .support-kpi-card small {
+  color: #94a3b8 !important;
+}
+
+[data-theme='dark'] .support-kpi-card strong,
+body.dark .support-kpi-card strong,
+.dark .support-kpi-card strong {
+  color: #f1f5f9 !important;
+}
+
+[data-theme='dark'] .support-kpi-card.kpi-critical,
+body.dark .support-kpi-card.kpi-critical,
+.dark .support-kpi-card.kpi-critical {
+  border-color: rgba(248, 113, 113, 0.4) !important;
+}
+[data-theme='dark'] .support-kpi-card.kpi-critical strong,
+body.dark .support-kpi-card.kpi-critical strong,
+.dark .support-kpi-card.kpi-critical strong {
+  color: #f87171 !important;
+}
+
+[data-theme='dark'] .support-kpi-card.kpi-inprogress strong,
+body.dark .support-kpi-card.kpi-inprogress strong,
+.dark .support-kpi-card.kpi-inprogress strong {
+  color: #38bdf8 !important;
+}
+
+[data-theme='dark'] .support-kpi-card.kpi-resolved strong,
+body.dark .support-kpi-card.kpi-resolved strong,
+.dark .support-kpi-card.kpi-resolved strong {
+  color: #34d399 !important;
+}
+
+[data-theme='dark'] .support-kpi-card.kpi-sla strong,
+body.dark .support-kpi-card.kpi-sla strong,
+.dark .support-kpi-card.kpi-sla strong {
+  color: #a5b4fc !important;
+}
+
+/* FILTER PILLS - DARK MODE */
+[data-theme='dark'] .admin-filter-pill,
+body.dark .admin-filter-pill,
+.dark .admin-filter-pill {
+  background: #111a2e !important;
+  color: #94a3b8 !important;
+  border: 1px solid #1e2c47 !important;
+}
+
+[data-theme='dark'] .admin-filter-pill:hover,
+body.dark .admin-filter-pill:hover,
+.dark .admin-filter-pill:hover {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+[data-theme='dark'] .admin-filter-pill.active,
+body.dark .admin-filter-pill.active,
+.dark .admin-filter-pill.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 12px rgba(2, 132, 199, 0.4) !important;
+}
+
+.admin-filter-pill.filter-pill-critical {
+  color: #dc2626 !important;
+}
+[data-theme='dark'] .admin-filter-pill.filter-pill-critical,
+body.dark .admin-filter-pill.filter-pill-critical,
+.dark .admin-filter-pill.filter-pill-critical {
+  color: #f87171 !important;
+}
+
+.admin-filter-pill.filter-pill-high {
+  color: #ea580c !important;
+}
+[data-theme='dark'] .admin-filter-pill.filter-pill-high,
+body.dark .admin-filter-pill.filter-pill-high,
+.dark .admin-filter-pill.filter-pill-high {
+  color: #fb923c !important;
+}
+
+/* ACTION BUTTON - MANAGE TICKET & VIEW BUTTONS */
+[data-theme='dark'] .admin-btn-view,
+body.dark .admin-btn-view,
+.dark .admin-btn-view {
+  background: rgba(14, 165, 233, 0.15) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  font-weight: 700 !important;
+}
+
+[data-theme='dark'] .admin-btn-view:hover,
+body.dark .admin-btn-view:hover,
+.dark .admin-btn-view:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+}
+
+/* MODAL STYLES */
+.ticket-modal-summary-box {
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+}
+.ticket-modal-summary-box .summary-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 4px;
+}
+[data-theme='dark'] .ticket-modal-summary-box,
+body.dark .ticket-modal-summary-box,
+.dark .ticket-modal-summary-box {
+  background: #090f1d !important;
+  border-color: #1e2c47 !important;
+}
+[data-theme='dark'] .ticket-modal-summary-box .summary-title,
+body.dark .ticket-modal-summary-box .summary-title,
+.dark .ticket-modal-summary-box .summary-title {
+  color: #f1f5f9 !important;
+}
+
+.ticket-modal-status-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  transition: all 0.15s ease;
+}
+.ticket-modal-status-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+[data-theme='dark'] .ticket-modal-status-btn,
+body.dark .ticket-modal-status-btn,
+.dark .ticket-modal-status-btn {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+  color: #94a3b8 !important;
+}
+[data-theme='dark'] .ticket-modal-status-btn.active,
+body.dark .ticket-modal-status-btn.active,
+.dark .ticket-modal-status-btn.active {
+  background: #0284c7 !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.4) !important;
+}
+
 
 /* ========================================================
    SUPER ADMIN CONTROL & RIGHTS DELEGATION STYLES
