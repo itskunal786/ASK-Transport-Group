@@ -34,6 +34,8 @@ body,
 #root {
   margin: 0;
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   min-height: 100%;
 }
 

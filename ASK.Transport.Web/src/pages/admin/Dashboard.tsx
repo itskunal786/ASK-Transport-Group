@@ -450,6 +450,11 @@ export default function Dashboard() {
 
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+
+  // Auto-scroll main window to top on tab switch so topbar and content are always aligned
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeTab]);
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
   const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
@@ -3242,13 +3247,13 @@ export default function Dashboard() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th style={{ minWidth: '130px' }}>{t('User & ID', 'उपयोगकर्ता व आईडी')}</th>
-                    <th style={{ minWidth: '170px' }}>{t('Email Address', 'ईमेल पता')}</th>
-                    <th style={{ minWidth: '100px' }}>{t('Mobile Phone', 'मोबाइल नंबर')}</th>
-                    <th style={{ minWidth: '110px' }}>{t('Assigned Role', 'सौंपी गई भूमिका')}</th>
-                    <th style={{ minWidth: '130px' }}>{t('Access Clearance', 'एक्सेस क्लीयरेंस')}</th>
-                    <th style={{ minWidth: '80px', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
-                    <th style={{ minWidth: '220px', textAlign: 'right' }}>{t('Actions & Delegation', 'क्रियाएं व अधिकार')}</th>
+                    <th style={{ width: '15%', minWidth: '110px' }}>{t('User & ID', 'उपयोगकर्ता व आईडी')}</th>
+                    <th style={{ width: '18%', minWidth: '140px' }}>{t('Email Address', 'ईमेल पता')}</th>
+                    <th style={{ width: '11%', minWidth: '95px' }}>{t('Mobile Phone', 'मोबाइल नंबर')}</th>
+                    <th style={{ width: '12%', minWidth: '100px' }}>{t('Assigned Role', 'सौंपी गई भूमिका')}</th>
+                    <th style={{ width: '14%', minWidth: '115px' }}>{t('Access Clearance', 'एक्सेस क्लीयरेंस')}</th>
+                    <th style={{ width: '8%', minWidth: '70px', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
+                    <th style={{ width: '22%', minWidth: '150px', textAlign: 'right' }}>{t('Actions & Delegation', 'क्रियाएं व अधिकार')}</th>
                   </tr>
                 </thead>
                 <tbody>
