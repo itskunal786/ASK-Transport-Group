@@ -1,5 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import {
+  FileSpreadsheet,
+  Download,
+  UploadCloud,
+  ClipboardPaste,
+  Zap,
+  CheckCircle2,
+  AlertTriangle,
+  Printer,
+  X,
+  Phone,
+  Box,
+  Scale,
+  IndianRupee,
+  Package,
+  Layers,
+  Truck
+} from 'lucide-react';
+import {
   getBulkSampleTemplate,
   previewBulkConsignments,
   processBulkBookings,
@@ -7,8 +25,11 @@ import {
   type BulkImportPreviewResponse,
   type BulkProcessResponse
 } from '../api/enterpriseApi';
+import { useLanguage } from '../context/LanguageContext';
+import './BulkExcelBookingEngine.css';
 
 export default function BulkExcelBookingEngine() {
+  const { t } = useLanguage();
   const [csvText, setCsvText] = useState('');
   const [showPasteBox, setShowPasteBox] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -111,69 +132,80 @@ export default function BulkExcelBookingEngine() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="bulk-engine-container">
       {/* HEADER ACTION CONTROLS */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '14px' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: '18px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📊</span> Bulk Excel / CSV Booking Engine (B2B Enterprise)
+      <div className="bulk-controls-card">
+        <div className="bulk-controls-info">
+          <h2 className="bulk-controls-title">
+            <FileSpreadsheet size={20} color="#2563eb" />
+            <span>{t('Bulk Excel / CSV Booking Engine (B2B Enterprise)', 'बल्क एक्सेल / सीएसवी बुकिंग इंजन (बी2बी एंटरप्राइज)')}</span>
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748b' }}>
-            Upload single CSV/Excel containing 10 to 500 factory consignments. Auto-validate PIN codes, compute freight &amp; generate bulk LR Bilties with barcodes in 1 click.
+          <p className="bulk-controls-sub">
+            {t(
+              'Upload single CSV/Excel containing 10 to 500 factory consignments. Auto-validate PIN codes, compute freight & generate bulk LR Bilties with barcodes in 1 click.',
+              '10 से 500 फैक्ट्री कंसाइनमेंट्स वाली सिंगल CSV/Excel अपलोड करें। ऑटो पिन-कोड सत्यापन, भाड़ा गणना और 1 क्लिक में बारकोड सहित बल्क एलआर बिल्टी जनरेट करें।'
+            )}
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="bulk-controls-actions">
           <button
             type="button"
             onClick={handleDownloadTemplate}
-            style={{ padding: '8px 14px', background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="bulk-btn-secondary"
           >
-            <span>📥</span> Download CSV Template
+            <Download size={14} />
+            <span>{t('Download CSV Template', 'सीएसवी टेम्पलेट डाउनलोड')}</span>
           </button>
 
-          <label style={{ padding: '8px 14px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>📁</span> Upload .CSV / .XLSX
+          <label className="bulk-file-label">
+            <UploadCloud size={14} />
+            <span>{t('Upload .CSV / .XLSX', '.CSV / .XLSX अपलोड करें')}</span>
             <input type="file" accept=".csv,.txt" onChange={handleFileUpload} style={{ display: 'none' }} />
           </label>
 
           <button
             type="button"
             onClick={() => setShowPasteBox(!showPasteBox)}
-            style={{ padding: '8px 14px', background: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+            className="bulk-btn-secondary"
           >
-            {showPasteBox ? 'Hide Paste Box' : '📋 Paste CSV Text'}
+            <ClipboardPaste size={14} />
+            <span>{showPasteBox ? t('Hide Paste Box', 'पेस्ट बॉक्स छिपाएं') : t('Paste CSV Text', 'सीएसवी टेक्स्ट पेस्ट')}</span>
           </button>
 
           <button
             type="button"
             onClick={handleLoadDemoData}
-            style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12.5px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="bulk-btn-action"
           >
-            <span>⚡</span> Load Demo Consignments (8 Shipments)
+            <Zap size={14} />
+            <span>{t('Load Demo Consignments (8 Shipments)', 'डेमो कंसाइनमेंट्स लोड करें (8 शिपमेंट)')}</span>
           </button>
         </div>
       </div>
 
       {/* PASTE CSV DRAWER */}
       {showPasteBox && (
-        <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>Paste Raw CSV Lines (Comma-Separated):</label>
+        <div className="bulk-paste-drawer">
+          <label className="bulk-paste-label">
+            <ClipboardPaste size={15} />
+            <span>{t('Paste Raw CSV Lines (Comma-Separated):', 'रॉ सीएसवी लाइनें पेस्ट करें (कॉमा-सेपरेटेड):')}</span>
+          </label>
           <textarea
             rows={5}
             value={csvText}
             onChange={e => setCsvText(e.target.value)}
             placeholder="ConsignorName,ConsigneeName,ConsigneePhone,DeliveryAddress,Pincode,City,GoodsDescription,PackageCount,WeightKg,DeclaredValue,PaymentMode..."
-            style={{ width: '100%', padding: '10px', fontSize: '12px', fontFamily: 'monospace', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+            className="bulk-paste-textarea"
           />
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
             <button
               type="button"
               onClick={handleParsePastedText}
               disabled={loading}
-              style={{ padding: '8px 18px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer' }}
+              className="bulk-btn-action"
             >
-              Parse &amp; Preview
+              {loading ? t('Parsing...', 'पार्सिंग...') : t('Parse & Preview', 'पार्स एवं प्रीव्यू')}
             </button>
           </div>
         </div>
@@ -181,65 +213,83 @@ export default function BulkExcelBookingEngine() {
 
       {/* KPI SUMMARY CARDS */}
       {previewData && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-          <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #2563eb' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL SHIPMENTS</span>
-            <strong style={{ fontSize: '24px', color: '#0f172a', display: 'block', margin: '4px 0' }}>
-              {previewData.totalRecords} Consignments
+        <div className="bulk-kpis-grid">
+          <div className="bulk-kpi-card blue">
+            <span className="bulk-kpi-label">
+              <Package size={13} color="#2563eb" />
+              {t('Total Shipments', 'कुल शिपमेंट्स')}
+            </span>
+            <strong className="bulk-kpi-value blue">
+              {previewData.totalRecords} {t('Consignments', 'कंसाइनमेंट्स')}
             </strong>
-            <span style={{ fontSize: '11.5px', color: previewData.errorCount > 0 ? '#ef4444' : '#16a34a', fontWeight: 700 }}>
-              ✓ {previewData.validCount} Valid {previewData.errorCount > 0 && `• ⚠ ${previewData.errorCount} Errors`}
+            <span className={`bulk-kpi-sub ${previewData.errorCount > 0 ? 'error' : 'valid'}`}>
+              ✓ {previewData.validCount} {t('Valid', 'मान्य')} {previewData.errorCount > 0 && `• ⚠ ${previewData.errorCount} ${t('Errors', 'त्रुटियां')}`}
             </span>
           </div>
 
-          <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL GROSS WEIGHT</span>
-            <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-              {((previewData.totalWeightKg ?? 0) / 1000).toFixed(2)} Metric Tons
+          <div className="bulk-kpi-card green">
+            <span className="bulk-kpi-label">
+              <Scale size={13} color="#10b981" />
+              {t('Total Gross Weight', 'कुल सकल भार')}
+            </span>
+            <strong className="bulk-kpi-value green">
+              {((previewData.totalWeightKg ?? 0) / 1000).toFixed(2)} MT
             </strong>
-            <span style={{ fontSize: '11.5px', color: '#64748b' }}>
-              {(previewData.totalWeightKg ?? 0).toLocaleString('en-IN')} KG • {previewData.totalPackages ?? 0} Boxes
+            <span className="bulk-kpi-sub">
+              {(previewData.totalWeightKg ?? 0).toLocaleString('en-IN')} KG • {previewData.totalPackages ?? 0} {t('Boxes', 'बॉक्स')}
             </span>
           </div>
 
-          <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #7c3aed' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>ESTIMATED TOTAL FREIGHT</span>
-            <strong style={{ fontSize: '24px', color: '#7c3aed', display: 'block', margin: '4px 0' }}>
+          <div className="bulk-kpi-card purple">
+            <span className="bulk-kpi-label">
+              <Truck size={13} color="#8b5cf6" />
+              {t('Estimated Total Freight', 'अनुमानित कुल भाड़ा')}
+            </span>
+            <strong className="bulk-kpi-value purple">
               ₹{(previewData.totalEstimatedFreight ?? 0).toLocaleString('en-IN')}
             </strong>
-            <span style={{ fontSize: '11.5px', color: '#64748b' }}>Includes 5% Fuel Surcharge</span>
+            <span className="bulk-kpi-sub">
+              {t('Includes 5% Fuel Surcharge', '5% फ्यूल अधिभार सहित')}
+            </span>
           </div>
 
-          <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>DECLARED CARGO VALUE</span>
-            <strong style={{ fontSize: '24px', color: '#d97706', display: 'block', margin: '4px 0' }}>
+          <div className="bulk-kpi-card amber">
+            <span className="bulk-kpi-label">
+              <IndianRupee size={13} color="#f59e0b" />
+              {t('Declared Cargo Value', 'घोषित माल मूल्य')}
+            </span>
+            <strong className="bulk-kpi-value amber">
               ₹{(previewData.totalDeclaredValue ?? 0).toLocaleString('en-IN')}
             </strong>
-            <span style={{ fontSize: '11.5px', color: '#64748b' }}>Factory Commercial Invoices</span>
+            <span className="bulk-kpi-sub">
+              {t('Factory Commercial Invoices', 'फैक्ट्री कमर्शियल इनवॉइस')}
+            </span>
           </div>
         </div>
       )}
 
       {/* BATCH CONFIG & PROCESS TRIGGER */}
       {previewData && (
-        <div style={{ background: '#f8fafc', padding: '16px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '14px' }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>BATCH TITLE:</label>
+        <div className="bulk-batch-strip">
+          <div className="bulk-batch-inputs">
+            <div className="bulk-batch-field">
+              <label className="bulk-batch-field-label">{t('Batch Title:', 'बैच शीर्षक:')}</label>
               <input
                 type="text"
                 value={batchTitle}
                 onChange={e => setBatchTitle(e.target.value)}
-                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', width: '320px', fontWeight: 600 }}
+                className="bulk-batch-input"
+                style={{ width: '320px' }}
               />
             </div>
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>SHIPPER CLIENT:</label>
+            <div className="bulk-batch-field">
+              <label className="bulk-batch-field-label">{t('Shipper Client:', 'शिपर ग्राहक:')}</label>
               <input
                 type="text"
                 value={shipperName}
                 onChange={e => setShipperName(e.target.value)}
-                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', width: '220px' }}
+                className="bulk-batch-input"
+                style={{ width: '240px' }}
               />
             </div>
           </div>
@@ -248,83 +298,137 @@ export default function BulkExcelBookingEngine() {
             type="button"
             disabled={loading || previewData.validCount === 0}
             onClick={handleGenerateBilties}
-            style={{
-              padding: '12px 24px',
-              background: '#059669',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)'
-            }}
+            className="bulk-btn-process"
           >
-            <span>⚡</span>
-            {loading ? 'Processing...' : `Generate ${previewData.validCount} Bulk Bilties & Barcode Manifest`}
+            <Zap size={16} />
+            <span>
+              {loading
+                ? t('Processing...', 'प्रोसेसिंग...')
+                : t(
+                    `Generate ${previewData.validCount} Bulk Bilties & Barcode Manifest`,
+                    `${previewData.validCount} बल्क बिल्टी एवं बारकोड मैनिफेस्ट जनरेट करें`
+                  )}
+            </span>
           </button>
         </div>
       )}
 
-      {/* PREVIEW DATA GRID */}
+      {/* PREVIEW DATA GRID - ULTRA HIGH CONTRAST & THEME ADAPTIVE */}
       {previewData && (
-        <div style={{ background: 'var(--bg-surface, #ffffff)', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', overflow: 'hidden' }}>
-          <div style={{ padding: '12px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <strong style={{ fontSize: '13px', color: '#0f172a' }}>Pre-Dispatch Verification Grid ({previewData.previewItems.length} Rows)</strong>
-            <span style={{ fontSize: '11.5px', color: '#64748b' }}>Every consignment undergoes auto PIN-code validation before LR generation</span>
+        <div className="bulk-table-card">
+          <div className="bulk-table-header-strip">
+            <div className="bulk-table-title">
+              <Layers size={16} color="#2563eb" />
+              <strong>{t(`Pre-Dispatch Verification Grid (${previewData.previewItems.length} Rows)`, `प्री-डिस्पैच सत्यापन ग्रिड (${previewData.previewItems.length} पंक्तियाँ)`)}</strong>
+            </div>
+            <span className="bulk-table-subtitle">
+              {t('Every consignment undergoes auto PIN-code validation before LR generation', 'एलआर जनरेशन से पहले प्रत्येक कंसाइनमेंट का ऑटो पिन-कोड सत्यापन होता है')}
+            </span>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', minWidth: '850px' }}>
+          <div className="bulk-table-scroll">
+            <table className="bulk-table">
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '10px 14px' }}>#</th>
-                  <th style={{ padding: '10px 14px' }}>Consignee &amp; Mobile</th>
-                  <th style={{ padding: '10px 14px' }}>Destination &amp; PIN</th>
-                  <th style={{ padding: '10px 14px' }}>Goods Description</th>
-                  <th style={{ padding: '10px 14px' }}>Boxes</th>
-                  <th style={{ padding: '10px 14px' }}>Weight (KG)</th>
-                  <th style={{ padding: '10px 14px' }}>Declared ₹</th>
-                  <th style={{ padding: '10px 14px' }}>Mode</th>
-                  <th style={{ padding: '10px 14px' }}>Est. Freight ₹</th>
-                  <th style={{ padding: '10px 14px', textAlign: 'center' }}>Status</th>
+                <tr>
+                  <th style={{ width: '45px' }}>#</th>
+                  <th>{t('Consignee & Mobile', 'कंसाइनी एवं मोबाइल')}</th>
+                  <th>{t('Destination & PIN', 'गंतव्य एवं पिन')}</th>
+                  <th>{t('Goods Description', 'माल का विवरण')}</th>
+                  <th>{t('Boxes', 'बॉक्स संख्या')}</th>
+                  <th>{t('Weight (KG)', 'भार (किलो)')}</th>
+                  <th>{t('Declared ₹', 'घोषित ₹')}</th>
+                  <th>{t('Mode', 'भुगतान मोड')}</th>
+                  <th>{t('Est. Freight ₹', 'अनुमानित भाड़ा ₹')}</th>
+                  <th className="center">{t('Status', 'स्थिति')}</th>
                 </tr>
               </thead>
               <tbody>
                 {previewData.previewItems.map((item: BulkConsignmentItem) => (
-                  <tr key={item.rowIndex} style={{ borderBottom: '1px solid #f1f5f9', background: item.isValid ? '#ffffff' : '#fff5f5' }}>
-                    <td style={{ padding: '10px 14px', color: '#94a3b8', fontWeight: 700 }}>{item.rowIndex}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <strong style={{ color: '#0f172a', display: 'block' }}>{item.consigneeName}</strong>
-                      <span style={{ fontSize: '11px', color: '#2563eb' }}>{item.consigneePhone}</span>
+                  <tr key={item.rowIndex} className={item.isValid ? '' : 'row-invalid'}>
+                    {/* # ROW INDEX */}
+                    <td>
+                      <span className="b2b-index-chip">{item.rowIndex}</span>
                     </td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ color: '#334155' }}>{item.city}</div>
-                      <span style={{ fontSize: '11px', color: '#64748b' }}>PIN: {item.pincode}</span>
+
+                    {/* CONSIGNEE & MOBILE */}
+                    <td>
+                      <strong className="b2b-consignee-title">{item.consigneeName}</strong>
+                      <span className="b2b-phone-chip">
+                        <Phone size={11} />
+                        {item.consigneePhone}
+                      </span>
                     </td>
-                    <td style={{ padding: '10px 14px', color: '#475569' }}>{item.goodsDescription}</td>
-                    <td style={{ padding: '10px 14px', fontWeight: 700 }}>{item.packageCount}</td>
-                    <td style={{ padding: '10px 14px', fontWeight: 700, color: '#16a34a' }}>{item.weightKg} kg</td>
-                    <td style={{ padding: '10px 14px' }}>₹{(item.declaredValue ?? 0).toLocaleString('en-IN')}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, background: item.paymentMode === 'Prepaid' ? '#dcfce7' : item.paymentMode === 'COD' ? '#fef3c7' : '#eff6ff', color: item.paymentMode === 'Prepaid' ? '#166534' : item.paymentMode === 'COD' ? '#92400e' : '#1e40af' }}>
+
+                    {/* DESTINATION & PIN */}
+                    <td>
+                      <div className="b2b-dest-city">{item.city}</div>
+                      <span className="b2b-pin-badge">PIN: {item.pincode}</span>
+                    </td>
+
+                    {/* GOODS DESCRIPTION */}
+                    <td>
+                      <div className="b2b-goods-desc">{item.goodsDescription}</div>
+                    </td>
+
+                    {/* BOXES - ULTRA HIGH CONTRAST */}
+                    <td>
+                      <span className="b2b-boxes-chip">
+                        <Box size={13} color="#2563eb" />
+                        {item.packageCount}
+                      </span>
+                    </td>
+
+                    {/* WEIGHT KG */}
+                    <td>
+                      <span className="b2b-weight-chip">
+                        <Scale size={12} />
+                        {item.weightKg} kg
+                      </span>
+                    </td>
+
+                    {/* DECLARED CARGO VALUE - ULTRA HIGH CONTRAST */}
+                    <td>
+                      <span className="b2b-declared-chip">
+                        ₹{(item.declaredValue ?? 0).toLocaleString('en-IN')}
+                      </span>
+                    </td>
+
+                    {/* PAYMENT MODE */}
+                    <td>
+                      <span
+                        className={`b2b-mode-badge ${
+                          item.paymentMode === 'Prepaid'
+                            ? 'prepaid'
+                            : item.paymentMode === 'COD'
+                            ? 'cod'
+                            : 'topay'
+                        }`}
+                      >
                         {item.paymentMode}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 14px', fontWeight: 800, color: '#7c3aed' }}>
-                      ₹{(item.estimatedFreight ?? 0).toLocaleString('en-IN')}
+
+                    {/* EST. FREIGHT */}
+                    <td>
+                      <span className="b2b-freight-chip">
+                        ₹{(item.estimatedFreight ?? 0).toLocaleString('en-IN')}
+                      </span>
                     </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+
+                    {/* STATUS */}
+                    <td style={{ textAlign: 'center' }}>
                       {item.isValid ? (
-                        <span style={{ padding: '3px 8px', borderRadius: '6px', background: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 700 }}>
-                          ✓ Valid
+                        <span className="b2b-status-pill valid">
+                          <CheckCircle2 size={13} />
+                          {t('Valid', 'मान्य')}
                         </span>
                       ) : (
-                        <span style={{ padding: '3px 8px', borderRadius: '6px', background: '#fee2e2', color: '#dc2626', fontSize: '11px', fontWeight: 700 }} title={item.validationErrors.join(', ')}>
-                          ⚠ Error
+                        <span
+                          className="b2b-status-pill error"
+                          title={item.validationErrors.join(', ')}
+                        >
+                          <AlertTriangle size={13} />
+                          {t('Error', 'त्रुटि')}
                         </span>
                       )}
                     </td>
@@ -338,90 +442,98 @@ export default function BulkExcelBookingEngine() {
 
       {/* SUCCESS MODAL: GENERATED BILTY & BARCODE MANIFEST */}
       {showResultModal && processResult && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '880px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px', marginBottom: '18px' }}>
+        <div className="bulk-modal-overlay">
+          <div className="bulk-modal-card">
+            <div className="bulk-modal-header">
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '24px' }}>🎉</span>
-                  <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>
-                    Bulk Dispatch Manifest Generated! (Batch #{processResult.batchId})
-                  </h3>
-                </div>
-                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                  Shipper: <strong>{processResult.shipperName}</strong> • {processResult.totalProcessed} Bilties with Scannable Barcodes Ready
+                <h3 className="bulk-modal-title">
+                  <CheckCircle2 size={24} color="#059669" />
+                  <span>
+                    {t('Bulk Dispatch Manifest Generated!', 'बल्क डिस्पैच मैनिफेस्ट सफलतापूर्वक जनरेट हुआ!')} (Batch #{processResult.batchId})
+                  </span>
+                </h3>
+                <p className="bulk-modal-sub">
+                  {t('Shipper', 'शिपर')}: <strong>{processResult.shipperName}</strong> • {processResult.totalProcessed} {t('Bilties with Scannable Barcodes Ready', 'स्कैनेबल बारकोड सहित बिल्टियां तैयार')}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowResultModal(false)}
-                style={{ background: '#f1f5f9', border: 'none', borderRadius: '6px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', fontWeight: 700 }}
+                className="bulk-modal-close-btn"
+                title={t('Close', 'बंद करें')}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
             {/* BATCH TOTALS STRIP */}
-            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <div className="bulk-manifest-strip">
               <div>
-                <span style={{ fontSize: '11px', color: '#166534', textTransform: 'uppercase', fontWeight: 700 }}>Total Consignments</span>
-                <strong style={{ fontSize: '18px', color: '#14532d', display: 'block' }}>{processResult.totalProcessed} Bilties</strong>
+                <span className="bulk-manifest-item-label">{t('Total Consignments', 'कुल कंसाइनमेंट्स')}</span>
+                <strong className="bulk-manifest-item-val">{processResult.totalProcessed} {t('Bilties', 'बिल्टियां')}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '11px', color: '#166534', textTransform: 'uppercase', fontWeight: 700 }}>Total Gross Weight</span>
-                <strong style={{ fontSize: '18px', color: '#14532d', display: 'block' }}>{processResult.totalWeightKg.toLocaleString()} KG</strong>
+                <span className="bulk-manifest-item-label">{t('Total Gross Weight', 'कुल सकल भार')}</span>
+                <strong className="bulk-manifest-item-val">{processResult.totalWeightKg.toLocaleString()} KG</strong>
               </div>
               <div>
-                <span style={{ fontSize: '11px', color: '#166534', textTransform: 'uppercase', fontWeight: 700 }}>Total Invoiced Freight</span>
-                <strong style={{ fontSize: '18px', color: '#15803d', display: 'block' }}>₹{processResult.totalFreightAmount.toLocaleString('en-IN')}</strong>
+                <span className="bulk-manifest-item-label">{t('Total Invoiced Freight', 'कुल इनवॉइस भाड़ा')}</span>
+                <strong className="bulk-manifest-item-val">₹{processResult.totalFreightAmount.toLocaleString('en-IN')}</strong>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div>
                 <button
                   type="button"
                   onClick={handlePrintLabels}
-                  style={{ padding: '8px 16px', background: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  className="bulk-btn-process"
+                  style={{ padding: '8px 16px', fontSize: '12.5px' }}
                 >
-                  <span>🖨️</span> Print Labels &amp; Manifest
+                  <Printer size={15} />
+                  <span>{t('Print Labels & Manifest', 'लेबल एवं मैनिफेस्ट प्रिंट करें')}</span>
                 </button>
               </div>
             </div>
 
             {/* BILTY & BARCODE CARDS LIST */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
+            <div className="bulk-bilty-grid">
               {processResult.generatedBilties.map(b => (
-                <div key={b.lrNumber} style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '12px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                    <strong style={{ fontSize: '13px', color: '#2563eb' }}>{b.lrNumber}</strong>
-                    <span style={{ fontSize: '11px', padding: '2px 6px', background: '#f1f5f9', borderRadius: '4px', fontWeight: 700 }}>
-                      {b.packages} Boxes
+                <div key={b.lrNumber} className="bulk-bilty-card">
+                  <div className="bulk-bilty-card-top">
+                    <strong className="bulk-bilty-lr">{b.lrNumber}</strong>
+                    <span className="b2b-boxes-chip" style={{ padding: '2px 8px', fontSize: '11px' }}>
+                      <Box size={11} /> {b.packages} {t('Boxes', 'बॉक्स')}
                     </span>
                   </div>
 
                   {/* VISUAL BARCODE */}
-                  <div style={{ background: '#0f172a', color: '#ffffff', padding: '8px', borderRadius: '6px', textAlign: 'center', letterSpacing: '6px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 900 }}>
+                  <div className="bulk-bilty-barcode-box">
                     {b.barcode}
                   </div>
 
-                  <div style={{ fontSize: '11.5px', color: '#334155' }}>
-                    <strong style={{ display: 'block', color: '#0f172a' }}>{b.consigneeName}</strong>
-                    <div style={{ color: '#64748b' }}>{b.consigneeCity}</div>
-                    <div style={{ marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#16a34a', fontWeight: 700 }}>{b.weightKg} KG</span>
-                      <strong style={{ color: '#7c3aed' }}>₹{b.freightAmount.toLocaleString('en-IN')} ({b.paymentMode})</strong>
+                  <div style={{ fontSize: '12px' }}>
+                    <strong style={{ display: 'block', fontSize: '13px' }}>{b.consigneeName}</strong>
+                    <div style={{ color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>{b.consigneeCity}</div>
+                    <div style={{ marginTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="b2b-weight-chip" style={{ padding: '3px 7px', fontSize: '11.5px' }}>
+                        {b.weightKg} KG
+                      </span>
+                      <strong className="b2b-freight-chip" style={{ padding: '3px 7px', fontSize: '11.5px' }}>
+                        ₹{b.freightAmount.toLocaleString('en-IN')} ({b.paymentMode})
+                      </strong>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
               <button
                 type="button"
                 onClick={() => setShowResultModal(false)}
-                style={{ padding: '8px 20px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                className="bulk-btn-secondary"
+                style={{ padding: '9px 24px', fontSize: '13px' }}
               >
-                Done / Close
+                {t('Done / Close', 'पूर्ण / बंद करें')}
               </button>
             </div>
           </div>

@@ -1,101 +1,62 @@
 import { useState } from 'react';
+import { Building2, FileSpreadsheet, Gavel, RotateCcw } from 'lucide-react';
 import BulkExcelBookingEngine from './BulkExcelBookingEngine';
 import FreightBiddingMarketplace from './FreightBiddingMarketplace';
 import ReverseLogisticsRtoManager from './ReverseLogisticsRtoManager';
+import { useLanguage } from '../context/LanguageContext';
+import './EnterpriseB2BDeck.css';
 
 export default function EnterpriseB2BDeck() {
   const [activeTab, setActiveTab] = useState<'bulk' | 'marketplace' | 'reverse'>('bulk');
+  const { t } = useLanguage();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="enterprise-deck-container">
       {/* ENTERPRISE MASTER HEADER */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-        color: '#ffffff',
-        padding: '24px 28px',
-        borderRadius: '16px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '16px',
-        boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.4)'
-      }}>
-        <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>
-            <span>🏢</span> Enterprise &amp; Corporate Shipper Suite
+      <div className="enterprise-master-banner">
+        <div className="enterprise-banner-content">
+          <div className="enterprise-banner-badge">
+            <Building2 size={14} />
+            <span>{t('Enterprise & Corporate Shipper Suite', 'एंटरप्राइज एवं कॉर्पोरेट शिपर सुइट')}</span>
           </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.5px' }}>
-            B2B Logistics, Spot Marketplace &amp; RTO Suite
+          <h1 className="enterprise-banner-title">
+            {t('B2B Logistics, Spot Marketplace & RTO Suite', 'बी2बी लॉजिस्टिक्स, स्पॉट मार्केटप्लेस एवं आरटीओ सुइट')}
           </h1>
-          <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8', lineHeight: 1.5 }}>
-            Automate high-volume corporate factory consignments, monetize unassigned freight on spot reverse auctions, and manage damaged consignment returns with automated reverse LR tracking.
+          <p className="enterprise-banner-sub">
+            {t(
+              'Automate high-volume corporate factory consignments, monetize unassigned freight on spot reverse auctions, and manage damaged consignment returns with automated reverse LR tracking.',
+              'उच्च-मात्रा कॉर्पोरेट फैक्ट्री कंसाइनमेंट्स को स्वचालित करें, स्पॉट रिवर्स ऑक्शन पर अतिरिक्त माल ढुलाई प्रबंधित करें, और रिवर्स एलआर ट्रैकिंग के साथ क्षतिग्रस्त माल वापसी का प्रबंधन करें।'
+            )}
           </p>
         </div>
 
         {/* TABS NAVIGATION */}
-        <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.08)', padding: '5px', borderRadius: '12px', gap: '6px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+        <div className="enterprise-tabs-nav">
           <button
             type="button"
             onClick={() => setActiveTab('bulk')}
-            style={{
-              padding: '9px 18px',
-              borderRadius: '9px',
-              border: 'none',
-              background: activeTab === 'bulk' ? '#2563eb' : 'transparent',
-              color: '#ffffff',
-              fontSize: '12.5px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
+            className={`enterprise-tab-btn ${activeTab === 'bulk' ? 'active' : ''}`}
           >
-            <span>📊</span> Bulk Excel / CSV
+            <FileSpreadsheet size={15} />
+            <span>{t('Bulk Excel / CSV', 'बल्क एक्सेल / सीएसवी')}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('marketplace')}
-            style={{
-              padding: '9px 18px',
-              borderRadius: '9px',
-              border: 'none',
-              background: activeTab === 'marketplace' ? '#2563eb' : 'transparent',
-              color: '#ffffff',
-              fontSize: '12.5px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
+            className={`enterprise-tab-btn ${activeTab === 'marketplace' ? 'active' : ''}`}
           >
-            <span>🏷️</span> Spot Reverse Auction
+            <Gavel size={15} />
+            <span>{t('Spot Reverse Auction', 'स्पॉट रिवर्स ऑक्शन')}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('reverse')}
-            style={{
-              padding: '9px 18px',
-              borderRadius: '9px',
-              border: 'none',
-              background: activeTab === 'reverse' ? '#2563eb' : 'transparent',
-              color: '#ffffff',
-              fontSize: '12.5px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
+            className={`enterprise-tab-btn ${activeTab === 'reverse' ? 'active' : ''}`}
           >
-            <span>🔄</span> Reverse Logistics (RTO)
+            <RotateCcw size={15} />
+            <span>{t('Reverse Logistics (RTO)', 'रिवर्स लॉजिस्टिक्स (आरटीओ)')}</span>
           </button>
         </div>
       </div>
