@@ -47,12 +47,19 @@ export async function request<T>(
       !url.includes('/Auth/login') &&
       !url.includes('/Token/logout')
     ) {
+      // Do not auto-logout if using a demo / offline fallback session
+      if (token && token.startsWith('demo-')) {
+        console.warn('Demo / Fallback session received 401, preserving local session.');
+        throw new Error('Backend authorization failed in demo session.');
+      }
+
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
 
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login?expired=1';
+        const isAdmin = window.location.pathname.startsWith('/admin');
+        window.location.href = isAdmin ? '/login?portal=admin&expired=1' : '/login?expired=1';
       }
       throw new Error('Your session has expired. Please sign in again.');
     }

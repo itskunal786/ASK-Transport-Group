@@ -5,7 +5,7 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, logout } = useAuth();
+  const { login } = useAuth();
 
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('portal=admin')) {
@@ -65,32 +65,11 @@ export default function Login() {
     try {
       const user = await login(email, password);
 
-      // Strict role-portal segregation:
-      // User portal should only allow user logins.
-      // Admin portal should only allow admin/superadmin logins.
-      if (loginRole === 'customer') {
-        if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-          // Immediately revoke session so admin is NOT logged in via customer portal
-          await logout();
-          // Silently redirect to Admin Login page without showing error text
-          setLoginRole('admin');
-          navigate('/login?portal=admin', { replace: true });
-          setError('');
-          return;
-        }
-        navigate('/dashboard');
-      } else {
-        // loginRole === 'admin'
-        if (user.role !== 'Admin' && user.role !== 'SuperAdmin') {
-          // Immediately revoke session so customer is NOT logged in via admin portal
-          await logout();
-          // Silently redirect to Customer Login page without showing error text
-          setLoginRole('customer');
-          navigate('/login', { replace: true });
-          setError('');
-          return;
-        }
+      // Smart role-based portal routing:
+      if (user.role === 'Admin' || user.role === 'SuperAdmin') {
         navigate('/admin');
+      } else {
+        navigate('/dashboard');
       }
     } catch (err) {
       setError(

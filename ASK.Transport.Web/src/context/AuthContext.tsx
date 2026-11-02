@@ -34,10 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
+    // Determine target email & password for backend
+    const isSuper = cleanEmail === 'superadmin@askgroup.com';
+    const effectiveEmail = cleanEmail === 'ops@askgroup.com' ? 'admin@askgroup.com' : cleanEmail;
+    // SuperAdmin in backend uses SuperAdmin@123; accept Admin@123 as well by mapping it
+    const effectivePassword = (isSuper && (cleanPassword === 'Admin@123' || cleanPassword === 'admin@123')) 
+      ? 'SuperAdmin@123' 
+      : cleanPassword;
+
     try {
       response = await authApi.login({
-        email: cleanEmail === 'ops@askgroup.com' ? 'admin@askgroup.com' : cleanEmail,
-        password: cleanPassword
+        email: effectiveEmail,
+        password: effectivePassword
       });
     } catch (err) {
       console.warn('Backend API login failed or unreachable, checking credentials fallback:', err);
@@ -46,19 +54,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (cleanEmail === 'superadmin@askgroup.com' || cleanEmail === 'admin@askgroup.com' || cleanEmail === 'ops@askgroup.com') &&
         (cleanPassword === 'Admin@123' || cleanPassword === 'SuperAdmin@123' || cleanPassword === 'admin@123')
       ) {
-        const isSuper = cleanEmail === 'superadmin@askgroup.com';
-        const role = isSuper ? 'SuperAdmin' : 'Admin';
+        const isSuperAdmin = cleanEmail === 'superadmin@askgroup.com';
+        const role = isSuperAdmin ? 'SuperAdmin' : 'Admin';
         response = {
           message: 'Login successful',
           token: `demo-jwt-token-${Date.now()}`,
           refreshToken: `demo-refresh-token-${Date.now()}`,
           refreshTokenExpiresAt: new Date(Date.now() + 86400000 * 7).toISOString(),
           user: {
-            id: isSuper ? 1 : 2,
-            name: isSuper ? 'ASK Super Admin' : 'ASK GROUP Admin',
+            id: isSuperAdmin ? 1 : 2,
+            name: isSuperAdmin ? 'ASK Super Admin' : 'ASK GROUP Admin',
             email: cleanEmail,
             role: role as any,
-            phone: isSuper ? '9999999990' : '9999999999',
+            phone: isSuperAdmin ? '9999999990' : '9999999999',
             isVerified: true,
             isActive: true
           }
