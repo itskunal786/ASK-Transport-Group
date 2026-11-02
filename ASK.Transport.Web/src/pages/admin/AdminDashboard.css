@@ -1,4 +1,4 @@
-/* ========================================================
+﻿/* ========================================================
    ASK Transport - Pixel-Perfect Admin Command Center (Image 1)
    ======================================================== */
 
@@ -335,8 +335,12 @@
 .admin-main-viewport {
   margin-left: 250px;
   flex: 1;
-  padding: 24px 32px 60px;
+  min-width: 0;
+  width: calc(100vw - 250px);
+  max-width: calc(100vw - 250px);
+  padding: 20px 24px 60px;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* TOP NAV BAR */
@@ -968,11 +972,14 @@
 }
 
 .admin-table-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-table-toolbar {
@@ -2096,4 +2103,47 @@
 [data-theme='dark'] .admin-revoked-details {
   background: rgba(239, 68, 68, 0.15);
   color: #fca5a5;
+}
+
+
+/* HIGH-CONTRAST DARK MODE FOR ADMIN DATA TABLES & VIEWPORT */
+[data-theme='dark'] .admin-main-viewport,
+body.dark .admin-main-viewport,
+.dark .admin-main-viewport {
+  background: #090f1d !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme='dark'] .admin-table-card,
+body.dark .admin-table-card,
+.dark .admin-table-card {
+  background: #111a2e !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme='dark'] .admin-data-table,
+body.dark .admin-data-table,
+.dark .admin-data-table {
+  color: #f1f5f9 !important;
+}
+
+[data-theme='dark'] .admin-data-table th,
+body.dark .admin-data-table th,
+.dark .admin-data-table th {
+  background: #0c1527 !important;
+  color: #cbd5e1 !important;
+  border-bottom: 1.5px solid #1e2c47 !important;
+}
+
+[data-theme='dark'] .admin-data-table td,
+body.dark .admin-data-table td,
+.dark .admin-data-table td {
+  border-bottom: 1px solid #1e2c47 !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme='dark'] .admin-data-table tr:hover td,
+body.dark .admin-data-table tr:hover td,
+.dark .admin-data-table tr:hover td {
+  background: #172440 !important;
 }

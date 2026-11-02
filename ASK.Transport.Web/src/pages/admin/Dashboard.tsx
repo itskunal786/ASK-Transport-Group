@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -3087,13 +3087,13 @@ export default function Dashboard() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '16%' }}>User &amp; ID</th>
-                    <th style={{ width: '18%' }}>Email Address</th>
-                    <th style={{ width: '12%' }}>Mobile Phone</th>
-                    <th style={{ width: '12%' }}>Assigned Role</th>
-                    <th style={{ width: '15%' }}>Access Clearance</th>
-                    <th style={{ width: '9%' }}>Status</th>
-                    <th style={{ width: '18%', whiteSpace: 'nowrap', minWidth: '340px' }}>Actions &amp; Delegation</th>
+                    <th style={{ minWidth: '130px' }}>{t('User & ID', 'उपयोगकर्ता व आईडी')}</th>
+                    <th style={{ minWidth: '170px' }}>{t('Email Address', 'ईमेल पता')}</th>
+                    <th style={{ minWidth: '100px' }}>{t('Mobile Phone', 'मोबाइल नंबर')}</th>
+                    <th style={{ minWidth: '110px' }}>{t('Assigned Role', 'सौंपी गई भूमिका')}</th>
+                    <th style={{ minWidth: '130px' }}>{t('Access Clearance', 'एक्सेस क्लीयरेंस')}</th>
+                    <th style={{ minWidth: '80px', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
+                    <th style={{ minWidth: '220px', textAlign: 'right' }}>{t('Actions & Delegation', 'क्रियाएं व अधिकार')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -3103,7 +3103,7 @@ export default function Dashboard() {
                       return (
                         <tr key={u.id}>
                           <td style={{ verticalAlign: 'middle' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{u.name}</div>
+                            <div style={{ fontWeight: 700, fontSize: '13px' }}>{u.name}</div>
                             <small style={{ color: '#94a3b8', fontSize: '11px' }}>ID: #{u.id}</small>
                           </td>
                           <td style={{ verticalAlign: 'middle', color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
@@ -3222,8 +3222,8 @@ export default function Dashboard() {
                               {u.isActive ? 'Active' : 'Suspended'}
                             </span>
                           </td>
-                          <td style={{ verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                            <div className="admin-table-action-row">
+                          <td style={{ verticalAlign: 'middle', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <div className="admin-table-action-row" style={{ justifyContent: 'flex-end' }}>
                               {/* Quick Approval / Restriction Action for Regular Users */}
                               {u.role === 'User' && (
                                 !userApproved ? (
@@ -3233,7 +3233,7 @@ export default function Dashboard() {
                                     onClick={() => handleToggleUserApproval(u, true)}
                                     title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
                                   >
-                                    🔓 Grant Full Access
+                                    🔓 {t('Grant Access', 'एक्सेस दें')}
                                   </button>
                                 ) : (
                                   <button
@@ -3242,7 +3242,7 @@ export default function Dashboard() {
                                     onClick={() => handleToggleUserApproval(u, false)}
                                     title="Restrict user back to Book &amp; Track only"
                                   >
-                                    🔒 Restrict Access
+                                    🔒 {t('Restrict', 'सीमित करें')}
                                   </button>
                                 )
                               )}
@@ -4194,7 +4194,7 @@ export default function Dashboard() {
                                     onClick={() => handleToggleUserApproval(cust, false)}
                                     title="Restrict User to Book &amp; Track Only"
                                   >
-                                    🔒 Restrict Access
+                                    🔒 {t('Restrict', 'सीमित करें')}
                                   </button>
                                 )}
 
