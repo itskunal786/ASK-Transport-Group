@@ -841,3 +841,18 @@ body.dark .rto-vault-modal-card,
   border-color: #1e2c47 !important;
   color: #f8fafc !important;
 }
+
+
+@keyframes rtoVaultSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: rtoVaultSpin 0.8s linear infinite !important;
+}
+
+.rto-vault-btn-refresh:disabled {
+  opacity: 0.75;
+  cursor: wait !important;
+}
