@@ -1,4 +1,4 @@
-﻿/* ========================================================
+/* ========================================================
    ASK Transport - Pixel-Perfect Admin Command Center (Image 1)
    ======================================================== */
 
@@ -2146,4 +2146,321 @@ body.dark .admin-data-table td,
 body.dark .admin-data-table tr:hover td,
 .dark .admin-data-table tr:hover td {
   background: #172440 !important;
+}
+
+/* ============================================================================
+   SUPER ADMIN NOTIFICATION CENTER & APPROVAL REQUEST DRAWER
+   ============================================================================ */
+
+.admin-notif-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-notif-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-notif-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.admin-notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  animation: notifPulse 2s infinite ease-in-out;
+  box-sizing: border-box;
+}
+
+@keyframes notifPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+  100% { transform: scale(1); }
+}
+
+.admin-notif-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 380px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeInDown 0.2s ease;
+}
+
+.admin-notif-header {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-notif-title {
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-notif-count-chip {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.admin-notif-list {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.admin-notif-empty {
+  padding: 30px 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-notif-item {
+  padding: 12px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.admin-notif-item:hover {
+  background: #f8fafc;
+}
+
+.admin-notif-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.admin-notif-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-notif-user-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.admin-notif-user-meta {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.admin-notif-time {
+  font-size: 10px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.admin-notif-desc {
+  font-size: 12px;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #fde68a;
+  line-height: 1.4;
+}
+
+.admin-notif-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.admin-notif-btn-approve {
+  flex: 1;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.admin-notif-btn-approve:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.admin-notif-btn-reject {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-notif-btn-reject:hover {
+  background: #fef2f2;
+}
+
+/* User Directory Top Alert Banner */
+.admin-approval-alert-banner {
+  background: linear-gradient(135deg, #78350f 0%, #451a03 100%);
+  color: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 4px 15px rgba(120, 53, 15, 0.25);
+  animation: fadeInDown 0.3s ease;
+}
+
+.approval-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.approval-bell-pulse {
+  font-size: 22px;
+  animation: notifPulse 1.8s infinite ease-in-out;
+}
+
+.approval-banner-left strong {
+  font-size: 14px;
+  color: #fde68a;
+}
+
+.approval-banner-left p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #fef3c7;
+  opacity: 0.9;
+}
+
+.approval-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.approval-quick-btn {
+  background: #10b981;
+  color: #ffffff;
+  border: 1px solid #34d399;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.approval-quick-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] .admin-notif-btn,
+body.dark .admin-notif-btn,
+.dark .admin-notif-btn {
+  background: #111a2e;
+  border-color: #1e2c47;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .admin-notif-dropdown,
+body.dark .admin-notif-dropdown,
+.dark .admin-notif-dropdown {
+  background: #111a2e;
+  border-color: #1e2c47;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .admin-notif-item,
+body.dark .admin-notif-item,
+.dark .admin-notif-item {
+  border-bottom-color: #1e2c47;
+}
+
+[data-theme="dark"] .admin-notif-item:hover,
+body.dark .admin-notif-item:hover,
+.dark .admin-notif-item:hover {
+  background: #162238;
+}
+
+[data-theme="dark"] .admin-notif-user-name,
+body.dark .admin-notif-user-name,
+.dark .admin-notif-user-name {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .admin-notif-desc,
+body.dark .admin-notif-desc,
+.dark .admin-notif-desc {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fde68a;
 }

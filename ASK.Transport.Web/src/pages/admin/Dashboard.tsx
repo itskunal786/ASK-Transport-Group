@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -32,7 +32,7 @@ import DigitalPodVerifyModal from '../../components/DigitalPodVerifyModal';
 import ElectronicPodModal, { type PodData } from '../../components/ElectronicPodModal';
 import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
 import type { Shipment } from '../../api/trackingApi';
-import { isUserApproved, setUserApproved } from '../../utils/accessControl';
+import { isUserApproved, setUserApproved, getApprovalRequests, approveUserRequest, rejectUserRequest, isApprovalPending, type ApprovalRequest } from '../../utils/accessControl';
 import './AdminDashboard.css';
 import AiOperationsDeck from '../../components/AiOperationsDeck';
 import AiOcrScannerModal from '../../components/AiOcrScannerModal';
@@ -628,6 +628,50 @@ export default function Dashboard() {
   const [revokedIds, setRevokedIds] = useState<number[]>([]);
   const [rightsLoading, setRightsLoading] = useState(false);
   const [rightsSaving, setRightsSaving] = useState(false);
+
+  // Super Admin Account Clearance Notifications
+  const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>(() => getApprovalRequests());
+  const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const notifDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const pendingRequests = approvalRequests.filter(r => r.status === 'PENDING');
+
+  useEffect(() => {
+    function refreshRequests() {
+      setApprovalRequests(getApprovalRequests());
+    }
+
+    window.addEventListener('ask_approval_request_submitted', refreshRequests);
+    window.addEventListener('ask_approval_request_updated', refreshRequests);
+    window.addEventListener('ask_access_control_change', refreshRequests);
+
+    function handleClickOutside(e: MouseEvent) {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target as Node)) {
+        setShowNotifMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('ask_approval_request_submitted', refreshRequests);
+      window.removeEventListener('ask_approval_request_updated', refreshRequests);
+      window.removeEventListener('ask_access_control_change', refreshRequests);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  async function handleQuickApprove(req: ApprovalRequest) {
+    await approveUserRequest(req.userId, req.userEmail);
+    setApprovalRequests(getApprovalRequests());
+    setAdminUsers(prev => prev.map(x => (x.id === req.userId || (req.userEmail && x.email.toLowerCase() === req.userEmail.toLowerCase())) ? { ...x, isApproved: true } : x));
+    showToast(`✓ Account Approved! Full access granted to ${req.userName || req.userEmail}`);
+  }
+
+  async function handleQuickReject(req: ApprovalRequest) {
+    await rejectUserRequest(req.userId, req.userEmail);
+    setApprovalRequests(getApprovalRequests());
+    showToast(`🔒 Clearance request for ${req.userName || req.userEmail} rejected.`);
+  }
 
   // Current Logged-in Admin Rights & Restrictions
   const [myRevokedIds, setMyRevokedIds] = useState<number[]>(() => {
@@ -1316,8 +1360,14 @@ export default function Dashboard() {
     }
   }
 
-  function handleToggleUserApproval(u: AdminUserData, approved: boolean) {
+  async function handleToggleUserApproval(u: AdminUserData, approved: boolean) {
+    if (approved) {
+      await approveUserRequest(u.id, u.email);
+    } else {
+      await rejectUserRequest(u.id, u.email);
+    }
     setUserApproved(u.id, u.email, approved);
+    setApprovalRequests(getApprovalRequests());
     showToast(
       approved
         ? `✓ Granted Full Access to ${u.name}! (Payments, Invoices & Documents Unlocked)`
@@ -2244,6 +2294,85 @@ export default function Dashboard() {
             <LanguageToggle />
             <ThemeToggle />
 
+            {/* SUPER ADMIN APPROVAL NOTIFICATION BELL */}
+            {(user?.role === 'SuperAdmin' || user?.role === 'Admin') && (
+              <div className="admin-notif-container" ref={notifDropdownRef}>
+                <button
+                  type="button"
+                  className="admin-notif-btn"
+                  onClick={() => setShowNotifMenu(prev => !prev)}
+                  title={pendingRequests.length > 0 ? `${pendingRequests.length} pending account approval requests` : 'Notifications'}
+                >
+                  <span style={{ fontSize: '17px' }}>🔔</span>
+                  {pendingRequests.length > 0 && (
+                    <span className="admin-notif-badge">{pendingRequests.length}</span>
+                  )}
+                </button>
+
+                {showNotifMenu && (
+                  <div className="admin-notif-dropdown">
+                    <div className="admin-notif-header">
+                      <div className="admin-notif-title">
+                        <span>🔔 Account Clearance Requests</span>
+                        {pendingRequests.length > 0 && (
+                          <span className="admin-notif-count-chip">{pendingRequests.length} Pending</span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowNotifMenu(false)}
+                        style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="admin-notif-list">
+                      {pendingRequests.length === 0 ? (
+                        <div className="admin-notif-empty">
+                          <p style={{ margin: '0 0 4px', fontWeight: 600 }}>🎉 All Caught Up!</p>
+                          <small>No pending account approval requests. All customers cleared.</small>
+                        </div>
+                      ) : (
+                        pendingRequests.map(req => (
+                          <div key={req.id} className="admin-notif-item">
+                            <div className="admin-notif-item-top">
+                              <div className="admin-notif-user-info">
+                                <span className="admin-notif-user-name">{req.userName || 'Customer User'}</span>
+                                <span className="admin-notif-user-meta">{req.userEmail} {req.userPhone ? `• ${req.userPhone}` : ''}</span>
+                              </div>
+                              <span className="admin-notif-time">
+                                {new Date(req.requestedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className="admin-notif-desc">
+                              ⚠️ Requesting full access to Payments, Invoices, and Documents.
+                            </div>
+                            <div className="admin-notif-actions">
+                              <button
+                                type="button"
+                                className="admin-notif-btn-approve"
+                                onClick={() => handleQuickApprove(req)}
+                              >
+                                ✓ {t('Approve Full Access', 'स्वीकृति दें')}
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-notif-btn-reject"
+                                onClick={() => handleQuickReject(req)}
+                              >
+                                ✕ {t('Reject', 'अस्वीकार')}
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="admin-profile-pill">
               <div
                 className="admin-user-avatar"
@@ -2835,6 +2964,31 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {pendingRequests.length > 0 && (
+              <div className="admin-approval-alert-banner">
+                <div className="approval-banner-left">
+                  <span className="approval-bell-pulse">🔔</span>
+                  <div>
+                    <strong>{pendingRequests.length} Account Clearance Request{pendingRequests.length > 1 ? 's' : ''} Pending</strong>
+                    <p>Shippers are waiting for verification to unlock billing, GST invoices, and electronic documents.</p>
+                  </div>
+                </div>
+                <div className="approval-banner-actions">
+                  {pendingRequests.slice(0, 3).map(req => (
+                    <button
+                      key={req.id}
+                      type="button"
+                      className="approval-quick-btn"
+                      onClick={() => handleQuickApprove(req)}
+                      title={`Unlock ${req.userName || req.userEmail}`}
+                    >
+                      ✓ Quick Approve: {req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="admin-table-card">
               <div className="admin-table-toolbar">
                 <div className="admin-toolbar-search">
@@ -3186,6 +3340,25 @@ export default function Dashboard() {
                               >
                                 🟢 Full Access (Approved)
                               </span>
+                            ) : isApprovalPending(u.id, u.email) ? (
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: '#fef3c7',
+                                  color: '#b45309',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  border: '1px solid #f59e0b',
+                                  animation: 'notifPulse 2s infinite ease-in-out'
+                                }}
+                                title="User requested account clearance"
+                              >
+                                🔔 Approval Requested
+                              </span>
                             ) : (
                               <span
                                 style={{
@@ -3232,8 +3405,15 @@ export default function Dashboard() {
                                     className="admin-btn-action-approve"
                                     onClick={() => handleToggleUserApproval(u, true)}
                                     title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
+                                    style={isApprovalPending(u.id, u.email) ? {
+                                      background: '#10b981',
+                                      color: '#ffffff',
+                                      borderColor: '#059669',
+                                      boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)',
+                                      fontWeight: 800
+                                    } : {}}
                                   >
-                                    🔓 {t('Grant Access', 'एक्सेस दें')}
+                                    {isApprovalPending(u.id, u.email) ? '✓ ' + t('Approve Request', 'स्वीकृति दें') : '🔓 ' + t('Grant Access', 'एक्सेस दें')}
                                   </button>
                                 ) : (
                                   <button

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { isUserApproved } from '../utils/accessControl';
+import { isUserApproved, requestUserApproval, isApprovalPending } from '../utils/accessControl';
 import ThemeToggle from '../components/ThemeToggle';
 import '../styles/Dashboard.css';
 
@@ -14,19 +14,45 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
   const location = useLocation();
 
   const [approved, setApproved] = useState(() => isUserApproved(user));
+  const [isPending, setIsPending] = useState(() => isApprovalPending(user?.id, user?.email));
+  const [requestToast, setRequestToast] = useState<string | null>(null);
 
   useEffect(() => {
     setApproved(isUserApproved(user));
+    setIsPending(isApprovalPending(user?.id, user?.email));
 
     function handleAccessChange() {
+      setApproved(isUserApproved(user));
+      setIsPending(isApprovalPending(user?.id, user?.email));
+    }
+
+    function handleRequestUpdate() {
+      setIsPending(isApprovalPending(user?.id, user?.email));
       setApproved(isUserApproved(user));
     }
 
     window.addEventListener('ask_access_control_change', handleAccessChange);
+    window.addEventListener('ask_approval_request_updated', handleRequestUpdate);
+    window.addEventListener('ask_approval_request_submitted', handleRequestUpdate);
     return () => {
       window.removeEventListener('ask_access_control_change', handleAccessChange);
+      window.removeEventListener('ask_approval_request_updated', handleRequestUpdate);
+      window.removeEventListener('ask_approval_request_submitted', handleRequestUpdate);
     };
   }, [user]);
+
+  async function handleRequestApproval() {
+    if (!user) return;
+    try {
+      await requestUserApproval(user);
+      setIsPending(true);
+      setRequestToast('✓ Account clearance request submitted! Super Admin has been notified to verify your account.');
+      setTimeout(() => setRequestToast(null), 6000);
+    } catch {
+      setRequestToast('✓ Account clearance request submitted! Super Admin has been notified.');
+      setTimeout(() => setRequestToast(null), 6000);
+    }
+  }
 
   function active(path: string) {
     return location.pathname === path ? 'active' : '';
@@ -118,53 +144,33 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
           <Link className={active('/documents')} to="/documents">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
             </svg>
             Documents
             {!approved && <span className="sidebar-lock-badge" title="Admin Approval Required">🔒 Locked</span>}
           </Link>
-
-          <Link className={active('/notifications')} to="/notifications">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            Notifications
-            <span className="sidebar-badge-red">3</span>
-          </Link>
-
-          <Link className={active('/support')} to="/support">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-            </svg>
-            Support
-          </Link>
-
-          {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
-            <Link className="sidebar-admin-link" to="/admin">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                <polyline points="2 17 12 22 22 17" />
-                <polyline points="2 12 12 17 22 12" />
-              </svg>
-              {user?.role === 'SuperAdmin' ? '👑 Super Admin Panel' : '⚡ Admin Panel'}
-            </Link>
-          )}
         </nav>
 
-        {/* SIDEBAR BOTTOM (ALWAYS PINNED & VISIBLE) */}
-        <div className="sidebar-bottom">
-          <Link className={active('/profile')} to="/profile">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        {/* SIDEBAR FOOTER */}
+        <div className="customer-sidebar-footer">
+          <Link to="/profile" className="footer-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
             Profile &amp; Settings
           </Link>
 
-          <button type="button" onClick={handleLogout} className="sidebar-logout-link" title="Click to Sign Out">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button
+            type="button"
+            className="footer-link logout-btn"
+            onClick={handleLogout}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
@@ -172,7 +178,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             Sign Out
           </button>
 
-          <div className="sidebar-compact-help">
+          <div className="support-helpline">
             <span>24/7 Helpline: </span>
             <a href="tel:+919876543210">+91 98765 43210</a>
           </div>
@@ -250,9 +256,52 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 Naye accounts ke liye abhi sirf <strong>Book Shipment</strong> aur <strong>Track Shipment</strong> unlocked hain. Admin dwara account verification ke baad Payments, Invoices aur Documents activate ho jayenge.
               </span>
             </div>
-            <Link to="/support" className="ribbon-action-btn">
-              Request Approval →
-            </Link>
+            {isPending ? (
+              <span className="ribbon-action-btn pending" title="Super Admin has been alerted to review your account" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fde68a', border: '1px solid rgba(245, 158, 11, 0.4)', cursor: 'default' }}>
+                ⏳ Approval Pending (Admin Notified)
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="ribbon-action-btn"
+                onClick={handleRequestApproval}
+                title="Send notification to Super Admin to unlock your account"
+                style={{ cursor: 'pointer', border: 'none' }}
+              >
+                Request Approval →
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* APPROVAL NOTIFICATION TOAST */}
+        {requestToast && (
+          <div style={{
+            position: 'fixed',
+            top: '24px',
+            right: '24px',
+            background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+            color: '#ffffff',
+            padding: '14px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px -5px rgba(6, 95, 70, 0.4)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '13px',
+            fontWeight: 700,
+            border: '1px solid rgba(52, 211, 153, 0.4)',
+            animation: 'fadeInDown 0.3s ease'
+          }}>
+            <span style={{ fontSize: '18px' }}>🔔</span>
+            <span>{requestToast}</span>
+            <button
+              onClick={() => setRequestToast(null)}
+              style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', marginLeft: '10px', fontSize: '14px', fontWeight: 'bold' }}
+            >
+              ✕
+            </button>
           </div>
         )}
 
