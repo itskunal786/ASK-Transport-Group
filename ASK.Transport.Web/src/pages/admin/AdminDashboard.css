@@ -1036,11 +1036,132 @@
 }
 
 .admin-badge-status {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 4px 12px !important;
+  border-radius: 9999px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.25px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease !important;
+}
+
+/* Light mode defaults with crisp contrast and solid borders */
+.admin-badge-status.admin-badge-on-route,
+.admin-badge-status[data-status="On Route"],
+.admin-badge-status[data-status="On Trip"],
+.admin-badge-status[data-status="In Transit"],
+.admin-badge-status[data-status="Out for Delivery"] {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #7dd3fc !important;
+}
+
+.admin-badge-status.admin-badge-available,
+.admin-badge-status[data-status="Available"],
+.admin-badge-status[data-status="Active"],
+.admin-badge-status[data-status="Delivered"] {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+.admin-badge-status.admin-badge-maintenance,
+.admin-badge-status[data-status="Maintenance"],
+.admin-badge-status[data-status="Suspended"] {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+.admin-badge-status.admin-badge-pending,
+.admin-badge-status[data-status="Pending"] {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+/* DARK MODE ADAPTATIONS FOR STATUS BADGES */
+[data-theme='dark'] .admin-badge-status.admin-badge-on-route,
+body.dark .admin-badge-status.admin-badge-on-route,
+.dark .admin-badge-status.admin-badge-on-route,
+[data-theme='dark'] .admin-badge-status[data-status="On Route"],
+body.dark .admin-badge-status[data-status="On Route"],
+.dark .admin-badge-status[data-status="On Route"],
+[data-theme='dark'] .admin-badge-status[data-status="On Trip"],
+body.dark .admin-badge-status[data-status="On Trip"],
+.dark .admin-badge-status[data-status="On Trip"],
+[data-theme='dark'] .admin-badge-status[data-status="In Transit"],
+body.dark .admin-badge-status[data-status="In Transit"],
+.dark .admin-badge-status[data-status="In Transit"],
+[data-theme='dark'] .admin-badge-status[data-status="Out for Delivery"],
+body.dark .admin-badge-status[data-status="Out for Delivery"],
+.dark .admin-badge-status[data-status="Out for Delivery"],
+[data-theme='dark'] .admin-badge-status[style*="e0f2fe"],
+body.dark .admin-badge-status[style*="e0f2fe"],
+.dark .admin-badge-status[style*="e0f2fe"] {
+  background: rgba(14, 165, 233, 0.22) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-badge-available,
+body.dark .admin-badge-status.admin-badge-available,
+.dark .admin-badge-status.admin-badge-available,
+[data-theme='dark'] .admin-badge-status[data-status="Available"],
+body.dark .admin-badge-status[data-status="Available"],
+.dark .admin-badge-status[data-status="Available"],
+[data-theme='dark'] .admin-badge-status[data-status="Active"],
+body.dark .admin-badge-status[data-status="Active"],
+.dark .admin-badge-status[data-status="Active"],
+[data-theme='dark'] .admin-badge-status[data-status="Delivered"],
+body.dark .admin-badge-status[data-status="Delivered"],
+.dark .admin-badge-status[data-status="Delivered"],
+[data-theme='dark'] .admin-badge-status[style*="edfdf4"],
+body.dark .admin-badge-status[style*="edfdf4"],
+.dark .admin-badge-status[style*="edfdf4"] {
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.6) !important;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-badge-maintenance,
+body.dark .admin-badge-status.admin-badge-maintenance,
+.dark .admin-badge-status.admin-badge-maintenance,
+[data-theme='dark'] .admin-badge-status[data-status="Maintenance"],
+body.dark .admin-badge-status[data-status="Maintenance"],
+.dark .admin-badge-status[data-status="Maintenance"],
+[data-theme='dark'] .admin-badge-status[data-status="Suspended"],
+body.dark .admin-badge-status[data-status="Suspended"],
+.dark .admin-badge-status[data-status="Suspended"],
+[data-theme='dark'] .admin-badge-status[style*="fee2e2"],
+body.dark .admin-badge-status[style*="fee2e2"],
+.dark .admin-badge-status[style*="fee2e2"] {
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(248, 113, 113, 0.6) !important;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.25) !important;
+}
+
+[data-theme='dark'] .admin-badge-status.admin-badge-pending,
+body.dark .admin-badge-status.admin-badge-pending,
+.dark .admin-badge-status.admin-badge-pending,
+[data-theme='dark'] .admin-badge-status[data-status="Pending"],
+body.dark .admin-badge-status[data-status="Pending"],
+.dark .admin-badge-status[data-status="Pending"],
+[data-theme='dark'] .admin-badge-status[style*="fef3c7"],
+body.dark .admin-badge-status[style*="fef3c7"],
+.dark .admin-badge-status[style*="fef3c7"] {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.6) !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.25) !important;
 }
 
 /* ========================================================

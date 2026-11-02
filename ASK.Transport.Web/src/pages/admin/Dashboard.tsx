@@ -3380,10 +3380,12 @@ export default function Dashboard() {
                           </td>
                           <td style={{ verticalAlign: 'middle' }}>
                             <span
+                              className={`admin-badge-status ${u.isActive ? 'admin-badge-available' : 'admin-badge-maintenance'}`}
+                              data-status={u.isActive ? 'Active' : 'Suspended'}
                               style={{
-                                padding: '3px 10px',
+                                padding: '4px 12px',
                                 borderRadius: '12px',
-                                fontSize: '11px',
+                                fontSize: '11.5px',
                                 fontWeight: 700,
                                 whiteSpace: 'nowrap',
                                 display: 'inline-flex',
@@ -3717,10 +3719,15 @@ export default function Dashboard() {
                       <td style={{ color: '#0b72e7', fontWeight: 600 }}>{d.assignedVehicle || 'Unassigned'}</td>
                       <td>
                         <span
+                          className={`admin-badge-status ${
+                            d.status === 'Active' ? 'admin-badge-available' :
+                            d.status === 'On Trip' ? 'admin-badge-on-route' : 'admin-badge-maintenance'
+                          }`}
+                          data-status={d.status}
                           style={{
-                            padding: '3px 10px',
+                            padding: '4px 12px',
                             borderRadius: '12px',
-                            fontSize: '11px',
+                            fontSize: '11.5px',
                             fontWeight: 700,
                             background:
                               d.status === 'Active' ? '#edfdf4' :
@@ -3854,10 +3861,15 @@ export default function Dashboard() {
                       </td>
                       <td>
                         <span
+                          className={`admin-badge-status ${
+                            v.status === 'On Route' ? 'admin-badge-on-route' :
+                            v.status === 'Available' ? 'admin-badge-available' : 'admin-badge-maintenance'
+                          }`}
+                          data-status={v.status}
                           style={{
-                            padding: '3px 10px',
+                            padding: '4px 12px',
                             borderRadius: '12px',
-                            fontSize: '11px',
+                            fontSize: '11.5px',
                             fontWeight: 700,
                             background:
                               v.status === 'Available' ? '#edfdf4' :
@@ -4228,10 +4240,12 @@ export default function Dashboard() {
                         </td>
                         <td>
                           <span
+                            className={`admin-badge-status ${staff.isActive ? 'admin-badge-available' : 'admin-badge-maintenance'}`}
+                            data-status={staff.isActive ? 'Active' : 'Suspended'}
                             style={{
-                              padding: '3px 10px',
+                              padding: '4px 12px',
                               borderRadius: '12px',
-                              fontSize: '11px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
                               background: staff.isActive ? '#edfdf4' : '#fee2e2',
                               color: staff.isActive ? '#10b981' : '#dc2626'

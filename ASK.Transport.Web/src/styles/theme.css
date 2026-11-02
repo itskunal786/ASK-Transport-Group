@@ -1179,7 +1179,7 @@ body.dark {
   background: transparent !important;
 }
 
-[data-theme="dark"] .admin-data-table td span:not(.admin-badge-status):not([class*="badge"]) {
+[data-theme="dark"] .admin-data-table td span:not(.admin-badge-status):not([class*="badge"]):not([class*="admin-badge"]):not([style*="background"]) {
   color: #f1f5f9 !important;
 }
 
