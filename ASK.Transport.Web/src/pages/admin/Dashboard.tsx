@@ -16,6 +16,7 @@ import {
   getAuditLogs,
   forceLogoutUser,
   getHubs,
+  createHub,
   getSystemSettings,
   updateSystemSetting,
   type AdminOperationsSummary,
@@ -579,6 +580,9 @@ export default function Dashboard() {
   // Hubs State
   const [hubsList, setHubsList] = useState<HubItem[]>([]);
   const [hubsLoading, setHubsLoading] = useState(false);
+  const [hubSearchQuery, setHubSearchQuery] = useState('');
+  const [hubStatusFilter, setHubStatusFilter] = useState<'all' | 'operational' | 'standby'>('all');
+  const [hubSortBy, setHubSortBy] = useState<'default' | 'capacity' | 'name'>('default');
 
   // Security & Audit Logs State
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
@@ -1135,25 +1139,49 @@ export default function Dashboard() {
       address: newHubAddress.trim(),
       contactNumber: newHubManager.trim()
     };
-    setHubsList(prev => [newHub, ...prev]);
+    try {
+      await createHub(newHub);
+    } catch (err) {
+      console.warn('Backend createHub error:', err);
+    }
+    setHubsList(prev => {
+      const updated = [newHub, ...prev.filter(h => h.code !== newHub.code)];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_custom_hubs', JSON.stringify(updated));
+      }
+      return updated;
+    });
     setShowAddHubModal(false);
     setNewHubCode('');
     setNewHubName('');
     setNewHubCity('');
     setNewHubState('');
     setNewHubAddress('');
-    showToast(`✓ Hub ${newHub.code} created successfully`);
+    setNewHubManager('');
+    showToast(`✓ Hub ${newHub.code} registered and active!`);
   }
 
   function handleToggleHubStatus(hubId: number) {
-    setHubsList(prev => prev.map(h => h.id === hubId ? { ...h, isActive: !h.isActive } : h));
+    setHubsList(prev => {
+      const updated = prev.map(h => h.id === hubId ? { ...h, isActive: !h.isActive } : h);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_custom_hubs', JSON.stringify(updated));
+      }
+      return updated;
+    });
     showToast('Hub operational status updated');
   }
 
   function handleDeleteHub(hubId: number) {
     if (!window.confirm('Are you sure you want to decommission this hub terminal?')) return;
-    setHubsList(prev => prev.filter(h => h.id !== hubId));
-    showToast('Hub decommissioned');
+    setHubsList(prev => {
+      const updated = prev.filter(h => h.id !== hubId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_custom_hubs', JSON.stringify(updated));
+      }
+      return updated;
+    });
+    showToast('Hub decommissioned successfully');
   }
 
   // 3. TARIFF & RATE MATRIX HANDLER
@@ -1632,6 +1660,27 @@ export default function Dashboard() {
       );
     }
     return true;
+  });
+
+  // Filtered Hubs
+  const filteredHubsList = hubsList.filter(h => {
+    const q = hubSearchQuery.trim().toLowerCase();
+    const matchesSearch = !q ||
+      Boolean(h.name?.toLowerCase().includes(q)) ||
+      Boolean(h.code?.toLowerCase().includes(q)) ||
+      Boolean(h.city?.toLowerCase().includes(q)) ||
+      Boolean(h.state?.toLowerCase().includes(q)) ||
+      Boolean(h.address?.toLowerCase().includes(q)) ||
+      Boolean(h.contactNumber?.toLowerCase().includes(q));
+    const matchesStatus =
+      hubStatusFilter === 'all' ||
+      (hubStatusFilter === 'operational' && h.isActive) ||
+      (hubStatusFilter === 'standby' && !h.isActive);
+    return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    if (hubSortBy === 'capacity') return (b.capacity || 0) - (a.capacity || 0);
+    if (hubSortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+    return 0;
   });
 
   // Simulator calculation
@@ -2221,6 +2270,8 @@ export default function Dashboard() {
                   ? driverSearch
                   : activeTab === 'vehicles'
                   ? vehicleSearch
+                  : activeTab === 'hubs'
+                  ? hubSearchQuery
                   : ''
               }
               onChange={e => {
@@ -2230,6 +2281,7 @@ export default function Dashboard() {
                 else if (activeTab === 'shipments') setShipmentSearch(val);
                 else if (activeTab === 'drivers') setDriverSearch(val);
                 else if (activeTab === 'vehicles') setVehicleSearch(val);
+                else if (activeTab === 'hubs') setHubSearchQuery(val);
               }}
             />
           </div>
@@ -4445,115 +4497,320 @@ export default function Dashboard() {
                 >
                   {hubsLoading ? 'Refreshing...' : '🔄 Refresh Hubs'}
                 </button>
-                {user?.role === 'SuperAdmin' && (
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={() => setShowAddHubModal(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>➕</span> Add Hub / Terminal
+                </button>
+              </div>
+            </div>
+
+            {/* SEARCH & FILTER BAR */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '12px',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'var(--bg-card, #ffffff)',
+                border: '1px solid var(--border, #e2e8f0)',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                marginBottom: '20px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+              }}
+            >
+              {/* SEARCH INPUT */}
+              <div style={{ flex: '1 1 320px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <span style={{ position: 'absolute', left: '12px', color: '#94a3b8', fontSize: '15px', pointerEvents: 'none' }}>
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search hubs by name, code (e.g. HUB-DEL-01), city, or state..."
+                  value={hubSearchQuery}
+                  onChange={e => setHubSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 36px 9px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border, #cbd5e1)',
+                    background: 'var(--bg-input, #f8fafc)',
+                    color: 'var(--text-primary, #0f172a)',
+                    fontSize: '13.5px',
+                    outline: 'none',
+                    transition: 'border-color 0.15s ease'
+                  }}
+                />
+                {hubSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setHubSearchQuery('')}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      background: 'none',
+                      border: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      padding: '2px 6px',
+                      borderRadius: '50%'
+                    }}
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* STATUS FILTER PILLS & SORT */}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', background: 'var(--bg-input, #f1f5f9)', borderRadius: '8px', padding: '3px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setHubStatusFilter('all')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      background: hubStatusFilter === 'all' ? '#0b72e7' : 'transparent',
+                      color: hubStatusFilter === 'all' ? '#ffffff' : 'var(--text-secondary, #64748b)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    All ({hubsList.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHubStatusFilter('operational')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      background: hubStatusFilter === 'operational' ? '#10b981' : 'transparent',
+                      color: hubStatusFilter === 'operational' ? '#ffffff' : 'var(--text-secondary, #64748b)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    ● Operational ({hubsList.filter(h => h.isActive).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHubStatusFilter('standby')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      background: hubStatusFilter === 'standby' ? '#f59e0b' : 'transparent',
+                      color: hubStatusFilter === 'standby' ? '#ffffff' : 'var(--text-secondary, #64748b)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    ○ Standby ({hubsList.filter(h => !h.isActive).length})
+                  </button>
+                </div>
+
+                {/* SORT SELECTOR */}
+                <select
+                  value={hubSortBy}
+                  onChange={e => setHubSortBy(e.target.value as any)}
+                  style={{
+                    padding: '7px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border, #cbd5e1)',
+                    background: 'var(--bg-card, #ffffff)',
+                    color: 'var(--text-primary, #0f172a)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="default">Default Order</option>
+                  <option value="capacity">Throughput (High → Low)</option>
+                  <option value="name">Name (A → Z)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* RESULTS COUNT & FILTER FEEDBACK */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', fontSize: '12.5px', color: 'var(--text-secondary, #64748b)' }}>
+              <span>
+                Showing <strong>{filteredHubsList.length}</strong> of <strong>{hubsList.length}</strong> hubs &amp; terminals nationwide
+              </span>
+              {hubSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setHubSearchQuery('')}
+                  style={{ background: 'none', border: 'none', color: '#0b72e7', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                >
+                  Reset Search
+                </button>
+              )}
+            </div>
+
+            {/* HUBS GRID OR EMPTY STATE */}
+            {filteredHubsList.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '48px 24px',
+                  background: 'var(--bg-card, #ffffff)',
+                  border: '1px dashed var(--border, #cbd5e1)',
+                  borderRadius: '12px',
+                  color: 'var(--text-secondary, #64748b)'
+                }}
+              >
+                <div style={{ fontSize: '36px', marginBottom: '10px' }}>🏢</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                  No Hubs or Terminals Found
+                </h3>
+                <p style={{ margin: '0 0 16px', fontSize: '13px' }}>
+                  {hubSearchQuery
+                    ? `No hubs matched your search "${hubSearchQuery}". Try adjusting your keywords or clearing the filter.`
+                    : 'No hubs currently match the selected status filter.'}
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  {hubSearchQuery && (
+                    <button
+                      type="button"
+                      className="admin-btn-export"
+                      onClick={() => setHubSearchQuery('')}
+                    >
+                      Clear Search
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="admin-btn-primary"
                     onClick={() => setShowAddHubModal(true)}
                   >
-                    + Add Pan-India Hub
+                    ➕ Add New Hub / Terminal
                   </button>
-                )}
+                </div>
               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-              {hubsList.map(h => (
-                <div
-                  key={h.id}
-                  style={{
-                    background: 'var(--bg-card, #ffffff)',
-                    border: '1px solid var(--border, #e2e8f0)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                      <span style={{
-                        background: 'rgba(37, 99, 235, 0.1)',
-                        color: '#2563eb',
-                        fontFamily: 'monospace',
-                        fontWeight: 700,
-                        fontSize: '11px',
-                        padding: '4px 8px',
-                        borderRadius: '6px'
-                      }}>
-                        {h.code}
-                      </span>
-                      <span style={{
-                        background: h.isActive ? '#edfdf4' : '#fee2e2',
-                        color: h.isActive ? '#10b981' : '#dc2626',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        padding: '3px 8px',
-                        borderRadius: '12px'
-                      }}>
-                        {h.isActive ? '● Operational' : '○ Standby'}
-                      </span>
-                    </div>
-
-                    <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
-                      {h.name}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
-                      📍 {h.city}, {h.state}
-                    </p>
-                  </div>
-
-                  <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border, #f1f5f9)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                {filteredHubsList.map(h => (
+                  <div
+                    key={h.id}
+                    style={{
+                      background: 'var(--bg-card, #ffffff)',
+                      border: '1px solid var(--border, #e2e8f0)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                    }}
+                  >
                     <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'block' }}>DAILY THROUGHPUT</span>
-                      <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>{h.capacity?.toLocaleString('en-IN') || 2500} MT / Day</strong>
-                    </div>
-                    <span style={{ fontSize: '12px', color: '#0b72e7', fontWeight: 600 }}>Active Gate ➔</span>
-                  </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        <span style={{
+                          background: 'rgba(37, 99, 235, 0.1)',
+                          color: '#2563eb',
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          borderRadius: '6px'
+                        }}>
+                          {h.code}
+                        </span>
+                        <span style={{
+                          background: h.isActive ? '#edfdf4' : '#fee2e2',
+                          color: h.isActive ? '#10b981' : '#dc2626',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          {h.isActive ? '● Operational' : '○ Standby'}
+                        </span>
+                      </div>
 
-                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleHubStatus(h.id)}
-                      style={{
-                        flex: 1,
-                        padding: '6px 8px',
-                        borderRadius: '6px',
-                        border: '1px solid #cbd5e1',
-                        background: '#f8fafc',
-                        color: '#0f172a',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
-                    </button>
-                    {user?.role === 'SuperAdmin' && (
+                      <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                        {h.name}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
+                        📍 {h.city}, {h.state}
+                      </p>
+                      {h.address && (
+                        <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #94a3b8)', lineHeight: '1.3' }}>
+                          {h.address}
+                        </p>
+                      )}
+                      {h.contactNumber && (
+                        <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#0b72e7', fontWeight: 600 }}>
+                          📞 {h.contactNumber}
+                        </p>
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border, #f1f5f9)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'block' }}>DAILY THROUGHPUT</span>
+                        <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>{h.capacity?.toLocaleString('en-IN') || 2500} MT / Day</strong>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#0b72e7', fontWeight: 600 }}>Active Gate ➔</span>
+                    </div>
+
+                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHubStatus(h.id)}
+                        style={{
+                          flex: 1,
+                          padding: '7px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--border, #cbd5e1)',
+                          background: 'var(--bg-input, #f8fafc)',
+                          color: 'var(--text-primary, #0f172a)',
+                          fontSize: '11.5px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteHub(h.id)}
                         style={{
-                          padding: '6px 10px',
+                          padding: '7px 12px',
                           borderRadius: '6px',
                           border: '1px solid #fecaca',
                           background: '#fef2f2',
                           color: '#dc2626',
-                          fontSize: '11px',
-                          fontWeight: 600,
+                          fontSize: '12px',
+                          fontWeight: 700,
                           cursor: 'pointer'
                         }}
-                        title="Decommission Hub"
+                        title="Decommission Hub Terminal"
                       >
                         ✕
                       </button>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

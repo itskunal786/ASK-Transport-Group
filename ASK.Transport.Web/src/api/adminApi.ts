@@ -205,26 +205,57 @@ export async function getAuditLogs(params?: {
 }
 
 export async function getHubs(): Promise<HubItem[]> {
+  const saved = typeof window !== 'undefined' ? localStorage.getItem('ask_custom_hubs') : null;
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   try {
-    return await request<HubItem[]>('/hubs');
+    const remote = await request<HubItem[]>('/hubs');
+    if (remote && remote.length > 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_custom_hubs', JSON.stringify(remote));
+      }
+      return remote;
+    }
   } catch {
     // Fallback if hubs not seeded in local db
-    return [
-      { id: 1, name: 'Delhi Central Logistics Hub', code: 'HUB-DEL-01', city: 'New Delhi', state: 'Delhi', capacity: 2500, isActive: true },
-      { id: 2, name: 'Mumbai JNPT Port Terminal', code: 'HUB-MUM-02', city: 'Navi Mumbai', state: 'Maharashtra', capacity: 4000, isActive: true },
-      { id: 3, name: 'Bengaluru Tech & Cargo Park', code: 'HUB-BLR-03', city: 'Bengaluru', state: 'Karnataka', capacity: 3200, isActive: true },
-      { id: 4, name: 'Kolkata East Logistics Gateway', code: 'HUB-CCU-04', city: 'Kolkata', state: 'West Bengal', capacity: 2000, isActive: true },
-      { id: 5, name: 'Ahmedabad Distribution Hub', code: 'HUB-AMD-05', city: 'Ahmedabad', state: 'Gujarat', capacity: 2800, isActive: true },
-    ];
   }
+
+  const defaultHubs: HubItem[] = [
+    { id: 1, name: 'Delhi Central Logistics Hub', code: 'HUB-DEL-01', city: 'New Delhi', state: 'Delhi', capacity: 2500, isActive: true },
+    { id: 2, name: 'Mumbai JNPT Port Terminal', code: 'HUB-MUM-02', city: 'Navi Mumbai', state: 'Maharashtra', capacity: 4000, isActive: true },
+    { id: 3, name: 'Bengaluru Tech & Cargo Park', code: 'HUB-BLR-03', city: 'Bengaluru', state: 'Karnataka', capacity: 3200, isActive: true },
+    { id: 4, name: 'Kolkata East Logistics Gateway', code: 'HUB-CCU-04', city: 'Kolkata', state: 'West Bengal', capacity: 2000, isActive: true },
+    { id: 5, name: 'Ahmedabad Distribution Hub', code: 'HUB-AMD-05', city: 'Ahmedabad', state: 'Gujarat', capacity: 2800, isActive: true },
+  ];
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('ask_custom_hubs', JSON.stringify(defaultHubs));
+  }
+  return defaultHubs;
 }
 
 export async function createHub(payload: Partial<HubItem>): Promise<{ message: string; hub: HubItem }> {
   try {
-    return await request<{ message: string; hub: HubItem }>('/hub', {
+    const res = await request<{ message: string; hub: HubItem }>('/hub', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+    if (res && res.hub && typeof window !== 'undefined') {
+      const current = localStorage.getItem('ask_custom_hubs');
+      const list = current ? JSON.parse(current) : [];
+      list.unshift(res.hub);
+      localStorage.setItem('ask_custom_hubs', JSON.stringify(list));
+    }
+    return res;
   } catch {
     // Local simulation fallback
     const newHub: HubItem = {
@@ -238,6 +269,12 @@ export async function createHub(payload: Partial<HubItem>): Promise<{ message: s
       address: payload.address,
       contactNumber: payload.contactNumber
     };
+    if (typeof window !== 'undefined') {
+      const current = localStorage.getItem('ask_custom_hubs');
+      const list = current ? JSON.parse(current) : [];
+      list.unshift(newHub);
+      localStorage.setItem('ask_custom_hubs', JSON.stringify(list));
+    }
     return { message: 'Hub registered successfully', hub: newHub };
   }
 }
