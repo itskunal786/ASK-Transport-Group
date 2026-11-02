@@ -451,13 +451,14 @@ export default function Dashboard() {
   // Active view in Admin Panel
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
 
-  // Auto-scroll main window to top on tab switch so topbar and content are always aligned
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, [activeTab]);
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
   const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
+
+  // Auto-scroll main window to top on tab switch so topbar and content are always aligned
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeTab, aiDeckSubTab, fleetDeckSubTab, financeDeckSubTab]);
 
   // Hierarchical Navigation Accordion State
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({

@@ -240,7 +240,7 @@ export default function AiRouteCostPredictor() {
               <strong className="ai-kpi-value">
                 ₹{data.profitability.recommendedFreightQuote.toLocaleString('en-IN')}
               </strong>
-              <span className="ai-kpi-sub" style={{ color: '#059669', fontWeight: 700 }}>
+              <span className="ai-kpi-sub ai-kpi-margin-sub">
                 {t('Net Margin:', 'शुद्ध लाभ:')} ₹{data.profitability.netOperatingProfit.toLocaleString('en-IN')} ({data.profitability.marginPercentage}%)
               </span>
             </div>
@@ -250,7 +250,7 @@ export default function AiRouteCostPredictor() {
           <div className="ai-details-grid">
             {/* TRIP COST BREAKDOWN TABLE */}
             <div className="ai-predictor-card">
-              <h3 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
+              <h3 className="ai-section-heading">
                 {t('Detailed Operating Expense & P&L Analysis', 'विस्तृत परिचालन व्यय एवं लाभ-हानि विश्लेषण')}
               </h3>
 
@@ -291,17 +291,17 @@ export default function AiRouteCostPredictor() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {/* NO-ENTRY TIMING CARD */}
               <div className="ai-noentry-card">
-                <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: '#b45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <h4 className="ai-noentry-heading">
                   <span>⚠️</span> {t('City No-Entry Commercial Windows', 'शहर नो-एंट्री वाणिज्यिक समय-सीमा')}
                 </h4>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {data.cityNoEntryRestrictions.map((item, idx) => (
                     <div key={idx} className="ai-noentry-item">
-                      <strong style={{ fontSize: '12.5px', color: '#92400e' }}>{item.city} {t('No-Entry:', 'नो-एंट्री:')}</strong>
-                      <div style={{ fontSize: '11.5px', color: '#dc2626', fontWeight: 700 }}>{item.timing}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', marginTop: '3px' }}>{item.rule}</div>
-                      <div style={{ fontSize: '11px', color: '#059669', fontWeight: 600, marginTop: '4px' }}>💡 {item.windowStatus}</div>
+                      <strong className="ai-noentry-city-title">{item.city} {t('No-Entry:', 'नो-एंट्री:')}</strong>
+                      <div className="ai-noentry-timing">{item.timing}</div>
+                      <div className="ai-noentry-rule">{item.rule}</div>
+                      <div className="ai-noentry-status">💡 {item.windowStatus}</div>
                     </div>
                   ))}
                 </div>
@@ -309,18 +309,18 @@ export default function AiRouteCostPredictor() {
 
               {/* TOLL PLAZAS ITINERARY */}
               <div className="ai-predictor-card">
-                <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
+                <h4 className="ai-toll-heading">
                   {t('NHAI Fastag Toll Plaza Itinerary', 'NHAI फास्टैग टोल प्लाजा सूची')}
                 </h4>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
+                <div className="ai-toll-list">
                   {data.tollPlazas.map((tItem, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 10px', background: 'var(--bg-alt, #f8fafc)', borderRadius: '6px', fontSize: '11.5px', border: '1px solid var(--border-color, #f1f5f9)' }}>
-                      <div>
-                        <strong>{tItem.name}</strong>
-                        <span style={{ fontSize: '10.5px', color: '#64748b', marginLeft: '6px' }}>({tItem.location})</span>
+                    <div key={idx} className="ai-toll-item">
+                      <div className="ai-toll-info">
+                        <strong className="ai-toll-name">{tItem.name}</strong>
+                        <span className="ai-toll-location">({tItem.location})</span>
                       </div>
-                      <span style={{ fontWeight: 700, color: '#b45309' }}>₹{tItem.fastagCost}</span>
+                      <span className="ai-toll-cost">₹{tItem.fastagCost}</span>
                     </div>
                   ))}
                 </div>
