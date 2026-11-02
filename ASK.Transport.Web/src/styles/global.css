@@ -1,3 +1,26 @@
+
+/* Custom Global Selection Styling (Prevents harsh Windows blue text boxes) */
+::selection {
+  background: rgba(2, 132, 199, 0.35) !important;
+  color: inherit !important;
+}
+
+::-moz-selection {
+  background: rgba(2, 132, 199, 0.35) !important;
+  color: inherit !important;
+}
+
+/* Header User-Select Protection */
+.landing-header,
+.landing-header *,
+.landing-nav-container,
+.landing-brand,
+.landing-nav-links,
+.landing-header-actions {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* =========================================
    ASK TRANSPORT - GLOBAL
 ========================================= */
