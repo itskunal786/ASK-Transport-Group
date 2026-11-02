@@ -17,6 +17,7 @@ import MyBookings from '../pages/customer/MyBookings';
 import Payments from '../pages/customer/Payments';
 import Invoices from '../pages/customer/Invoices';
 import TrackShipment from '../pages/customer/TrackShipment';
+import RtoClearanceVerificationPage from '../pages/public/RtoClearanceVerificationPage';
 import AdminDashboard from '../pages/admin/Dashboard';
 import MobileDriverConsole from '../pages/driver/MobileDriverConsole';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -72,6 +73,16 @@ export default function AppRoutes() {
       <Route
         path="/track"
         element={<TrackShipment />}
+      />
+
+      {/* PUBLIC LIVE RTO BORDER CLEARANCE VERIFICATION */}
+      <Route
+        path="/verify-rto"
+        element={<RtoClearanceVerificationPage />}
+      />
+      <Route
+        path="/verify/rto"
+        element={<RtoClearanceVerificationPage />}
       />
 
       {/* DEDICATED MOBILE DRIVER APP CONSOLE */}

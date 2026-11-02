@@ -14,6 +14,8 @@ import {
 import type { RtoBorderInspectionDossier } from '../types/transportOperations';
 import { getAllRtoDossiers, verifyRtoDossier } from '../api/rtoVaultApi';
 import { useLanguage } from '../context/LanguageContext';
+import QrCodeView from './QrCodeView';
+import { ExternalLink, Copy } from 'lucide-react';
 import './RtoBorderCheckpostVault.css';
 
 const SEED_DOSSIERS: RtoBorderInspectionDossier[] = [
@@ -481,50 +483,91 @@ export const RtoBorderCheckpostVault: React.FC = () => {
       </div>
 
       {/* 5. QR TOKEN MODAL */}
-      {showQrModal && (
-        <div className="rto-vault-modal-overlay">
-          <div className="rto-vault-modal-card">
-            <div className="rto-vault-modal-head">
-              <span>{t('RTO Border Officer Token', 'RTO चेक-पोस्ट ऑफिसर टोकन')}</span>
+      {showQrModal && (() => {
+        const verifyUrl = `${window.location.origin}/verify-rto?token=${selectedDossier.dossierQrToken}&vehicle=${encodeURIComponent(selectedDossier.vehicleNumber)}`;
+        return (
+          <div className="rto-vault-modal-overlay">
+            <div className="rto-vault-modal-card">
+              <div className="rto-vault-modal-head">
+                <span>{t('RTO Border Officer Token', 'RTO चेक-पोस्ट ऑफिसर टोकन')}</span>
+                <button
+                  type="button"
+                  onClick={() => setShowQrModal(false)}
+                  className="rto-vault-modal-close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* REAL SCANNABLE QR CODE CONTAINER */}
+              <div className="rto-vault-qr-box">
+                <QrCodeView
+                  value={verifyUrl}
+                  size={170}
+                  darkColor="#064e3b"
+                  lightColor="#ffffff"
+                  errorCorrectionLevel="M"
+                />
+                <span className="rto-vault-qr-token-pill">
+                  {selectedDossier.dossierQrToken}
+                </span>
+                <span className="rto-vault-qr-hint">
+                  📷 {t('SCAN WITH PHONE CAMERA / QR SCANNER', 'फ़ोन कैमरा या QR स्कैनर से स्कैन करें')}
+                </span>
+              </div>
+
+              <h3 className="rto-vault-modal-plate">{selectedDossier.vehicleNumber}</h3>
+              <p className="rto-vault-modal-driver">{t('Driver:', 'चालक:')} {selectedDossier.driverName}</p>
+              
+              <div className="rto-vault-modal-badge">
+                ✓ {t('ALL-INDIA INTERSTATE CLEARED', 'ऑल-इंडिया अंतरराज्यीय क्लीयरेंस')}
+              </div>
+
+              <p className="rto-vault-modal-desc">
+                {t(
+                  'RTO inspection officers can scan this QR code for instant Parivahan, Sarathi and GST portal verification.',
+                  'RTO अधिकारी इस QR कोड को स्कैन करके वाहन, सारथी एवं GST पोर्टल पर तुरंत सत्यापन कर सकते हैं।'
+                )}
+              </p>
+
+              {/* WORKING STATE ACTION CONTROLS */}
+              <div className="rto-vault-modal-actions">
+                <a
+                  href={verifyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rto-modal-btn-verify-live"
+                >
+                  <ExternalLink size={16} />
+                  <span>{t('Open Live Verification Certificate (Test Scan)', 'लाइव सत्यापन प्रमाणपत्र खोलें (टेस्ट स्कैन)')}</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(verifyUrl);
+                      showToast('success', t('Verification link copied to clipboard!', 'सत्यापन लिंक क्लिपबोर्ड पर कॉपी हो गया!'));
+                    }
+                  }}
+                  className="rto-modal-btn-copy"
+                >
+                  <Copy size={15} />
+                  <span>{t('Copy QR URL', 'QR लिंक कॉपी करें')}</span>
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowQrModal(false)}
-                className="rto-vault-modal-close"
+                className="rto-vault-btn-done"
               >
-                <X className="w-5 h-5" />
+                {t('Done', 'पूर्ण हुआ (Done)')}
               </button>
             </div>
-
-            <div className="rto-vault-qr-box">
-              <QrCode className="w-32 h-32 text-stone-900" />
-              <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 800, color: '#064e3b', marginTop: '6px' }}>
-                {selectedDossier.dossierQrToken}
-              </span>
-            </div>
-
-            <h3 className="rto-vault-modal-plate">{selectedDossier.vehicleNumber}</h3>
-            <p className="rto-vault-modal-driver">{t('Driver:', 'चालक:')} {selectedDossier.driverName}</p>
-            <div className="rto-vault-modal-badge">
-              ✓ ALL-INDIA INTERSTATE CLEARED
-            </div>
-
-            <p className="rto-vault-modal-desc">
-              {t(
-                'RTO inspection officers can scan this QR code for instant Parivahan, Sarathi and GST portal verification.',
-                'RTO अधिकारी इस QR कोड को स्कैन करके वाहन, सारथी एवं GST पोर्टल पर त्वरित सत्यापन कर सकते हैं।'
-              )}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowQrModal(false)}
-              className="rto-vault-btn-done"
-            >
-              {t('Done', 'पूर्ण हुआ (Done)')}
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
