@@ -5440,16 +5440,28 @@ export default function Dashboard() {
                           {new Date(log.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'medium' })}
                         </td>
                         <td>
-                          <span style={{
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            background: log.action.includes('Delete') || log.action.includes('Force') ? '#fee2e2' :
-                                        log.action.includes('Role') || log.action.includes('Rights') ? '#fef3c7' : '#e0f2fe',
-                            color: log.action.includes('Delete') || log.action.includes('Force') ? '#b91c1c' :
-                                   log.action.includes('Role') || log.action.includes('Rights') ? '#b45309' : '#0369a1'
-                          }}>
+                          <span
+                            className={`admin-badge-status admin-audit-badge ${
+                              log.action.includes('SUCCESS') || log.action.includes('ACTIVATED') || log.action.includes('GRANTED')
+                                ? 'admin-audit-success'
+                                : log.action.includes('FAILED') || log.action.includes('Delete') || log.action.includes('Force') || log.action.includes('SUSPENDED')
+                                ? 'admin-audit-danger'
+                                : log.action.includes('Role') || log.action.includes('Rights') || log.action.includes('WARN')
+                                ? 'admin-audit-warning'
+                                : 'admin-audit-info'
+                            }`}
+                            data-action={log.action}
+                            style={{
+                              padding: '4px 12px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
                             {log.action}
                           </span>
                         </td>
@@ -5470,17 +5482,7 @@ export default function Dashboard() {
                               type="button"
                               onClick={() => handleForceLogout(log.userId!, log.userEmail)}
                               disabled={forceLoggingOutId === log.userId}
-                              style={{
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                border: '1px solid #fecaca',
-                                background: '#fef2f2',
-                                color: '#dc2626',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap'
-                              }}
+                              className="admin-btn-killswitch"
                               title="Instantly revoke all active sessions for this user"
                             >
                               {forceLoggingOutId === log.userId ? 'Revoking...' : '⚡ Force Logout'}
