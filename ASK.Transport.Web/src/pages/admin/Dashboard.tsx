@@ -4881,7 +4881,9 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'executive_pnl' && (
           <div className="admin-content-pad">
-            <ExecutiveProfitabilityRadar />
+            <ErrorBoundary fallbackTitle="Executive Route Profitability & P&L Margins Radar Error">
+              <ExecutiveProfitabilityRadar />
+            </ErrorBoundary>
           </div>
         )}
 
