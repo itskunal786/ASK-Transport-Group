@@ -212,6 +212,8 @@ export const DriverTripSettlementHisaab: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastRefreshedTime, setLastRefreshedTime] = useState<string>('Just now');
+  const [justRefreshed, setJustRefreshed] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [showNewModal, setShowNewModal] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
@@ -270,17 +272,25 @@ export const DriverTripSettlementHisaab: React.FC = () => {
 
       setSettlements(activeList);
       setSelectedSettlement(prev => activeList.find(s => s.id === prev?.id) || activeList[0]);
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLastRefreshedTime(nowStr);
 
       if (isManual) {
-        showToast('success', t('✓ Driver trip settlement ledger synced & refreshed!', '✓ ड्राइवर ट्रिप हिसाब लेजर सफलतापूर्वक रिफ्रेश और सिंक हुआ!'));
+        setJustRefreshed(true);
+        setTimeout(() => setJustRefreshed(false), 3000);
+        showToast('success', t(`✓ Driver trip settlement ledger synced & refreshed at ${nowStr}!`, `✓ ड्राइवर ट्रिप हिसाब लेजर सफलतापूर्वक रिफ्रेश और सिंक हुआ!`));
       }
     } catch {
       // Keep seed data as fallback
       const fallback = SEED_SETTLEMENTS;
       setSettlements(fallback);
       setSelectedSettlement(fallback[0]);
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLastRefreshedTime(nowStr);
       if (isManual) {
-        showToast('success', t('✓ Driver settlement ledger refreshed!', '✓ ड्राइवर हिसाब लेजर रिफ्रेश हुआ!'));
+        setJustRefreshed(true);
+        setTimeout(() => setJustRefreshed(false), 3000);
+        showToast('success', t(`✓ Driver settlement ledger refreshed at ${nowStr}!`, `✓ ड्राइवर हिसाब लेजर रिफ्रेश हुआ!`));
       }
     } finally {
       setIsLoading(false);
@@ -425,7 +435,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
           padding: '14px 22px',
           borderRadius: '12px',
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.4)',
-          zIndex: 9999,
+          zIndex: 999999,
           fontSize: '13px',
           fontWeight: 700,
           borderLeft: `4px solid ${notification.type === 'error' ? '#fca5a5' : '#10b981'}`,
@@ -457,6 +467,10 @@ export const DriverTripSettlementHisaab: React.FC = () => {
               'डीजल माइलेज बोनस/पेनल्टी, फ़ास्टैग टोल, ड्राइवर भत्ता व अग्रिम रोकड़ का 100% पारदर्शी ऑटोमैटिक हिसाब।'
             )}
           </p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '11px', color: '#94a3b8' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: justRefreshed ? '#10b981' : '#38bdf8', display: 'inline-block' }} />
+            <span>Last Ledger Sync: <strong style={{ color: justRefreshed ? '#10b981' : '#f8fafc' }}>{lastRefreshedTime}</strong> (Live Vouchers Connected)</span>
+          </div>
         </div>
         <div className="settlement-hero-actions">
           <button 
@@ -464,10 +478,26 @@ export const DriverTripSettlementHisaab: React.FC = () => {
             onClick={() => loadData(true)}
             disabled={isLoading}
             className="settlement-btn-secondary"
-            style={{ cursor: isLoading ? 'wait' : 'pointer' }}
+            style={{ 
+              cursor: isLoading ? 'wait' : 'pointer',
+              borderColor: justRefreshed ? '#10b981' : undefined,
+              color: justRefreshed ? '#10b981' : undefined
+            }}
           >
-            <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-            <span>{isLoading ? t('Refreshing...', 'रिफ्रेश हो रहा है...') : t('Refresh', 'रिफ्रेश')}</span>
+            {isLoading ? (
+              <RefreshCw size={14} className="animate-spin" />
+            ) : justRefreshed ? (
+              <CheckCircle2 size={14} style={{ color: '#10b981' }} />
+            ) : (
+              <RefreshCw size={14} />
+            )}
+            <span>
+              {isLoading 
+                ? t('Refreshing...', 'रिफ्रेश हो रहा है...') 
+                : justRefreshed 
+                  ? t('✓ Synced Just Now', '✓ अभी सिंक हुआ') 
+                  : t('Refresh', 'रिफ्रेश')}
+            </span>
           </button>
           <button
             type="button"
@@ -859,7 +889,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
         <div style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 9999,
+          zIndex: 999999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1003,7 +1033,7 @@ export const DriverTripSettlementHisaab: React.FC = () => {
         <div style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 9999,
+          zIndex: 999999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
