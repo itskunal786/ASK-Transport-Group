@@ -455,10 +455,12 @@ export default function Dashboard() {
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
   const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  // Auto-scroll main window to top on tab switch so topbar and content are always aligned
+  // Auto-scroll main window to top on tab switch and close mobile drawer
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    setIsMobileNavOpen(false);
   }, [activeTab, aiDeckSubTab, fleetDeckSubTab, financeDeckSubTab]);
 
   // Hierarchical Navigation Accordion State
@@ -1780,7 +1782,13 @@ export default function Dashboard() {
 
       {/* 1. DARK ADMIN SIDEBAR */}
       {/* 1. SIMPLE & CLEAN DROPDOWN ADMIN SIDEBAR */}
-      <aside className="admin-sidebar">
+      {isMobileNavOpen && (
+        <div 
+          className="admin-mobile-backdrop" 
+          onClick={() => setIsMobileNavOpen(false)}
+        />
+      )}
+      <aside className={`admin-sidebar ${isMobileNavOpen ? 'mobile-open' : ''}`}>
         {/* BRAND LOGO */}
         <div className="admin-sidebar-brand">
           <div className="admin-brand-icon">
@@ -2314,6 +2322,25 @@ export default function Dashboard() {
       <main className="admin-main-viewport">
         {/* TOPBAR */}
         <header className="admin-topbar">
+          <div className="admin-topbar-left-group">
+            <button
+              type="button"
+              className="admin-mobile-hamburger"
+              onClick={() => setIsMobileNavOpen(prev => !prev)}
+              aria-label="Toggle navigation menu"
+              title="Toggle Menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <div className="admin-mobile-brand-title">
+              <strong>ASK TRANSPORT</strong>
+            </div>
+          </div>
+
           <div className="admin-top-search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
@@ -5131,7 +5158,19 @@ export default function Dashboard() {
                   type="button"
                   className="admin-btn-primary"
                   onClick={() => setShowAddVehicleModal(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  style={{
+                    background: '#059669',
+                    borderColor: '#047857',
+                    color: '#ffffff',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontWeight: '700',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)'
+                  }}
                 >
                   <span>➕</span> Add New Truck
                 </button>
@@ -5204,7 +5243,7 @@ export default function Dashboard() {
                     onChange={e => setTelematicsSearch(e.target.value)}
                   />
                 </div>
-                <div className="admin-toolbar-filter">
+                <div className="admin-toolbar-filter" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   {(['All', 'Alerts', 'Moving', 'Stationary'] as const).map(flt => (
                     <button
                       key={flt}
@@ -5215,6 +5254,26 @@ export default function Dashboard() {
                       {flt === 'Alerts' ? '⚠️ Alerts Only' : flt}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVehicleModal(true)}
+                    style={{
+                      background: '#059669',
+                      border: 'none',
+                      color: '#ffffff',
+                      padding: '6px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    <span>➕</span> Add Truck
+                  </button>
                 </div>
               </div>
 
