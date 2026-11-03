@@ -835,41 +835,175 @@
 }
 
 
-@media (max-width: 800px) {
+/* ============================================================== */
+/* MODERN CUSTOMER PORTAL MOBILE RESPONSIVE SUITE                 */
+/* ============================================================== */
+.customer-mobile-top-bar {
+  display: none;
+}
 
-  .customer-sidebar {
-    position: static;
+.customer-mobile-backdrop {
+  display: none;
+}
 
-    width: 100%;
+.customer-mobile-bottom-nav {
+  display: none;
+}
 
-    padding: 17px;
-  }
-
+@media (max-width: 850px) {
   .customer-dashboard {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+  }
+
+  .customer-mobile-backdrop {
     display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 998;
   }
 
-  .dashboard-nav {
-    display: grid;
-    grid-template-columns:
-      repeat(2, 1fr);
+  /* OFF-CANVAS SLIDE-IN SIDEBAR ON MOBILE */
+  .customer-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 999 !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4) !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
-  .sidebar-bottom {
-    margin-top: 15px;
+  .customer-sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .customer-mobile-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #0f172a;
+    color: #ffffff;
+    border-bottom: 1px solid #1e293b;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .customer-mobile-hamburger-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .customer-mobile-brand strong {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+  }
+
+  .customer-mobile-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #0284c7;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none;
   }
 
   .dashboard-main {
-    width: 100%;
-
-    margin-left: 0;
-
-    padding: 20px;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px 14px 84px 14px !important;
+    box-sizing: border-box !important;
   }
 
-  .dashboard-actions {
-    align-items: flex-start;
+  /* Desktop topbar hides on phone to avoid clutter */
+  .customer-topbar {
+    display: none !important;
+  }
+
+  /* Stats Grid */
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .dashboard-banner {
+    padding: 16px !important;
+  }
+
+  /* BOTTOM NAVIGATION BAR */
+  .customer-mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #0f172a;
+    border-top: 1px solid #1e293b;
+    z-index: 900;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .bottom-nav-item {
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .bottom-nav-item.active,
+  .bottom-nav-item:hover {
+    color: #38bdf8;
+  }
+
+  .bottom-nav-item svg {
+    stroke-width: 2.2;
   }
 }
 

@@ -16,6 +16,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
   const [approved, setApproved] = useState(() => isUserApproved(user));
   const [isPending, setIsPending] = useState(() => isApprovalPending(user?.id, user?.email));
   const [requestToast, setRequestToast] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     setApproved(isUserApproved(user));
@@ -65,8 +70,41 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
   return (
     <div className="customer-dashboard">
+      {/* MOBILE TOP BAR (Phone Header) */}
+      <div className="customer-mobile-top-bar">
+        <button 
+          type="button" 
+          className="customer-mobile-hamburger-btn"
+          onClick={() => setMobileMenuOpen(prev => !prev)}
+          aria-label="Toggle Navigation"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <div className="customer-mobile-brand">
+          <strong>ASK TRANSPORT</strong>
+        </div>
+        <div className="customer-mobile-right-actions">
+          <ThemeToggle />
+          <Link to="/profile" className="mobile-user-avatar">
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </Link>
+        </div>
+      </div>
+
+      {/* MOBILE BACKDROP OVERLAY */}
+      {mobileMenuOpen && (
+        <div 
+          className="customer-mobile-backdrop" 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
+
       {/* SIDEBAR */}
-      <aside className="customer-sidebar">
+      <aside className={`customer-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         {/* BRAND */}
         <Link to="/dashboard" className="dashboard-brand" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="dashboard-logo">
@@ -310,6 +348,55 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      <nav className="customer-mobile-bottom-nav">
+        <Link to="/dashboard" className={`bottom-nav-item ${active('/dashboard')}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span>Home</span>
+        </Link>
+        <Link to="/book" className={`bottom-nav-item ${active('/book')}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          </svg>
+          <span>Book</span>
+        </Link>
+        <Link to="/bookings" className={`bottom-nav-item ${active('/bookings')}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span>Bookings</span>
+        </Link>
+        <Link to="/tracking" className={`bottom-nav-item ${active('/tracking')}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" />
+          </svg>
+          <span>Track</span>
+        </Link>
+        <button 
+          type="button" 
+          className="bottom-nav-item" 
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+          <span>Menu</span>
+        </button>
+      </nav>
     </div>
   );
 }

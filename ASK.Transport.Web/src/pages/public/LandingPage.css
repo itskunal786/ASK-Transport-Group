@@ -1470,18 +1470,136 @@
     display: none;
   }
 
+  .landing-hero-section {
+    padding: 30px 16px 40px !important;
+  }
+
+  .landing-hero-container {
+    gap: 28px !important;
+  }
+
   .landing-hero-title {
-    font-size: 2.4rem;
+    font-size: clamp(1.8rem, 6.5vw, 2.3rem) !important;
+    line-height: 1.2 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .landing-hero-subtitle {
+    font-size: 0.95rem !important;
+    margin-bottom: 22px !important;
+    line-height: 1.5 !important;
+  }
+
+  .hero-cta-buttons {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .hero-btn-primary,
+  .hero-btn-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    padding: 12px 18px !important;
+    text-align: center !important;
+  }
+
+  .landing-hero-stats {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+    padding-top: 20px !important;
+  }
+
+  .hero-stat-sep {
+    display: none !important;
+  }
+
+  .hero-stat-item strong {
+    font-size: 1.25rem !important;
+  }
+
+  .landing-hero-widget-box {
+    border-radius: 14px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  .widget-tab-headers {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .widget-tab-btn {
+    padding: 12px 10px !important;
+    font-size: 13px !important;
+  }
+
+  .widget-tab-content {
+    padding: 16px !important;
+  }
+
+  .quick-track-input-group {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .quick-track-input-group input {
+    width: 100% !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    height: 48px !important;
+  }
+
+  .quick-track-submit-btn {
+    width: 100% !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    justify-content: center !important;
+    height: 46px !important;
+  }
+
+  .calculator-form-grid,
+  .calc-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .services-grid,
+  .landing-services-grid,
+  .why-grid,
+  .network-hubs-grid,
+  .testimonials-grid,
+  .features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .landing-section,
+  .landing-services-section,
+  .landing-why-section,
+  .landing-network-section {
+    padding: 40px 16px !important;
+  }
+
+  .section-header h2,
+  .landing-section-title {
+    font-size: 1.65rem !important;
+    line-height: 1.25 !important;
   }
 
   .landing-footer-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 40px 16px 20px !important;
   }
 
   .footer-bottom-bar {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
+    flex-direction: column !important;
+    gap: 12px !important;
+    text-align: center !important;
   }
 }
 
