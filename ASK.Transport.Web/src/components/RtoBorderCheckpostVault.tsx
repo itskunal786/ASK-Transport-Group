@@ -436,6 +436,14 @@ export const RtoBorderCheckpostVault: React.FC = () => {
                 <span className="rto-vault-inspect-token">
                   {t('Digital Token:', 'डिजिटल टोकन:')} {selectedDossier.dossierQrToken}
                 </span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontSize: '11px', color: '#a7f3d0' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: recentlyVerifiedId === selectedDossier.id ? '#10b981' : '#34d399', display: 'inline-block' }} />
+                  <span>
+                    {isVerifying 
+                      ? t('Live Parivahan Sync In Progress...', 'सारथी/वाहन लाइव सिंक जारी है...') 
+                      : `${t('Parivahan Status: 100% Validated', 'परिवहन स्थिति: 100% सत्यापित')} • ${new Date(selectedDossier.verifiedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
+                  </span>
+                </div>
               </div>
             </div>
 
