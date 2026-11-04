@@ -4989,72 +4989,182 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 9: MULTI-CITY HUBS & TERMINALS */}
+        {/* VIEW 9: MULTI-CITY HUBS & TERMINALS (EXECUTIVE RADAR CONSOLE) */}
         {/* ============================================================== */}
         {activeTab === 'hubs' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>Multi-City Logistics Hubs &amp; Terminals</h1>
-                <p>National hub infrastructure, sorting centers, cargo throughput, and operational status</p>
+            {/* 1. EXECUTIVE HERO HUB RADAR BANNER */}
+            <div className="hubs-hero-banner">
+              <div className="hubs-hero-left">
+                <div className="hubs-hero-badge">
+                  <span className="hubs-pulse-dot" />
+                  <span>NATIONAL FREIGHT INFRASTRUCTURE &amp; TERMINAL NETWORK • 24×7 RADAR</span>
+                </div>
+                <h1>{t('Multi-City Logistics Hubs, Mega Terminals & Inland Depots', 'मल्टी-सिटी लॉजिस्टिक्स हब, टर्मिनल और फ्रेट इनलैंड डिपो')}</h1>
+                <p>
+                  {t(
+                    'National hub network, 24×7 multi-modal sorting centers, daily cargo throughput (MT), dock capacity & active gate pass routing.',
+                    'अखिल भारतीय हब नेटवर्क, 24×7 मल्टी-मोडल सॉर्टिंग सेंटर, दैनिक कार्गो क्षमता (एमटी), डॉक बे कैपेसिटी और लाइव गेट पास रूटिंग।'
+                  )}
+                </p>
+
+                <div className="hubs-hero-tags">
+                  <span className="hubs-hero-tag">
+                    <span className="shipments-status-indicator" />
+                    <span>Hub Operations: 100% Online</span>
+                  </span>
+                  <span className="hubs-hero-tag">
+                    <span>Key Gateways:</span>
+                    <strong style={{ fontFamily: 'monospace', color: '#6ee7b7' }}>Delhi • Mumbai • Bengaluru • Kolkata</strong>
+                  </span>
+                  <span className="hubs-hero-tag">
+                    <span>🚛 Dock Bay Capacity: 15,000+ MT/Day</span>
+                  </span>
+                  <span className="hubs-hero-tag">
+                    <span>⚡ Auto Gate Pass &amp; Scale Sync</span>
+                  </span>
+                </div>
               </div>
-              <div className="admin-title-actions">
+
+              <div className="hubs-hero-actions">
                 <button
                   type="button"
-                  className="admin-btn-export"
-                  onClick={loadHubs}
+                  className="hubs-btn-hero-primary"
+                  onClick={() => setShowAddHubModal(true)}
+                >
+                  <span style={{ fontSize: '15px' }}>➕</span>
+                  <span>{t('+ Add Hub / Terminal', '+ नया हब / टर्मिनल जोड़ें')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="hubs-btn-hero-secondary"
+                  onClick={() => {
+                    loadHubs();
+                    showToast('✓ Multi-city hub telematics, throughput metrics & gate sensors refreshed');
+                  }}
                   disabled={hubsLoading}
                 >
-                  {hubsLoading ? 'Refreshing...' : '🔄 Refresh Hubs'}
+                  <span>🔄</span>
+                  <span>{hubsLoading ? t('Refreshing...', 'रिफ्रेशिंग...') : t('Refresh Network', 'नेटवर्क रिफ्रेश')}</span>
                 </button>
+
                 <button
                   type="button"
-                  className="admin-btn-primary"
-                  onClick={() => setShowAddHubModal(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  className="hubs-btn-hero-secondary"
+                  onClick={() => setActiveTab('dock_yard')}
                 >
-                  <span>➕</span> Add Hub / Terminal
+                  <span>🚪</span>
+                  <span>{t('Dock Yard & Gates', 'डॉक यार्ड व गेट्स')}</span>
                 </button>
               </div>
             </div>
 
-            {/* SEARCH & FILTER BAR */}
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '12px',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: 'var(--bg-card, #ffffff)',
-                border: '1px solid var(--border, #e2e8f0)',
-                borderRadius: '12px',
-                padding: '12px 16px',
-                marginBottom: '20px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
-              }}
-            >
-              {/* SEARCH INPUT */}
-              <div style={{ flex: '1 1 320px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <span style={{ position: 'absolute', left: '12px', color: '#94a3b8', fontSize: '15px', pointerEvents: 'none' }}>
+            {/* 2. 5 INTERACTIVE HUB & TERMINAL KPI METRIC CARDS */}
+            <div className="hubs-kpi-grid">
+              <div
+                className={`hubs-kpi-card total ${hubStatusFilter === 'all' ? 'active-filter' : ''}`}
+                onClick={() => setHubStatusFilter('all')}
+                title="Click to view all hubs"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Total National Hubs', 'कुल राष्ट्रीय हब')}</span>
+                  <span>🏢</span>
+                </div>
+                <div className="hubs-kpi-val">
+                  {hubsList.length} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Terminals</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Pan-India multi-modal logistics network', 'अखिल भारतीय मल्टी-मोडल नेटवर्क')}
+                </div>
+              </div>
+
+              <div
+                className={`hubs-kpi-card operational ${hubStatusFilter === 'operational' ? 'active-filter' : ''}`}
+                onClick={() => setHubStatusFilter('operational')}
+                title="Click to filter operational hubs"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Operational Gateways', 'सक्रिय गेटवे हब')}</span>
+                  <span>🟢</span>
+                </div>
+                <div className="hubs-kpi-val text-emerald">
+                  {hubsList.filter(h => h.isActive).length} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Active</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('24×7 live loading bays & cargo sorting', '24×7 लाइव लोडिंग बे व कार्गो सॉर्टिंग')}
+                </div>
+              </div>
+
+              <div
+                className={`hubs-kpi-card standby ${hubStatusFilter === 'standby' ? 'active-filter' : ''}`}
+                onClick={() => setHubStatusFilter('standby')}
+                title="Click to filter standby hubs"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Standby / Reserves', 'स्टैंडबाय रिजर्व')}</span>
+                  <span>⏸️</span>
+                </div>
+                <div className="hubs-kpi-val text-amber">
+                  {hubsList.filter(h => !h.isActive).length} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Standby</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Ready for festive & surge freight capacity', 'त्योहारी व अतिरिक्त फ्रेट के लिए तैयार')}
+                </div>
+              </div>
+
+              <div
+                className="hubs-kpi-card throughput"
+                onClick={() => {
+                  const total = hubsList.reduce((acc, h) => acc + (h.capacity || 2500), 0);
+                  showToast(`⚖️ Combined National Cargo Throughput: ${total.toLocaleString('en-IN')} MT / Day across ${hubsList.length} terminals`);
+                }}
+                title="Click for throughput summary"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Combined Capacity', 'दैनिक हैंडलिंग क्षमता')}</span>
+                  <span>⚖️</span>
+                </div>
+                <div className="hubs-kpi-val text-cyan">
+                  {hubsList.reduce((acc, h) => acc + (h.capacity || 2500), 0).toLocaleString('en-IN')} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>MT/Day</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Total daily tonnage capacity nationwide', 'कुल दैनिक टन भार क्षमता')}
+                </div>
+              </div>
+
+              <div
+                className="hubs-kpi-card corridors"
+                onClick={() => {
+                  showToast('🛣️ Inter-Hub Golden Quadrilateral freight corridors active with 100% GPS lock');
+                }}
+                title="Click for corridor summary"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Inter-Hub Corridors', 'इंटर-हब कॉरिडोर')}</span>
+                  <span>🛣️</span>
+                </div>
+                <div className="hubs-kpi-val text-violet">
+                  12 <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Corridors</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Golden Quadrilateral & express transit links', 'स्वर्णिम चतुर्भुज व एक्सप्रेस लिंक्स')}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. THEME-ADAPTIVE SEARCH & FILTER CARD */}
+            <div className="hubs-toolbar-card">
+              <div className="hubs-search-box">
+                <span style={{ position: 'absolute', left: '12px', color: 'var(--text-secondary, #94a3b8)', fontSize: '15px', pointerEvents: 'none' }}>
                   🔍
                 </span>
                 <input
                   type="text"
+                  className="hubs-search-input"
                   placeholder="Search hubs by name, code (e.g. HUB-DEL-01), city, or state..."
                   value={hubSearchQuery}
                   onChange={e => setHubSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '9px 36px 9px 36px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    background: 'var(--bg-input, #f8fafc)',
-                    color: 'var(--text-primary, #0f172a)',
-                    fontSize: '13.5px',
-                    outline: 'none',
-                    transition: 'border-color 0.15s ease'
-                  }}
                 />
                 {hubSearchQuery && (
                   <button
@@ -5065,11 +5175,10 @@ export default function Dashboard() {
                       right: '10px',
                       background: 'none',
                       border: 'none',
-                      color: '#94a3b8',
+                      color: 'var(--text-secondary, #94a3b8)',
                       cursor: 'pointer',
                       fontSize: '14px',
-                      padding: '2px 6px',
-                      borderRadius: '50%'
+                      padding: '4px'
                     }}
                     title="Clear search"
                   >
@@ -5078,77 +5187,35 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* STATUS FILTER PILLS & SORT */}
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', background: 'var(--bg-input, #f1f5f9)', borderRadius: '8px', padding: '3px' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="hubs-filter-group">
                   <button
                     type="button"
+                    className={`hubs-filter-btn ${hubStatusFilter === 'all' ? 'active all' : ''}`}
                     onClick={() => setHubStatusFilter('all')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: hubStatusFilter === 'all' ? '#0b72e7' : 'transparent',
-                      color: hubStatusFilter === 'all' ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                      transition: 'all 0.15s ease'
-                    }}
                   >
-                    All ({hubsList.length})
+                    <span>All ({hubsList.length})</span>
                   </button>
                   <button
                     type="button"
+                    className={`hubs-filter-btn ${hubStatusFilter === 'operational' ? 'active operational' : ''}`}
                     onClick={() => setHubStatusFilter('operational')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: hubStatusFilter === 'operational' ? '#10b981' : 'transparent',
-                      color: hubStatusFilter === 'operational' ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                      transition: 'all 0.15s ease'
-                    }}
                   >
-                    ● Operational ({hubsList.filter(h => h.isActive).length})
+                    <span>● Operational ({hubsList.filter(h => h.isActive).length})</span>
                   </button>
                   <button
                     type="button"
+                    className={`hubs-filter-btn ${hubStatusFilter === 'standby' ? 'active standby' : ''}`}
                     onClick={() => setHubStatusFilter('standby')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: hubStatusFilter === 'standby' ? '#f59e0b' : 'transparent',
-                      color: hubStatusFilter === 'standby' ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                      transition: 'all 0.15s ease'
-                    }}
                   >
-                    ○ Standby ({hubsList.filter(h => !h.isActive).length})
+                    <span>○ Standby ({hubsList.filter(h => !h.isActive).length})</span>
                   </button>
                 </div>
 
-                {/* SORT SELECTOR */}
                 <select
+                  className="hubs-sort-select"
                   value={hubSortBy}
                   onChange={e => setHubSortBy(e.target.value as any)}
-                  style={{
-                    padding: '7px 10px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    background: 'var(--bg-card, #ffffff)',
-                    color: 'var(--text-primary, #0f172a)',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
                 >
                   <option value="default">Default Order</option>
                   <option value="capacity">Throughput (High → Low)</option>
@@ -5166,14 +5233,14 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setHubSearchQuery('')}
-                  style={{ background: 'none', border: 'none', color: '#0b72e7', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                  style={{ background: 'none', border: 'none', color: '#0284c7', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
                 >
                   Reset Search
                 </button>
               )}
             </div>
 
-            {/* HUBS GRID OR EMPTY STATE */}
+            {/* 4. THEME-ADAPTIVE HUBS CARDS GRID */}
             {filteredHubsList.length === 0 ? (
               <div
                 style={{
@@ -5181,12 +5248,12 @@ export default function Dashboard() {
                   padding: '48px 24px',
                   background: 'var(--bg-card, #ffffff)',
                   border: '1px dashed var(--border, #cbd5e1)',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   color: 'var(--text-secondary, #64748b)'
                 }}
               >
-                <div style={{ fontSize: '36px', marginBottom: '10px' }}>🏢</div>
-                <h3 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                <div style={{ fontSize: '42px', marginBottom: '12px' }}>🏢</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: 'var(--text-primary, #0f172a)' }}>
                   No Hubs or Terminals Found
                 </h3>
                 <p style={{ margin: '0 0 16px', fontSize: '13px' }}>
@@ -5214,111 +5281,106 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-                {filteredHubsList.map(h => (
-                  <div
-                    key={h.id}
-                    style={{
-                      background: 'var(--bg-card, #ffffff)',
-                      border: '1px solid var(--border, #e2e8f0)',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                        <span style={{
-                          background: 'rgba(37, 99, 235, 0.1)',
-                          color: '#2563eb',
-                          fontFamily: 'monospace',
-                          fontWeight: 700,
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '6px'
-                        }}>
-                          {h.code}
-                        </span>
-                        <span style={{
-                          background: h.isActive ? '#edfdf4' : '#fee2e2',
-                          color: h.isActive ? '#10b981' : '#dc2626',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '12px'
-                        }}>
-                          {h.isActive ? '● Operational' : '○ Standby'}
-                        </span>
-                      </div>
-
-                      <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
-                        {h.name}
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
-                        📍 {h.city}, {h.state}
-                      </p>
-                      {h.address && (
-                        <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #94a3b8)', lineHeight: '1.3' }}>
-                          {h.address}
-                        </p>
-                      )}
-                      {h.contactNumber && (
-                        <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#0b72e7', fontWeight: 600 }}>
-                          📞 {h.contactNumber}
-                        </p>
-                      )}
-                    </div>
-
-                    <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border, #f1f5f9)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="hubs-grid">
+                {filteredHubsList.map(h => {
+                  const cap = h.capacity || 2500;
+                  const utilPct = Math.min(94, Math.max(62, Math.round((cap / 5000) * 100)));
+                  return (
+                    <div key={h.id} className="hub-card">
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'block' }}>DAILY THROUGHPUT</span>
-                        <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>{h.capacity?.toLocaleString('en-IN') || 2500} MT / Day</strong>
-                      </div>
-                      <span style={{ fontSize: '12px', color: '#0b72e7', fontWeight: 600 }}>Active Gate ➔</span>
-                    </div>
+                        {/* CARD HEADER */}
+                        <div className="hub-card-head">
+                          <span className="hub-code-badge">
+                            <span>🏢</span>
+                            <span>{h.code}</span>
+                          </span>
+                          <span className={`hub-status-pill ${h.isActive ? 'operational' : 'standby'}`}>
+                            {h.isActive ? '● Operational' : '○ Standby'}
+                          </span>
+                        </div>
 
-                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleHubStatus(h.id)}
-                        style={{
-                          flex: 1,
-                          padding: '7px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--border, #cbd5e1)',
-                          background: 'var(--bg-input, #f8fafc)',
-                          color: 'var(--text-primary, #0f172a)',
-                          fontSize: '11.5px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteHub(h.id)}
-                        style={{
-                          padding: '7px 12px',
-                          borderRadius: '6px',
-                          border: '1px solid #fecaca',
-                          background: '#fef2f2',
-                          color: '#dc2626',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                        title="Decommission Hub Terminal"
-                      >
-                        ✕
-                      </button>
+                        {/* HUB NAME & CITY */}
+                        <h3 className="hub-name">
+                          {h.name}
+                        </h3>
+                        <p className="hub-location">
+                          <span>📍</span>
+                          <span>{h.city}, {h.state}</span>
+                        </p>
+
+                        {h.address && (
+                          <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #94a3b8)', lineHeight: '1.35' }}>
+                            {h.address}
+                          </p>
+                        )}
+
+                        {h.contactNumber && (
+                          <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#0284c7', fontWeight: 700 }}>
+                            📞 {h.contactNumber}
+                          </p>
+                        )}
+
+                        {/* REGIONAL FACILITY TAGS */}
+                        <div className="hub-facility-tags">
+                          <span className="hub-facility-tag">🚛 32ft MXL Docks</span>
+                          <span className="hub-facility-tag">⚡ Automated Scales</span>
+                          {Boolean(h.city?.toLowerCase().includes('mumbai')) && <span className="hub-facility-tag">🚢 JNPT Port Direct</span>}
+                          {Boolean(h.city?.toLowerCase().includes('delhi')) && <span className="hub-facility-tag">✈️ IGI Air Cargo Link</span>}
+                          {Boolean(h.city?.toLowerCase().includes('bengaluru')) && <span className="hub-facility-tag">❄️ Pharma Cold-Chain</span>}
+                          {Boolean(h.city?.toLowerCase().includes('kolkata')) && <span className="hub-facility-tag">🚆 Rail Siding Link</span>}
+                        </div>
+                      </div>
+
+                      {/* CAPACITY & PROGRESS GAUGE */}
+                      <div className="hub-capacity-box">
+                        <div className="hub-capacity-head">
+                          <span>Daily Cargo Throughput</span>
+                          <span>{utilPct}% Utilized</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                          <span className="hub-capacity-val">
+                            {cap.toLocaleString('en-IN')} MT <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>/ Day</span>
+                          </span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                            Active Bays: <strong>12 Bays</strong>
+                          </span>
+                        </div>
+                        <div className="hub-capacity-bar-track">
+                          <div className="hub-capacity-bar-fill" style={{ width: `${utilPct}%` }} />
+                        </div>
+                      </div>
+
+                      {/* ACTIONS ROW */}
+                      <div className="hub-card-actions">
+                        <button
+                          type="button"
+                          className="hub-btn-toggle"
+                          onClick={() => handleToggleHubStatus(h.id)}
+                        >
+                          {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="hub-btn-dock"
+                          onClick={() => setActiveTab('dock_yard')}
+                          title="View Gate Passes and Dockyard Bays for this Hub"
+                        >
+                          🚪 Dock Gates
+                        </button>
+
+                        <button
+                          type="button"
+                          className="hub-btn-delete"
+                          onClick={() => handleDeleteHub(h.id)}
+                          title="Decommission Hub Terminal"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
