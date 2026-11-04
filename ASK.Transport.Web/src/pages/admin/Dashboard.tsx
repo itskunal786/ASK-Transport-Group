@@ -52,6 +52,7 @@ import CaTaxAuditVault from '../../components/CaTaxAuditVault';
 import PhysicalPodInwardDeck from '../../components/PhysicalPodInwardDeck';
 import DynamicTariffEngine from '../../components/DynamicTariffEngine';
 import FinancialPnlAnalyticsDeck from '../../components/FinancialPnlAnalyticsDeck';
+import SystemSettingsDeck from '../../components/SystemSettingsDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -5688,95 +5689,16 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'settings' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>Dynamic System Settings &amp; Platform Controls</h1>
-                <p>Configure live tariffs, fuel surcharges, taxation rates, and platform maintenance status without redeploying</p>
-              </div>
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-export"
-                  onClick={loadSettings}
-                  disabled={settingsLoading}
-                >
-                  {settingsLoading ? 'Refreshing...' : '🔄 Refresh Settings'}
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
-              {settingsList.map(item => (
-                <div
-                  key={item.key}
-                  style={{
-                    background: 'var(--bg-card, #ffffff)',
-                    border: '1px solid var(--border, #e2e8f0)',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{
-                      background: 'rgba(37, 99, 235, 0.08)',
-                      color: '#2563eb',
-                      fontWeight: 700,
-                      fontSize: '11px',
-                      padding: '3px 8px',
-                      borderRadius: '4px'
-                    }}>
-                      {item.group}
-                    </span>
-                    <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
-                      {item.key}
-                    </span>
-                  </div>
-
-                  <p style={{ margin: '8px 0 16px 0', fontSize: '13px', color: 'var(--text-secondary, #475569)', minHeight: '38px' }}>
-                    {item.description || item.key}
-                  </p>
-
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    {item.key === 'SYSTEM_MAINTENANCE_MODE' ? (
-                      <select
-                        value={editingSettings[item.key] ?? item.value}
-                        onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
-                        style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border, #cbd5e1)', background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0f172a)' }}
-                      >
-                        <option value="false">🟢 Operational (Normal Booking Active)</option>
-                        <option value="true">🔴 Maintenance Mode (Freeze Bookings)</option>
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={editingSettings[item.key] ?? item.value}
-                        onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
-                        style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border, #cbd5e1)', background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0f172a)' }}
-                      />
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => handleSaveSetting(item)}
-                      disabled={savingKey === item.key}
-                      style={{
-                        padding: '8px 16px',
-                        background: '#2563eb',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontWeight: 700,
-                        fontSize: '12px',
-                        cursor: savingKey === item.key ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      {savingKey === item.key ? 'Saving...' : 'Save'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SystemSettingsDeck
+              settingsList={settingsList}
+              settingsLoading={settingsLoading}
+              editingSettings={editingSettings}
+              setEditingSettings={setEditingSettings}
+              savingKey={savingKey}
+              onSaveSetting={handleSaveSetting}
+              onRefresh={loadSettings}
+              showToast={showToast}
+            />
           </div>
         )}
 
@@ -5784,7 +5706,7 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* MODAL 0: AI OCR SCANNER MODAL */}
+                {/* MODAL 0: AI OCR SCANNER MODAL */}
         {showAiScannerModal && (
           <AiOcrScannerModal
             initialDocType={aiScannerDocType}

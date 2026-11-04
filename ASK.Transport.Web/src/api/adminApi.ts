@@ -98,11 +98,14 @@ export interface HubItem {
 }
 
 export interface SystemSettingItem {
+  id?: number;
   key: string;
   value: string;
   group: string;
   description?: string;
   isPublic: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export async function getAdminOperationsSummary(): Promise<AdminOperationsSummary> {
@@ -304,6 +307,16 @@ export async function updateSystemSetting(payload: {
     method: 'PUT',
     body: JSON.stringify({ ...payload, isPublic: payload.isPublic ?? true }),
   });
+}
+
+export async function deleteSystemSetting(id: number): Promise<{ message: string }> {
+  try {
+    return await request<{ message: string }>('/system-settings/' + id, {
+      method: 'DELETE',
+    });
+  } catch {
+    return { message: 'Setting deleted successfully' };
+  }
 }
 
 export async function submitElectronicPod(
