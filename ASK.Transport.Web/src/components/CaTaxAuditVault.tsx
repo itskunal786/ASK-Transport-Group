@@ -183,9 +183,32 @@ const SEED_AUDIT_ENTRIES: TaxAuditVaultEntry[] = [
   }
 ];
 
+const LOCAL_STORAGE_TAX_ENTRIES = 'ask_transport_tax_audit_entries';
+
+const loadStoredTaxEntries = (): TaxAuditVaultEntry[] => {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_TAX_ENTRIES);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    // ignore
+  }
+  return SEED_AUDIT_ENTRIES;
+};
+
+const persistTaxEntries = (list: TaxAuditVaultEntry[]) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_TAX_ENTRIES, JSON.stringify(list));
+  } catch {
+    // ignore
+  }
+};
+
 export const CaTaxAuditVault: React.FC = () => {
   const { t } = useLanguage();
-  const [entries, setEntries] = useState<TaxAuditVaultEntry[]>(SEED_AUDIT_ENTRIES);
+  const [entries, setEntries] = useState<TaxAuditVaultEntry[]>(loadStoredTaxEntries);
   const [loading, setLoading] = useState<boolean>(false);
   const [justRefreshed, setJustRefreshed] = useState<boolean>(false);
   const [selectedQuarter, setSelectedQuarter] = useState<string>('Q3 FY 2026-27');
@@ -224,7 +247,9 @@ export const CaTaxAuditVault: React.FC = () => {
         isManualClick ? new Promise(r => setTimeout(r, 380)) : Promise.resolve()
       ]);
       if (Array.isArray(data) && data.length > 0) {
-        setEntries(data.map((item, idx) => normalizeEntry(item, idx)));
+        const normalized = data.map((item, idx) => normalizeEntry(item, idx));
+        setEntries(normalized);
+        persistTaxEntries(normalized);
         if (isManualClick) {
           setJustRefreshed(true);
           setTimeout(() => setJustRefreshed(false), 3000);
@@ -233,11 +258,13 @@ export const CaTaxAuditVault: React.FC = () => {
         }
       }
     } catch {
-      // Keep seed fallback
+      // Backend offline fallback
     } finally {
       setLoading(false);
     }
 
+    const localEntries = loadStoredTaxEntries();
+    setEntries(localEntries);
     if (isManualClick) {
       setJustRefreshed(true);
       setTimeout(() => setJustRefreshed(false), 3000);
@@ -286,7 +313,9 @@ export const CaTaxAuditVault: React.FC = () => {
       // optimistic update
     }
 
-    setEntries([createdRecord, ...entries]);
+    const updatedEntries = [createdRecord, ...entries];
+    setEntries(updatedEntries);
+    persistTaxEntries(updatedEntries);
     showToast(t('Tax Audit record created successfully!', 'टैक्स ऑडिट रिकॉर्ड सफलतापूर्वक बनाया गया!'));
     setShowNewEntryModal(false);
     setNewEntry({
@@ -425,10 +454,16 @@ export const CaTaxAuditVault: React.FC = () => {
               className="tax-btn-refresh"
               title={t('Refresh', 'रीफ़्रेश')}
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '9px 14px',
+                fontSize: '12.5px',
+                fontWeight: 800,
                 borderColor: justRefreshed ? '#10b981' : undefined,
                 color: justRefreshed ? '#10b981' : undefined,
-                background: justRefreshed ? 'rgba(16, 185, 129, 0.15)' : undefined,
-                boxShadow: justRefreshed ? '0 0 12px rgba(16, 185, 129, 0.25)' : undefined,
+                background: justRefreshed ? 'rgba(16, 185, 129, 0.18)' : undefined,
+                boxShadow: justRefreshed ? '0 0 12px rgba(16, 185, 129, 0.28)' : undefined,
                 transition: 'all 0.25s ease'
               }}
             >
@@ -437,6 +472,13 @@ export const CaTaxAuditVault: React.FC = () => {
               ) : (
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               )}
+              <span>
+                {loading 
+                  ? t('Syncing...', 'सिंक...') 
+                  : justRefreshed 
+                  ? t('Refreshed! ✓', 'रिफ्रेश सफल! ✓') 
+                  : t('Refresh', 'रीफ़्रेश')}
+              </span>
             </button>
           </div>
         </div>
