@@ -508,3 +508,56 @@ body:not(.dark) .fleet-expense-trip-no {
 .fleet-expense-btn-cancel:hover {
   background: var(--bg-hover);
 }
+
+
+/* ============================================================================
+   MOBILE RESPONSIVENESS & TOUCH OPTIMIZATION (PHONES & TABLETS)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .fleet-expense-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .fleet-expense-kpi-card {
+    padding: 12px 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .fleet-expense-kpi-val {
+    font-size: 18px !important;
+  }
+
+  .fleet-expense-kpi-label {
+    font-size: 10px !important;
+  }
+
+  .fleet-expense-table-card {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .fleet-expense-table {
+    min-width: 650px !important;
+  }
+
+  .fleet-expense-modal-card {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    padding: 18px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .fleet-expense-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .fleet-expense-kpi-val {
+    font-size: 16px !important;
+  }
+}

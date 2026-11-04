@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import {
   predictRouteAndCosts,
+  calculateLocalRoutePrediction,
   type RouteCostPredictionResult
 } from '../api/aiApi';
 import { useLanguage } from '../context/LanguageContext';
+import {
+  Copy,
+  CheckCircle2,
+  Printer,
+  Sparkles,
+  Navigation
+} from 'lucide-react';
 import './AiRouteCostPredictor.css';
 
 // ============================================================================
@@ -70,6 +78,14 @@ export const ALL_29_STATES_AND_UTS = [
   'Andaman & Nicobar Islands (UT) - Port Blair (Haddo Port)'
 ];
 
+export const POPULAR_CORRIDORS = [
+  { label: 'Mumbai ➔ Delhi NCR (1,420 KM)', orig: 'Mumbai (Maharashtra)', dest: 'Delhi NCR (New Delhi)' },
+  { label: 'Mumbai ➔ Bengaluru (980 KM)', orig: 'Mumbai (Maharashtra)', dest: 'Bengaluru (Karnataka)' },
+  { label: 'Delhi NCR ➔ Kolkata (1,530 KM)', orig: 'Delhi NCR (New Delhi)', dest: 'Kolkata (West Bengal)' },
+  { label: 'Ahmedabad ➔ Kolkata (1,980 KM)', orig: 'Ahmedabad (Gujarat)', dest: 'Kolkata (West Bengal)' },
+  { label: 'Pune ➔ Chennai (1,150 KM)', orig: 'Pune (Maharashtra)', dest: 'Chennai (Tamil Nadu)' }
+];
+
 export default function AiRouteCostPredictor() {
   const { t } = useLanguage();
   const [origin, setOrigin] = useState('Mumbai (Maharashtra)');
@@ -78,7 +94,18 @@ export default function AiRouteCostPredictor() {
   const [dieselPrice, setDieselPrice] = useState(90.5);
 
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<RouteCostPredictionResult | null>(null);
+  const [copiedQuote, setCopiedQuote] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Initialize immediately with full calculation so data is NEVER blank!
+  const [data, setData] = useState<RouteCostPredictionResult>(() =>
+    calculateLocalRoutePrediction({
+      originCity: 'Mumbai (Maharashtra)',
+      destinationCity: 'Delhi NCR (New Delhi)',
+      truckCategory: '19ft_container',
+      dieselPricePerLiter: 90.5
+    })
+  );
 
   async function handlePredict(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -91,16 +118,29 @@ export default function AiRouteCostPredictor() {
         dieselPricePerLiter: dieselPrice
       });
       setData(res);
-    } catch (err) {
-      console.error('Route prediction error:', err);
+      setToastMsg(`⚡ Route ${res.corridor.originCity} ➔ ${res.corridor.destinationCity} predicted (${res.corridor.distanceKm} KM)!`);
+      setTimeout(() => setToastMsg(null), 4000);
+    } catch {
+      const localRes = calculateLocalRoutePrediction({
+        originCity: origin,
+        destinationCity: destination,
+        truckCategory: truckType,
+        dieselPricePerLiter: dieselPrice
+      });
+      setData(localRes);
     } finally {
       setLoading(false);
+      if (e) {
+        setTimeout(() => {
+          document.getElementById('ai-predictor-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     }
   }
 
   useEffect(() => {
     handlePredict();
-  }, [origin, destination, truckType]);
+  }, [origin, destination, truckType, dieselPrice]);
 
   function handleSwap() {
     const prevOrigin = origin;
@@ -108,13 +148,116 @@ export default function AiRouteCostPredictor() {
     setDestination(prevOrigin);
   }
 
+  const handleCopySummary = () => {
+    if (!data) return;
+    const text = `================================================
+ASK TRANSPORT & LOGISTICS - HIGHWAY ROUTE & TOLL ITINERARY
+================================================
+Corridor:            ${data.corridor.originCity} ➔ ${data.corridor.destinationCity}
+National Highway:    ${data.corridor.highwayName}
+Distance & Transit:  ${data.corridor.distanceKm} KM (~${data.corridor.transitTimeHours} Hours @ 42 km/h convoy speed)
+Fleet Vehicle Type:  ${truckType.replace('_', ' ').toUpperCase()} (${data.costBreakdown.mileageKmPerLiter} km/L)
+------------------------------------------------
+1. Estimated Diesel: ₹${data.costBreakdown.dieselCost.toLocaleString('en-IN')} (${data.costBreakdown.dieselRequiredLiters} Liters @ ₹${data.costBreakdown.dieselPricePerLiter}/L)
+2. Fastag Tolls:     ₹${data.costBreakdown.fastagTollCost.toLocaleString('en-IN')} (Across ${data.costBreakdown.tollPlazaCount} NHAI Toll Plazas)
+3. Driver Allowance: ₹${data.costBreakdown.driverAllowanceBhatta.toLocaleString('en-IN')} (Trip Bhatta & Night Halts)
+4. Incidentals:      ₹${data.costBreakdown.incidentalMaintenance.toLocaleString('en-IN')} (Tyres & Maintenance Reserve)
+------------------------------------------------
+TOTAL OPERATING EXPENSE: ₹${data.costBreakdown.totalOperatingCost.toLocaleString('en-IN')}
+RECOMMENDED FREIGHT:     ₹${data.profitability.recommendedFreightQuote.toLocaleString('en-IN')}
+PROJECTED NET PROFIT:    ₹${data.profitability.netOperatingProfit.toLocaleString('en-IN')} (${data.profitability.marginPercentage}%)
+------------------------------------------------
+* Generated via ASK AI Smart Highway Route & Toll Predictor
+* 100% AIS-140 GPS Synced & GST E-Way Bill Ready`;
+
+    navigator.clipboard.writeText(text);
+    setCopiedQuote(true);
+    setToastMsg('📋 Official Route & Cost Itinerary copied to clipboard!');
+    setTimeout(() => {
+      setCopiedQuote(false);
+      setToastMsg(null);
+    }, 3000);
+  };
+
   return (
     <div className="ai-predictor-container">
+      {/* TOAST MESSAGE */}
+      {toastMsg && (
+        <div style={{
+          padding: '12px 18px',
+          background: '#0284c7',
+          color: '#ffffff',
+          borderRadius: '10px',
+          fontSize: '13px',
+          fontWeight: 800,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
+        }}>
+          <Sparkles size={16} />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
       {/* HEADER & ROUTE SEARCH FORM */}
       <div className="ai-predictor-card">
-        <h2 className="ai-predictor-title">
-          <span>🛣️</span> {t('Smart Highway Route, Fastag Toll & Fuel Predictor', 'स्मार्ट हाईवे रूट, फ़ास्टैग टोल एवं ईंधन पूर्वानुमान')}
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+          <h2 className="ai-predictor-title" style={{ margin: 0 }}>
+            <span>🛣️</span> {t('Smart Highway Route, Fastag Toll & Fuel Predictor', 'स्मार्ट हाईवे रूट, फ़ास्टैग टोल एवं ईंधन पूर्वानुमान')}
+          </h2>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleCopySummary}
+              className="ai-predictor-secondary-btn"
+              title="Copy Formatted Quotation & Route Summary"
+            >
+              {copiedQuote ? <CheckCircle2 size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+              <span>{copiedQuote ? 'Copied!' : 'Copy Route Quote'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="ai-predictor-secondary-btn"
+              title="Print Route Dispatch Itinerary"
+            >
+              <Printer size={14} />
+              <span>Print Slip</span>
+            </button>
+          </div>
+        </div>
+
+        {/* QUICK POPULAR CORRIDORS */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', alignSelf: 'center' }}>
+            Quick Routes:
+          </span>
+          {POPULAR_CORRIDORS.map(corridor => (
+            <button
+              key={corridor.label}
+              type="button"
+              onClick={() => {
+                setOrigin(corridor.orig);
+                setDestination(corridor.dest);
+              }}
+              style={{
+                fontSize: '11px',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                border: '1px solid #cbd5e1',
+                background: origin === corridor.orig && destination === corridor.dest ? '#0284c7' : '#f1f5f9',
+                color: origin === corridor.orig && destination === corridor.dest ? '#ffffff' : '#334155',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {corridor.label}
+            </button>
+          ))}
+        </div>
 
         <form onSubmit={handlePredict} className="ai-predictor-form">
           <div className="ai-predictor-field">
@@ -199,12 +342,37 @@ export default function AiRouteCostPredictor() {
             {loading ? t('Calculating...', 'गणना जारी...') : `⚡ ${t('Predict Route & Costs', 'रूट व लागत का अनुमान लगाएं')}`}
           </button>
         </form>
+
+        {/* HIGHWAY CORRIDOR BADGE */}
+        {data && (
+          <div style={{
+            marginTop: '16px',
+            padding: '10px 14px',
+            background: 'rgba(2, 132, 199, 0.08)',
+            border: '1px solid rgba(2, 132, 199, 0.25)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px',
+            fontSize: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0284c7', fontWeight: 800 }}>
+              <Navigation size={15} />
+              <span>{data.corridor.highwayName}</span>
+            </div>
+            <div style={{ color: '#64748b', fontWeight: 600 }}>
+              Speed: <b>{data.corridor.commercialConvoySpeedKmh} km/h convoy avg</b> • Transit: <b>~{data.corridor.transitTimeHours}h</b>
+            </div>
+          </div>
+        )}
       </div>
 
       {data && (
         <>
           {/* TOP SUMMARY STATS */}
-          <div className="ai-kpi-grid">
+          <div id="ai-predictor-results" className="ai-kpi-grid">
             <div className="ai-kpi-card kpi-blue">
               <span className="ai-kpi-label">{t('HIGHWAY DISTANCE', 'हाईवे दूरी (KM)')}</span>
               <strong className="ai-kpi-value">

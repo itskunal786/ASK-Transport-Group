@@ -219,3 +219,37 @@ export async function sendWhatsAppPaymentReminder(clientId: number): Promise<{
   const res = await axios.post(`${API_BASE}/credit-ledgers/${clientId}/send-whatsapp-reminder`, {}, { headers: getAuthHeaders() });
   return res.data;
 }
+
+export interface SaveCreditLedgerPayload {
+  companyName: string;
+  gstin: string;
+  billingAddress?: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  creditLimit: number;
+  currentOutstanding?: number;
+  overdueAmount?: number;
+  paymentTerms?: string;
+  billingCycle?: string;
+  accountStatus?: 'Active' | 'Credit_Warning' | 'Credit_Frozen';
+  unbilledTripsCount?: number;
+  unbilledTripsValue?: number;
+}
+
+export async function createCreditLedger(payload: SaveCreditLedgerPayload): Promise<{ success: boolean; message: string; client: CustomerCreditLedger }> {
+  const res = await axios.post(`${API_BASE}/credit-ledgers`, payload, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+export async function updateCreditLedger(
+  clientId: number,
+  payload: SaveCreditLedgerPayload
+): Promise<{ success: boolean; message: string; client: CustomerCreditLedger }> {
+  const res = await axios.put(`${API_BASE}/credit-ledgers/${clientId}`, payload, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+export async function deleteCreditLedger(clientId: number): Promise<{ success: boolean; message: string }> {
+  const res = await axios.delete(`${API_BASE}/credit-ledgers/${clientId}`, { headers: getAuthHeaders() });
+  return res.data;
+}

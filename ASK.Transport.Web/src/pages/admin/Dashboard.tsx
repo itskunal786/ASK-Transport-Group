@@ -50,6 +50,9 @@ import CorporateCargoClaimsManager from '../../components/CorporateCargoClaimsMa
 import ExecutiveProfitabilityRadar from '../../components/ExecutiveProfitabilityRadar';
 import CaTaxAuditVault from '../../components/CaTaxAuditVault';
 import PhysicalPodInwardDeck from '../../components/PhysicalPodInwardDeck';
+import DynamicTariffEngine from '../../components/DynamicTariffEngine';
+import FinancialPnlAnalyticsDeck from '../../components/FinancialPnlAnalyticsDeck';
+import SystemSettingsDeck from '../../components/SystemSettingsDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -585,10 +588,7 @@ export default function Dashboard() {
   const [tariffHandlingFee, setTariffHandlingFee] = useState('250');
   const [tariffSaving, setTariffSaving] = useState(false);
 
-  // Rate Simulator State
-  const [simDistanceKm, setSimDistanceKm] = useState<number>(750);
-  const [simWeightKg, setSimWeightKg] = useState<number>(1200);
-  const [simService, setSimService] = useState<'FTL' | 'PTL' | 'Express'>('PTL');
+
 
   // Audit Logs Filter
   const [auditActionFilter, setAuditActionFilter] = useState('All');
@@ -790,6 +790,19 @@ export default function Dashboard() {
   });
   const [shipmentSearch, setShipmentSearch] = useState('');
   const [shipmentFilterStatus, setShipmentFilterStatus] = useState('All');
+  const [shipmentViewMode, setShipmentViewMode] = useState<'table' | 'cards'>('table');
+  const [showAddShipmentModal, setShowAddShipmentModal] = useState(false);
+  const [newShipmentNo, setNewShipmentNo] = useState('');
+  const [newShipmentBookingNo, setNewShipmentBookingNo] = useState('');
+  const [newShipmentCustomer, setNewShipmentCustomer] = useState('');
+  const [newShipmentOrigin, setNewShipmentOrigin] = useState('Delhi Hub');
+  const [newShipmentDestination, setNewShipmentDestination] = useState('Mumbai Nhava Sheva');
+  const [newShipmentDriver, setNewShipmentDriver] = useState('Ramesh Yadav');
+  const [newShipmentVehicle, setNewShipmentVehicle] = useState('DL-01-AB-1234 (32ft MXL)');
+  const [newShipmentLocation, setNewShipmentLocation] = useState('Delhi Central Hub - Dock 04');
+  const [newShipmentInitialStatus, setNewShipmentInitialStatus] = useState<string>('In Transit');
+  const [newShipmentCustomStatus, setNewShipmentCustomStatus] = useState('Priority Express Corridor');
+  const [newShipmentCustomNote, setNewShipmentCustomNote] = useState('Fastag automated clearance verified at NH-48');
   const [showUpdateShipmentModal, setShowUpdateShipmentModal] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentRow | null>(null);
   const [newStatus, setNewStatus] = useState<string>('In Transit');
@@ -1053,6 +1066,7 @@ export default function Dashboard() {
   }, [user]);
 
   useEffect(() => {
+    setIsMobileNavOpen(false);
     if (activeTab === 'hubs') loadHubs();
     if (activeTab === 'audit') loadAuditLogs();
     if (activeTab === 'settings') loadSettings();
@@ -1598,6 +1612,95 @@ export default function Dashboard() {
     showToast(`Shipment ${selectedShipment.shipmentNo} updated! Status: "${finalStatus}"`);
   }
 
+  // Handle Add New Highway Dispatch / Shipment
+  function openAddShipmentModal() {
+    const nextNum = 9900 + shipmentsList.length + 1;
+    setNewShipmentNo(`SHP-${nextNum}`);
+    setNewShipmentBookingNo(`ASKB00${120 + shipmentsList.length + 1}`);
+    setNewShipmentCustomer('');
+    setNewShipmentOrigin('Delhi Hub');
+    setNewShipmentDestination('Mumbai Nhava Sheva');
+    setNewShipmentDriver('Ramesh Yadav');
+    setNewShipmentVehicle('DL-01-AB-1234 (32ft MXL)');
+    setNewShipmentLocation('Delhi Central Hub - Loading Bay #04');
+    setNewShipmentInitialStatus('In Transit');
+    setNewShipmentCustomStatus('Priority Express Corridor');
+    setNewShipmentCustomNote('Fastag automated clearance verified at NH-48');
+    setShowAddShipmentModal(true);
+  }
+
+  function applyShipmentPreset(type: 'ftl' | 'cold' | 'heavy' | 'express') {
+    if (type === 'ftl') {
+      setNewShipmentCustomer('Tata Motors Commercial Vehicles Ltd');
+      setNewShipmentOrigin('Pune MIDC Hub');
+      setNewShipmentDestination('Sanand Industrial Estate, Gujarat');
+      setNewShipmentDriver('Santosh Shinde');
+      setNewShipmentVehicle('MH-12-EF-9012 (24ft Container)');
+      setNewShipmentLocation('Thane-Ghodbunder Toll Gateway');
+      setNewShipmentCustomStatus('Auto Component FTL');
+      setNewShipmentCustomNote('Critical JIT delivery for assembly line schedule');
+    } else if (type === 'cold') {
+      setNewShipmentCustomer('Sun Pharma Healthcare Logistics');
+      setNewShipmentOrigin('Vadodara GIDC Hub');
+      setNewShipmentDestination('Baddi Terminal, Himachal Pradesh');
+      setNewShipmentDriver('Gurpreet Singh');
+      setNewShipmentVehicle('HR-55-XY-9901 (Reefer Cold-Chain)');
+      setNewShipmentLocation('Delhi Peripheral Expressway Toll Gate');
+      setNewShipmentCustomStatus('IoT Cold-Chain Monitored');
+      setNewShipmentCustomNote('Continuous 2°C - 8°C temperature logging active');
+    } else if (type === 'heavy') {
+      setNewShipmentCustomer('Jindal Steel & Power Ltd');
+      setNewShipmentOrigin('Raigarh Integrated Plant');
+      setNewShipmentDestination('Faridabad Heavy Stockyard');
+      setNewShipmentDriver('Bijoy Das');
+      setNewShipmentVehicle('WB-02-GH-3456 (32ft MXL Flatbed)');
+      setNewShipmentLocation('Agra-Lucknow Expressway Interchange');
+      setNewShipmentCustomStatus('Heavy ODC Corridor');
+      setNewShipmentCustomNote('Hydraulic axle stability verified, escort pilot linked');
+    } else if (type === 'express') {
+      setNewShipmentCustomer('Amazon India Fulfilment Network');
+      setNewShipmentOrigin('Bangalore Hub');
+      setNewShipmentDestination('Chennai Port Gate #2');
+      setNewShipmentDriver('Murugan Swamy');
+      setNewShipmentVehicle('KA-05-CD-5678 (14ft Closed)');
+      setNewShipmentLocation('Hosur Highway Toll Plaza');
+      setNewShipmentCustomStatus('Same-Day Express Transit');
+      setNewShipmentCustomNote('Direct dock-to-dock express schedule');
+    }
+  }
+
+  function handleCreateNewShipment(e: React.FormEvent) {
+    e.preventDefault();
+    const shipNo = newShipmentNo.trim() || `SHP-${9900 + shipmentsList.length + 1}`;
+    const newShip: ShipmentRow = {
+      shipmentNo: shipNo,
+      bookingNo: newShipmentBookingNo.trim() || `ASKB${Math.floor(10000 + Math.random() * 90000)}`,
+      customer: newShipmentCustomer.trim() || 'Enterprise Client',
+      origin: newShipmentOrigin.trim(),
+      destination: newShipmentDestination.trim(),
+      driver: newShipmentDriver.trim(),
+      vehicle: newShipmentVehicle.trim(),
+      currentLocation: newShipmentLocation.trim() || `${newShipmentOrigin} - Dispatched`,
+      status: newShipmentInitialStatus,
+      customStatus: newShipmentCustomStatus.trim() || undefined,
+      customNote: newShipmentCustomNote.trim() || undefined,
+      updatedAt: 'Just now'
+    };
+
+    setShipmentsList(prev => {
+      const updated = [newShip, ...prev];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('ask_admin_shipments', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+
+    setShowAddShipmentModal(false);
+    showToast(`✓ New Highway Dispatch ${shipNo} created and broadcasted to Driver!`);
+  }
+
   // Handle Add Driver
   function handleAddDriver(e: React.FormEvent) {
     e.preventDefault();
@@ -1859,15 +1962,7 @@ export default function Dashboard() {
     return 0;
   });
 
-  // Simulator calculation
-  const simBaseFreight = simService === 'FTL'
-    ? Math.max(simDistanceKm * parseFloat(tariffFtlPerKm || '14.5'), parseFloat(tariffFtlMinTrip || '12000'))
-    : Math.max((simDistanceKm * parseFloat(tariffPtlPerKgKm || '1.85') * (simWeightKg / 100)), parseFloat(tariffPtlMinFloor || '450')) * (simService === 'Express' ? parseFloat(tariffExpressMult || '1.75') : 1.0);
-  const simFuelCharge = Math.round(simBaseFreight * (parseFloat(tariffFuelSurcharge || '11.5') / 100));
-  const simHandling = parseFloat(tariffHandlingFee || '250');
-  const simSubtotal = Math.round(simBaseFreight + simFuelCharge + simHandling);
-  const simGst = Math.round(simSubtotal * (parseFloat(tariffGstPercent || '18') / 100));
-  const simTotal = simSubtotal + simGst;
+
 
   return (
     <div className="admin-layout-container">
@@ -3742,181 +3837,489 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 4: SHIPMENTS & DISPATCH (NEW) */}
+        {/* VIEW 4: SHIPMENTS & DISPATCH (EXECUTIVE RADAR CONSOLE) */}
         {/* ============================================================== */}
         {activeTab === 'shipments' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>Live Shipments &amp; Dispatch</h1>
-                <p>Real-time vehicle tracking, driver allocation, and milestone updater</p>
+            {/* 1. EXECUTIVE HERO DISPATCH & FLEET RADAR BANNER */}
+            <div className="shipments-hero-banner">
+              <div className="shipments-hero-left">
+                <div className="shipments-hero-badge">
+                  <span className="shipments-pulse-dot" />
+                  <span>NATIONAL FREIGHT &amp; HIGHWAY DISPATCH RADAR • AIS-140 LIVE</span>
+                </div>
+                <h1>{t('Live Shipments, Fleet Dispatch & Transit Milestones', 'लाइव शिपमेंट, फ्लीट डिस्पैच और हाईवे माइलस्टोन ट्रैकर')}</h1>
+                <p>
+                  {t(
+                    'Real-time GPS telematics tracking, automated FASTag toll milestone updater, driver telemetry & client SMS/WhatsApp status broadcaster.',
+                    'रियल-टाइम जीपीएस टेलीमैटिक्स ट्रैकिंग, फास्टैग टोल माइलस्टोन अपडेटर, ड्राइवर टेलीमेट्री और व्हाट्सएप लाइव स्टेटस ब्रॉडकास्टर।'
+                  )}
+                </p>
+
+                <div className="shipments-hero-tags">
+                  <span className="shipments-hero-tag">
+                    <span className="shipments-status-indicator" />
+                    <span>AIS-140 GPS: 100% Locked</span>
+                  </span>
+                  <span className="shipments-hero-tag">
+                    <span>Active Corridors:</span>
+                    <strong style={{ fontFamily: 'monospace', color: '#67e8f9' }}>NH-48 • NH-44 • NH-19</strong>
+                  </span>
+                  <span className="shipments-hero-tag">
+                    <span>🛡️ Fastag Auto-Clearance Active</span>
+                  </span>
+                  <span className="shipments-hero-tag">
+                    <span>⚡ Zero-Transit-Delay Protocol</span>
+                  </span>
+                </div>
               </div>
 
-              <div className="admin-title-actions">
+              <div className="shipments-hero-actions">
                 <button
                   type="button"
-                  className="admin-btn-primary"
+                  className="shipments-btn-hero-primary"
+                  onClick={openAddShipmentModal}
+                >
+                  <span style={{ fontSize: '16px' }}>➕</span>
+                  <span>{t('+ New Highway Dispatch', '+ नया हाईवे डिस्पैच जोड़ें')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="shipments-btn-hero-secondary"
                   onClick={() => {
                     const first = shipmentsList[0];
                     if (first) openUpdateShipmentModal(first);
                   }}
                 >
-                  ⚡ Quick Status Update
+                  <span>⚡</span>
+                  <span>{t('Quick Status Update', 'त्वरित स्टेटस अपडेट')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="shipments-btn-hero-secondary"
+                  onClick={() => {
+                    showToast('✓ AIS-140 IRNSS Satellite Telematics & FASTag toll sync refreshed successfully');
+                  }}
+                  title="Refresh satellite telemetry"
+                >
+                  <span>🔄</span>
+                  <span>{t('Sync Telematics', 'टेलीमैटिक्स सिंक')}</span>
                 </button>
               </div>
             </div>
 
-            <div className="admin-table-card">
-              <div className="admin-table-toolbar">
-                <div className="admin-toolbar-search">
-                  <input
-                    type="text"
-                    placeholder="Search by Shipment #, Driver, or Hub..."
-                    value={shipmentSearch}
-                    onChange={e => setShipmentSearch(e.target.value)}
-                  />
+            {/* 2. 5 INTERACTIVE FLEET DISPATCH KPI METRICS */}
+            <div className="shipments-kpi-grid">
+              <div
+                className={`shipments-kpi-card total ${shipmentFilterStatus === 'All' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('All')}
+                title="Click to view all shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Total Active Fleet', 'कुल सक्रिय फ्लीट')}</span>
+                  <span className="shipments-kpi-icon">🚚</span>
                 </div>
-
-                <div className="admin-toolbar-filter">
-                  {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending', 'Custom'].map(st => (
-                    <button
-                      key={st}
-                      type="button"
-                      className={`admin-filter-pill ${shipmentFilterStatus === st ? 'active' : ''}`}
-                      onClick={() => setShipmentFilterStatus(st)}
-                    >
-                      {st === 'Custom' ? '🏷️ Custom / Notes' : st}
-                    </button>
-                  ))}
+                <div className="shipments-kpi-val">
+                  {shipmentsList.length} <span className="shipments-kpi-unit">Shipments</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('Monitored across Pan-India Hubs', 'अखिल भारतीय हब में सक्रिय')}
                 </div>
               </div>
 
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Shipment ID</th>
-                    <th>Booking / Client</th>
-                    <th>Origin → Destination</th>
-                    <th>Driver &amp; Vehicle</th>
-                    <th>Current Checkpoint</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>Custom Name / Notes</th>
-                    <th>Dispatch Action</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div
+                className={`shipments-kpi-card in-transit ${shipmentFilterStatus === 'In Transit' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('In Transit')}
+                title="Click to filter In Transit shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('In Transit (Highways)', 'मार्ग में (हाईवे)')}</span>
+                  <span className="shipments-kpi-icon">🛣️</span>
+                </div>
+                <div className="shipments-kpi-val text-cyan">
+                  {shipmentsList.filter(s => s.status === 'In Transit').length} <span className="shipments-kpi-unit">Trucks</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('High-speed transit via FASTag corridors', 'फास्टैग कॉरिडोर पर तीव्र गति से')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card out-delivery ${shipmentFilterStatus === 'Out for Delivery' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('Out for Delivery')}
+                title="Click to filter Out for Delivery"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Out for Delivery', 'डिलीवरी के लिए रवाना')}</span>
+                  <span className="shipments-kpi-icon">🎯</span>
+                </div>
+                <div className="shipments-kpi-val text-violet">
+                  {shipmentsList.filter(s => s.status === 'Out for Delivery').length} <span className="shipments-kpi-unit">Vehicles</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('Last-mile destination terminal dispatch', 'अंतिम छोर गंतव्य टर्मिनल पर')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card pending ${shipmentFilterStatus === 'Pending' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('Pending')}
+                title="Click to filter Pending shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Pending Bay Allocation', 'लोडिंग बे प्रतीक्षारत')}</span>
+                  <span className="shipments-kpi-icon">⏳</span>
+                </div>
+                <div className="shipments-kpi-val text-amber">
+                  {shipmentsList.filter(s => s.status === 'Pending').length} <span className="shipments-kpi-unit">Awaiting</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('Dockyard loading & pilot assignment', 'डॉकीयार्ड लोडिंग व ड्राइवर आवंटन')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card delivered ${shipmentFilterStatus === 'Delivered' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('Delivered')}
+                title="Click to filter Delivered shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Delivered & POD Cleared', 'वितरित व ई-पीओडी सत्यापित')}</span>
+                  <span className="shipments-kpi-icon">✅</span>
+                </div>
+                <div className="shipments-kpi-val text-emerald">
+                  {shipmentsList.filter(s => s.status === 'Delivered').length} <span className="shipments-kpi-unit">Completed</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('100% digital signature verified', '100% डिजिटल हस्ताक्षर व ओटीपी')}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. TOOLBAR & MAIN TABLE CARD */}
+            <div className="admin-table-card">
+              <div className="admin-table-toolbar" style={{ flexWrap: 'wrap', gap: '14px' }}>
+                <div className="admin-toolbar-search" style={{ position: 'relative', minWidth: '280px', flex: 1 }}>
+                  <input
+                    type="text"
+                    placeholder="Search by Shipment #, Waybill, Driver, Vehicle, Hub..."
+                    value={shipmentSearch}
+                    onChange={e => setShipmentSearch(e.target.value)}
+                  />
+                  {shipmentSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setShipmentSearch('')}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-secondary, #64748b)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        padding: '4px'
+                      }}
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <div className="admin-toolbar-filter" style={{ flexWrap: 'wrap' }}>
+                  {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending', 'Custom'].map(st => {
+                    const count = st === 'All'
+                      ? shipmentsList.length
+                      : st === 'Custom'
+                      ? shipmentsList.filter(x => x.customStatus || x.customNote).length
+                      : shipmentsList.filter(x => x.status === st).length;
+                    return (
+                      <button
+                        key={st}
+                        type="button"
+                        className={`admin-filter-pill ${shipmentFilterStatus === st ? 'active' : ''}`}
+                        onClick={() => setShipmentFilterStatus(st)}
+                      >
+                        <span>{st === 'Custom' ? '🏷️ Custom / Notes' : st}</span>
+                        <span style={{ fontSize: '10px', opacity: 0.85, marginLeft: '4px', fontWeight: 800 }}>({count})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* VIEW MODE TOGGLE */}
+                <div className="shipments-view-toggle">
+                  <button
+                    type="button"
+                    className={`shipments-view-btn ${shipmentViewMode === 'table' ? 'active' : ''}`}
+                    onClick={() => setShipmentViewMode('table')}
+                  >
+                    <span>📋</span>
+                    <span>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`shipments-view-btn ${shipmentViewMode === 'cards' ? 'active' : ''}`}
+                    onClick={() => setShipmentViewMode('cards')}
+                  >
+                    <span>🗂️</span>
+                    <span>Cards</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* TABLE VIEW */}
+              {shipmentViewMode === 'table' ? (
+                <div className="shipment-table-wrapper">
+                  <table className="admin-data-table" style={{ minWidth: '1080px', width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '130px' }}>Shipment ID</th>
+                        <th style={{ width: '170px' }}>Booking / Client</th>
+                        <th style={{ width: '200px' }}>Origin → Destination</th>
+                        <th style={{ width: '180px' }}>Driver &amp; Vehicle</th>
+                        <th style={{ width: '200px' }}>Current Checkpoint</th>
+                        <th style={{ width: '130px' }}>{t('Status', 'स्थिति')}</th>
+                        <th style={{ width: '190px' }}>Custom Milestone / Note</th>
+                        <th style={{ width: '140px', textAlign: 'center' }}>Dispatch Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredShipments.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary, #64748b)' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                            <strong>No shipments found matching filters</strong>
+                            <p style={{ margin: '4px 0 0', fontSize: '12px' }}>Try resetting the search keyword or selecting "All" shipments.</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredShipments.map((s, idx) => (
+                          <tr 
+                            key={idx} 
+                            className="shipment-table-row"
+                            onClick={() => openUpdateShipmentModal(s)}
+                            title="Click to update status"
+                          >
+                            <td>
+                              <span className="shipment-id-badge">#{s.shipmentNo}</span>
+                              <span className="shipment-time-tag">⏱️ {s.updatedAt}</span>
+                            </td>
+                            <td>
+                              <div className="shipment-client-cell">
+                                <span className="shipment-client-name">🏢 {s.customer}</span>
+                                <span className="shipment-waybill-pill">Waybill: {s.bookingNo}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="shipment-route-cell">
+                                <div className="shipment-route-origin">
+                                  <span className="route-dot origin" />
+                                  <span>{s.origin}</span>
+                                </div>
+                                <div className="shipment-route-arrow">➔</div>
+                                <div className="shipment-route-dest">
+                                  <span className="route-dot dest" />
+                                  <span>{s.destination}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="shipment-driver-cell">
+                                <span className="driver-name">👤 {s.driver}</span>
+                                <span className="vehicle-plate">🚛 {s.vehicle}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="shipment-checkpoint-cell">
+                                <span className="checkpoint-pulse-dot" />
+                                <span>{s.currentLocation}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`shipment-status-pill ${
+                                s.status === 'In Transit' ? 'in-transit' :
+                                s.status === 'Delivered' ? 'delivered' :
+                                s.status === 'Out for Delivery' ? 'out-for-delivery' :
+                                s.status === 'Pending' ? 'pending' : 'custom'
+                              }`}>
+                                {s.status === 'In Transit' && '🚚 '}
+                                {s.status === 'Delivered' && '✅ '}
+                                {s.status === 'Out for Delivery' && '🎯 '}
+                                {s.status === 'Pending' && '⏳ '}
+                                {s.status}
+                              </span>
+                            </td>
+                            <td>
+                              {s.customStatus || s.customNote ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '220px' }}>
+                                  {s.customStatus && (
+                                    <span
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        background: 'rgba(139, 92, 246, 0.12)',
+                                        color: '#8b5cf6',
+                                        border: '1px solid rgba(139, 92, 246, 0.3)',
+                                        padding: '3px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: 700,
+                                        width: 'fit-content'
+                                      }}
+                                    >
+                                      🏷️ {s.customStatus}
+                                    </span>
+                                  )}
+                                  {s.customNote && (
+                                    <span
+                                      style={{
+                                        fontSize: '11px',
+                                        color: 'var(--text-secondary, #94a3b8)',
+                                        lineHeight: 1.35,
+                                        whiteSpace: 'normal',
+                                        wordBreak: 'break-word'
+                                      }}
+                                      title={s.customNote}
+                                    >
+                                      📝 {s.customNote}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    openUpdateShipmentModal(s);
+                                  }}
+                                  style={{
+                                    background: 'transparent',
+                                    border: '1px dashed var(--border, #64748b)',
+                                    color: 'var(--text-secondary, #94a3b8)',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  + Add Custom Note
+                                </button>
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div className="shipment-actions-cell">
+                                <button
+                                  type="button"
+                                  className="shipment-btn-action"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    openUpdateShipmentModal(s);
+                                  }}
+                                >
+                                  ✏️ Update
+                                </button>
+                                <button
+                                  type="button"
+                                  className="shipment-btn-telemetry"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    showToast(`🛰️ Live GPS Telemetry for ${s.shipmentNo}: 28.6139° N, 77.2090° E (Speed: 58 km/h, FASTag: Verified)`);
+                                  }}
+                                  title="View GPS Satellite Telemetry"
+                                >
+                                  📡
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                /* CARDS VIEW */
+                <div className="shipments-cards-grid">
                   {filteredShipments.map((s, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <strong style={{ color: '#0b72e7' }}>{s.shipmentNo}</strong>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>{s.updatedAt}</div>
-                      </td>
-                      <td>
-                        <strong>{s.customer}</strong>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Waybill: {s.bookingNo}</div>
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{s.origin}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>→ {s.destination}</div>
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{s.driver}</div>
-                        <div style={{ fontSize: '11px', color: '#0b72e7' }}>{s.vehicle}</div>
-                      </td>
-                      <td>
-                        <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>
-                          📍 {s.currentLocation}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-badge-status admin-badge-${s.status.toLowerCase().replace(/\s+/g, '-')}`}
-                          data-status={s.status}
-                          style={{
-                            background:
-                              s.status === 'Delivered' ? '#edfdf4' :
-                              s.status === 'Out for Delivery' ? '#e0f2fe' :
-                              s.status === 'In Transit' ? '#eff6ff' :
-                              s.status === 'Pending' ? '#fef3c7' : '#faf5ff',
-                            color:
-                              s.status === 'Delivered' ? '#10b981' :
-                              s.status === 'Out for Delivery' ? '#0369a1' :
-                              s.status === 'In Transit' ? '#0b72e7' :
-                              s.status === 'Pending' ? '#d97706' : '#7e22ce',
-                            border: ['Delivered', 'Out for Delivery', 'In Transit', 'Pending'].includes(s.status) ? 'none' : '1px solid #d8b4fe'
-                          }}
-                        >
+                    <div
+                      key={idx}
+                      className="shipment-card"
+                      onClick={() => openUpdateShipmentModal(s)}
+                    >
+                      <div className="shipment-card-head">
+                        <div>
+                          <span className="shipment-id-badge">#{s.shipmentNo}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', marginLeft: '8px' }}>
+                            Waybill: {s.bookingNo}
+                          </span>
+                        </div>
+                        <span className={`shipment-status-pill ${
+                          s.status === 'In Transit' ? 'in-transit' :
+                          s.status === 'Delivered' ? 'delivered' :
+                          s.status === 'Out for Delivery' ? 'out-for-delivery' :
+                          s.status === 'Pending' ? 'pending' : 'custom'
+                        }`}>
                           {s.status}
                         </span>
-                      </td>
-                      <td>
-                        {s.customStatus || s.customNote ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
-                            {s.customStatus && (
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  background: '#faf5ff',
-                                  color: '#7e22ce',
-                                  border: '1px solid #d8b4fe',
-                                  padding: '2px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '11px',
-                                  fontWeight: 600,
-                                  width: 'fit-content'
-                                }}
-                              >
-                                🏷️ {s.customStatus}
-                              </span>
-                            )}
-                            {s.customNote && (
-                              <span
-                                style={{
-                                  fontSize: '11px',
-                                  color: '#94a3b8',
-                                  lineHeight: 1.35,
-                                  whiteSpace: 'normal',
-                                  wordBreak: 'break-word'
-                                }}
-                                title={s.customNote}
-                              >
-                                📝 {s.customNote}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => openUpdateShipmentModal(s)}
-                            style={{
-                              background: 'transparent',
-                              border: '1px dashed #475569',
-                              color: '#94a3b8',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            + Add Custom / Note
-                          </button>
-                        )}
-                      </td>
-                      <td>
+                      </div>
+
+                      <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>
+                        🏢 {s.customer}
+                      </div>
+
+                      <div className="shipment-card-route">
+                        <span>🟢 {s.origin}</span>
+                        <span style={{ color: '#0284c7' }}>➔</span>
+                        <span>🔴 {s.destination}</span>
+                      </div>
+
+                      <div className="shipment-checkpoint-cell">
+                        <span className="checkpoint-pulse-dot" />
+                        <span>{s.currentLocation}</span>
+                      </div>
+
+                      <div className="shipment-card-meta">
+                        <div>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', display: 'block', textTransform: 'uppercase' }}>Driver</span>
+                          <strong>👤 {s.driver}</strong>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', display: 'block', textTransform: 'uppercase' }}>Vehicle</span>
+                          <strong style={{ color: '#0284c7', fontFamily: 'monospace' }}>🚛 {s.vehicle}</strong>
+                        </div>
+                      </div>
+
+                      {s.customStatus && (
+                        <div style={{ fontSize: '11px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                          🏷️ {s.customStatus}
+                        </div>
+                      )}
+
+                      <div className="shipment-card-footer">
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>⏱️ {s.updatedAt}</span>
                         <button
                           type="button"
-                          className="admin-btn-view"
-                          onClick={() => openUpdateShipmentModal(s)}
+                          className="shipment-btn-action"
+                          onClick={e => {
+                            e.stopPropagation();
+                            openUpdateShipmentModal(s);
+                          }}
                         >
-                          Update Status
+                          ✏️ Update Status
                         </button>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -4242,199 +4645,18 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'reports' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>📈 Financial &amp; P&amp;L Performance Analytics</h1>
-                <p>Monthly turnover, cash realization, sundry debtors, hub contributions, and fleet cost margins</p>
-              </div>
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-primary"
-                  onClick={exportPnlToCSV}
-                >
-                  📥 Download P&amp;L Statement (CSV)
-                </button>
-              </div>
-            </div>
-
-            {/* FINANCIAL & PNL SUMMARY CARDS */}
-            <div className="pnl-grid">
-              <div className="pnl-card" style={{ borderLeft: '4px solid #0b72e7' }}>
-                <small>Gross Monthly Turnover</small>
-                <strong>₹42,50,000</strong>
-                <span style={{ color: '#10b981' }}>↑ 14.8% vs last month</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #10b981' }}>
-                <small>Cash Realized (Paid)</small>
-                <strong>₹36,80,000</strong>
-                <span style={{ color: '#10b981' }}>86.5% Collection Rate</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-                <small>Sundry Debtors (Pending)</small>
-                <strong>₹5,70,000</strong>
-                <span style={{ color: '#b45309' }}>13.5% Receivables (B2B 30-Day)</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
-                <small>Fleet Fuel &amp; Toll Costs</small>
-                <strong>₹18,40,000</strong>
-                <span style={{ color: '#6d28d9' }}>43.3% Cost of Operations</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #059669' }}>
-                <small>EBITDA Net Margin</small>
-                <strong style={{ color: '#059669' }}>₹18,40,000</strong>
-                <span style={{ color: '#059669' }}>43.2% Profit Margin</span>
-              </div>
-            </div>
-
-            {/* TWO-COLUMN ANALYTICS: HUB SHARE & ROUTE PROFITABILITY */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-              {/* Hub Revenue Share */}
-              <div style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '20px' }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
-                  🏢 Pan-India Hub Revenue Distribution
-                </h3>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Delhi Central Hub (HUB-DEL-01)</span>
-                    <strong>₹16.15 Lakh (38%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '38%', background: '#0b72e7' }} />
-                  </div>
-                </div>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Mumbai JNPT Terminal (HUB-MUM-02)</span>
-                    <strong>₹13.17 Lakh (31%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '31%', background: '#10b981' }} />
-                  </div>
-                </div>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Bengaluru Tech Cargo Park (HUB-BLR-03)</span>
-                    <strong>₹7.65 Lakh (18%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '18%', background: '#f59e0b' }} />
-                  </div>
-                </div>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Kolkata East Logistics Gateway (HUB-CCU-04)</span>
-                    <strong>₹5.52 Lakh (13%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '13%', background: '#8b5cf6' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* High-Margin Corridors Table */}
-              <div style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '20px' }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
-                  🛣️ Top High-Margin Freight Corridors
-                </h3>
-
-                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border, #e2e8f0)', color: '#64748b', textAlign: 'left' }}>
-                      <th style={{ paddingBottom: '8px' }}>Route Corridor</th>
-                      <th style={{ paddingBottom: '8px' }}>Freight Mode</th>
-                      <th style={{ paddingBottom: '8px', textAlign: 'right' }}>Avg Trip Margin</th>
-                      <th style={{ paddingBottom: '8px', textAlign: 'right' }}>Margin %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Delhi ↔ Mumbai</td>
-                      <td style={{ color: '#64748b' }}>FTL 32ft MXL</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹28,400</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>48.2%</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Pune ↔ Hyderabad</td>
-                      <td style={{ color: '#64748b' }}>Express PTL</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹12,800</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>44.5%</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Ahmedabad ↔ Surat</td>
-                      <td style={{ color: '#64748b' }}>Industrial Surface</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹8,500</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>39.0%</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Chennai ↔ Bengaluru</td>
-                      <td style={{ color: '#64748b' }}>Short Haul PTL</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹6,200</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>36.8%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* DOWNLOADABLE DATA LEDGERS */}
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
-              📥 Export Structured Compliance Ledgers
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Bookings Ledger (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Full consignment records, routes, status, and client bookings history.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportBookingsToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Bookings CSV
-                </button>
-              </div>
-
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Revenue &amp; GST Ledger (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Monthly billing summary, freight revenue, and 18% GST collected for filing.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportRevenueToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Revenue CSV
-                </button>
-              </div>
-
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Fleet &amp; Drivers Report (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Commercial drivers, license numbers, and truck assignments.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportDriversToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Drivers CSV
-                </button>
-              </div>
-
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Vehicle Registry (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Active vehicle models, tonnage capacity, assigned terminals, and fuel levels.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportVehiclesToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Vehicles CSV
-                </button>
-              </div>
-            </div>
+            <FinancialPnlAnalyticsDeck
+              onExportPnl={exportPnlToCSV}
+              onExportBookings={exportBookingsToCSV}
+              onExportRevenue={exportRevenueToCSV}
+              onExportDrivers={exportDriversToCSV}
+              onExportVehicles={exportVehiclesToCSV}
+              showToast={showToast}
+            />
           </div>
         )}
 
-        {/* ============================================================== */}
+                {/* ============================================================== */}
         {/* VIEW 8: SUPER ADMIN CONTROL & RIGHTS DELEGATION TAB */}
         {/* ============================================================== */}
         {activeTab === 'access' && (
@@ -4768,72 +4990,182 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 9: MULTI-CITY HUBS & TERMINALS */}
+        {/* VIEW 9: MULTI-CITY HUBS & TERMINALS (EXECUTIVE RADAR CONSOLE) */}
         {/* ============================================================== */}
         {activeTab === 'hubs' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>Multi-City Logistics Hubs &amp; Terminals</h1>
-                <p>National hub infrastructure, sorting centers, cargo throughput, and operational status</p>
+            {/* 1. EXECUTIVE HERO HUB RADAR BANNER */}
+            <div className="hubs-hero-banner">
+              <div className="hubs-hero-left">
+                <div className="hubs-hero-badge">
+                  <span className="hubs-pulse-dot" />
+                  <span>NATIONAL FREIGHT INFRASTRUCTURE &amp; TERMINAL NETWORK • 24×7 RADAR</span>
+                </div>
+                <h1>{t('Multi-City Logistics Hubs, Mega Terminals & Inland Depots', 'मल्टी-सिटी लॉजिस्टिक्स हब, टर्मिनल और फ्रेट इनलैंड डिपो')}</h1>
+                <p>
+                  {t(
+                    'National hub network, 24×7 multi-modal sorting centers, daily cargo throughput (MT), dock capacity & active gate pass routing.',
+                    'अखिल भारतीय हब नेटवर्क, 24×7 मल्टी-मोडल सॉर्टिंग सेंटर, दैनिक कार्गो क्षमता (एमटी), डॉक बे कैपेसिटी और लाइव गेट पास रूटिंग।'
+                  )}
+                </p>
+
+                <div className="hubs-hero-tags">
+                  <span className="hubs-hero-tag">
+                    <span className="shipments-status-indicator" />
+                    <span>Hub Operations: 100% Online</span>
+                  </span>
+                  <span className="hubs-hero-tag">
+                    <span>Key Gateways:</span>
+                    <strong style={{ fontFamily: 'monospace', color: '#6ee7b7' }}>Delhi • Mumbai • Bengaluru • Kolkata</strong>
+                  </span>
+                  <span className="hubs-hero-tag">
+                    <span>🚛 Dock Bay Capacity: 15,000+ MT/Day</span>
+                  </span>
+                  <span className="hubs-hero-tag">
+                    <span>⚡ Auto Gate Pass &amp; Scale Sync</span>
+                  </span>
+                </div>
               </div>
-              <div className="admin-title-actions">
+
+              <div className="hubs-hero-actions">
                 <button
                   type="button"
-                  className="admin-btn-export"
-                  onClick={loadHubs}
+                  className="hubs-btn-hero-primary"
+                  onClick={() => setShowAddHubModal(true)}
+                >
+                  <span style={{ fontSize: '15px' }}>➕</span>
+                  <span>{t('+ Add Hub / Terminal', '+ नया हब / टर्मिनल जोड़ें')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="hubs-btn-hero-secondary"
+                  onClick={() => {
+                    loadHubs();
+                    showToast('✓ Multi-city hub telematics, throughput metrics & gate sensors refreshed');
+                  }}
                   disabled={hubsLoading}
                 >
-                  {hubsLoading ? 'Refreshing...' : '🔄 Refresh Hubs'}
+                  <span>🔄</span>
+                  <span>{hubsLoading ? t('Refreshing...', 'रिफ्रेशिंग...') : t('Refresh Network', 'नेटवर्क रिफ्रेश')}</span>
                 </button>
+
                 <button
                   type="button"
-                  className="admin-btn-primary"
-                  onClick={() => setShowAddHubModal(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  className="hubs-btn-hero-secondary"
+                  onClick={() => setActiveTab('dock_yard')}
                 >
-                  <span>➕</span> Add Hub / Terminal
+                  <span>🚪</span>
+                  <span>{t('Dock Yard & Gates', 'डॉक यार्ड व गेट्स')}</span>
                 </button>
               </div>
             </div>
 
-            {/* SEARCH & FILTER BAR */}
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '12px',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: 'var(--bg-card, #ffffff)',
-                border: '1px solid var(--border, #e2e8f0)',
-                borderRadius: '12px',
-                padding: '12px 16px',
-                marginBottom: '20px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
-              }}
-            >
-              {/* SEARCH INPUT */}
-              <div style={{ flex: '1 1 320px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <span style={{ position: 'absolute', left: '12px', color: '#94a3b8', fontSize: '15px', pointerEvents: 'none' }}>
+            {/* 2. 5 INTERACTIVE HUB & TERMINAL KPI METRIC CARDS */}
+            <div className="hubs-kpi-grid">
+              <div
+                className={`hubs-kpi-card total ${hubStatusFilter === 'all' ? 'active-filter' : ''}`}
+                onClick={() => setHubStatusFilter('all')}
+                title="Click to view all hubs"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Total National Hubs', 'कुल राष्ट्रीय हब')}</span>
+                  <span>🏢</span>
+                </div>
+                <div className="hubs-kpi-val">
+                  {hubsList.length} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Terminals</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Pan-India multi-modal logistics network', 'अखिल भारतीय मल्टी-मोडल नेटवर्क')}
+                </div>
+              </div>
+
+              <div
+                className={`hubs-kpi-card operational ${hubStatusFilter === 'operational' ? 'active-filter' : ''}`}
+                onClick={() => setHubStatusFilter('operational')}
+                title="Click to filter operational hubs"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Operational Gateways', 'सक्रिय गेटवे हब')}</span>
+                  <span>🟢</span>
+                </div>
+                <div className="hubs-kpi-val text-emerald">
+                  {hubsList.filter(h => h.isActive).length} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Active</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('24×7 live loading bays & cargo sorting', '24×7 लाइव लोडिंग बे व कार्गो सॉर्टिंग')}
+                </div>
+              </div>
+
+              <div
+                className={`hubs-kpi-card standby ${hubStatusFilter === 'standby' ? 'active-filter' : ''}`}
+                onClick={() => setHubStatusFilter('standby')}
+                title="Click to filter standby hubs"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Standby / Reserves', 'स्टैंडबाय रिजर्व')}</span>
+                  <span>⏸️</span>
+                </div>
+                <div className="hubs-kpi-val text-amber">
+                  {hubsList.filter(h => !h.isActive).length} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Standby</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Ready for festive & surge freight capacity', 'त्योहारी व अतिरिक्त फ्रेट के लिए तैयार')}
+                </div>
+              </div>
+
+              <div
+                className="hubs-kpi-card throughput"
+                onClick={() => {
+                  const total = hubsList.reduce((acc, h) => acc + (h.capacity || 2500), 0);
+                  showToast(`⚖️ Combined National Cargo Throughput: ${total.toLocaleString('en-IN')} MT / Day across ${hubsList.length} terminals`);
+                }}
+                title="Click for throughput summary"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Combined Capacity', 'दैनिक हैंडलिंग क्षमता')}</span>
+                  <span>⚖️</span>
+                </div>
+                <div className="hubs-kpi-val text-cyan">
+                  {hubsList.reduce((acc, h) => acc + (h.capacity || 2500), 0).toLocaleString('en-IN')} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>MT/Day</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Total daily tonnage capacity nationwide', 'कुल दैनिक टन भार क्षमता')}
+                </div>
+              </div>
+
+              <div
+                className="hubs-kpi-card corridors"
+                onClick={() => {
+                  showToast('🛣️ Inter-Hub Golden Quadrilateral freight corridors active with 100% GPS lock');
+                }}
+                title="Click for corridor summary"
+              >
+                <div className="hubs-kpi-head">
+                  <span>{t('Inter-Hub Corridors', 'इंटर-हब कॉरिडोर')}</span>
+                  <span>🛣️</span>
+                </div>
+                <div className="hubs-kpi-val text-violet">
+                  12 <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Corridors</span>
+                </div>
+                <div className="hubs-kpi-sub">
+                  {t('Golden Quadrilateral & express transit links', 'स्वर्णिम चतुर्भुज व एक्सप्रेस लिंक्स')}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. THEME-ADAPTIVE SEARCH & FILTER CARD */}
+            <div className="hubs-toolbar-card">
+              <div className="hubs-search-box">
+                <span style={{ position: 'absolute', left: '12px', color: 'var(--text-secondary, #94a3b8)', fontSize: '15px', pointerEvents: 'none' }}>
                   🔍
                 </span>
                 <input
                   type="text"
+                  className="hubs-search-input"
                   placeholder="Search hubs by name, code (e.g. HUB-DEL-01), city, or state..."
                   value={hubSearchQuery}
                   onChange={e => setHubSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '9px 36px 9px 36px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    background: 'var(--bg-input, #f8fafc)',
-                    color: 'var(--text-primary, #0f172a)',
-                    fontSize: '13.5px',
-                    outline: 'none',
-                    transition: 'border-color 0.15s ease'
-                  }}
                 />
                 {hubSearchQuery && (
                   <button
@@ -4844,11 +5176,10 @@ export default function Dashboard() {
                       right: '10px',
                       background: 'none',
                       border: 'none',
-                      color: '#94a3b8',
+                      color: 'var(--text-secondary, #94a3b8)',
                       cursor: 'pointer',
                       fontSize: '14px',
-                      padding: '2px 6px',
-                      borderRadius: '50%'
+                      padding: '4px'
                     }}
                     title="Clear search"
                   >
@@ -4857,77 +5188,35 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* STATUS FILTER PILLS & SORT */}
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', background: 'var(--bg-input, #f1f5f9)', borderRadius: '8px', padding: '3px' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="hubs-filter-group">
                   <button
                     type="button"
+                    className={`hubs-filter-btn ${hubStatusFilter === 'all' ? 'active all' : ''}`}
                     onClick={() => setHubStatusFilter('all')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: hubStatusFilter === 'all' ? '#0b72e7' : 'transparent',
-                      color: hubStatusFilter === 'all' ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                      transition: 'all 0.15s ease'
-                    }}
                   >
-                    All ({hubsList.length})
+                    <span>All ({hubsList.length})</span>
                   </button>
                   <button
                     type="button"
+                    className={`hubs-filter-btn ${hubStatusFilter === 'operational' ? 'active operational' : ''}`}
                     onClick={() => setHubStatusFilter('operational')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: hubStatusFilter === 'operational' ? '#10b981' : 'transparent',
-                      color: hubStatusFilter === 'operational' ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                      transition: 'all 0.15s ease'
-                    }}
                   >
-                    ● Operational ({hubsList.filter(h => h.isActive).length})
+                    <span>● Operational ({hubsList.filter(h => h.isActive).length})</span>
                   </button>
                   <button
                     type="button"
+                    className={`hubs-filter-btn ${hubStatusFilter === 'standby' ? 'active standby' : ''}`}
                     onClick={() => setHubStatusFilter('standby')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: hubStatusFilter === 'standby' ? '#f59e0b' : 'transparent',
-                      color: hubStatusFilter === 'standby' ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                      transition: 'all 0.15s ease'
-                    }}
                   >
-                    ○ Standby ({hubsList.filter(h => !h.isActive).length})
+                    <span>○ Standby ({hubsList.filter(h => !h.isActive).length})</span>
                   </button>
                 </div>
 
-                {/* SORT SELECTOR */}
                 <select
+                  className="hubs-sort-select"
                   value={hubSortBy}
                   onChange={e => setHubSortBy(e.target.value as any)}
-                  style={{
-                    padding: '7px 10px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    background: 'var(--bg-card, #ffffff)',
-                    color: 'var(--text-primary, #0f172a)',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
                 >
                   <option value="default">Default Order</option>
                   <option value="capacity">Throughput (High → Low)</option>
@@ -4945,14 +5234,14 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setHubSearchQuery('')}
-                  style={{ background: 'none', border: 'none', color: '#0b72e7', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                  style={{ background: 'none', border: 'none', color: '#0284c7', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
                 >
                   Reset Search
                 </button>
               )}
             </div>
 
-            {/* HUBS GRID OR EMPTY STATE */}
+            {/* 4. THEME-ADAPTIVE HUBS CARDS GRID */}
             {filteredHubsList.length === 0 ? (
               <div
                 style={{
@@ -4960,12 +5249,12 @@ export default function Dashboard() {
                   padding: '48px 24px',
                   background: 'var(--bg-card, #ffffff)',
                   border: '1px dashed var(--border, #cbd5e1)',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   color: 'var(--text-secondary, #64748b)'
                 }}
               >
-                <div style={{ fontSize: '36px', marginBottom: '10px' }}>🏢</div>
-                <h3 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
+                <div style={{ fontSize: '42px', marginBottom: '12px' }}>🏢</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: 'var(--text-primary, #0f172a)' }}>
                   No Hubs or Terminals Found
                 </h3>
                 <p style={{ margin: '0 0 16px', fontSize: '13px' }}>
@@ -4993,111 +5282,106 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-                {filteredHubsList.map(h => (
-                  <div
-                    key={h.id}
-                    style={{
-                      background: 'var(--bg-card, #ffffff)',
-                      border: '1px solid var(--border, #e2e8f0)',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                        <span style={{
-                          background: 'rgba(37, 99, 235, 0.1)',
-                          color: '#2563eb',
-                          fontFamily: 'monospace',
-                          fontWeight: 700,
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '6px'
-                        }}>
-                          {h.code}
-                        </span>
-                        <span style={{
-                          background: h.isActive ? '#edfdf4' : '#fee2e2',
-                          color: h.isActive ? '#10b981' : '#dc2626',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '12px'
-                        }}>
-                          {h.isActive ? '● Operational' : '○ Standby'}
-                        </span>
-                      </div>
-
-                      <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: 'var(--text-primary, #0f172a)' }}>
-                        {h.name}
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
-                        📍 {h.city}, {h.state}
-                      </p>
-                      {h.address && (
-                        <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #94a3b8)', lineHeight: '1.3' }}>
-                          {h.address}
-                        </p>
-                      )}
-                      {h.contactNumber && (
-                        <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#0b72e7', fontWeight: 600 }}>
-                          📞 {h.contactNumber}
-                        </p>
-                      )}
-                    </div>
-
-                    <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border, #f1f5f9)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="hubs-grid">
+                {filteredHubsList.map(h => {
+                  const cap = h.capacity || 2500;
+                  const utilPct = Math.min(94, Math.max(62, Math.round((cap / 5000) * 100)));
+                  return (
+                    <div key={h.id} className="hub-card">
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'block' }}>DAILY THROUGHPUT</span>
-                        <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>{h.capacity?.toLocaleString('en-IN') || 2500} MT / Day</strong>
-                      </div>
-                      <span style={{ fontSize: '12px', color: '#0b72e7', fontWeight: 600 }}>Active Gate ➔</span>
-                    </div>
+                        {/* CARD HEADER */}
+                        <div className="hub-card-head">
+                          <span className="hub-code-badge">
+                            <span>🏢</span>
+                            <span>{h.code}</span>
+                          </span>
+                          <span className={`hub-status-pill ${h.isActive ? 'operational' : 'standby'}`}>
+                            {h.isActive ? '● Operational' : '○ Standby'}
+                          </span>
+                        </div>
 
-                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleHubStatus(h.id)}
-                        style={{
-                          flex: 1,
-                          padding: '7px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--border, #cbd5e1)',
-                          background: 'var(--bg-input, #f8fafc)',
-                          color: 'var(--text-primary, #0f172a)',
-                          fontSize: '11.5px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteHub(h.id)}
-                        style={{
-                          padding: '7px 12px',
-                          borderRadius: '6px',
-                          border: '1px solid #fecaca',
-                          background: '#fef2f2',
-                          color: '#dc2626',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                        title="Decommission Hub Terminal"
-                      >
-                        ✕
-                      </button>
+                        {/* HUB NAME & CITY */}
+                        <h3 className="hub-name">
+                          {h.name}
+                        </h3>
+                        <p className="hub-location">
+                          <span>📍</span>
+                          <span>{h.city}, {h.state}</span>
+                        </p>
+
+                        {h.address && (
+                          <p style={{ margin: '6px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #94a3b8)', lineHeight: '1.35' }}>
+                            {h.address}
+                          </p>
+                        )}
+
+                        {h.contactNumber && (
+                          <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#0284c7', fontWeight: 700 }}>
+                            📞 {h.contactNumber}
+                          </p>
+                        )}
+
+                        {/* REGIONAL FACILITY TAGS */}
+                        <div className="hub-facility-tags">
+                          <span className="hub-facility-tag">🚛 32ft MXL Docks</span>
+                          <span className="hub-facility-tag">⚡ Automated Scales</span>
+                          {Boolean(h.city?.toLowerCase().includes('mumbai')) && <span className="hub-facility-tag">🚢 JNPT Port Direct</span>}
+                          {Boolean(h.city?.toLowerCase().includes('delhi')) && <span className="hub-facility-tag">✈️ IGI Air Cargo Link</span>}
+                          {Boolean(h.city?.toLowerCase().includes('bengaluru')) && <span className="hub-facility-tag">❄️ Pharma Cold-Chain</span>}
+                          {Boolean(h.city?.toLowerCase().includes('kolkata')) && <span className="hub-facility-tag">🚆 Rail Siding Link</span>}
+                        </div>
+                      </div>
+
+                      {/* CAPACITY & PROGRESS GAUGE */}
+                      <div className="hub-capacity-box">
+                        <div className="hub-capacity-head">
+                          <span>Daily Cargo Throughput</span>
+                          <span>{utilPct}% Utilized</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                          <span className="hub-capacity-val">
+                            {cap.toLocaleString('en-IN')} MT <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>/ Day</span>
+                          </span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                            Active Bays: <strong>12 Bays</strong>
+                          </span>
+                        </div>
+                        <div className="hub-capacity-bar-track">
+                          <div className="hub-capacity-bar-fill" style={{ width: `${utilPct}%` }} />
+                        </div>
+                      </div>
+
+                      {/* ACTIONS ROW */}
+                      <div className="hub-card-actions">
+                        <button
+                          type="button"
+                          className="hub-btn-toggle"
+                          onClick={() => handleToggleHubStatus(h.id)}
+                        >
+                          {h.isActive ? '⏸ Put on Standby' : '▶ Make Operational'}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="hub-btn-dock"
+                          onClick={() => setActiveTab('dock_yard')}
+                          title="View Gate Passes and Dockyard Bays for this Hub"
+                        >
+                          🚪 Dock Gates
+                        </button>
+
+                        <button
+                          type="button"
+                          className="hub-btn-delete"
+                          onClick={() => handleDeleteHub(h.id)}
+                          title="Decommission Hub Terminal"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -5108,228 +5392,31 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'tariff' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>⚡ Dynamic Tariff &amp; Rate Matrix Engine</h1>
-                <p>Governs commercial freight tariffs, diesel fuel surcharge index, GST tax slabs, and real-time public rate calculations</p>
-              </div>
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-primary"
-                  onClick={handleSaveTariffMatrix}
-                  disabled={tariffSaving}
-                >
-                  {tariffSaving ? 'Broadcasting...' : '💾 Save & Broadcast Tariff to Portal'}
-                </button>
-              </div>
-            </div>
-
-            {/* TARIFF CARDS GRID */}
-            <div className="tariff-grid">
-              {/* Card 1: FTL Full Truckload */}
-              <div className="tariff-card">
-                <div className="tariff-card-header">
-                  <span style={{ fontSize: '1.4rem' }}>🚛</span>
-                  <h3>Full Truckload (FTL) Freight Slab</h3>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Base Tariff (₹ per Ton / KM)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={tariffFtlPerKm}
-                      onChange={e => setTariffFtlPerKm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Minimum Corridor Trip Charge (Floor)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      value={tariffFtlMinTrip}
-                      onChange={e => setTariffFtlMinTrip(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <small style={{ color: '#64748b', fontSize: '11px' }}>
-                  Applied automatically to 32ft MXL, 24ft, and containerized fleet.
-                </small>
-              </div>
-
-              {/* Card 2: PTL Part Truckload */}
-              <div className="tariff-card">
-                <div className="tariff-card-header">
-                  <span style={{ fontSize: '1.4rem' }}>📦</span>
-                  <h3>Part Truckload (PTL / Parcel)</h3>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Base Freight (₹ per Kg / KM)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      step="0.05"
-                      value={tariffPtlPerKgKm}
-                      onChange={e => setTariffPtlPerKgKm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Minimum Parcel Booking Fee</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      value={tariffPtlMinFloor}
-                      onChange={e => setTariffPtlMinFloor(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <small style={{ color: '#64748b', fontSize: '11px' }}>
-                  Calculated dynamically with volumetric weight formula (CFT).
-                </small>
-              </div>
-
-              {/* Card 3: Priority & Fuel Surcharges */}
-              <div className="tariff-card">
-                <div className="tariff-card-header">
-                  <span style={{ fontSize: '1.4rem' }}>⚡</span>
-                  <h3>Surcharges &amp; Taxes</h3>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Express / Air Cargo Multiplier (x)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">x</span>
-                    <input
-                      type="number"
-                      step="0.05"
-                      value={tariffExpressMult}
-                      onChange={e => setTariffExpressMult(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Diesel Price Fuel Surcharge (%)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">%</span>
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={tariffFuelSurcharge}
-                      onChange={e => setTariffFuelSurcharge(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>GST Freight Rate (%)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">%</span>
-                    <input
-                      type="number"
-                      value={tariffGstPercent}
-                      onChange={e => setTariffGstPercent(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Dock Handling &amp; Toll Surcharge (Fixed)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      value={tariffHandlingFee}
-                      onChange={e => setTariffHandlingFee(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* LIVE SIMULATOR FOR SUPER ADMIN */}
-            <div className="tariff-sim-box">
-              <div className="tariff-sim-title">
-                <div>
-                  <h3>🧪 Real-Time Tariff Simulator</h3>
-                  <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-                    Verify how customer rate calculator responds to current matrix parameters
-                  </p>
-                </div>
-                <span style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
-                  Interactive Preview
-                </span>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Trip Distance: <strong>{simDistanceKm} KM</strong></label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="3000"
-                    step="50"
-                    value={simDistanceKm}
-                    onChange={e => setSimDistanceKm(parseInt(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Consignment Weight: <strong>{simWeightKg} KG</strong></label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="24000"
-                    step="50"
-                    value={simWeightKg}
-                    onChange={e => setSimWeightKg(parseInt(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Freight Service Mode</label>
-                  <select
-                    value={simService}
-                    onChange={e => setSimService(e.target.value as any)}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', background: '#07192b', color: '#fff', border: '1px solid #1e3355' }}
-                  >
-                    <option value="PTL">Part Truckload (PTL)</option>
-                    <option value="FTL">Full Truckload (FTL Dedicated)</option>
-                    <option value="Express">Express Air/Highway Priority</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="tariff-sim-result-card">
-                <div className="sim-row">
-                  <span>Base Haulage Freight ({simDistanceKm} km × {simWeightKg} kg):</span>
-                  <strong>₹{simBaseFreight.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row">
-                  <span>Diesel Fuel Surcharge ({tariffFuelSurcharge}%):</span>
-                  <strong>₹{simFuelCharge.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row">
-                  <span>Terminal Handling &amp; Dock Fee:</span>
-                  <strong>₹{simHandling.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row">
-                  <span>GST Road Transport SAC 9965 ({tariffGstPercent}%):</span>
-                  <strong>₹{simGst.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row total">
-                  <span>Total Calculated Client Tariff:</span>
-                  <span>₹{simTotal.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-            </div>
+            <DynamicTariffEngine
+              tariffFtlPerKm={tariffFtlPerKm}
+              setTariffFtlPerKm={setTariffFtlPerKm}
+              tariffFtlMinTrip={tariffFtlMinTrip}
+              setTariffFtlMinTrip={setTariffFtlMinTrip}
+              tariffPtlPerKgKm={tariffPtlPerKgKm}
+              setTariffPtlPerKgKm={setTariffPtlPerKgKm}
+              tariffPtlMinFloor={tariffPtlMinFloor}
+              setTariffPtlMinFloor={setTariffPtlMinFloor}
+              tariffExpressMult={tariffExpressMult}
+              setTariffExpressMult={setTariffExpressMult}
+              tariffFuelSurcharge={tariffFuelSurcharge}
+              setTariffFuelSurcharge={setTariffFuelSurcharge}
+              tariffGstPercent={tariffGstPercent}
+              setTariffGstPercent={setTariffGstPercent}
+              tariffHandlingFee={tariffHandlingFee}
+              setTariffHandlingFee={setTariffHandlingFee}
+              tariffSaving={tariffSaving}
+              onSaveTariff={handleSaveTariffMatrix}
+              showToast={showToast}
+            />
           </div>
         )}
 
-        {/* ============================================================== */}
+                {/* ============================================================== */}
         {/* VIEW: FLEET TELEMATICS & GPS RADAR */}
         {/* ============================================================== */}
         {activeTab === 'telematics' && (
@@ -5603,7 +5690,9 @@ export default function Dashboard() {
         {/* VIEW: E-WAY BILL AUTO VERIFICATION ENGINE */}
         {/* ============================================================== */}
         {activeTab === 'ewaybill' && (
-          <NicEwayBillAutoExtensionSuite />
+          <div className="admin-content-pad">
+            <NicEwayBillAutoExtensionSuite />
+          </div>
         )}
 
         {/* ============================================================== */}
@@ -6075,95 +6164,16 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'settings' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>Dynamic System Settings &amp; Platform Controls</h1>
-                <p>Configure live tariffs, fuel surcharges, taxation rates, and platform maintenance status without redeploying</p>
-              </div>
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-export"
-                  onClick={loadSettings}
-                  disabled={settingsLoading}
-                >
-                  {settingsLoading ? 'Refreshing...' : '🔄 Refresh Settings'}
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
-              {settingsList.map(item => (
-                <div
-                  key={item.key}
-                  style={{
-                    background: 'var(--bg-card, #ffffff)',
-                    border: '1px solid var(--border, #e2e8f0)',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{
-                      background: 'rgba(37, 99, 235, 0.08)',
-                      color: '#2563eb',
-                      fontWeight: 700,
-                      fontSize: '11px',
-                      padding: '3px 8px',
-                      borderRadius: '4px'
-                    }}>
-                      {item.group}
-                    </span>
-                    <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
-                      {item.key}
-                    </span>
-                  </div>
-
-                  <p style={{ margin: '8px 0 16px 0', fontSize: '13px', color: 'var(--text-secondary, #475569)', minHeight: '38px' }}>
-                    {item.description || item.key}
-                  </p>
-
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    {item.key === 'SYSTEM_MAINTENANCE_MODE' ? (
-                      <select
-                        value={editingSettings[item.key] ?? item.value}
-                        onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
-                        style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border, #cbd5e1)', background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0f172a)' }}
-                      >
-                        <option value="false">🟢 Operational (Normal Booking Active)</option>
-                        <option value="true">🔴 Maintenance Mode (Freeze Bookings)</option>
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={editingSettings[item.key] ?? item.value}
-                        onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
-                        style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border, #cbd5e1)', background: 'var(--bg-card, #fff)', color: 'var(--text-primary, #0f172a)' }}
-                      />
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => handleSaveSetting(item)}
-                      disabled={savingKey === item.key}
-                      style={{
-                        padding: '8px 16px',
-                        background: '#2563eb',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontWeight: 700,
-                        fontSize: '12px',
-                        cursor: savingKey === item.key ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      {savingKey === item.key ? 'Saving...' : 'Save'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SystemSettingsDeck
+              settingsList={settingsList}
+              settingsLoading={settingsLoading}
+              editingSettings={editingSettings}
+              setEditingSettings={setEditingSettings}
+              savingKey={savingKey}
+              onSaveSetting={handleSaveSetting}
+              onRefresh={loadSettings}
+              showToast={showToast}
+            />
           </div>
         )}
 
@@ -6171,7 +6181,7 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* MODAL 0: AI OCR SCANNER MODAL */}
+                {/* MODAL 0: AI OCR SCANNER MODAL */}
         {showAiScannerModal && (
           <AiOcrScannerModal
             initialDocType={aiScannerDocType}
@@ -6298,14 +6308,25 @@ export default function Dashboard() {
           <div className="st-modal-overlay" onClick={() => setShowUpdateShipmentModal(false)}>
             <div className="st-drawer-box" onClick={e => e.stopPropagation()}>
               <div className="st-drawer-head">
-                <div>
-                  <h2>Update Shipment Status</h2>
-                  <p>Shipment: {selectedShipment.shipmentNo} ({selectedShipment.customer})</p>
+                <div className="shipment-modal-head-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="shipment-modal-badge">#{selectedShipment.shipmentNo}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Waybill: {selectedShipment.bookingNo}</span>
+                  </div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                    Update Shipment Status
+                  </h2>
+                  <div className="shipment-route-pill">
+                    <span>{selectedShipment.customer}</span>
+                    <span>•</span>
+                    <span>📍 {selectedShipment.origin} ➔ {selectedShipment.destination}</span>
+                  </div>
                 </div>
                 <button
                   type="button"
                   className="st-drawer-close"
                   onClick={() => setShowUpdateShipmentModal(false)}
+                  title="Close"
                 >
                   &times;
                 </button>
@@ -6314,38 +6335,33 @@ export default function Dashboard() {
               <form onSubmit={handleSaveShipmentStatus}>
                 <div className="st-drawer-body">
                   <div className="st-form-field">
-                    <label>Current Status</label>
+                    <label className="shipment-field-label">Current Status</label>
                     <select
+                      className="shipment-select"
                       value={newStatus}
                       onChange={e => setNewStatus(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     >
-                      <option value="Pending">Pending (Awaiting Pickup)</option>
-                      <option value="Picked Up">Picked Up (At Origin Hub)</option>
-                      <option value="In Transit">In Transit (On Highway)</option>
-                      <option value="Out for Delivery">Out for Delivery (Last Mile)</option>
-                      <option value="Delivered">Delivered (Completed)</option>
-                      <option value="Custom">Custom Status / Other Stage</option>
+                      <option value="Pending">⏳ Pending (Awaiting Pickup)</option>
+                      <option value="Picked Up">📦 Picked Up (At Origin Hub)</option>
+                      <option value="In Transit">🚚 In Transit (On Highway)</option>
+                      <option value="Out for Delivery">🎯 Out for Delivery (Last Mile)</option>
+                      <option value="Delivered">✅ Delivered (Completed)</option>
+                      <option value="Custom">🏷️ Custom Status / Special Stage</option>
                     </select>
                   </div>
 
                   {/* CUSTOM NAME / STAGE INPUT & QUICK PRESET PILLS */}
-                  <div className="st-form-field" style={{ background: '#f5f3ff', padding: '12px', borderRadius: '8px', border: '1px solid #ddd6fe' }}>
-                    <label style={{ color: '#6b21a8', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+                  <div className="shipment-custom-card">
+                    <label className="shipment-field-label" style={{ color: '#8b5cf6', margin: 0 }}>
                       <span>🏷️ Custom Name / Stage Title</span>
-                      <span style={{ fontSize: '11px', color: '#7c3aed', fontWeight: 'normal' }}>Optional or Custom Stage</span>
+                      <span style={{ fontSize: '11px', opacity: 0.85, fontWeight: 'normal', textTransform: 'none' }}>
+                        Optional or Custom Stage
+                      </span>
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Held at Border RTO, Dock Holding, Weather Hold, Consignee Delayed..."
+                      className="shipment-input"
+                      placeholder="e.g. Held at Border RTO, Weather Hold, Dock Holding..."
                       value={customStatusName}
                       onChange={e => {
                         setCustomStatusName(e.target.value);
@@ -6353,79 +6369,59 @@ export default function Dashboard() {
                           setNewStatus('Custom');
                         }
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     />
 
                     {/* QUICK PRESET PILLS FOR EASY 1-CLICK ENTRY */}
-                    <div style={{ marginTop: '8px' }}>
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Quick One-Click Tags: </span>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 700 }}>
+                        Quick One-Click Tags:
+                      </span>
+                      <div className="shipment-tag-grid">
                         {[
                           '🚨 Held at Border RTO',
                           '🌧️ Weather Hold',
                           '🔄 Hub Transshipment',
                           '⏱️ Customer Rescheduled',
                           '🔧 Breakdown Maintenance',
-                          '✅ Gate Pass Verified'
-                        ].map(preset => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setCustomStatusName(preset);
-                              setNewStatus('Custom');
-                            }}
-                            style={{
-                              background: '#ffffff',
-                              border: '1px solid #d8b4fe',
-                              color: '#7e22ce',
-                              borderRadius: '6px',
-                              padding: '3px 8px',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            {preset}
-                          </button>
-                        ))}
+                          '✅ Gate Pass Verified',
+                          '🛑 RTO Inspection',
+                          '📦 Weight Verified'
+                        ].map(preset => {
+                          const isTagActive = customStatusName === preset;
+                          return (
+                            <button
+                              key={preset}
+                              type="button"
+                              className={`shipment-tag-btn ${isTagActive ? 'active' : ''}`}
+                              onClick={() => {
+                                setCustomStatusName(preset);
+                                setNewStatus('Custom');
+                              }}
+                            >
+                              {preset}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
 
                   <div className="st-form-field">
-                    <label>Current Checkpoint / Location *</label>
+                    <label className="shipment-field-label">Current Checkpoint / Location *</label>
                     <input
                       type="text"
-                      placeholder="e.g., Jaipur Logistics Terminal or Delhi Ring Road"
+                      className="shipment-input"
+                      placeholder="e.g., Jaipur Logistics Terminal or NH-48 Toll Plaza"
                       value={newLocation}
                       onChange={e => setNewLocation(e.target.value)}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     />
                   </div>
 
                   <div className="st-form-field">
-                    <label>📝 Custom Note / Milestone Remarks</label>
+                    <label className="shipment-field-label">📝 Custom Note / Milestone Remarks</label>
                     <textarea
+                      className="shipment-textarea"
                       placeholder="e.g., Consignment inspected, seal locks intact, departed terminal or any custom instructions..."
                       value={customNoteText}
                       onChange={e => {
@@ -6433,22 +6429,23 @@ export default function Dashboard() {
                         setMilestoneNote(e.target.value);
                       }}
                       rows={3}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     />
                   </div>
 
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b' }}>
-                    <div>Driver Assigned: <strong>{selectedShipment.driver}</strong></div>
-                    <div>Vehicle Assigned: <strong>{selectedShipment.vehicle}</strong></div>
+                  {/* DRIVER & VEHICLE INFO CARD */}
+                  <div className="shipment-driver-box">
+                    <div className="shipment-driver-meta">
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary, #94a3b8)', fontWeight: 700 }}>
+                        Assigned Driver
+                      </span>
+                      <strong>👤 {selectedShipment.driver}</strong>
+                    </div>
+                    <div className="shipment-driver-meta" style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary, #94a3b8)', fontWeight: 700 }}>
+                        Assigned Vehicle
+                      </span>
+                      <strong style={{ color: '#2563eb' }}>🚛 {selectedShipment.vehicle}</strong>
+                    </div>
                   </div>
                 </div>
 
@@ -6461,7 +6458,252 @@ export default function Dashboard() {
                     Cancel
                   </button>
                   <button type="submit" className="st-btn-submit">
-                    Update Status &amp; Notify Client
+                    ✓ Update Status &amp; Notify Client
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL 2B: ADD NEW HIGHWAY DISPATCH / SHIPMENT (NEW) */}
+        {/* ============================================================== */}
+        {showAddShipmentModal && (
+          <div className="st-modal-overlay" onClick={() => setShowAddShipmentModal(false)}>
+            <div className="st-drawer-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+              <div className="st-drawer-head">
+                <div className="shipment-modal-head-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="shipment-modal-badge">NEW DISPATCH</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>AIS-140 Fleet Gateway</span>
+                  </div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                    Create &amp; Dispatch New Highway Shipment
+                  </h2>
+                  <div className="shipment-route-pill">
+                    <span>Pan-India Freight Logistics</span>
+                    <span>•</span>
+                    <span>Rule 138 Part-B Synced</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowAddShipmentModal(false)}
+                  title="Close"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* 1-CLICK INDUSTRY PRESETS BAR */}
+              <div style={{
+                background: 'var(--bg-input, #f8fafc)',
+                borderBottom: '1px solid var(--border, #e2e8f0)',
+                padding: '10px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap'
+              }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase' }}>
+                  ⚡ 1-Click Fast Fill:
+                </span>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('ftl')}
+                >
+                  🏭 Auto FTL (Pune ➔ Sanand)
+                </button>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('cold')}
+                >
+                  💊 Pharma Cold-Chain
+                </button>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('heavy')}
+                >
+                  🏗️ Steel Heavy ODC
+                </button>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('express')}
+                >
+                  📦 Retail Express
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateNewShipment}>
+                <div className="st-drawer-body">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label className="shipment-field-label" style={{ margin: 0 }}>Shipment Number *</label>
+                        <button
+                          type="button"
+                          onClick={() => setNewShipmentNo(`SHP-${Math.floor(9900 + Math.random() * 900)}`)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#0284c7',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ⚡ Auto-Gen
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentNo}
+                        onChange={e => setNewShipmentNo(e.target.value)}
+                        placeholder="e.g. SHP-9906"
+                      />
+                    </div>
+
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Waybill / LR Number *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentBookingNo}
+                        onChange={e => setNewShipmentBookingNo(e.target.value)}
+                        placeholder="e.g. ASKB00125"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label className="shipment-field-label">Customer / Enterprise Client *</label>
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      required
+                      value={newShipmentCustomer}
+                      onChange={e => setNewShipmentCustomer(e.target.value)}
+                      placeholder="e.g. Tata Motors Commercial Vehicles Ltd"
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Origin Hub *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentOrigin}
+                        onChange={e => setNewShipmentOrigin(e.target.value)}
+                        placeholder="e.g. Delhi Central Hub"
+                      />
+                    </div>
+
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Destination Hub *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentDestination}
+                        onChange={e => setNewShipmentDestination(e.target.value)}
+                        placeholder="e.g. Mumbai Nhava Sheva"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Assigned Pilot / Driver *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentDriver}
+                        onChange={e => setNewShipmentDriver(e.target.value)}
+                        placeholder="e.g. Ramesh Yadav"
+                      />
+                    </div>
+
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Assigned Fleet Vehicle *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentVehicle}
+                        onChange={e => setNewShipmentVehicle(e.target.value)}
+                        placeholder="e.g. DL-01-AB-1234 (32ft MXL)"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label className="shipment-field-label">Current Checkpoint / Location *</label>
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      required
+                      value={newShipmentLocation}
+                      onChange={e => setNewShipmentLocation(e.target.value)}
+                      placeholder="e.g. Delhi Origin Hub - Loading Bay #04"
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label className="shipment-field-label">Initial Dispatch Status</label>
+                    <select
+                      className="shipment-select"
+                      value={newShipmentInitialStatus}
+                      onChange={e => setNewShipmentInitialStatus(e.target.value)}
+                    >
+                      <option value="In Transit">🚚 In Transit (Dispatched on Highway)</option>
+                      <option value="Pending">⏳ Pending (Dock Loading)</option>
+                      <option value="Out for Delivery">🎯 Out for Delivery (Destination Local)</option>
+                    </select>
+                  </div>
+
+                  <div className="shipment-custom-card">
+                    <label className="shipment-field-label" style={{ color: '#8b5cf6', margin: 0 }}>
+                      🏷️ Custom Stage Title &amp; Milestone Notes
+                    </label>
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      value={newShipmentCustomStatus}
+                      onChange={e => setNewShipmentCustomStatus(e.target.value)}
+                      placeholder="e.g. Priority Express Corridor"
+                    />
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      value={newShipmentCustomNote}
+                      onChange={e => setNewShipmentCustomNote(e.target.value)}
+                      placeholder="e.g. Fastag automated clearance verified at NH-48"
+                    />
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowAddShipmentModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit">
+                    🚀 Confirm &amp; Dispatch Shipment
                   </button>
                 </div>
               </form>
@@ -7439,6 +7681,73 @@ export default function Dashboard() {
             onClose={() => setSelectedLr(null)}
           />
         )}
+
+        {/* MOBILE BOTTOM NAVIGATION BAR (FIXED APP-STYLE DOCK) */}
+        <nav className="admin-mobile-bottom-nav" aria-label="Mobile Navigation">
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+            <span>Overview</span>
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'shipments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('shipments')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="1" y="3" width="15" height="13" rx="2" />
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+              <circle cx="5.5" cy="18.5" r="2.5" />
+              <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+            <span>Shipments</span>
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'hubs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('hubs')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Hubs</span>
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'ai_automation' ? 'active' : ''}`}
+            onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+            <span>AI Lab</span>
+          </button>
+
+          <button
+            type="button"
+            className="mobile-dock-btn"
+            onClick={() => setIsMobileNavOpen(true)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <span>Menu</span>
+          </button>
+        </nav>
       </main>
     </div>
   );

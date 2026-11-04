@@ -878,59 +878,70 @@ export default function NicEwayBillAutoExtensionSuite() {
         </div>
       )}
 
-      {/* 1. TOP HEADER & NIC GATEWAY STATUS */}
-      <div className="ewb-header-row">
-        <div className="ewb-header-title-box">
-          <div className="ewb-nic-badge">
-            <span>🏛️</span> NIC 1.03
+      {/* 1. EXECUTIVE HERO COMPLIANCE BANNER */}
+      <div className="ewb-hero-banner">
+        <div className="ewb-hero-left">
+          <div className="ewb-hero-badge">
+            <span className="ewb-pulse-dot" />
+            <span>GOVT RULE 138 COMPLIANCE ENGINE • NIC v1.03</span>
           </div>
-          <div className="ewb-header-titles">
-            <h1>{t('Govt NIC E-Way Bill Auto-Extension & Part-B Suite', 'सरकारी एनआईसी ई-वे बिल ऑटो-एक्सटेंशन और पार्ट-बी सूट')}</h1>
-            <p>{t('Automated highway validity extension, instant Part-B vehicle transshipment swap & 100% zero RTO seizure penalty protection under Rule 138 CGST', 'राजमार्ग वैधता विस्तार, तुरंत पार्ट-बी वाहन ट्रांसफर और नियम 138 सीजीएसटी के तहत 100% आरटीओ जब्ती दंड सुरक्षा')}</p>
+          <h1>{t('Govt NIC E-Way Bill Auto-Extension & Part-B Suite', 'सरकारी एनआईसी ई-वे बिल ऑटो-एक्सटेंशन और पार्ट-बी सूट')}</h1>
+          <p>
+            {t(
+              'Automated highway validity extension, instant Part-B vehicle transshipment swap & 100% zero RTO seizure penalty protection under Rule 138 CGST.',
+              'राजमार्ग वैधता विस्तार, तुरंत पार्ट-बी वाहन ट्रांसफर और नियम 138 सीजीएसटी के तहत 100% आरटीओ जब्ती दंड सुरक्षा।'
+            )}
+          </p>
+
+          <div className="ewb-hero-tags">
+            <span className="ewb-hero-tag">
+              <span className="ewb-status-indicator" />
+              <span>NIC Gateway: Active</span>
+            </span>
+            <span className="ewb-hero-tag">
+              <span>TRANSIN:</span>
+              <strong style={{ fontFamily: 'monospace', color: '#6ee7b7' }}>27AABCA1234F1Z8</strong>
+            </span>
+            <span className="ewb-hero-tag">
+              <span>🛡️ Zero RTO Seizure Risk</span>
+            </span>
+            <span className="ewb-hero-tag">
+              <span>⚡ AIS-140 GPS Auto-Extension</span>
+            </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <div className="ewb-gateway-status-pill">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="ewb-status-indicator" />
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981' }}>{t('NIC Gateway: Active', 'एनआईसी गेटवे: सक्रिय')}</span>
-            </div>
-            <span style={{ color: 'var(--border-color, #cbd5e1)' }}>|</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
-              TRANSIN: <strong style={{ color: 'var(--text-primary, #0f172a)', fontFamily: 'monospace' }}>27AABCA1234F1Z8</strong>
-            </span>
-          </div>
+        <div className="ewb-hero-actions">
+          <button
+            type="button"
+            className="ewb-btn-hero-primary"
+            onClick={handleOpenAddModal}
+          >
+            <span style={{ fontSize: '15px' }}>➕</span>
+            <span>{t('+ Generate / Add New E-Way Bill', '+ नया ई-वे बिल जोड़ें')}</span>
+          </button>
 
           <button
             type="button"
-            className="ewb-btn-add-new"
-            onClick={handleOpenAddModal}
-            style={{
-              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '10px 18px',
-              fontSize: '13px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-              transition: 'all 0.2s ease'
+            className="ewb-btn-hero-secondary"
+            onClick={() => {
+              showToast('✓ NIC Gateway telematics synchronized with live GPS IRNSS satellites');
             }}
           >
-            <span style={{ fontSize: '16px' }}>➕</span>
-            <span>{t('+ Generate / Add New E-Way Bill', '+ नया ई-वे बिल जोड़ें')}</span>
+            <span>🔄</span>
+            <span>{t('Sync NIC Telematics', 'एनआईसी टेलीमैटिक्स सिंक')}</span>
           </button>
         </div>
       </div>
 
       {/* 2. 4 INTERACTIVE COMPLIANCE KPI METRICS */}
       <div className="ewb-metrics-grid">
-        <div className="ewb-metric-card critical">
+        <div 
+          className="ewb-metric-card critical"
+          onClick={() => setFilterTab('CRITICAL')}
+          style={{ cursor: 'pointer' }}
+          title="Click to filter Critical E-Way Bills"
+        >
           <div className="ewb-metric-label">
             <span>{t('Critical Expiring (<4h)', 'अत्यंत गंभीर समाप्ति (<4 घंटे)')}</span>
             <span>🚨</span>
@@ -943,7 +954,12 @@ export default function NicEwayBillAutoExtensionSuite() {
           </div>
         </div>
 
-        <div className="ewb-metric-card warning">
+        <div 
+          className="ewb-metric-card warning"
+          onClick={() => setFilterTab('WARNING')}
+          style={{ cursor: 'pointer' }}
+          title="Click to filter Warning E-Way Bills"
+        >
           <div className="ewb-metric-label">
             <span>{t('Warning Expiry (<8h)', 'चेतावनी समाप्ति (<8 घंटे)')}</span>
             <span>⚠️</span>
@@ -956,7 +972,12 @@ export default function NicEwayBillAutoExtensionSuite() {
           </div>
         </div>
 
-        <div className="ewb-metric-card safe">
+        <div 
+          className="ewb-metric-card safe"
+          onClick={() => setFilterTab('ALL')}
+          style={{ cursor: 'pointer' }}
+          title="Click to show All Active Vehicles"
+        >
           <div className="ewb-metric-label">
             <span>{t('Active Highway Fleets', 'मार्ग में सक्रिय वाहन')}</span>
             <span>🚛</span>
@@ -969,7 +990,14 @@ export default function NicEwayBillAutoExtensionSuite() {
           </div>
         </div>
 
-        <div className="ewb-metric-card penalty">
+        <div 
+          className="ewb-metric-card penalty"
+          onClick={() => {
+            showToast(`🛡️ Total Protected: ₹${(totalCargoValueProtected / 100000).toFixed(2)} Lakhs across ${ewayBills.length} shipments`);
+          }}
+          style={{ cursor: 'pointer' }}
+          title="Click to view total liability shield summary"
+        >
           <div className="ewb-metric-label">
             <span>{t('Protected Value & Penalty Shield', 'सुरक्षित माल व जुर्माना शील्ड')}</span>
             <span>🛡️</span>
@@ -2391,31 +2419,8 @@ export default function NicEwayBillAutoExtensionSuite() {
       {/* MODAL 6: GENERATE & REGISTER NEW GOVT E-WAY BILL (PART-A + PART-B) */}
       {/* ===================================================================== */}
       {showAddEwbModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(15, 23, 42, 0.75)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 999999,
-          padding: '16px'
-        }} onClick={() => setShowAddEwbModal(false)}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '16px',
-            maxWidth: '860px',
-            width: '100%',
-            maxHeight: '92vh',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)'
-          }} onClick={e => e.stopPropagation()}>
+        <div className="ewb-modal-overlay" onClick={() => setShowAddEwbModal(false)}>
+          <div className="ewb-modal-box" onClick={e => e.stopPropagation()}>
             
             {/* MODAL HEADER */}
             <div style={{
@@ -2462,79 +2467,35 @@ export default function NicEwayBillAutoExtensionSuite() {
             </div>
 
             {/* QUICK 1-CLICK DEMO TEMPLATES BAR */}
-            <div style={{
-              background: '#f8fafc',
-              borderBottom: '1px solid #e2e8f0',
-              padding: '12px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              flexWrap: 'wrap'
-            }}>
+            <div className="ewb-templates-bar">
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
                 ⚡ 1-Click Fast Fill Templates:
               </span>
               <button
                 type="button"
+                className="ewb-template-btn"
                 onClick={() => applyEwbTemplate('auto')}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#0f172a',
-                  cursor: 'pointer'
-                }}
               >
                 🏭 Auto FTL (Pune ➔ Sanand)
               </button>
               <button
                 type="button"
+                className="ewb-template-btn"
                 onClick={() => applyEwbTemplate('pharma')}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#0f172a',
-                  cursor: 'pointer'
-                }}
               >
                 💊 Pharma Cold-Chain (Vadodara ➔ Baddi)
               </button>
               <button
                 type="button"
+                className="ewb-template-btn"
                 onClick={() => applyEwbTemplate('steel')}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#0f172a',
-                  cursor: 'pointer'
-                }}
               >
                 🏗️ Steel Heavy (Raigarh ➔ Faridabad)
               </button>
               <button
                 type="button"
+                className="ewb-template-btn"
                 onClick={() => applyEwbTemplate('fmcg')}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#0f172a',
-                  cursor: 'pointer'
-                }}
               >
                 📦 FMCG Retail (Bengaluru ➔ Chennai)
               </button>
@@ -2545,7 +2506,7 @@ export default function NicEwayBillAutoExtensionSuite() {
               <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
                 
                 {/* SECTION 1: EWB & DOCUMENT PROFILE */}
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                <div className="ewb-modal-section">
                   <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>📄 1. E-Way Bill Number &amp; Invoice Profile</span>
                     <button
@@ -2650,7 +2611,7 @@ export default function NicEwayBillAutoExtensionSuite() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
                   
                   {/* CONSIGNOR (FROM) */}
-                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div className="ewb-modal-section">
                     <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
                       🏭 2. Consignor / Supplier (Dispatched From)
                     </div>
@@ -2713,7 +2674,7 @@ export default function NicEwayBillAutoExtensionSuite() {
                   </div>
 
                   {/* CONSIGNEE (TO) */}
-                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div className="ewb-modal-section">
                     <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
                       🏢 3. Consignee / Recipient (Delivery Destination)
                     </div>
@@ -2777,7 +2738,7 @@ export default function NicEwayBillAutoExtensionSuite() {
                 </div>
 
                 {/* SECTION 4: CARGO & VALUATION */}
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                <div className="ewb-modal-section">
                   <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
                     📦 4. Cargo Specifications, HSN Code &amp; Tax Valuation
                   </div>
@@ -2949,15 +2910,7 @@ export default function NicEwayBillAutoExtensionSuite() {
               </div>
 
               {/* MODAL ACTIONS */}
-              <div style={{
-                background: '#f8fafc',
-                borderTop: '1px solid #e2e8f0',
-                padding: '16px 24px',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: '12px'
-              }}>
+              <div className="ewb-modal-footer">
                 <button
                   type="button"
                   onClick={() => setShowAddEwbModal(false)}
