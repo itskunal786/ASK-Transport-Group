@@ -153,19 +153,81 @@ const INITIAL_SLIPS: WeighbridgeSlipRecord[] = [
   }
 ];
 
+const AXLE_CONFIG_MAP: Record<VehicleAxleCategory, { label: string; limitKg: number }> = {
+  '2-AXLE_6WHEEL': { label: '2-Axle (6-Wheeler)', limitKg: 18500 },
+  '3-AXLE_10WHEEL': { label: '3-Axle (10-Wheeler)', limitKg: 28000 },
+  '4-AXLE_14WHEEL': { label: '4-Axle (14-Wheeler)', limitKg: 35000 },
+  '5-AXLE_16WHEEL': { label: '5-Axle (16-Wheeler)', limitKg: 43500 },
+  '6-AXLE_TRAILER': { label: '6-Axle (Trailer / 22-Wheel)', limitKg: 55000 },
+};
+
 export default function ElectronicWeighbridgeDeck() {
   const { t } = useLanguage();
-  const [slips, setSlips] = useState<WeighbridgeSlipRecord[]>(INITIAL_SLIPS);
-  const [selectedSlip, setSelectedSlip] = useState<WeighbridgeSlipRecord | null>(INITIAL_SLIPS[1]); // Default to the overloaded truck to demonstrate fine shield
+  const [slips, setSlips] = useState<WeighbridgeSlipRecord[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ask_weighbridge_slips');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return INITIAL_SLIPS;
+  });
+  const [selectedSlip, setSelectedSlip] = useState<WeighbridgeSlipRecord | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ask_weighbridge_slips');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed[1] || parsed[0];
+        } catch {}
+      }
+    }
+    return INITIAL_SLIPS[1];
+  });
   const [liveScaleReadingKg, setLiveScaleReadingKg] = useState<number>(34600);
   const [isScaleStabilized, setIsScaleStabilized] = useState<boolean>(true);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [showCrossDockModal, setShowCrossDockModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Add / Edit Vehicle Modal State
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState<boolean>(false);
+  const [showEditVehicleModal, setShowEditVehicleModal] = useState<boolean>(false);
+  const [editingSlip, setEditingSlip] = useState<WeighbridgeSlipRecord | null>(null);
+
+  // Form Fields for Add / Edit Vehicle
+  const [formPlate, setFormPlate] = useState<string>('');
+  const [formTruckModel, setFormTruckModel] = useState<string>('Tata Signa 4825.TK 16-Wheeler (40 Ton)');
+  const [formAxleCategory, setFormAxleCategory] = useState<VehicleAxleCategory>('5-AXLE_16WHEEL');
+  const [formDriverName, setFormDriverName] = useState<string>('');
+  const [formDriverPhone, setFormDriverPhone] = useState<string>('+91 98');
+  const [formTransporterName, setFormTransporterName] = useState<string>('ASK Transport Fleet');
+  const [formConsignmentNo, setFormConsignmentNo] = useState<string>('');
+  const [formMaterialName, setFormMaterialName] = useState<string>('Auto Components & Precision Spares');
+  const [formTareWeightKg, setFormTareWeightKg] = useState<number>(12400);
+  const [formGrossWeightKg, setFormGrossWeightKg] = useState<number>(36500);
+
+  // Auto-sync slips to localStorage
   useEffect(() => {
+    if (typeof window !== 'undefined' && slips.length > 0) {
+      try {
+        localStorage.setItem('ask_weighbridge_slips', JSON.stringify(slips));
+      } catch {}
+    }
+  }, [slips]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('ask_weighbridge_slips')) {
+      return;
+    }
     getWeighbridgeSlips().then(data => {
-      if (data && data.length > 0) setSlips(data);
+      if (data && data.length > 0) {
+        setSlips(data);
+        setSelectedSlip(data[1] || data[0]);
+      }
     }).catch(() => {});
   }, []);
 
@@ -177,6 +239,198 @@ export default function ElectronicWeighbridgeDeck() {
   // --------------------------------------------------------------------------
   // ACTIONS
   // --------------------------------------------------------------------------
+
+  const handleOpenAddVehicleModal = () => {
+    const randNum = Math.floor(1000 + Math.random() * 9000);
+    setFormPlate(`MH-12-AB-${randNum}`);
+    setFormTruckModel('Tata Signa 4825.TK 16-Wheeler (40 Ton)');
+    setFormAxleCategory('5-AXLE_16WHEEL');
+    setFormDriverName('Ramesh Yadav');
+    setFormDriverPhone('+91 98112 23344');
+    setFormTransporterName('ASK Transport Fleet');
+    setFormConsignmentNo(`ASK-LR-${randNum}`);
+    setFormMaterialName('Auto Components & Precision Spares');
+    setFormTareWeightKg(12400);
+    setFormGrossWeightKg(36500);
+    setShowAddVehicleModal(true);
+  };
+
+  const handleOpenEditVehicleModal = (slip: WeighbridgeSlipRecord) => {
+    setEditingSlip(slip);
+    setFormPlate(slip.vehicleNumber);
+    setFormTruckModel(slip.truckModel);
+    setFormAxleCategory(slip.axleCategory);
+    setFormDriverName(slip.driverName);
+    setFormDriverPhone(slip.driverPhone);
+    setFormTransporterName(slip.transporterName);
+    setFormConsignmentNo(slip.consignmentNo);
+    setFormMaterialName(slip.materialName);
+    setFormTareWeightKg(slip.tareWeightKg);
+    setFormGrossWeightKg(slip.grossWeightKg);
+    setShowEditVehicleModal(true);
+  };
+
+  const applyVehicleTemplate = (type: 'tata' | 'ashok' | 'bharatbenz' | 'eicher') => {
+    const randNum = Math.floor(1000 + Math.random() * 9000);
+    if (type === 'tata') {
+      setFormPlate(`MH-14-TG-${randNum}`);
+      setFormTruckModel('Tata Signa 4825.TK 16-Wheeler (40 Ton)');
+      setFormAxleCategory('5-AXLE_16WHEEL');
+      setFormDriverName('Suresh Rawat');
+      setFormDriverPhone('+91 98230 45678');
+      setFormTransporterName('ASK SuperFleet Logistics');
+      setFormConsignmentNo(`ASK-LR-${randNum}`);
+      setFormMaterialName('Chassis Sub-Assemblies & Transmission Gears');
+      setFormTareWeightKg(12400);
+      setFormGrossWeightKg(41500);
+    } else if (type === 'ashok') {
+      setFormPlate(`RJ-14-TG-${randNum}`);
+      setFormTruckModel('Ashok Leyland 4220 Cowl Body (42 Ton)');
+      setFormAxleCategory('4-AXLE_14WHEEL');
+      setFormDriverName('Mukesh Choudhary');
+      setFormDriverPhone('+91 94140 88203');
+      setFormTransporterName('Rajputana Roadways');
+      setFormConsignmentNo(`ASK-LR-${randNum}`);
+      setFormMaterialName('Marble Slabs & Heavy Vitrified Tiles');
+      setFormTareWeightKg(11200);
+      setFormGrossWeightKg(34800);
+    } else if (type === 'bharatbenz') {
+      setFormPlate(`DL-01-AB-${randNum}`);
+      setFormTruckModel('BharatBenz 3528R Multi-Axle Rigid Truck');
+      setFormAxleCategory('4-AXLE_14WHEEL');
+      setFormDriverName('Manjeet Singh Dhillon');
+      setFormDriverPhone('+91 98112 00112');
+      setFormTransporterName('Northern Express Cargo');
+      setFormConsignmentNo(`ASK-LR-${randNum}`);
+      setFormMaterialName('Cold-Rolled High-Tensile Steel Coils');
+      setFormTareWeightKg(10500);
+      setFormGrossWeightKg(33500);
+    } else {
+      setFormPlate(`KA-01-AJ-${randNum}`);
+      setFormTruckModel('Eicher Pro 6035 FTL High Deck (16 Ton)');
+      setFormAxleCategory('3-AXLE_10WHEEL');
+      setFormDriverName('Murugan Swamy');
+      setFormDriverPhone('+91 97110 99887');
+      setFormTransporterName('Deccan Fast Cargo');
+      setFormConsignmentNo(`ASK-LR-${randNum}`);
+      setFormMaterialName('Packaged FMCG & Consumer Electronics');
+      setFormTareWeightKg(8200);
+      setFormGrossWeightKg(26800);
+    }
+    showToast(`✓ Template loaded for ${type.toUpperCase()} truck!`);
+  };
+
+  const handleSaveAddVehicle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formPlate.trim() || !formDriverName.trim()) {
+      alert('Please provide Vehicle Registration and Driver Name.');
+      return;
+    }
+
+    const axleInfo = AXLE_CONFIG_MAP[formAxleCategory] || { label: '5-Axle (16-Wheeler)', limitKg: 43500 };
+    const tare = Math.max(1000, Number(formTareWeightKg) || 12000);
+    const gross = Math.max(tare, Number(formGrossWeightKg) || 35000);
+    const net = gross - tare;
+    const limit = axleInfo.limitKg;
+    const overload = Math.max(0, gross - limit);
+    const overloadPct = overload > 0 ? (overload / limit) * 100 : 0;
+    const isOverload = overload > 0;
+    const potentialFine = isOverload ? 20000 + Math.ceil(overload / 1000) * 2000 : 0;
+    const nowStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' +
+                   new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    const newRecord: WeighbridgeSlipRecord = {
+      id: `DK-REC-${Date.now()}`,
+      slipNumber: `DK-2026-${Math.floor(10000 + Math.random() * 90000)}`,
+      vehicleNumber: formPlate.trim().toUpperCase(),
+      truckModel: formTruckModel.trim(),
+      axleCategory: formAxleCategory,
+      axleLabel: axleInfo.label,
+      driverName: formDriverName.trim(),
+      driverPhone: formDriverPhone.trim(),
+      transporterName: formTransporterName.trim(),
+      consignmentNo: formConsignmentNo.trim() || `ASK-LR-${Math.floor(1000 + Math.random() * 9000)}`,
+      materialName: formMaterialName.trim(),
+      tareWeightKg: tare,
+      grossWeightKg: gross,
+      netCargoWeightKg: net,
+      permissibleGvwKg: limit,
+      overloadKg: overload,
+      overloadPercent: parseFloat(overloadPct.toFixed(2)),
+      status: isOverload ? 'OVERLOAD_CRITICAL' : 'LEGAL_COMPLIANT',
+      potentialRtoFineInr: potentialFine,
+      gatePassLocked: isOverload,
+      weighedAt: nowStr,
+      operatorName: 'Sunil Jagtap (Scale Op 01)',
+      calibrationCertificateId: 'W&M-GOVT-PN-2026-90'
+    };
+
+    setSlips(prev => [newRecord, ...prev]);
+    setSelectedSlip(newRecord);
+    setLiveScaleReadingKg(gross);
+    setShowAddVehicleModal(false);
+    showToast(`✅ Vehicle ${newRecord.vehicleNumber} registered onto Dharam Kanta ramp!`);
+  };
+
+  const handleSaveEditVehicle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSlip) return;
+
+    const axleInfo = AXLE_CONFIG_MAP[formAxleCategory] || { label: '5-Axle (16-Wheeler)', limitKg: 43500 };
+    const tare = Math.max(1000, Number(formTareWeightKg) || 12000);
+    const gross = Math.max(tare, Number(formGrossWeightKg) || 35000);
+    const net = gross - tare;
+    const limit = axleInfo.limitKg;
+    const overload = Math.max(0, gross - limit);
+    const overloadPct = overload > 0 ? (overload / limit) * 100 : 0;
+    const isOverload = overload > 0;
+    const potentialFine = isOverload ? 20000 + Math.ceil(overload / 1000) * 2000 : 0;
+
+    const updatedSlip: WeighbridgeSlipRecord = {
+      ...editingSlip,
+      vehicleNumber: formPlate.trim().toUpperCase(),
+      truckModel: formTruckModel.trim(),
+      axleCategory: formAxleCategory,
+      axleLabel: axleInfo.label,
+      driverName: formDriverName.trim(),
+      driverPhone: formDriverPhone.trim(),
+      transporterName: formTransporterName.trim(),
+      consignmentNo: formConsignmentNo.trim(),
+      materialName: formMaterialName.trim(),
+      tareWeightKg: tare,
+      grossWeightKg: gross,
+      netCargoWeightKg: net,
+      permissibleGvwKg: limit,
+      overloadKg: overload,
+      overloadPercent: parseFloat(overloadPct.toFixed(2)),
+      status: isOverload ? 'OVERLOAD_CRITICAL' : 'LEGAL_COMPLIANT',
+      potentialRtoFineInr: potentialFine,
+      gatePassLocked: isOverload
+    };
+
+    setSlips(prev => prev.map(s => s.id === editingSlip.id ? updatedSlip : s));
+    if (selectedSlip?.id === editingSlip.id) {
+      setSelectedSlip(updatedSlip);
+      setLiveScaleReadingKg(gross);
+    }
+    setShowEditVehicleModal(false);
+    setEditingSlip(null);
+    showToast(`✓ Vehicle ${updatedSlip.vehicleNumber} weighment details updated!`);
+  };
+
+  const handleDeleteVehicle = (slipId: string) => {
+    const toDelete = slips.find(s => s.id === slipId);
+    if (!toDelete) return;
+    if (window.confirm(`Are you sure you want to remove vehicle ${toDelete.vehicleNumber} from Dharam Kanta Weighbridge?`)) {
+      const remaining = slips.filter(s => s.id !== slipId);
+      setSlips(remaining);
+      if (selectedSlip?.id === slipId) {
+        setSelectedSlip(remaining[0] || null);
+        setLiveScaleReadingKg(remaining[0] ? remaining[0].grossWeightKg : 0);
+      }
+      showToast(`🗑️ Vehicle ${toDelete.vehicleNumber} removed from Dharam Kanta queue.`);
+    }
+  };
 
   const handleSimulateWeighing = (truckPlate: string) => {
     setIsScaleStabilized(false);
@@ -357,6 +611,27 @@ export default function ElectronicWeighbridgeDeck() {
                 🚛 {s.vehicleNumber}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={handleOpenAddVehicleModal}
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '20px',
+                padding: '6px 14px',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              <span>➕</span>
+              <span>{t('+ Add Vehicle to Scale', '+ नया वाहन जोड़ें')}</span>
+            </button>
           </div>
         </div>
 
@@ -401,6 +676,25 @@ export default function ElectronicWeighbridgeDeck() {
                 🖨️ {t('Print Slip', 'पर्ची प्रिंट')}
               </button>
             </div>
+
+            {selectedSlip && (
+              <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleOpenEditVehicleModal(selectedSlip)}
+                  style={{ flex: 1, padding: '6px', background: '#3b82f6', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  ✏️ {t('Edit Vehicle', 'वाहन एडिट')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteVehicle(selectedSlip.id)}
+                  style={{ flex: 1, padding: '6px', background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  🗑️ {t('Delete Vehicle', 'वाहन हटाएं')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -409,9 +703,31 @@ export default function ElectronicWeighbridgeDeck() {
       <div className="weighbridge-split-row">
         {/* SLIPS TABLE */}
         <div className="weighbridge-card-left">
-          <div className="weighbridge-card-header">
-            <h3>📑 {t('Dharam Kanta Weighment Ledger', 'धर्म कांटा वजन बहीखाता')}</h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Govt Sec 113 / 194 MV Act</span>
+          <div className="weighbridge-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3>📑 {t('Dharam Kanta Weighment Ledger', 'धर्म कांटा वजन बहीखाता')}</h3>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Govt Sec 113 / 194 MV Act</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenAddVehicleModal}
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <span>➕</span>
+              <span>{t('+ Add Vehicle', '+ वाहन जोड़ें')}</span>
+            </button>
           </div>
 
           <div className="weighbridge-table-wrap">
@@ -472,17 +788,61 @@ export default function ElectronicWeighbridgeDeck() {
                       </td>
 
                       <td style={{ textAlign: 'right' }}>
-                        <button
-                          type="button"
-                          className="weighbridge-btn-slip"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSlip(slip);
-                            setShowPrintModal(true);
-                          }}
-                        >
-                          🖨️ {t('Slip', 'पर्ची')}
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            className="weighbridge-btn-slip"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSlip(slip);
+                              setShowPrintModal(true);
+                            }}
+                          >
+                            🖨️ {t('Slip', 'पर्ची')}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditVehicleModal(slip);
+                            }}
+                            style={{
+                              background: '#3b82f6',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '5px 10px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                            title="Edit Vehicle"
+                          >
+                            ✏️ {t('Edit', 'एडिट')}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteVehicle(slip.id);
+                            }}
+                            style={{
+                              background: '#ef4444',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '5px 10px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                            title="Delete Vehicle"
+                          >
+                            🗑️ {t('Delete', 'हटाएं')}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -700,6 +1060,380 @@ export default function ElectronicWeighbridgeDeck() {
                 🖨️ {t('Print Dharam Kanta Slip', 'धर्म कांटा पर्ची प्रिंट करें')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. MODAL: ADD VEHICLE TO WEIGHBRIDGE RAMP */}
+      {showAddVehicleModal && (
+        <div className="weighbridge-modal-overlay" onClick={() => setShowAddVehicleModal(false)}>
+          <div className="weighbridge-modal-card" style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                  ➕ {t('Add Vehicle to Dharam Kanta Weighbridge', 'धर्म कांटा वेईब्रिज में नया वाहन जोड़ें')}
+                </h3>
+                <small style={{ color: '#64748b', fontSize: '12px' }}>
+                  {t('Register on-ramp truck weighing, gross weight & axle compliance', 'कांटा रैंप पर ट्रक वजन, सकल भार एवं एक्सल अनुपालन दर्ज करें')}
+                </small>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddVehicleModal(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* QUICK PRESETS */}
+            <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+                ⚡ 1-Click Truck Presets:
+              </span>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                <button type="button" onClick={() => applyVehicleTemplate('tata')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                  🚛 Tata 16-W (43.5T - Pune)
+                </button>
+                <button type="button" onClick={() => applyVehicleTemplate('ashok')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                  🚛 Ashok Leyland 14-W (35T)
+                </button>
+                <button type="button" onClick={() => applyVehicleTemplate('bharatbenz')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                  🚛 BharatBenz 14-W (Steel)
+                </button>
+                <button type="button" onClick={() => applyVehicleTemplate('eicher')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                  🚛 Eicher 10-W (28T FMCG)
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveAddVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Vehicle Registration Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formPlate}
+                    onChange={e => setFormPlate(e.target.value.toUpperCase())}
+                    placeholder="e.g. MH-14-GH-6021"
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', fontWeight: 800, boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Truck Model &amp; Specification *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formTruckModel}
+                    onChange={e => setFormTruckModel(e.target.value)}
+                    placeholder="e.g. Tata Signa 4825.TK 16-Wheeler"
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Axle Category (RTO Limit) *
+                  </label>
+                  <select
+                    value={formAxleCategory}
+                    onChange={e => setFormAxleCategory(e.target.value as VehicleAxleCategory)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="2-AXLE_6WHEEL">2-Axle (6-Wheel) - Limit 18,500 KG (18.5T)</option>
+                    <option value="3-AXLE_10WHEEL">3-Axle (10-Wheel) - Limit 28,000 KG (28.0T)</option>
+                    <option value="4-AXLE_14WHEEL">4-Axle (14-Wheel) - Limit 35,000 KG (35.0T)</option>
+                    <option value="5-AXLE_16WHEEL">5-Axle (16-Wheel) - Limit 43,500 KG (43.5T)</option>
+                    <option value="6-AXLE_TRAILER">6-Axle (Trailer) - Limit 55,000 KG (55.0T)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Driver Name &amp; Phone *
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    <input
+                      type="text"
+                      required
+                      value={formDriverName}
+                      onChange={e => setFormDriverName(e.target.value)}
+                      placeholder="Driver Name"
+                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      type="text"
+                      required
+                      value={formDriverPhone}
+                      onChange={e => setFormDriverPhone(e.target.value)}
+                      placeholder="+91 Phone"
+                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Transporter / Fleet Agency
+                  </label>
+                  <input
+                    type="text"
+                    value={formTransporterName}
+                    onChange={e => setFormTransporterName(e.target.value)}
+                    placeholder="e.g. Rajputana Roadways"
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Consignment / Bilty No &amp; Material
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    <input
+                      type="text"
+                      value={formConsignmentNo}
+                      onChange={e => setFormConsignmentNo(e.target.value)}
+                      placeholder="Bilty / LR No"
+                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      type="text"
+                      value={formMaterialName}
+                      onChange={e => setFormMaterialName(e.target.value)}
+                      placeholder="Material Name"
+                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Tare Weight (Empty Truck KG) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formTareWeightKg}
+                    onChange={e => setFormTareWeightKg(Number(e.target.value))}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Gross Scale Weight (Loaded Truck KG) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formGrossWeightKg}
+                    onChange={e => setFormGrossWeightKg(Number(e.target.value))}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 800, color: '#0f172a', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* LIVE COMPUTATION SUMMARY */}
+              <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>NET CARGO: </span>
+                  <strong style={{ fontSize: '13px', color: '#15803d' }}>{Math.max(0, formGrossWeightKg - formTareWeightKg).toLocaleString('en-IN')} KG</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>RTO CAP: </span>
+                  <strong style={{ fontSize: '13px', color: '#0369a1' }}>{(AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500).toLocaleString('en-IN')} KG</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>STATUS: </span>
+                  <strong style={{ fontSize: '13px', color: formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500) ? '#dc2626' : '#16a34a' }}>
+                    {formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)
+                      ? `🚨 OVERLOAD (+${(formGrossWeightKg - (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)).toLocaleString('en-IN')} KG)`
+                      : '✓ LEGAL COMPLIANT'}
+                  </strong>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddVehicleModal(false)}
+                  style={{ padding: '10px 18px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', color: '#475569' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
+                >
+                  🚀 {t('Save & Place on Ramp', 'सेव करें एवं कांटा पर रखें')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 9. MODAL: EDIT VEHICLE WEIGHMENT & AXLE RECORD */}
+      {showEditVehicleModal && editingSlip && (
+        <div className="weighbridge-modal-overlay" onClick={() => setShowEditVehicleModal(false)}>
+          <div className="weighbridge-modal-card" style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                  ✏️ {t('Edit Vehicle Weighment Record', 'वाहन वजन रिकॉर्ड एडिट करें')}
+                </h3>
+                <small style={{ color: '#64748b', fontSize: '12px' }}>
+                  Slip: {editingSlip.slipNumber} • Truck: {editingSlip.vehicleNumber}
+                </small>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditVehicleModal(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Vehicle Registration Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formPlate}
+                    onChange={e => setFormPlate(e.target.value.toUpperCase())}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', fontWeight: 800, boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Truck Model *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formTruckModel}
+                    onChange={e => setFormTruckModel(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Axle Category (RTO Limit) *
+                  </label>
+                  <select
+                    value={formAxleCategory}
+                    onChange={e => setFormAxleCategory(e.target.value as VehicleAxleCategory)}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="2-AXLE_6WHEEL">2-Axle (6-Wheel) - Limit 18,500 KG (18.5T)</option>
+                    <option value="3-AXLE_10WHEEL">3-Axle (10-Wheel) - Limit 28,000 KG (28.0T)</option>
+                    <option value="4-AXLE_14WHEEL">4-Axle (14-Wheel) - Limit 35,000 KG (35.0T)</option>
+                    <option value="5-AXLE_16WHEEL">5-Axle (16-Wheel) - Limit 43,500 KG (43.5T)</option>
+                    <option value="6-AXLE_TRAILER">6-Axle (Trailer) - Limit 55,000 KG (55.0T)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Driver Name &amp; Phone *
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    <input
+                      type="text"
+                      required
+                      value={formDriverName}
+                      onChange={e => setFormDriverName(e.target.value)}
+                      placeholder="Driver Name"
+                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      type="text"
+                      required
+                      value={formDriverPhone}
+                      onChange={e => setFormDriverPhone(e.target.value)}
+                      placeholder="+91 Phone"
+                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Tare Weight (Empty Truck KG) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formTareWeightKg}
+                    onChange={e => setFormTareWeightKg(Number(e.target.value))}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Gross Weight (Loaded Truck KG) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formGrossWeightKg}
+                    onChange={e => setFormGrossWeightKg(Number(e.target.value))}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 800, color: '#0f172a', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* LIVE COMPUTATION SUMMARY */}
+              <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>NET CARGO: </span>
+                  <strong style={{ fontSize: '13px', color: '#15803d' }}>{Math.max(0, formGrossWeightKg - formTareWeightKg).toLocaleString('en-IN')} KG</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>RTO CAP: </span>
+                  <strong style={{ fontSize: '13px', color: '#0369a1' }}>{(AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500).toLocaleString('en-IN')} KG</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>STATUS: </span>
+                  <strong style={{ fontSize: '13px', color: formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500) ? '#dc2626' : '#16a34a' }}>
+                    {formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)
+                      ? `🚨 OVERLOAD (+${(formGrossWeightKg - (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)).toLocaleString('en-IN')} KG)`
+                      : '✓ LEGAL COMPLIANT'}
+                  </strong>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditVehicleModal(false)}
+                  style={{ padding: '10px 18px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', color: '#475569' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '10px 24px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  💾 {t('Save Vehicle Changes', 'परिवर्तन सेव करें')}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
