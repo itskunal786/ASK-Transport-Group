@@ -5232,7 +5232,9 @@ export default function Dashboard() {
         {/* VIEW: E-WAY BILL AUTO VERIFICATION ENGINE */}
         {/* ============================================================== */}
         {activeTab === 'ewaybill' && (
-          <NicEwayBillAutoExtensionSuite />
+          <div className="admin-content-pad">
+            <NicEwayBillAutoExtensionSuite />
+          </div>
         )}
 
         {/* ============================================================== */}
