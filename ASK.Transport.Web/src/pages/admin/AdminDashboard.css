@@ -3755,3 +3755,627 @@ body.dark .shipment-status-pill.custom {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
 }
+
+
+/* ============================================================================
+   LIVE SHIPMENTS & DISPATCH CONSOLE - EXECUTIVE HERO & KPI DECK
+   ============================================================================ */
+
+.shipments-hero-banner {
+  background: linear-gradient(135deg, #091e3a 0%, #0c2d48 50%, #145374 100%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 30px -5px rgba(12, 45, 72, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .shipments-hero-banner,
+body.dark .shipments-hero-banner {
+  background: linear-gradient(135deg, #041226 0%, #0c2340 50%, #16365c 100%);
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.6);
+}
+
+.shipments-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.shipments-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 780px;
+  z-index: 1;
+}
+
+.shipments-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #e0f2fe;
+  width: fit-content;
+}
+
+.shipments-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #38bdf8;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #38bdf8;
+  animation: shipmentsPulse 1.8s infinite;
+}
+
+@keyframes shipmentsPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+.shipments-hero-left h1 {
+  font-size: 24px;
+  font-weight: 900;
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.shipments-hero-left p {
+  font-size: 13px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.shipments-hero-tags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.shipments-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.shipments-status-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.shipments-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.shipments-btn-hero-primary {
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shipments-btn-hero-primary:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.55);
+}
+
+.shipments-btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shipments-btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   5 INTERACTIVE FLEET DISPATCH KPI METRICS GRID
+   ============================================================================ */
+
+.shipments-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.shipments-kpi-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .shipments-kpi-card,
+body.dark .shipments-kpi-card {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.shipments-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12);
+  border-color: #38bdf8;
+}
+
+.shipments-kpi-card.active-filter {
+  border-color: #0284c7;
+  background: rgba(2, 132, 199, 0.05);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.3);
+}
+
+[data-theme='dark'] .shipments-kpi-card.active-filter,
+body.dark .shipments-kpi-card.active-filter {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+}
+
+.shipments-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary, #64748b);
+}
+
+.shipments-kpi-icon {
+  font-size: 16px;
+}
+
+.shipments-kpi-val {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.15;
+  margin: 6px 0 2px;
+}
+
+[data-theme='dark'] .shipments-kpi-val,
+body.dark .shipments-kpi-val {
+  color: #f8fafc;
+}
+
+.shipments-kpi-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+}
+
+.shipments-kpi-sub {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.3;
+}
+
+/* Card Accent Colors */
+.shipments-kpi-card.total { border-top: 3px solid #3b82f6; }
+.shipments-kpi-card.in-transit { border-top: 3px solid #06b6d4; }
+.shipments-kpi-card.out-delivery { border-top: 3px solid #8b5cf6; }
+.shipments-kpi-card.pending { border-top: 3px solid #f59e0b; }
+.shipments-kpi-card.delivered { border-top: 3px solid #10b981; }
+
+.text-cyan { color: #0891b2 !important; }
+[data-theme='dark'] .text-cyan, body.dark .text-cyan { color: #22d3ee !important; }
+
+.text-violet { color: #7c3aed !important; }
+[data-theme='dark'] .text-violet, body.dark .text-violet { color: #a78bfa !important; }
+
+.text-amber { color: #d97706 !important; }
+[data-theme='dark'] .text-amber, body.dark .text-amber { color: #fbbf24 !important; }
+
+.text-emerald { color: #059669 !important; }
+[data-theme='dark'] .text-emerald, body.dark .text-emerald { color: #34d399 !important; }
+
+/* ============================================================================
+   ENHANCED TABLE CELLS & CORRIDORS
+   ============================================================================ */
+
+.shipment-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0284c7;
+  background: rgba(2, 132, 199, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+[data-theme='dark'] .shipment-id-badge,
+body.dark .shipment-id-badge {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.25);
+}
+
+.shipment-time-tag {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 4px;
+}
+
+.shipment-client-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.shipment-client-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary, #0f172a);
+}
+
+[data-theme='dark'] .shipment-client-name,
+body.dark .shipment-client-name {
+  color: #f1f5f9;
+}
+
+.shipment-waybill-pill {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-secondary, #64748b);
+  background: var(--bg-input, #f1f5f9);
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+[data-theme='dark'] .shipment-waybill-pill,
+body.dark .shipment-waybill-pill {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+.shipment-route-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shipment-route-origin,
+.shipment-route-dest {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.route-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.route-dot.origin { background: #10b981; }
+.route-dot.dest { background: #ef4444; }
+
+.shipment-route-arrow {
+  font-size: 10px;
+  color: var(--text-secondary, #94a3b8);
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.shipment-driver-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shipment-driver-cell .driver-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary, #0f172a);
+}
+
+[data-theme='dark'] .shipment-driver-cell .driver-name,
+body.dark .shipment-driver-cell .driver-name {
+  color: #f1f5f9;
+}
+
+.shipment-driver-cell .vehicle-plate {
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #0284c7;
+}
+
+[data-theme='dark'] .shipment-driver-cell .vehicle-plate,
+body.dark .shipment-driver-cell .vehicle-plate {
+  color: #38bdf8;
+}
+
+.shipment-checkpoint-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+
+[data-theme='dark'] .shipment-checkpoint-cell,
+body.dark .shipment-checkpoint-cell {
+  color: #e2e8f0;
+}
+
+.checkpoint-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  flex-shrink: 0;
+}
+
+.shipment-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.shipment-btn-telemetry {
+  background: var(--bg-input, #f1f5f9);
+  border: 1px solid var(--border, #cbd5e1);
+  color: var(--text-primary, #0f172a);
+  padding: 6px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+[data-theme='dark'] .shipment-btn-telemetry,
+body.dark .shipment-btn-telemetry {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+.shipment-btn-telemetry:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* ============================================================================
+   VIEW TOGGLER (TABLE VS CARDS)
+   ============================================================================ */
+
+.shipments-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-input, #f1f5f9);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #cbd5e1);
+}
+
+[data-theme='dark'] .shipments-view-toggle,
+body.dark .shipments-view-toggle {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.shipments-view-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.shipments-view-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+}
+
+/* ============================================================================
+   HIGHWAY CARDS GRID VIEW
+   ============================================================================ */
+
+.shipments-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.shipment-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='dark'] .shipment-card,
+body.dark .shipment-card {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.shipment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px -4px rgba(0, 0, 0, 0.15);
+  border-color: #38bdf8;
+}
+
+.shipment-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shipment-card-route {
+  background: var(--bg-input, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .shipment-card-route,
+body.dark .shipment-card-route {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.shipment-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.shipment-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border, #e2e8f0);
+  padding-top: 10px;
+}
+
+[data-theme='dark'] .shipment-card-footer,
+body.dark .shipment-card-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================
+   ADD NEW DISPATCH MODAL PRESET PILLS
+   ============================================================================ */
+
+.shipment-preset-pill {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+[data-theme='dark'] .shipment-preset-pill,
+body.dark .shipment-preset-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+.shipment-preset-pill:hover {
+  background: rgba(2, 132, 199, 0.1);
+  border-color: #0284c7;
+  color: #0284c7;
+  transform: translateY(-1px);
+}

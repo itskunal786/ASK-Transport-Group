@@ -790,6 +790,19 @@ export default function Dashboard() {
   });
   const [shipmentSearch, setShipmentSearch] = useState('');
   const [shipmentFilterStatus, setShipmentFilterStatus] = useState('All');
+  const [shipmentViewMode, setShipmentViewMode] = useState<'table' | 'cards'>('table');
+  const [showAddShipmentModal, setShowAddShipmentModal] = useState(false);
+  const [newShipmentNo, setNewShipmentNo] = useState('');
+  const [newShipmentBookingNo, setNewShipmentBookingNo] = useState('');
+  const [newShipmentCustomer, setNewShipmentCustomer] = useState('');
+  const [newShipmentOrigin, setNewShipmentOrigin] = useState('Delhi Hub');
+  const [newShipmentDestination, setNewShipmentDestination] = useState('Mumbai Nhava Sheva');
+  const [newShipmentDriver, setNewShipmentDriver] = useState('Ramesh Yadav');
+  const [newShipmentVehicle, setNewShipmentVehicle] = useState('DL-01-AB-1234 (32ft MXL)');
+  const [newShipmentLocation, setNewShipmentLocation] = useState('Delhi Central Hub - Dock 04');
+  const [newShipmentInitialStatus, setNewShipmentInitialStatus] = useState<string>('In Transit');
+  const [newShipmentCustomStatus, setNewShipmentCustomStatus] = useState('Priority Express Corridor');
+  const [newShipmentCustomNote, setNewShipmentCustomNote] = useState('Fastag automated clearance verified at NH-48');
   const [showUpdateShipmentModal, setShowUpdateShipmentModal] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentRow | null>(null);
   const [newStatus, setNewStatus] = useState<string>('In Transit');
@@ -1596,6 +1609,95 @@ export default function Dashboard() {
 
     setShowUpdateShipmentModal(false);
     showToast(`Shipment ${selectedShipment.shipmentNo} updated! Status: "${finalStatus}"`);
+  }
+
+  // Handle Add New Highway Dispatch / Shipment
+  function openAddShipmentModal() {
+    const nextNum = 9900 + shipmentsList.length + 1;
+    setNewShipmentNo(`SHP-${nextNum}`);
+    setNewShipmentBookingNo(`ASKB00${120 + shipmentsList.length + 1}`);
+    setNewShipmentCustomer('');
+    setNewShipmentOrigin('Delhi Hub');
+    setNewShipmentDestination('Mumbai Nhava Sheva');
+    setNewShipmentDriver('Ramesh Yadav');
+    setNewShipmentVehicle('DL-01-AB-1234 (32ft MXL)');
+    setNewShipmentLocation('Delhi Central Hub - Loading Bay #04');
+    setNewShipmentInitialStatus('In Transit');
+    setNewShipmentCustomStatus('Priority Express Corridor');
+    setNewShipmentCustomNote('Fastag automated clearance verified at NH-48');
+    setShowAddShipmentModal(true);
+  }
+
+  function applyShipmentPreset(type: 'ftl' | 'cold' | 'heavy' | 'express') {
+    if (type === 'ftl') {
+      setNewShipmentCustomer('Tata Motors Commercial Vehicles Ltd');
+      setNewShipmentOrigin('Pune MIDC Hub');
+      setNewShipmentDestination('Sanand Industrial Estate, Gujarat');
+      setNewShipmentDriver('Santosh Shinde');
+      setNewShipmentVehicle('MH-12-EF-9012 (24ft Container)');
+      setNewShipmentLocation('Thane-Ghodbunder Toll Gateway');
+      setNewShipmentCustomStatus('Auto Component FTL');
+      setNewShipmentCustomNote('Critical JIT delivery for assembly line schedule');
+    } else if (type === 'cold') {
+      setNewShipmentCustomer('Sun Pharma Healthcare Logistics');
+      setNewShipmentOrigin('Vadodara GIDC Hub');
+      setNewShipmentDestination('Baddi Terminal, Himachal Pradesh');
+      setNewShipmentDriver('Gurpreet Singh');
+      setNewShipmentVehicle('HR-55-XY-9901 (Reefer Cold-Chain)');
+      setNewShipmentLocation('Delhi Peripheral Expressway Toll Gate');
+      setNewShipmentCustomStatus('IoT Cold-Chain Monitored');
+      setNewShipmentCustomNote('Continuous 2°C - 8°C temperature logging active');
+    } else if (type === 'heavy') {
+      setNewShipmentCustomer('Jindal Steel & Power Ltd');
+      setNewShipmentOrigin('Raigarh Integrated Plant');
+      setNewShipmentDestination('Faridabad Heavy Stockyard');
+      setNewShipmentDriver('Bijoy Das');
+      setNewShipmentVehicle('WB-02-GH-3456 (32ft MXL Flatbed)');
+      setNewShipmentLocation('Agra-Lucknow Expressway Interchange');
+      setNewShipmentCustomStatus('Heavy ODC Corridor');
+      setNewShipmentCustomNote('Hydraulic axle stability verified, escort pilot linked');
+    } else if (type === 'express') {
+      setNewShipmentCustomer('Amazon India Fulfilment Network');
+      setNewShipmentOrigin('Bangalore Hub');
+      setNewShipmentDestination('Chennai Port Gate #2');
+      setNewShipmentDriver('Murugan Swamy');
+      setNewShipmentVehicle('KA-05-CD-5678 (14ft Closed)');
+      setNewShipmentLocation('Hosur Highway Toll Plaza');
+      setNewShipmentCustomStatus('Same-Day Express Transit');
+      setNewShipmentCustomNote('Direct dock-to-dock express schedule');
+    }
+  }
+
+  function handleCreateNewShipment(e: React.FormEvent) {
+    e.preventDefault();
+    const shipNo = newShipmentNo.trim() || `SHP-${9900 + shipmentsList.length + 1}`;
+    const newShip: ShipmentRow = {
+      shipmentNo: shipNo,
+      bookingNo: newShipmentBookingNo.trim() || `ASKB${Math.floor(10000 + Math.random() * 90000)}`,
+      customer: newShipmentCustomer.trim() || 'Enterprise Client',
+      origin: newShipmentOrigin.trim(),
+      destination: newShipmentDestination.trim(),
+      driver: newShipmentDriver.trim(),
+      vehicle: newShipmentVehicle.trim(),
+      currentLocation: newShipmentLocation.trim() || `${newShipmentOrigin} - Dispatched`,
+      status: newShipmentInitialStatus,
+      customStatus: newShipmentCustomStatus.trim() || undefined,
+      customNote: newShipmentCustomNote.trim() || undefined,
+      updatedAt: 'Just now'
+    };
+
+    setShipmentsList(prev => {
+      const updated = [newShip, ...prev];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('ask_admin_shipments', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+
+    setShowAddShipmentModal(false);
+    showToast(`✓ New Highway Dispatch ${shipNo} created and broadcasted to Driver!`);
   }
 
   // Handle Add Driver
@@ -3734,42 +3836,201 @@ export default function Dashboard() {
         )}
 
         {/* ============================================================== */}
-        {/* VIEW 4: SHIPMENTS & DISPATCH (NEW) */}
+        {/* VIEW 4: SHIPMENTS & DISPATCH (EXECUTIVE RADAR CONSOLE) */}
         {/* ============================================================== */}
         {activeTab === 'shipments' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>Live Shipments &amp; Dispatch</h1>
-                <p>Real-time vehicle tracking, driver allocation, and milestone updater</p>
+            {/* 1. EXECUTIVE HERO DISPATCH & FLEET RADAR BANNER */}
+            <div className="shipments-hero-banner">
+              <div className="shipments-hero-left">
+                <div className="shipments-hero-badge">
+                  <span className="shipments-pulse-dot" />
+                  <span>NATIONAL FREIGHT &amp; HIGHWAY DISPATCH RADAR • AIS-140 LIVE</span>
+                </div>
+                <h1>{t('Live Shipments, Fleet Dispatch & Transit Milestones', 'लाइव शिपमेंट, फ्लीट डिस्पैच और हाईवे माइलस्टोन ट्रैकर')}</h1>
+                <p>
+                  {t(
+                    'Real-time GPS telematics tracking, automated FASTag toll milestone updater, driver telemetry & client SMS/WhatsApp status broadcaster.',
+                    'रियल-टाइम जीपीएस टेलीमैटिक्स ट्रैकिंग, फास्टैग टोल माइलस्टोन अपडेटर, ड्राइवर टेलीमेट्री और व्हाट्सएप लाइव स्टेटस ब्रॉडकास्टर।'
+                  )}
+                </p>
+
+                <div className="shipments-hero-tags">
+                  <span className="shipments-hero-tag">
+                    <span className="shipments-status-indicator" />
+                    <span>AIS-140 GPS: 100% Locked</span>
+                  </span>
+                  <span className="shipments-hero-tag">
+                    <span>Active Corridors:</span>
+                    <strong style={{ fontFamily: 'monospace', color: '#67e8f9' }}>NH-48 • NH-44 • NH-19</strong>
+                  </span>
+                  <span className="shipments-hero-tag">
+                    <span>🛡️ Fastag Auto-Clearance Active</span>
+                  </span>
+                  <span className="shipments-hero-tag">
+                    <span>⚡ Zero-Transit-Delay Protocol</span>
+                  </span>
+                </div>
               </div>
 
-              <div className="admin-title-actions">
+              <div className="shipments-hero-actions">
                 <button
                   type="button"
-                  className="admin-btn-primary"
+                  className="shipments-btn-hero-primary"
+                  onClick={openAddShipmentModal}
+                >
+                  <span style={{ fontSize: '16px' }}>➕</span>
+                  <span>{t('+ New Highway Dispatch', '+ नया हाईवे डिस्पैच जोड़ें')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="shipments-btn-hero-secondary"
                   onClick={() => {
                     const first = shipmentsList[0];
                     if (first) openUpdateShipmentModal(first);
                   }}
                 >
-                  ⚡ Quick Status Update
+                  <span>⚡</span>
+                  <span>{t('Quick Status Update', 'त्वरित स्टेटस अपडेट')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="shipments-btn-hero-secondary"
+                  onClick={() => {
+                    showToast('✓ AIS-140 IRNSS Satellite Telematics & FASTag toll sync refreshed successfully');
+                  }}
+                  title="Refresh satellite telemetry"
+                >
+                  <span>🔄</span>
+                  <span>{t('Sync Telematics', 'टेलीमैटिक्स सिंक')}</span>
                 </button>
               </div>
             </div>
 
+            {/* 2. 5 INTERACTIVE FLEET DISPATCH KPI METRICS */}
+            <div className="shipments-kpi-grid">
+              <div
+                className={`shipments-kpi-card total ${shipmentFilterStatus === 'All' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('All')}
+                title="Click to view all shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Total Active Fleet', 'कुल सक्रिय फ्लीट')}</span>
+                  <span className="shipments-kpi-icon">🚚</span>
+                </div>
+                <div className="shipments-kpi-val">
+                  {shipmentsList.length} <span className="shipments-kpi-unit">Shipments</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('Monitored across Pan-India Hubs', 'अखिल भारतीय हब में सक्रिय')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card in-transit ${shipmentFilterStatus === 'In Transit' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('In Transit')}
+                title="Click to filter In Transit shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('In Transit (Highways)', 'मार्ग में (हाईवे)')}</span>
+                  <span className="shipments-kpi-icon">🛣️</span>
+                </div>
+                <div className="shipments-kpi-val text-cyan">
+                  {shipmentsList.filter(s => s.status === 'In Transit').length} <span className="shipments-kpi-unit">Trucks</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('High-speed transit via FASTag corridors', 'फास्टैग कॉरिडोर पर तीव्र गति से')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card out-delivery ${shipmentFilterStatus === 'Out for Delivery' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('Out for Delivery')}
+                title="Click to filter Out for Delivery"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Out for Delivery', 'डिलीवरी के लिए रवाना')}</span>
+                  <span className="shipments-kpi-icon">🎯</span>
+                </div>
+                <div className="shipments-kpi-val text-violet">
+                  {shipmentsList.filter(s => s.status === 'Out for Delivery').length} <span className="shipments-kpi-unit">Vehicles</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('Last-mile destination terminal dispatch', 'अंतिम छोर गंतव्य टर्मिनल पर')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card pending ${shipmentFilterStatus === 'Pending' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('Pending')}
+                title="Click to filter Pending shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Pending Bay Allocation', 'लोडिंग बे प्रतीक्षारत')}</span>
+                  <span className="shipments-kpi-icon">⏳</span>
+                </div>
+                <div className="shipments-kpi-val text-amber">
+                  {shipmentsList.filter(s => s.status === 'Pending').length} <span className="shipments-kpi-unit">Awaiting</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('Dockyard loading & pilot assignment', 'डॉकीयार्ड लोडिंग व ड्राइवर आवंटन')}
+                </div>
+              </div>
+
+              <div
+                className={`shipments-kpi-card delivered ${shipmentFilterStatus === 'Delivered' ? 'active-filter' : ''}`}
+                onClick={() => setShipmentFilterStatus('Delivered')}
+                title="Click to filter Delivered shipments"
+              >
+                <div className="shipments-kpi-head">
+                  <span>{t('Delivered & POD Cleared', 'वितरित व ई-पीओडी सत्यापित')}</span>
+                  <span className="shipments-kpi-icon">✅</span>
+                </div>
+                <div className="shipments-kpi-val text-emerald">
+                  {shipmentsList.filter(s => s.status === 'Delivered').length} <span className="shipments-kpi-unit">Completed</span>
+                </div>
+                <div className="shipments-kpi-sub">
+                  {t('100% digital signature verified', '100% डिजिटल हस्ताक्षर व ओटीपी')}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. TOOLBAR & MAIN TABLE CARD */}
             <div className="admin-table-card">
-              <div className="admin-table-toolbar">
-                <div className="admin-toolbar-search">
+              <div className="admin-table-toolbar" style={{ flexWrap: 'wrap', gap: '14px' }}>
+                <div className="admin-toolbar-search" style={{ position: 'relative', minWidth: '280px', flex: 1 }}>
                   <input
                     type="text"
-                    placeholder="Search by Shipment #, Driver, or Hub..."
+                    placeholder="Search by Shipment #, Waybill, Driver, Vehicle, Hub..."
                     value={shipmentSearch}
                     onChange={e => setShipmentSearch(e.target.value)}
                   />
+                  {shipmentSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setShipmentSearch('')}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-secondary, #64748b)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        padding: '4px'
+                      }}
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
 
-                <div className="admin-toolbar-filter">
+                <div className="admin-toolbar-filter" style={{ flexWrap: 'wrap' }}>
                   {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending', 'Custom'].map(st => {
                     const count = st === 'All'
                       ? shipmentsList.length
@@ -3784,146 +4045,280 @@ export default function Dashboard() {
                         onClick={() => setShipmentFilterStatus(st)}
                       >
                         <span>{st === 'Custom' ? '🏷️ Custom / Notes' : st}</span>
-                        <span style={{ fontSize: '10px', opacity: 0.8, marginLeft: '4px' }}>({count})</span>
+                        <span style={{ fontSize: '10px', opacity: 0.85, marginLeft: '4px', fontWeight: 800 }}>({count})</span>
                       </button>
                     );
                   })}
                 </div>
+
+                {/* VIEW MODE TOGGLE */}
+                <div className="shipments-view-toggle">
+                  <button
+                    type="button"
+                    className={`shipments-view-btn ${shipmentViewMode === 'table' ? 'active' : ''}`}
+                    onClick={() => setShipmentViewMode('table')}
+                  >
+                    <span>📋</span>
+                    <span>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`shipments-view-btn ${shipmentViewMode === 'cards' ? 'active' : ''}`}
+                    onClick={() => setShipmentViewMode('cards')}
+                  >
+                    <span>🗂️</span>
+                    <span>Cards</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="shipment-table-wrapper">
-                <table className="admin-data-table" style={{ minWidth: '980px', width: '100%' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '120px' }}>Shipment ID</th>
-                      <th style={{ width: '150px' }}>Booking / Client</th>
-                      <th style={{ width: '180px' }}>Origin → Destination</th>
-                      <th style={{ width: '160px' }}>Driver &amp; Vehicle</th>
-                      <th style={{ width: '170px' }}>Current Checkpoint</th>
-                      <th style={{ width: '130px' }}>{t('Status', 'स्थिति')}</th>
-                      <th style={{ width: '200px' }}>Custom Name / Notes</th>
-                      <th style={{ width: '120px', textAlign: 'center' }}>Dispatch Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredShipments.map((s, idx) => (
-                      <tr 
-                        key={idx} 
-                        className="shipment-table-row"
-                        onClick={() => openUpdateShipmentModal(s)}
-                        title="Click to update status"
-                      >
-                        <td>
-                          <strong style={{ color: '#0b72e7', fontFamily: 'monospace', fontSize: '13px' }}>{s.shipmentNo}</strong>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>{s.updatedAt}</div>
-                        </td>
-                        <td>
-                          <strong style={{ color: 'var(--text-primary, #0f172a)' }}>{s.customer}</strong>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>Waybill: {s.bookingNo}</div>
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{s.origin}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>→ {s.destination}</div>
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 600 }}>{s.driver}</div>
-                          <div style={{ fontSize: '11px', color: '#0b72e7', fontWeight: 600 }}>{s.vehicle}</div>
-                        </td>
-                        <td>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
-                            📍 {s.currentLocation}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`shipment-status-pill ${
-                            s.status === 'In Transit' ? 'in-transit' :
-                            s.status === 'Delivered' ? 'delivered' :
-                            s.status === 'Out for Delivery' ? 'out-for-delivery' :
-                            s.status === 'Pending' ? 'pending' : 'custom'
-                          }`}>
-                            {s.status === 'In Transit' && '🚚 '}
-                            {s.status === 'Delivered' && '✅ '}
-                            {s.status === 'Out for Delivery' && '🎯 '}
-                            {s.status === 'Pending' && '⏳ '}
-                            {s.status}
-                          </span>
-                        </td>
-                        <td>
-                          {s.customStatus || s.customNote ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
-                              {s.customStatus && (
-                                <span
+              {/* TABLE VIEW */}
+              {shipmentViewMode === 'table' ? (
+                <div className="shipment-table-wrapper">
+                  <table className="admin-data-table" style={{ minWidth: '1080px', width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '130px' }}>Shipment ID</th>
+                        <th style={{ width: '170px' }}>Booking / Client</th>
+                        <th style={{ width: '200px' }}>Origin → Destination</th>
+                        <th style={{ width: '180px' }}>Driver &amp; Vehicle</th>
+                        <th style={{ width: '200px' }}>Current Checkpoint</th>
+                        <th style={{ width: '130px' }}>{t('Status', 'स्थिति')}</th>
+                        <th style={{ width: '190px' }}>Custom Milestone / Note</th>
+                        <th style={{ width: '140px', textAlign: 'center' }}>Dispatch Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredShipments.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary, #64748b)' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                            <strong>No shipments found matching filters</strong>
+                            <p style={{ margin: '4px 0 0', fontSize: '12px' }}>Try resetting the search keyword or selecting "All" shipments.</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredShipments.map((s, idx) => (
+                          <tr 
+                            key={idx} 
+                            className="shipment-table-row"
+                            onClick={() => openUpdateShipmentModal(s)}
+                            title="Click to update status"
+                          >
+                            <td>
+                              <span className="shipment-id-badge">#{s.shipmentNo}</span>
+                              <span className="shipment-time-tag">⏱️ {s.updatedAt}</span>
+                            </td>
+                            <td>
+                              <div className="shipment-client-cell">
+                                <span className="shipment-client-name">🏢 {s.customer}</span>
+                                <span className="shipment-waybill-pill">Waybill: {s.bookingNo}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="shipment-route-cell">
+                                <div className="shipment-route-origin">
+                                  <span className="route-dot origin" />
+                                  <span>{s.origin}</span>
+                                </div>
+                                <div className="shipment-route-arrow">➔</div>
+                                <div className="shipment-route-dest">
+                                  <span className="route-dot dest" />
+                                  <span>{s.destination}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="shipment-driver-cell">
+                                <span className="driver-name">👤 {s.driver}</span>
+                                <span className="vehicle-plate">🚛 {s.vehicle}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="shipment-checkpoint-cell">
+                                <span className="checkpoint-pulse-dot" />
+                                <span>{s.currentLocation}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`shipment-status-pill ${
+                                s.status === 'In Transit' ? 'in-transit' :
+                                s.status === 'Delivered' ? 'delivered' :
+                                s.status === 'Out for Delivery' ? 'out-for-delivery' :
+                                s.status === 'Pending' ? 'pending' : 'custom'
+                              }`}>
+                                {s.status === 'In Transit' && '🚚 '}
+                                {s.status === 'Delivered' && '✅ '}
+                                {s.status === 'Out for Delivery' && '🎯 '}
+                                {s.status === 'Pending' && '⏳ '}
+                                {s.status}
+                              </span>
+                            </td>
+                            <td>
+                              {s.customStatus || s.customNote ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '220px' }}>
+                                  {s.customStatus && (
+                                    <span
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        background: 'rgba(139, 92, 246, 0.12)',
+                                        color: '#8b5cf6',
+                                        border: '1px solid rgba(139, 92, 246, 0.3)',
+                                        padding: '3px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: 700,
+                                        width: 'fit-content'
+                                      }}
+                                    >
+                                      🏷️ {s.customStatus}
+                                    </span>
+                                  )}
+                                  {s.customNote && (
+                                    <span
+                                      style={{
+                                        fontSize: '11px',
+                                        color: 'var(--text-secondary, #94a3b8)',
+                                        lineHeight: 1.35,
+                                        whiteSpace: 'normal',
+                                        wordBreak: 'break-word'
+                                      }}
+                                      title={s.customNote}
+                                    >
+                                      📝 {s.customNote}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    openUpdateShipmentModal(s);
+                                  }}
                                   style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    background: 'rgba(139, 92, 246, 0.12)',
-                                    color: '#8b5cf6',
-                                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                                    padding: '3px 8px',
+                                    background: 'transparent',
+                                    border: '1px dashed var(--border, #64748b)',
+                                    color: 'var(--text-secondary, #94a3b8)',
+                                    padding: '4px 10px',
                                     borderRadius: '6px',
                                     fontSize: '11px',
-                                    fontWeight: 700,
-                                    width: 'fit-content'
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
                                   }}
                                 >
-                                  🏷️ {s.customStatus}
-                                </span>
+                                  + Add Custom Note
+                                </button>
                               )}
-                              {s.customNote && (
-                                <span
-                                  style={{
-                                    fontSize: '11px',
-                                    color: 'var(--text-secondary, #94a3b8)',
-                                    lineHeight: 1.35,
-                                    whiteSpace: 'normal',
-                                    wordBreak: 'break-word'
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div className="shipment-actions-cell">
+                                <button
+                                  type="button"
+                                  className="shipment-btn-action"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    openUpdateShipmentModal(s);
                                   }}
-                                  title={s.customNote}
                                 >
-                                  📝 {s.customNote}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={e => {
-                                e.stopPropagation();
-                                openUpdateShipmentModal(s);
-                              }}
-                              style={{
-                                background: 'transparent',
-                                border: '1px dashed var(--border, #64748b)',
-                                color: 'var(--text-secondary, #94a3b8)',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              + Add Custom Note
-                            </button>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            className="shipment-btn-action"
-                            onClick={e => {
-                              e.stopPropagation();
-                              openUpdateShipmentModal(s);
-                            }}
-                          >
-                            ✏️ Update Status
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                                  ✏️ Update
+                                </button>
+                                <button
+                                  type="button"
+                                  className="shipment-btn-telemetry"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    showToast(`🛰️ Live GPS Telemetry for ${s.shipmentNo}: 28.6139° N, 77.2090° E (Speed: 58 km/h, FASTag: Verified)`);
+                                  }}
+                                  title="View GPS Satellite Telemetry"
+                                >
+                                  📡
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                /* CARDS VIEW */
+                <div className="shipments-cards-grid">
+                  {filteredShipments.map((s, idx) => (
+                    <div
+                      key={idx}
+                      className="shipment-card"
+                      onClick={() => openUpdateShipmentModal(s)}
+                    >
+                      <div className="shipment-card-head">
+                        <div>
+                          <span className="shipment-id-badge">#{s.shipmentNo}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', marginLeft: '8px' }}>
+                            Waybill: {s.bookingNo}
+                          </span>
+                        </div>
+                        <span className={`shipment-status-pill ${
+                          s.status === 'In Transit' ? 'in-transit' :
+                          s.status === 'Delivered' ? 'delivered' :
+                          s.status === 'Out for Delivery' ? 'out-for-delivery' :
+                          s.status === 'Pending' ? 'pending' : 'custom'
+                        }`}>
+                          {s.status}
+                        </span>
+                      </div>
+
+                      <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>
+                        🏢 {s.customer}
+                      </div>
+
+                      <div className="shipment-card-route">
+                        <span>🟢 {s.origin}</span>
+                        <span style={{ color: '#0284c7' }}>➔</span>
+                        <span>🔴 {s.destination}</span>
+                      </div>
+
+                      <div className="shipment-checkpoint-cell">
+                        <span className="checkpoint-pulse-dot" />
+                        <span>{s.currentLocation}</span>
+                      </div>
+
+                      <div className="shipment-card-meta">
+                        <div>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', display: 'block', textTransform: 'uppercase' }}>Driver</span>
+                          <strong>👤 {s.driver}</strong>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', display: 'block', textTransform: 'uppercase' }}>Vehicle</span>
+                          <strong style={{ color: '#0284c7', fontFamily: 'monospace' }}>🚛 {s.vehicle}</strong>
+                        </div>
+                      </div>
+
+                      {s.customStatus && (
+                        <div style={{ fontSize: '11px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                          🏷️ {s.customStatus}
+                        </div>
+                      )}
+
+                      <div className="shipment-card-footer">
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>⏱️ {s.updatedAt}</span>
+                        <button
+                          type="button"
+                          className="shipment-btn-action"
+                          onClick={e => {
+                            e.stopPropagation();
+                            openUpdateShipmentModal(s);
+                          }}
+                        >
+                          ✏️ Update Status
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -6001,6 +6396,251 @@ export default function Dashboard() {
                   </button>
                   <button type="submit" className="st-btn-submit">
                     ✓ Update Status &amp; Notify Client
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL 2B: ADD NEW HIGHWAY DISPATCH / SHIPMENT (NEW) */}
+        {/* ============================================================== */}
+        {showAddShipmentModal && (
+          <div className="st-modal-overlay" onClick={() => setShowAddShipmentModal(false)}>
+            <div className="st-drawer-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+              <div className="st-drawer-head">
+                <div className="shipment-modal-head-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="shipment-modal-badge">NEW DISPATCH</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>AIS-140 Fleet Gateway</span>
+                  </div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                    Create &amp; Dispatch New Highway Shipment
+                  </h2>
+                  <div className="shipment-route-pill">
+                    <span>Pan-India Freight Logistics</span>
+                    <span>•</span>
+                    <span>Rule 138 Part-B Synced</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowAddShipmentModal(false)}
+                  title="Close"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* 1-CLICK INDUSTRY PRESETS BAR */}
+              <div style={{
+                background: 'var(--bg-input, #f8fafc)',
+                borderBottom: '1px solid var(--border, #e2e8f0)',
+                padding: '10px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap'
+              }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase' }}>
+                  ⚡ 1-Click Fast Fill:
+                </span>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('ftl')}
+                >
+                  🏭 Auto FTL (Pune ➔ Sanand)
+                </button>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('cold')}
+                >
+                  💊 Pharma Cold-Chain
+                </button>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('heavy')}
+                >
+                  🏗️ Steel Heavy ODC
+                </button>
+                <button
+                  type="button"
+                  className="shipment-preset-pill"
+                  onClick={() => applyShipmentPreset('express')}
+                >
+                  📦 Retail Express
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateNewShipment}>
+                <div className="st-drawer-body">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label className="shipment-field-label" style={{ margin: 0 }}>Shipment Number *</label>
+                        <button
+                          type="button"
+                          onClick={() => setNewShipmentNo(`SHP-${Math.floor(9900 + Math.random() * 900)}`)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#0284c7',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ⚡ Auto-Gen
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentNo}
+                        onChange={e => setNewShipmentNo(e.target.value)}
+                        placeholder="e.g. SHP-9906"
+                      />
+                    </div>
+
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Waybill / LR Number *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentBookingNo}
+                        onChange={e => setNewShipmentBookingNo(e.target.value)}
+                        placeholder="e.g. ASKB00125"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label className="shipment-field-label">Customer / Enterprise Client *</label>
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      required
+                      value={newShipmentCustomer}
+                      onChange={e => setNewShipmentCustomer(e.target.value)}
+                      placeholder="e.g. Tata Motors Commercial Vehicles Ltd"
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Origin Hub *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentOrigin}
+                        onChange={e => setNewShipmentOrigin(e.target.value)}
+                        placeholder="e.g. Delhi Central Hub"
+                      />
+                    </div>
+
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Destination Hub *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentDestination}
+                        onChange={e => setNewShipmentDestination(e.target.value)}
+                        placeholder="e.g. Mumbai Nhava Sheva"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Assigned Pilot / Driver *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentDriver}
+                        onChange={e => setNewShipmentDriver(e.target.value)}
+                        placeholder="e.g. Ramesh Yadav"
+                      />
+                    </div>
+
+                    <div className="st-form-field">
+                      <label className="shipment-field-label">Assigned Fleet Vehicle *</label>
+                      <input
+                        type="text"
+                        className="shipment-input"
+                        required
+                        value={newShipmentVehicle}
+                        onChange={e => setNewShipmentVehicle(e.target.value)}
+                        placeholder="e.g. DL-01-AB-1234 (32ft MXL)"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label className="shipment-field-label">Current Checkpoint / Location *</label>
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      required
+                      value={newShipmentLocation}
+                      onChange={e => setNewShipmentLocation(e.target.value)}
+                      placeholder="e.g. Delhi Origin Hub - Loading Bay #04"
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label className="shipment-field-label">Initial Dispatch Status</label>
+                    <select
+                      className="shipment-select"
+                      value={newShipmentInitialStatus}
+                      onChange={e => setNewShipmentInitialStatus(e.target.value)}
+                    >
+                      <option value="In Transit">🚚 In Transit (Dispatched on Highway)</option>
+                      <option value="Pending">⏳ Pending (Dock Loading)</option>
+                      <option value="Out for Delivery">🎯 Out for Delivery (Destination Local)</option>
+                    </select>
+                  </div>
+
+                  <div className="shipment-custom-card">
+                    <label className="shipment-field-label" style={{ color: '#8b5cf6', margin: 0 }}>
+                      🏷️ Custom Stage Title &amp; Milestone Notes
+                    </label>
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      value={newShipmentCustomStatus}
+                      onChange={e => setNewShipmentCustomStatus(e.target.value)}
+                      placeholder="e.g. Priority Express Corridor"
+                    />
+                    <input
+                      type="text"
+                      className="shipment-input"
+                      value={newShipmentCustomNote}
+                      onChange={e => setNewShipmentCustomNote(e.target.value)}
+                      placeholder="e.g. Fastag automated clearance verified at NH-48"
+                    />
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowAddShipmentModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit">
+                    🚀 Confirm &amp; Dispatch Shipment
                   </button>
                 </div>
               </form>
