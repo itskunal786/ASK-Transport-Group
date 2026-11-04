@@ -825,6 +825,14 @@ export default function Dashboard() {
   });
   const [vehicleSearch, setVehicleSearch] = useState('');
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
+  const [showEditVehicleModal, setShowEditVehicleModal] = useState(false);
+  const [editingVehiclePlate, setEditingVehiclePlate] = useState('');
+  const [editVehicleModel, setEditVehicleModel] = useState('');
+  const [editVehicleType, setEditVehicleType] = useState('32ft Multi-Axle (MXL)');
+  const [editVehicleCapacity, setEditVehicleCapacity] = useState('16');
+  const [editVehicleHub, setEditVehicleHub] = useState('Delhi Hub');
+  const [editVehicleStatus, setEditVehicleStatus] = useState<'Available' | 'On Route' | 'Maintenance'>('Available');
+  const [editVehicleFuel, setEditVehicleFuel] = useState('100%');
   const [newPlateNo, setNewPlateNo] = useState('');
   const [newVehicleModel, setNewVehicleModel] = useState('');
   const [newVehicleType, setNewVehicleType] = useState('32ft Multi-Axle (MXL)');
@@ -1612,6 +1620,67 @@ export default function Dashboard() {
     setNewDriverPhone('');
     setNewDriverDL('');
     showToast(`Driver ${newDrv.name} registered successfully!`);
+  }
+
+  // Handle Edit Vehicle
+  function handleOpenEditVehicleModal(v: VehicleRow) {
+    setEditingVehiclePlate(v.plateNo);
+    setEditVehicleModel(v.model);
+    setEditVehicleType(v.type);
+    setEditVehicleCapacity(String(v.capacityTons));
+    setEditVehicleHub(v.currentHub);
+    setEditVehicleStatus(v.status);
+    setEditVehicleFuel(v.fuelLevel);
+    setShowEditVehicleModal(true);
+  }
+
+  function handleSaveEditVehicle(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingVehiclePlate || !editVehicleModel.trim()) return;
+
+    const capacity = parseFloat(editVehicleCapacity) || 16;
+    const updatedVeh: VehicleRow = {
+      plateNo: editingVehiclePlate,
+      model: editVehicleModel.trim(),
+      type: editVehicleType,
+      capacityTons: capacity,
+      currentHub: editVehicleHub,
+      status: editVehicleStatus,
+      fuelLevel: editVehicleFuel
+    };
+
+    setVehiclesList(prev => {
+      const updated = prev.map(v => v.plateNo === editingVehiclePlate ? updatedVeh : v);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ask_fleet_vehicles', JSON.stringify(updated));
+      }
+      return updated;
+    });
+
+    setShowEditVehicleModal(false);
+    showToast(`✓ Vehicle ${editingVehiclePlate} details updated!`);
+  }
+
+  function handleDeleteFleetVehicle(plateNo: string) {
+    if (window.confirm(`Are you sure you want to delete vehicle ${plateNo} from fleet registry?`)) {
+      setVehiclesList(prev => {
+        const updated = prev.filter(v => v.plateNo !== plateNo);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ask_fleet_vehicles', JSON.stringify(updated));
+        }
+        return updated;
+      });
+
+      setTelematicsFleet(prev => {
+        const updated = prev.filter(t => t.plateNo !== plateNo);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ask_telematics_fleet', JSON.stringify(updated));
+        }
+        return updated;
+      });
+
+      showToast(`🗑️ Vehicle ${plateNo} deleted from fleet registry.`);
+    }
   }
 
   // Handle Add Vehicle
@@ -4090,6 +4159,7 @@ export default function Dashboard() {
                     <th>Assigned Terminal</th>
                     <th>Fuel Level</th>
                     <th>{t('Status', 'स्थिति')}</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -4127,6 +4197,34 @@ export default function Dashboard() {
                         >
                           {v.status}
                         </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className="admin-btn-view"
+                            onClick={() => handleOpenEditVehicleModal(v)}
+                            style={{ padding: '4px 10px', fontSize: '11px', cursor: 'pointer' }}
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFleetVehicle(v.plateNo)}
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: '11px',
+                              background: '#fee2e2',
+                              color: '#dc2626',
+                              border: '1px solid #fecaca',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontWeight: 700
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -6623,6 +6721,131 @@ export default function Dashboard() {
                   </button>
                   <button type="submit" className="st-btn-submit">
                     Save Vehicle
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: EDIT VEHICLE MODAL */}
+        {showEditVehicleModal && (
+          <div className="st-modal-overlay" onClick={() => setShowEditVehicleModal(false)}>
+            <div className="st-drawer-box" onClick={e => e.stopPropagation()}>
+              <div className="st-drawer-head">
+                <div>
+                  <h2>Edit Fleet Vehicle</h2>
+                  <p>Registration: {editingVehiclePlate}</p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => setShowEditVehicleModal(false)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditVehicle}>
+                <div className="st-drawer-body">
+                  <div className="st-form-field">
+                    <label>Registration Plate (Immutable)</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={editingVehiclePlate}
+                      style={{ background: '#f1f5f9', fontWeight: 800, color: '#0f172a' }}
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Truck Model &amp; Maker *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editVehicleModel}
+                      onChange={e => setEditVehicleModel(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Chassis / Body Type</label>
+                    <select
+                      value={editVehicleType}
+                      onChange={e => setEditVehicleType(e.target.value)}
+                    >
+                      <option value="32ft Multi-Axle (MXL)">32ft Multi-Axle (MXL)</option>
+                      <option value="32ft Single Axle (SXL)">32ft Single Axle (SXL)</option>
+                      <option value="40ft High-Cube Container Trailer">40ft High-Cube Container Trailer</option>
+                      <option value="24ft Open Truck (Taurus 10-Wheel)">24ft Open Truck (Taurus 10-Wheel)</option>
+                      <option value="14ft Eicher Close Body">14ft Eicher Close Body</option>
+                      <option value="Tata Ace / Intra (Last Mile)">Tata Ace / Intra (Last Mile)</option>
+                      <option value="Reefer Cold-Chain Container">Reefer Cold-Chain Container</option>
+                    </select>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Payload Capacity (Tons)</label>
+                    <input
+                      type="number"
+                      required
+                      value={editVehicleCapacity}
+                      onChange={e => setEditVehicleCapacity(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Current Assigned Terminal / Hub</label>
+                    <select
+                      value={editVehicleHub}
+                      onChange={e => setEditVehicleHub(e.target.value)}
+                    >
+                      <option value="Delhi Hub">Delhi Hub</option>
+                      <option value="Mumbai Nhava Sheva">Mumbai Nhava Sheva</option>
+                      <option value="Bangalore Hub">Bangalore Hub</option>
+                      <option value="Kolkata Hub">Kolkata Hub</option>
+                      <option value="Ahmedabad Hub">Ahmedabad Hub</option>
+                      <option value="Pune Terminal">Pune Terminal</option>
+                      <option value="Jaipur SuperHub">Jaipur SuperHub</option>
+                    </select>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Vehicle Operational Status</label>
+                    <select
+                      value={editVehicleStatus}
+                      onChange={e => setEditVehicleStatus(e.target.value as any)}
+                    >
+                      <option value="Available">Available (Ready for Dispatch)</option>
+                      <option value="On Route">On Route (In Transit)</option>
+                      <option value="Maintenance">Maintenance (Service Bay)</option>
+                    </select>
+                  </div>
+
+                  <div className="st-form-field">
+                    <label>Fuel Level</label>
+                    <select
+                      value={editVehicleFuel}
+                      onChange={e => setEditVehicleFuel(e.target.value)}
+                    >
+                      <option value="100%">100% (Full Tank)</option>
+                      <option value="75%">75%</option>
+                      <option value="50%">50%</option>
+                      <option value="25%">25% (Refueling Required)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="st-drawer-actions">
+                  <button
+                    type="button"
+                    className="st-btn-cancel"
+                    onClick={() => setShowEditVehicleModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="st-btn-submit">
+                    Save Vehicle Changes
                   </button>
                 </div>
               </form>

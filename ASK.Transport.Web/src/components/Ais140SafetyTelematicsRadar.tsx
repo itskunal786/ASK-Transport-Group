@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Radio, 
   AlertOctagon, 
@@ -12,7 +12,9 @@ import {
   Compass, 
   Moon, 
   Zap, 
-  X
+  X,
+  ExternalLink,
+  Siren
 } from 'lucide-react';
 import type { Ais140SafetyTelemetry } from '../types/transportOperations';
 import { getAis140FleetSafety, ackAis140Panic } from '../api/ais140SafetyApi';
@@ -118,6 +120,27 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [showEmergencyModal, setShowEmergencyModal] = useState<boolean>(false);
+  const [isConsolePulsing, setIsConsolePulsing] = useState<boolean>(false);
+  const consoleRef = useRef<HTMLDivElement>(null);
+
+  const handleViewSosImmediately = () => {
+    const sos = telemetryList.find(tItem => tItem.panicButtonTriggered) || telemetryList[0] || SEED_AIS140_DATA[2];
+    if (sos) {
+      setSelectedTruck(sos);
+      setFilterType('SOS');
+      setShowEmergencyModal(true);
+      setIsConsolePulsing(true);
+      setTimeout(() => setIsConsolePulsing(false), 5000);
+      showToast('error', t(
+        `Live Emergency SOS Dossier: ${sos.vehicleNumber} (${sos.driverName}) on ${sos.currentHighwayLocation}`,
+        `लाइव इमरजेंसी SOS डॉजियर: ${sos.vehicleNumber} (${sos.driverName}) - ${sos.currentHighwayLocation}`
+      ));
+      setTimeout(() => {
+        consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
+  };
 
   useEffect(() => {
     fetchSafetyData();
@@ -256,14 +279,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              const sos = telemetryList.find(tItem => tItem.panicButtonTriggered);
-              if (sos) setSelectedTruck(sos);
-            }}
-            className="ais-emergency-btn"
-          >
+          <button type="button" onClick={handleViewSosImmediately} className="ais-emergency-btn">
             {t('View Vehicle Immediately ➔', 'तत्काल वाहन देखें ➔')}
           </button>
         </div>
@@ -316,7 +332,7 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
           </div>
         </div>
 
-        <div className="ais-metric-card">
+        <div className="ais-metric-card" onClick={activePanicCount > 0 ? handleViewSosImmediately : undefined} style={{ cursor: activePanicCount > 0 ? 'pointer' : 'default' }} title={activePanicCount > 0 ? t('Click to view SOS emergency vehicle', 'इमरजेंसी वाहन देखने हेतु क्लिक करें') : undefined}>
           <div className="ais-metric-info">
             <span className="ais-metric-label">{t('Active SOS Panic Alarms', 'SOS पैनिक अलार्म')}</span>
             <div className={`ais-metric-value ${activePanicCount > 0 ? 'text-red-500' : ''}`} style={{ color: activePanicCount > 0 ? '#dc2626' : undefined }}>
@@ -451,7 +467,8 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
         </div>
 
         {/* Right Side: Detailed Safety Radar & Emergency Protocol Console */}
-        <div className="ais-detail-card">
+        <div ref={consoleRef} className={`ais-detail-card ${isConsolePulsing ? 'ais-detail-card-pulse' : ''}`}>
+
           {/* Header */}
           <div className="ais-detail-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -650,6 +667,151 @@ export const Ais140SafetyTelematicsRadar: React.FC = () => {
           </div>
         </div>
       </div>
+    
+      {/* Live AIS-140 Emergency Panic SOS Response Dossier Modal */}
+      {showEmergencyModal && (
+        <div className="ais-modal-overlay" onClick={() => setShowEmergencyModal(false)}>
+          <div className="ais-modal-container" onClick={e => e.stopPropagation()}>
+            <div className="ais-modal-header danger">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="ais-modal-danger-badge">
+                  <AlertOctagon size={24} />
+                </div>
+                <div>
+                  <div className="ais-modal-kicker">
+                    {t('CRITICAL HIGHWAY DISTRESS DETECTED', 'अति-गंभीर हाईवे आपातकालीन संकेत')}
+                  </div>
+                  <h3 className="ais-modal-title">
+                    {t('AIS-140 Emergency Panic SOS Dossier', 'AIS-140 इमरजेंसी पैनिक SOS डॉजियर')}
+                  </h3>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="ais-modal-close"
+                onClick={() => setShowEmergencyModal(false)}
+                title={t('Close', 'बंद करें')}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="ais-modal-body">
+              {/* Vehicle & Status Banner */}
+              <div className="ais-modal-vehicle-banner">
+                <div className="ais-modal-vehicle-reg">
+                  <div className="ais-modal-reg-icon">
+                    <Truck size={22} />
+                  </div>
+                  <div>
+                    <div className="ais-modal-reg-no">{currentTruck.vehicleNumber}</div>
+                    <div className="ais-modal-driver-sub">
+                      {t('Driver:', 'चालक:')} <strong>{currentTruck.driverName}</strong> ({currentTruck.driverPhone})
+                    </div>
+                  </div>
+                </div>
+                <div className="ais-modal-sos-badge">
+                  <span className="ais-modal-pulse-dot"></span>
+                  <span>{t('SOS ALARM ACTIVE', 'SOS अलार्म सक्रिय')}</span>
+                </div>
+              </div>
+
+              {/* Live GPS & Route Coordinates */}
+              <div className="ais-modal-location-box">
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <MapPin size={22} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div className="ais-modal-location-title">
+                      {currentTruck.currentHighwayLocation}
+                    </div>
+                    <div className="ais-modal-coords">
+                      <span>GPS Lat: <b>{Number(currentTruck.latitude).toFixed(4)}° N</b></span>
+                      <span>Long: <b>{Number(currentTruck.longitude).toFixed(4)}° E</b></span>
+                      <span>Speed: <b>{currentTruck.currentSpeedKmph} km/h</b></span>
+                    </div>
+                    <div className="ais-modal-timestamp">
+                      {t('Satellite Ping:', 'उपग्रह पिंग:')} {currentTruck.lastPingAt || 'Live (2s ago)'} • {t('IRNSS / NavIC Dual-band Lock Verified', 'IRNSS / NavIC डुअल-बैंड लॉक प्रमाणित')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rapid Police & Emergency Protocol Info */}
+              <div className="ais-modal-info-grid">
+                <div className="ais-modal-info-card">
+                  <span className="ais-modal-info-label">{t('Nearest Police Helpline', 'निकटतम पुलिस हेल्पलाइन')}</span>
+                  <span className="ais-modal-info-val">{currentTruck.nearestPoliceEmergencyContact || 'Highway Police 112'}</span>
+                </div>
+                <div className="ais-modal-info-card">
+                  <span className="ais-modal-info-label">{t('Telemetry Diagnostics', 'टेलीमैटिक्स डायग्नोस्टिक्स')}</span>
+                  <span className="ais-modal-info-val">
+                    {currentTruck.continuousDrivingHours}h Continuous • {currentTruck.harshBrakingCount} Braking Events
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="ais-modal-actions-grid">
+                <a
+                  href={`tel:${currentTruck.driverPhone?.replace(/\s+/g, '') || ''}`}
+                  className="ais-modal-action-btn driver-call"
+                  onClick={() => showToast('info', t(`Dialing driver ${currentTruck.driverName}...`, `${currentTruck.driverName} को डायल किया जा रहा है...`))}
+                >
+                  <PhoneCall size={16} />
+                  <span>{t('Call Driver Now', 'ड्राइवर को कॉल करें')}</span>
+                </a>
+
+                <a
+                  href="tel:112"
+                  className="ais-modal-action-btn police-call"
+                  onClick={() => handlePoliceAlert(currentTruck)}
+                >
+                  <Siren size={16} />
+                  <span>{t('Dispatch Police (112)', 'हाईवे पुलिस डिस्पैच (112)')}</span>
+                </a>
+
+                <a
+                  href={`https://www.google.com/maps?q=${currentTruck.latitude},${currentTruck.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ais-modal-action-btn maps-link"
+                >
+                  <ExternalLink size={16} />
+                  <span>{t('Open Live GPS Map', 'लाइव GPS मैप खोलें')}</span>
+                </a>
+
+                <button
+                  type="button"
+                  className="ais-modal-action-btn ack-btn"
+                  onClick={() => {
+                    handleAckPanic(currentTruck.id);
+                    setShowEmergencyModal(false);
+                  }}
+                >
+                  <CheckCircle2 size={16} />
+                  <span>{t('Acknowledge / Reset SOS', 'अलार्म रीसेट / एक्नॉलेज')}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="ais-modal-footer">
+              <button
+                type="button"
+                className="ais-modal-focus-btn"
+                onClick={() => {
+                  setShowEmergencyModal(false);
+                  setTimeout(() => {
+                    consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
+                }}
+              >
+                {t('Focus Radar Console & Live Controls ➔', 'राडार कंसोल एवं लाइव कंट्रोल्स पर जाएं ➔')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

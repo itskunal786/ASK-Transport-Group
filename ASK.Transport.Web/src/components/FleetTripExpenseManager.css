@@ -1,0 +1,510 @@
+/* ============================================================================
+   FLEET TRIP PETTY CASH & P&L EXPENSE MANAGER STYLESHEET
+   Supports Light & Luxury Dark Modes with 100% High-Contrast Typography
+   ============================================================================ */
+
+.fleet-expense-container {
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ============================================================================
+   DARK MODE OVERRIDES (DEEP SLATE LUXURY #111a2e / #090f1d)
+   ============================================================================ */
+[data-theme="dark"] .fleet-expense-container,
+body.dark .fleet-expense-container,
+.dark .fleet-expense-container {
+  --bg-surface: #111a2e;
+  --bg-subtle: #090f1d;
+  --bg-hover: rgba(56, 189, 248, 0.08);
+  --border-color: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+}
+
+/* 1. TOP KPI METRICS GRID */
+.fleet-expense-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.fleet-expense-kpi-card {
+  background: var(--bg-surface);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fleet-expense-kpi-card.approved { border-left: 4px solid #10b981; }
+.fleet-expense-kpi-card.pending { border-left: 4px solid #f59e0b; }
+.fleet-expense-kpi-card.diesel { border-left: 4px solid #0284c7; }
+.fleet-expense-kpi-card.toll { border-left: 4px solid #8b5cf6; }
+
+.fleet-expense-kpi-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.fleet-expense-kpi-val {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-primary);
+  display: block;
+  margin: 4px 0;
+}
+
+.fleet-expense-kpi-sub {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fleet-expense-kpi-sub.green { color: #10b981; }
+.fleet-expense-kpi-sub.amber { color: #f59e0b; }
+.fleet-expense-kpi-sub.muted { color: var(--text-secondary); }
+
+/* 2. ACTIVE TRIP REAL-TIME P&L SHEET */
+.fleet-expense-pnl-card {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.fleet-expense-pnl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 12px;
+}
+
+.fleet-expense-pnl-pill {
+  padding: 3px 8px;
+  background: #38bdf8;
+  color: #0f172a;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.fleet-expense-pnl-title {
+  font-size: 16px;
+  margin-left: 10px;
+  color: #ffffff;
+}
+
+.fleet-expense-pnl-vehicle {
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+.fleet-expense-pnl-vehicle strong {
+  color: #ffffff;
+}
+
+.fleet-expense-pnl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.fleet-expense-pnl-item span {
+  font-size: 11px;
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fleet-expense-pnl-item strong {
+  display: block;
+}
+
+.fleet-expense-pnl-item small {
+  font-size: 11px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* 3. FILTER & ACTIONS BAR */
+.fleet-expense-filter-bar {
+  background: var(--bg-surface);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.fleet-expense-filter-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.fleet-expense-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fleet-expense-filter-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fleet-expense-select {
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fleet-expense-select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.fleet-expense-btn-add {
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+}
+
+.fleet-expense-btn-add:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+/* 4. EXPENSE TABLE */
+.fleet-expense-table-card {
+  background: var(--bg-surface);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.fleet-expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.fleet-expense-table thead tr {
+  background: var(--bg-subtle);
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.fleet-expense-table th {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.fleet-expense-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.15s ease;
+}
+
+.fleet-expense-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.fleet-expense-table td {
+  padding: 13px 16px;
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+/* Cell typography */
+.fleet-expense-trip-no {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 800;
+  color: #38bdf8 !important;
+  display: block;
+  font-size: 12.5px;
+}
+
+[data-theme="light"] .fleet-expense-trip-no,
+body:not(.dark) .fleet-expense-trip-no {
+  color: #2563eb !important;
+}
+
+.fleet-expense-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.fleet-expense-driver-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-primary) !important;
+  display: block;
+  letter-spacing: 0.2px;
+}
+
+.fleet-expense-truck-no {
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.fleet-expense-station-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  display: block;
+}
+
+.fleet-expense-station-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  display: block;
+}
+
+.fleet-expense-amount {
+  font-size: 15px;
+  font-weight: 900;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-primary) !important;
+  display: block;
+}
+
+/* Badge tags */
+.fleet-expense-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.fleet-expense-badge.diesel {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.fleet-expense-badge.toll {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.fleet-expense-badge.driver-bhatta {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.fleet-expense-badge.tyre {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.fleet-expense-badge.border {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.fleet-expense-badge.default {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+/* Status pills */
+.fleet-expense-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.fleet-expense-status-badge.approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.fleet-expense-status-badge.rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.fleet-expense-status-badge.pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+/* Action buttons */
+.fleet-expense-btn-slip {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fleet-expense-btn-slip:hover {
+  background: rgba(56, 189, 248, 0.22);
+  color: #7dd3fc;
+}
+
+.fleet-expense-btn-approve {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fleet-expense-btn-approve:hover {
+  background: #10b981;
+}
+
+.fleet-expense-btn-reject {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fleet-expense-btn-reject:hover {
+  background: #ef4444;
+}
+
+.fleet-expense-verified-tag {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* 5. MODALS & POPUPS */
+.fleet-expense-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.fleet-expense-modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 24px;
+  color: var(--text-primary);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+  max-width: 480px;
+  width: 100%;
+}
+
+.fleet-expense-input,
+.fleet-expense-modal-select {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.fleet-expense-input:focus,
+.fleet-expense-modal-select:focus {
+  border-color: #0284c7;
+}
+
+.fleet-expense-btn-cancel {
+  padding: 8px 16px;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.fleet-expense-btn-cancel:hover {
+  background: var(--bg-hover);
+}
