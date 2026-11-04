@@ -684,3 +684,382 @@ body.dark .ais-standards-grid,
 .dark .ais-standards-grid {
   color: #cbd5e1;
 }
+
+/* ============================================================================
+   EMERGENCY SOS RESPONSE DOSSIER MODAL & CONSOLE PULSE
+   ============================================================================ */
+
+.ais-detail-card-pulse {
+  border: 2px solid #ef4444 !important;
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.75) !important;
+  animation: aisConsolePulse 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes aisConsolePulse {
+  0% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+    border-color: #ef4444;
+  }
+  100% {
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.9);
+    border-color: #f87171;
+  }
+}
+
+.ais-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: aisModalFadeIn 0.2s ease-out;
+}
+
+@keyframes aisModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ais-modal-container {
+  background: #0f172a;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.35), 0 0 0 1px rgba(239, 68, 68, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: aisModalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aisModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ais-modal-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ais-modal-header.danger {
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.35) 0%, rgba(220, 38, 38, 0.15) 100%);
+  border-bottom-color: rgba(239, 68, 68, 0.3);
+}
+
+.ais-modal-danger-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #dc2626;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+  flex-shrink: 0;
+}
+
+.ais-modal-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #f87171;
+}
+
+.ais-modal-title {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.ais-modal-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ais-modal-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.ais-modal-body {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ais-modal-vehicle-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ais-modal-vehicle-reg {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ais-modal-reg-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+}
+
+.ais-modal-reg-no {
+  font-size: 16px;
+  font-weight: 900;
+  font-family: monospace;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+.ais-modal-driver-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.ais-modal-driver-sub strong {
+  color: #f1f5f9;
+}
+
+.ais-modal-sos-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(220, 38, 38, 0.2);
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.ais-modal-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: aisDotPulse 1s infinite alternate;
+}
+
+@keyframes aisDotPulse {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+.ais-modal-location-box {
+  background: #111a2e;
+  border: 1px solid #1e2c47;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.ais-modal-location-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.ais-modal-coords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  font-family: monospace;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.ais-modal-coords b {
+  color: #38bdf8;
+}
+
+.ais-modal-timestamp {
+  font-size: 11px;
+  color: #34d399;
+  font-weight: 600;
+}
+
+.ais-modal-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 540px) {
+  .ais-modal-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ais-modal-info-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ais-modal-info-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.ais-modal-info-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.ais-modal-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+}
+
+@media (max-width: 540px) {
+  .ais-modal-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ais-modal-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.ais-modal-action-btn.driver-call {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.ais-modal-action-btn.driver-call:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.ais-modal-action-btn.police-call {
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.ais-modal-action-btn.police-call:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.ais-modal-action-btn.maps-link {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.ais-modal-action-btn.maps-link:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.ais-modal-action-btn.ack-btn {
+  background: #334155;
+  color: #ffffff;
+  border: 1px solid #475569;
+}
+
+.ais-modal-action-btn.ack-btn:hover {
+  background: #475569;
+  transform: translateY(-1px);
+}
+
+.ais-modal-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ais-modal-focus-btn {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.ais-modal-focus-btn:hover {
+  background: #1e293b;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
