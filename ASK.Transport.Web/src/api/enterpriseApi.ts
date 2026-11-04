@@ -145,7 +145,7 @@ export interface MarketplaceLoad {
   bids: MarketplaceBid[];
 }
 
-const DEFAULT_MARKETPLACE_LOADS: MarketplaceLoad[] = [
+export const DEFAULT_MARKETPLACE_LOADS: MarketplaceLoad[] = [
   {
     id: 1,
     loadNumber: 'LOAD-2026-9810',
