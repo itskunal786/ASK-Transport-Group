@@ -458,8 +458,46 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
-  // Active view in Admin Panel
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  // Active view in Admin Panel (Preserved on Page Refresh / F5 via URL & LocalStorage)
+  const validAdminTabs: AdminTab[] = [
+    'dashboard', 'bookings', 'customers', 'shipments', 'drivers', 'vehicles', 
+    'hubs', 'tariff', 'telematics', 'ewaybill', 'support', 'audit', 'settings', 
+    'reports', 'access', 'ai_automation', 'fleet_mgmt', 'enterprise_b2b', 
+    'finance_accounting', 'dock_yard', 'weighbridge', 'rto_vault', 
+    'driver_settlement', 'ais140_safety', 'cargo_claims', 'executive_pnl', 
+    'tax_audit', 'pod_inward'
+  ];
+
+  const getInitialAdminTab = (): AdminTab => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab') as AdminTab;
+      if (urlTab && validAdminTabs.includes(urlTab)) {
+        return urlTab;
+      }
+      const savedTab = localStorage.getItem('ask_admin_active_tab') as AdminTab;
+      if (savedTab && validAdminTabs.includes(savedTab)) {
+        return savedTab;
+      }
+    } catch {
+      // ignore
+    }
+    return 'dashboard';
+  };
+
+  const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
+
+  const setActiveTab = (tab: AdminTab) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('ask_admin_active_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
 
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
