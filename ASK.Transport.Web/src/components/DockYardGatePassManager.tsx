@@ -2187,38 +2187,187 @@ export default function DockYardGatePassManager() {
 
       {/* 7. PRINT SLIP MODAL */}
       {showSlipPrintModal && selectedPass && (
-        <div className="dockyard-modal-overlay">
-          <div className="dockyard-modal-card print-card">
-            <div style={{ textAlign: 'center', borderBottom: '2px dashed var(--border-color, #000)', paddingBottom: '12px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary, #0f172a)' }}>ASK TRANSPORT GROUP</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase' }}>
-                HUB TERMINAL: {currentHub.code} - {currentHub.name.toUpperCase()} ({currentHub.city.toUpperCase()})
+        <div className="dockyard-modal-overlay" onClick={() => setShowSlipPrintModal(false)}>
+          <div className="dockyard-modal-card print-card" onClick={e => e.stopPropagation()}>
+            {/* Top Close Button */}
+            <button
+              type="button"
+              className="gate-slip-close-btn"
+              onClick={() => setShowSlipPrintModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            {/* TICKET HEADER */}
+            <div className="gate-slip-header">
+              <div className="gate-slip-brand-row">
+                <span className="gate-slip-icon">🏢</span>
+                <span className="gate-slip-brand">ASK TRANSPORT GROUP</span>
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px', color: 'var(--text-primary, #0f172a)' }}>OFFICIAL GATE IN/OUT PASS</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>PASS NO: {selectedPass.passNumber}</div>
+              <div className="gate-slip-hub-tag">
+                HUB TERMINAL: {currentHub.code} • {currentHub.name.toUpperCase()} ({currentHub.city.toUpperCase()})
+              </div>
+              <div className="gate-slip-title">
+                OFFICIAL GATE IN / OUT PASS
+              </div>
+              <div className="gate-slip-pass-badge">
+                <span className="gate-slip-pass-label">PASS NO:</span>
+                <span className="gate-slip-pass-num">{selectedPass.passNumber}</span>
+              </div>
             </div>
 
-            <div style={{ padding: '16px 0', fontSize: '12px', lineHeight: '1.8', borderBottom: '2px dashed var(--border-color, #000)', color: 'var(--text-primary, #0f172a)' }}>
-              <div><strong>HUB LOCATION:</strong> {currentHub.name} ({currentHub.city}, {currentHub.state})</div>
-              <div><strong>VEHICLE NO:</strong> {selectedPass.vehicleNumber}</div>
-              <div><strong>DRIVER:</strong> {selectedPass.driverName} ({selectedPass.driverPhone})</div>
-              <div><strong>TRANSPORTER:</strong> {selectedPass.transporterName}</div>
-              <div><strong>BILTY / LR NO:</strong> {selectedPass.consignmentNo}</div>
-              <div><strong>CARGO:</strong> {selectedPass.materialType} ({selectedPass.cargoWeightTon} Ton)</div>
-              <div><strong>DOCK BAY:</strong> {selectedPass.assignedBay}</div>
-              <div><strong>SEAL NO:</strong> {selectedPass.sealNumber} [VERIFIED INTACT]</div>
-              <div><strong>ODOMETER:</strong> {selectedPass.odometerReadingKm} KM</div>
-              <div><strong>GATE-IN:</strong> {selectedPass.gateInTime}</div>
-              <div><strong>GATE-OUT:</strong> {selectedPass.gateOutTime || 'IN PROGRESS'}</div>
-              <div><strong>GUARD:</strong> {selectedPass.securityGuardName}</div>
+            {/* PERFORATION DIVIDER 1 */}
+            <div className="gate-slip-perforation">
+              <span className="gate-slip-notch left"></span>
+              <div className="gate-slip-dash"></div>
+              <span className="gate-slip-notch right"></span>
             </div>
 
-            <div style={{ textAlign: 'center', padding: '16px 0', borderBottom: '2px dashed var(--border-color, #000)', color: 'var(--text-primary, #0f172a)' }}>
-              <div style={{ fontSize: '32px' }}>||| || ||||| |||| ||| ||</div>
-              <div style={{ fontSize: '10px', marginTop: '4px' }}>*{selectedPass.passNumber}*</div>
+            {/* DETAILS GRID */}
+            <div className="gate-slip-details-grid">
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">VEHICLE NO:</span>
+                <span className="gate-slip-value gate-slip-plate">{selectedPass.vehicleNumber}</span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">BILTY / LR NO:</span>
+                <span className="gate-slip-value gate-slip-mono">{selectedPass.consignmentNo}</span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">DRIVER:</span>
+                <span className="gate-slip-value">{selectedPass.driverName} <span className="gate-slip-sub">({selectedPass.driverPhone})</span></span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">TRANSPORTER:</span>
+                <span className="gate-slip-value">{selectedPass.transporterName}</span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">CARGO:</span>
+                <span className="gate-slip-value">{selectedPass.materialType} <span className="gate-slip-weight-pill">{selectedPass.cargoWeightTon} Ton</span></span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">DOCK BAY:</span>
+                <span className="gate-slip-value gate-slip-bay">{selectedPass.assignedBay}</span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">SEAL NO:</span>
+                <span className="gate-slip-value">
+                  <span className="gate-slip-mono">{selectedPass.sealNumber}</span>
+                  <span className="gate-slip-seal-badge">VERIFIED INTACT</span>
+                </span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">ODOMETER:</span>
+                <span className="gate-slip-value gate-slip-mono">{Number(selectedPass.odometerReadingKm || 0).toLocaleString('en-IN')} KM</span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">GATE-IN:</span>
+                <span className="gate-slip-value gate-slip-time">{selectedPass.gateInTime}</span>
+              </div>
+
+              <div className="gate-slip-row">
+                <span className="gate-slip-label">GATE-OUT:</span>
+                <span className="gate-slip-value">
+                  {selectedPass.gateOutTime ? (
+                    <span className="gate-slip-time-out">{selectedPass.gateOutTime}</span>
+                  ) : (
+                    <span className="gate-slip-status-active">IN PROGRESS</span>
+                  )}
+                </span>
+              </div>
+
+              <div className="gate-slip-row full-width">
+                <span className="gate-slip-label">GUARD / DESK:</span>
+                <span className="gate-slip-value">{selectedPass.securityGuardName}</span>
+              </div>
+
+              <div className="gate-slip-row full-width">
+                <span className="gate-slip-label">HUB LOCATION:</span>
+                <span className="gate-slip-value">{currentHub.name} ({currentHub.city}, {currentHub.state})</span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+            {/* PERFORATION DIVIDER 2 */}
+            <div className="gate-slip-perforation">
+              <span className="gate-slip-notch left"></span>
+              <div className="gate-slip-dash"></div>
+              <span className="gate-slip-notch right"></span>
+            </div>
+
+            {/* BARCODE & AUTHENTICATION */}
+            <div className="gate-slip-barcode-area">
+              <svg className="gate-slip-barcode-svg" viewBox="0 0 260 44" preserveAspectRatio="none">
+                <rect x="0" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="5" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="8" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="15" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="19" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="23" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="28" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="33" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="39" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="43" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="48" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="53" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="59" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="63" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="68" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="73" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="79" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="83" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="88" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="93" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="99" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="103" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="108" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="113" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="119" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="123" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="128" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="133" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="139" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="143" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="148" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="153" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="159" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="163" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="168" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="173" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="179" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="183" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="188" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="193" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="199" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="203" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="208" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="213" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="219" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="223" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="228" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="233" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="239" y="0" width="1" height="44" fill="currentColor" />
+                <rect x="243" y="0" width="3" height="44" fill="currentColor" />
+                <rect x="248" y="0" width="2" height="44" fill="currentColor" />
+                <rect x="253" y="0" width="4" height="44" fill="currentColor" />
+                <rect x="258" y="0" width="2" height="44" fill="currentColor" />
+              </svg>
+              <div className="gate-slip-barcode-text">*{selectedPass.passNumber}*</div>
+              <div className="gate-slip-security-notice">
+                🔒 RFID BOOM BARRIER VERIFIED • MoRTH RULE 138 COMPLIANT
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="gate-slip-actions">
               <button
                 type="button"
                 onClick={() => setShowSlipPrintModal(false)}
@@ -2231,7 +2380,7 @@ export default function DockYardGatePassManager() {
                 type="button"
                 onClick={() => window.print()}
                 className="dockyard-btn-submit"
-                style={{ flex: 1 }}
+                style={{ flex: 1.4 }}
               >
                 🖨️ {t('Print Slip Now', 'पर्ची प्रिंट करें')}
               </button>
