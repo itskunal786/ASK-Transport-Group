@@ -6112,3 +6112,118 @@ body.dark .st-btn-cancel:hover,
 .st-drawer-body::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.6) !important;
 }
+
+
+/* ============================================================================
+   UNIVERSAL DRAWER HEADERS, LABELS, INPUTS & THEME OVERHAUL
+   ============================================================================ */
+
+.st-drawer-head h2 {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.01em !important;
+}
+
+[data-theme='dark'] .st-drawer-head h2,
+body.dark .st-drawer-head h2,
+.dark .st-drawer-head h2 {
+  color: #f8fafc !important;
+}
+
+.st-drawer-head p {
+  font-size: 12px !important;
+  margin: 4px 0 0 !important;
+  color: #64748b !important;
+}
+
+[data-theme='dark'] .st-drawer-head p,
+body.dark .st-drawer-head p,
+.dark .st-drawer-head p {
+  color: #94a3b8 !important;
+}
+
+.st-form-field label {
+  display: block !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  margin-bottom: 5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+}
+
+[data-theme='dark'] .st-form-field label,
+body.dark .st-form-field label,
+.dark .st-form-field label {
+  color: #cbd5e1 !important;
+}
+
+.st-form-field input,
+.st-form-field select,
+.st-form-field textarea {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme='dark'] .st-form-field input,
+[data-theme='dark'] .st-form-field select,
+[data-theme='dark'] .st-form-field textarea,
+body.dark .st-form-field input,
+body.dark .st-form-field select,
+body.dark .st-form-field textarea,
+.dark .st-form-field input,
+.dark .st-form-field select,
+.dark .st-form-field textarea {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+.st-form-field input:focus,
+.st-form-field select:focus,
+.st-form-field textarea:focus {
+  outline: none !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25) !important;
+}
+
+/* AI Scan Banner in vehicle / driver drawers */
+.st-ai-scan-banner {
+  margin: 14px 24px 0 !important;
+  padding: 10px 14px !important;
+  background: #ecfdf5 !important;
+  border: 1px dashed #34d399 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+[data-theme='dark'] .st-ai-scan-banner,
+body.dark .st-ai-scan-banner,
+.dark .st-ai-scan-banner {
+  background: rgba(6, 78, 59, 0.25) !important;
+  border-color: rgba(52, 211, 153, 0.35) !important;
+}
+
+[data-theme='dark'] .st-ai-scan-banner strong,
+body.dark .st-ai-scan-banner strong,
+.dark .st-ai-scan-banner strong {
+  color: #6ee7b7 !important;
+}
+
+[data-theme='dark'] .st-ai-scan-banner p,
+body.dark .st-ai-scan-banner p,
+.dark .st-ai-scan-banner p {
+  color: #a7f3d0 !important;
+}

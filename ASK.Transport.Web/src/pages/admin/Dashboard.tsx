@@ -6852,7 +6852,7 @@ export default function Dashboard() {
               </div>
 
               <form onSubmit={handleAddVehicle}>
-                <div style={{ margin: '14px 24px 0', padding: '10px 14px', background: '#ecfdf5', border: '1px dashed #34d399', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="st-ai-scan-banner">
                   <div>
                     <strong style={{ fontSize: '12px', color: '#065f46' }}>🤖 AI Auto-Scan Vehicle RC Book</strong>
                     <p style={{ margin: 0, fontSize: '11px', color: '#059669' }}>Upload RC photo to auto-fill plate no, model &amp; Vahan payload</p>
