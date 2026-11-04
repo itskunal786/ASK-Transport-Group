@@ -124,7 +124,9 @@ interface ShipmentRow {
   driver: string;
   vehicle: string;
   currentLocation: string;
-  status: 'Pending' | 'Picked Up' | 'In Transit' | 'Out for Delivery' | 'Delivered';
+  status: 'Pending' | 'Picked Up' | 'In Transit' | 'Out for Delivery' | 'Delivered' | string;
+  customStatus?: string;
+  customNote?: string;
   updatedAt: string;
 }
 
@@ -241,6 +243,8 @@ const INITIAL_SHIPMENTS: ShipmentRow[] = [
     vehicle: 'DL-01-AB-1234 (32ft MXL)',
     currentLocation: 'Jaipur Expressway Toll Gate',
     status: 'In Transit',
+    customStatus: 'Priority Express Corridor',
+    customNote: 'Fastag automated clearance verified at NH-48',
     updatedAt: '10 mins ago'
   },
   {
@@ -253,6 +257,8 @@ const INITIAL_SHIPMENTS: ShipmentRow[] = [
     vehicle: 'KA-05-CD-5678 (14ft Eicher)',
     currentLocation: 'Chennai Destination Terminal',
     status: 'Delivered',
+    customStatus: 'e-POD Verified',
+    customNote: 'Digital signature captured at Port Gate #2',
     updatedAt: '2 hours ago'
   },
   {
@@ -769,13 +775,26 @@ export default function Dashboard() {
     return { revoked: false };
   }
 
-  // Shipments state
-  const [shipmentsList, setShipmentsList] = useState<ShipmentRow[]>(INITIAL_SHIPMENTS);
+  // Shipments state (with localStorage persistence)
+  const [shipmentsList, setShipmentsList] = useState<ShipmentRow[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ask_admin_shipments');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return INITIAL_SHIPMENTS;
+  });
   const [shipmentSearch, setShipmentSearch] = useState('');
   const [shipmentFilterStatus, setShipmentFilterStatus] = useState('All');
   const [showUpdateShipmentModal, setShowUpdateShipmentModal] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentRow | null>(null);
-  const [newStatus, setNewStatus] = useState<'Pending' | 'Picked Up' | 'In Transit' | 'Out for Delivery' | 'Delivered'>('In Transit');
+  const [newStatus, setNewStatus] = useState<string>('In Transit');
+  const [customStatusName, setCustomStatusName] = useState('');
+  const [customNoteText, setCustomNoteText] = useState('');
   const [newLocation, setNewLocation] = useState('');
   const [milestoneNote, setMilestoneNote] = useState('');
 
@@ -1522,8 +1541,10 @@ export default function Dashboard() {
   function openUpdateShipmentModal(s: ShipmentRow) {
     setSelectedShipment(s);
     setNewStatus(s.status);
+    setCustomStatusName(s.customStatus || '');
+    setCustomNoteText(s.customNote || '');
     setNewLocation(s.currentLocation);
-    setMilestoneNote('');
+    setMilestoneNote(s.customNote || '');
     setShowUpdateShipmentModal(true);
   }
 
@@ -1531,30 +1552,42 @@ export default function Dashboard() {
     e.preventDefault();
     if (!selectedShipment) return;
 
-    setShipmentsList(prev =>
-      prev.map(item =>
+    const finalStatus = newStatus === 'Custom' ? (customStatusName.trim() || 'Custom Status') : newStatus;
+    const finalCustomStatus = customStatusName.trim() || (newStatus !== 'Pending' && newStatus !== 'Picked Up' && newStatus !== 'In Transit' && newStatus !== 'Out for Delivery' && newStatus !== 'Delivered' ? newStatus : undefined);
+    const finalCustomNote = customNoteText.trim() || milestoneNote.trim() || undefined;
+
+    setShipmentsList(prev => {
+      const updated = prev.map(item =>
         item.shipmentNo === selectedShipment.shipmentNo
           ? {
               ...item,
-              status: newStatus,
+              status: finalStatus,
+              customStatus: finalCustomStatus,
+              customNote: finalCustomNote,
               currentLocation: newLocation.trim() || item.currentLocation,
               updatedAt: 'Just now'
             }
           : item
-      )
-    );
+      );
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('ask_admin_shipments', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
 
     // Also update corresponding booking status if matched
     setBookingsList(prev =>
       prev.map(b =>
         b.bookingNo === selectedShipment.bookingNo
-          ? { ...b, status: newStatus === 'Delivered' ? 'Delivered' : newStatus === 'Pending' ? 'Pending' : 'In Transit' }
+          ? { ...b, status: finalStatus === 'Delivered' ? 'Delivered' : finalStatus === 'Pending' ? 'Pending' : 'In Transit' }
           : b
       )
     );
 
     setShowUpdateShipmentModal(false);
-    showToast(`Shipment ${selectedShipment.shipmentNo} status updated to "${newStatus}"!`);
+    showToast(`Shipment ${selectedShipment.shipmentNo} updated! Status: "${finalStatus}"`);
   }
 
   // Handle Add Driver
@@ -1669,7 +1702,14 @@ export default function Dashboard() {
   });
 
   const filteredShipments = shipmentsList.filter(s => {
-    if (shipmentFilterStatus !== 'All' && s.status !== shipmentFilterStatus) return false;
+    if (shipmentFilterStatus !== 'All') {
+      if (shipmentFilterStatus === 'Custom') {
+        const isStandard = ['Pending', 'Picked Up', 'In Transit', 'Out for Delivery', 'Delivered'].includes(s.status);
+        if (!s.customStatus && !s.customNote && isStandard) return false;
+      } else if (s.status !== shipmentFilterStatus) {
+        return false;
+      }
+    }
     if (shipmentSearch.trim()) {
       const q = shipmentSearch.toLowerCase();
       return (
@@ -1678,7 +1718,9 @@ export default function Dashboard() {
         s.customer.toLowerCase().includes(q) ||
         s.origin.toLowerCase().includes(q) ||
         s.destination.toLowerCase().includes(q) ||
-        s.driver.toLowerCase().includes(q)
+        s.driver.toLowerCase().includes(q) ||
+        (s.customStatus && s.customStatus.toLowerCase().includes(q)) ||
+        (s.customNote && s.customNote.toLowerCase().includes(q))
       );
     }
     return true;
@@ -3667,14 +3709,14 @@ export default function Dashboard() {
                 </div>
 
                 <div className="admin-toolbar-filter">
-                  {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending'].map(st => (
+                  {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending', 'Custom'].map(st => (
                     <button
                       key={st}
                       type="button"
                       className={`admin-filter-pill ${shipmentFilterStatus === st ? 'active' : ''}`}
                       onClick={() => setShipmentFilterStatus(st)}
                     >
-                      {st}
+                      {st === 'Custom' ? '🏷️ Custom / Notes' : st}
                     </button>
                   ))}
                 </div>
@@ -3689,6 +3731,7 @@ export default function Dashboard() {
                     <th>Driver &amp; Vehicle</th>
                     <th>Current Checkpoint</th>
                     <th>{t('Status', 'स्थिति')}</th>
+                    <th>Custom Name / Notes</th>
                     <th>Dispatch Action</th>
                   </tr>
                 </thead>
@@ -3724,15 +3767,73 @@ export default function Dashboard() {
                             background:
                               s.status === 'Delivered' ? '#edfdf4' :
                               s.status === 'Out for Delivery' ? '#e0f2fe' :
-                              s.status === 'In Transit' ? '#eff6ff' : '#fef3c7',
+                              s.status === 'In Transit' ? '#eff6ff' :
+                              s.status === 'Pending' ? '#fef3c7' : '#faf5ff',
                             color:
                               s.status === 'Delivered' ? '#10b981' :
                               s.status === 'Out for Delivery' ? '#0369a1' :
-                              s.status === 'In Transit' ? '#0b72e7' : '#d97706'
+                              s.status === 'In Transit' ? '#0b72e7' :
+                              s.status === 'Pending' ? '#d97706' : '#7e22ce',
+                            border: ['Delivered', 'Out for Delivery', 'In Transit', 'Pending'].includes(s.status) ? 'none' : '1px solid #d8b4fe'
                           }}
                         >
                           {s.status}
                         </span>
+                      </td>
+                      <td>
+                        {s.customStatus || s.customNote ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
+                            {s.customStatus && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  background: '#faf5ff',
+                                  color: '#7e22ce',
+                                  border: '1px solid #d8b4fe',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  width: 'fit-content'
+                                }}
+                              >
+                                🏷️ {s.customStatus}
+                              </span>
+                            )}
+                            {s.customNote && (
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  color: '#94a3b8',
+                                  lineHeight: 1.35,
+                                  whiteSpace: 'normal',
+                                  wordBreak: 'break-word'
+                                }}
+                                title={s.customNote}
+                              >
+                                📝 {s.customNote}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openUpdateShipmentModal(s)}
+                            style={{
+                              background: 'transparent',
+                              border: '1px dashed #475569',
+                              color: '#94a3b8',
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            + Add Custom / Note
+                          </button>
+                        )}
                       </td>
                       <td>
                         <button
@@ -6118,14 +6219,15 @@ export default function Dashboard() {
                     <label>Current Status</label>
                     <select
                       value={newStatus}
-                      onChange={e => setNewStatus(e.target.value as any)}
+                      onChange={e => setNewStatus(e.target.value)}
                       style={{
                         width: '100%',
                         padding: '10px 12px',
                         border: '1px solid #cbd5e1',
                         borderRadius: '8px',
                         fontSize: '14px',
-                        background: '#ffffff'
+                        background: '#ffffff',
+                        color: '#0f172a'
                       }}
                     >
                       <option value="Pending">Pending (Awaiting Pickup)</option>
@@ -6133,7 +6235,73 @@ export default function Dashboard() {
                       <option value="In Transit">In Transit (On Highway)</option>
                       <option value="Out for Delivery">Out for Delivery (Last Mile)</option>
                       <option value="Delivered">Delivered (Completed)</option>
+                      <option value="Custom">Custom Status / Other Stage</option>
                     </select>
+                  </div>
+
+                  {/* CUSTOM NAME / STAGE INPUT & QUICK PRESET PILLS */}
+                  <div className="st-form-field" style={{ background: '#f5f3ff', padding: '12px', borderRadius: '8px', border: '1px solid #ddd6fe' }}>
+                    <label style={{ color: '#6b21a8', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>🏷️ Custom Name / Stage Title</span>
+                      <span style={{ fontSize: '11px', color: '#7c3aed', fontWeight: 'normal' }}>Optional or Custom Stage</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Held at Border RTO, Dock Holding, Weather Hold, Consignee Delayed..."
+                      value={customStatusName}
+                      onChange={e => {
+                        setCustomStatusName(e.target.value);
+                        if (e.target.value.trim() && !['Pending', 'Picked Up', 'In Transit', 'Out for Delivery', 'Delivered'].includes(newStatus)) {
+                          setNewStatus('Custom');
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        boxSizing: 'border-box',
+                        background: '#ffffff',
+                        color: '#0f172a'
+                      }}
+                    />
+
+                    {/* QUICK PRESET PILLS FOR EASY 1-CLICK ENTRY */}
+                    <div style={{ marginTop: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Quick One-Click Tags: </span>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                        {[
+                          '🚨 Held at Border RTO',
+                          '🌧️ Weather Hold',
+                          '🔄 Hub Transshipment',
+                          '⏱️ Customer Rescheduled',
+                          '🔧 Breakdown Maintenance',
+                          '✅ Gate Pass Verified'
+                        ].map(preset => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              setCustomStatusName(preset);
+                              setNewStatus('Custom');
+                            }}
+                            style={{
+                              background: '#ffffff',
+                              border: '1px solid #d8b4fe',
+                              color: '#7e22ce',
+                              borderRadius: '6px',
+                              padding: '3px 8px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="st-form-field">
@@ -6144,23 +6312,38 @@ export default function Dashboard() {
                       value={newLocation}
                       onChange={e => setNewLocation(e.target.value)}
                       required
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        boxSizing: 'border-box',
+                        background: '#ffffff',
+                        color: '#0f172a'
+                      }}
                     />
                   </div>
 
                   <div className="st-form-field">
-                    <label>Milestone Notes / Driver Remarks</label>
+                    <label>📝 Custom Note / Milestone Remarks</label>
                     <textarea
-                      placeholder="e.g., Consignment inspected, seal locks intact, departed terminal."
-                      value={milestoneNote}
-                      onChange={e => setMilestoneNote(e.target.value)}
+                      placeholder="e.g., Consignment inspected, seal locks intact, departed terminal or any custom instructions..."
+                      value={customNoteText}
+                      onChange={e => {
+                        setCustomNoteText(e.target.value);
+                        setMilestoneNote(e.target.value);
+                      }}
                       rows={3}
                       style={{
                         width: '100%',
                         padding: '10px 12px',
                         border: '1px solid #cbd5e1',
                         borderRadius: '8px',
-                        fontSize: '14px',
-                        boxSizing: 'border-box'
+                        fontSize: '13px',
+                        boxSizing: 'border-box',
+                        background: '#ffffff',
+                        color: '#0f172a'
                       }}
                     />
                   </div>
