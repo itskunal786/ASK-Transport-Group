@@ -2447,32 +2447,107 @@ body.dark .ticket-modal-status-btn.active,
 }
 
 /* Also ensure all .st-drawer-box used inside admin center do not overflow */
-.admin-shell .st-modal-overlay {
-  display: flex;
+.admin-layout-container .st-modal-overlay,
+.admin-shell .st-modal-overlay,
+.st-modal-overlay {
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 20px;
+  padding: 20px !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(10, 15, 29, 0.75) !important;
+  backdrop-filter: blur(6px) !important;
+  z-index: 9999 !important;
 }
 
-.admin-shell .st-drawer-box {
-  max-height: 88vh !important;
+.admin-layout-container .st-drawer-box,
+.admin-shell .st-drawer-box,
+.st-drawer-box {
+  max-height: 90vh !important;
+  max-width: 560px !important;
+  width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
+  background: var(--bg-card, #ffffff) !important;
+  border: 1px solid var(--border, #e2e8f0) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45) !important;
+  margin: auto !important;
+  animation: stDrawerModalPop 0.22s ease-out !important;
 }
 
-.admin-shell .st-drawer-body {
+@keyframes stDrawerModalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+[data-theme='dark'] .st-drawer-box,
+body.dark .st-drawer-box {
+  background: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+.st-drawer-box form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.admin-layout-container .st-drawer-head,
+.st-drawer-head {
+  padding: 18px 24px !important;
+  border-bottom: 1px solid var(--border, #e2e8f0) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+[data-theme='dark'] .st-drawer-head,
+body.dark .st-drawer-head {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-layout-container .st-drawer-body,
+.st-drawer-body {
   overflow-y: auto !important;
   flex: 1 !important;
   min-height: 0 !important;
+  padding: 20px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
 }
 
-.admin-shell .st-drawer-actions {
+.admin-layout-container .st-drawer-actions,
+.st-drawer-actions {
   flex-shrink: 0 !important;
   position: sticky !important;
   bottom: 0 !important;
   z-index: 10 !important;
-  background: inherit !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid var(--border, #e2e8f0) !important;
+  background: var(--bg-card, #ffffff) !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+}
+
+[data-theme='dark'] .st-drawer-actions,
+body.dark .st-drawer-actions {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+  background: #0f172a !important;
 }
 
 /* DARK MODE FOR RIGHTS MODAL */
@@ -3384,4 +3459,299 @@ body.dark .admin-btn-killswitch:hover:not(:disabled),
   .telematics-grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+
+/* ============================================================================
+   SHIPMENT STATUS UPDATE MODAL & LIVE DISPATCH TABLE - ULTRA THEME ADAPTIVE
+   ============================================================================ */
+
+.shipment-modal-head-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shipment-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: monospace;
+  width: fit-content;
+}
+
+[data-theme='dark'] .shipment-modal-badge,
+body.dark .shipment-modal-badge {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.shipment-route-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+[data-theme='dark'] .shipment-route-pill,
+body.dark .shipment-route-pill {
+  color: #94a3b8;
+}
+
+.shipment-field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #475569);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+[data-theme='dark'] .shipment-field-label,
+body.dark .shipment-field-label {
+  color: #94a3b8;
+}
+
+.shipment-input,
+.shipment-select,
+.shipment-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #cbd5e1);
+  background: var(--bg-input, #ffffff);
+  color: var(--text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 600;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] .shipment-input,
+[data-theme='dark'] .shipment-select,
+[data-theme='dark'] .shipment-textarea,
+body.dark .shipment-input,
+body.dark .shipment-select,
+body.dark .shipment-textarea {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+}
+
+.shipment-input:focus,
+.shipment-select:focus,
+.shipment-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+.shipment-custom-card {
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-theme='dark'] .shipment-custom-card,
+body.dark .shipment-custom-card {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.shipment-tag-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.shipment-tag-btn {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #7e22ce;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+[data-theme='dark'] .shipment-tag-btn,
+body.dark .shipment-tag-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
+}
+
+.shipment-tag-btn:hover {
+  background: rgba(139, 92, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.shipment-tag-btn.active {
+  background: #7e22ce !important;
+  color: #ffffff !important;
+  border-color: #7e22ce !important;
+  box-shadow: 0 2px 8px rgba(126, 34, 206, 0.35);
+}
+
+.shipment-driver-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+[data-theme='dark'] .shipment-driver-box,
+body.dark .shipment-driver-box {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.shipment-driver-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shipment-driver-meta strong {
+  font-size: 13px;
+  color: var(--text-primary, #0f172a);
+}
+
+[data-theme='dark'] .shipment-driver-meta strong,
+body.dark .shipment-driver-meta strong {
+  color: #f1f5f9;
+}
+
+.shipment-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+}
+
+.shipment-table-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.shipment-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shipment-status-pill.in-transit {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+[data-theme='dark'] .shipment-status-pill.in-transit,
+body.dark .shipment-status-pill.in-transit {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.shipment-status-pill.delivered {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+[data-theme='dark'] .shipment-status-pill.delivered,
+body.dark .shipment-status-pill.delivered {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.shipment-status-pill.pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+[data-theme='dark'] .shipment-status-pill.pending,
+body.dark .shipment-status-pill.pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.shipment-status-pill.out-for-delivery {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+[data-theme='dark'] .shipment-status-pill.out-for-delivery,
+body.dark .shipment-status-pill.out-for-delivery {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.shipment-status-pill.custom {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7e22ce;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+[data-theme='dark'] .shipment-status-pill.custom,
+body.dark .shipment-status-pill.custom {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.shipment-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.shipment-btn-action:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
 }

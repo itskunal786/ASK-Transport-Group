@@ -3770,145 +3770,160 @@ export default function Dashboard() {
                 </div>
 
                 <div className="admin-toolbar-filter">
-                  {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending', 'Custom'].map(st => (
-                    <button
-                      key={st}
-                      type="button"
-                      className={`admin-filter-pill ${shipmentFilterStatus === st ? 'active' : ''}`}
-                      onClick={() => setShipmentFilterStatus(st)}
-                    >
-                      {st === 'Custom' ? '🏷️ Custom / Notes' : st}
-                    </button>
-                  ))}
+                  {['All', 'In Transit', 'Out for Delivery', 'Delivered', 'Pending', 'Custom'].map(st => {
+                    const count = st === 'All'
+                      ? shipmentsList.length
+                      : st === 'Custom'
+                      ? shipmentsList.filter(x => x.customStatus || x.customNote).length
+                      : shipmentsList.filter(x => x.status === st).length;
+                    return (
+                      <button
+                        key={st}
+                        type="button"
+                        className={`admin-filter-pill ${shipmentFilterStatus === st ? 'active' : ''}`}
+                        onClick={() => setShipmentFilterStatus(st)}
+                      >
+                        <span>{st === 'Custom' ? '🏷️ Custom / Notes' : st}</span>
+                        <span style={{ fontSize: '10px', opacity: 0.8, marginLeft: '4px' }}>({count})</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Shipment ID</th>
-                    <th>Booking / Client</th>
-                    <th>Origin → Destination</th>
-                    <th>Driver &amp; Vehicle</th>
-                    <th>Current Checkpoint</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>Custom Name / Notes</th>
-                    <th>Dispatch Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredShipments.map((s, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <strong style={{ color: '#0b72e7' }}>{s.shipmentNo}</strong>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>{s.updatedAt}</div>
-                      </td>
-                      <td>
-                        <strong>{s.customer}</strong>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Waybill: {s.bookingNo}</div>
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{s.origin}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>→ {s.destination}</div>
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{s.driver}</div>
-                        <div style={{ fontSize: '11px', color: '#0b72e7' }}>{s.vehicle}</div>
-                      </td>
-                      <td>
-                        <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>
-                          📍 {s.currentLocation}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-badge-status admin-badge-${s.status.toLowerCase().replace(/\s+/g, '-')}`}
-                          data-status={s.status}
-                          style={{
-                            background:
-                              s.status === 'Delivered' ? '#edfdf4' :
-                              s.status === 'Out for Delivery' ? '#e0f2fe' :
-                              s.status === 'In Transit' ? '#eff6ff' :
-                              s.status === 'Pending' ? '#fef3c7' : '#faf5ff',
-                            color:
-                              s.status === 'Delivered' ? '#10b981' :
-                              s.status === 'Out for Delivery' ? '#0369a1' :
-                              s.status === 'In Transit' ? '#0b72e7' :
-                              s.status === 'Pending' ? '#d97706' : '#7e22ce',
-                            border: ['Delivered', 'Out for Delivery', 'In Transit', 'Pending'].includes(s.status) ? 'none' : '1px solid #d8b4fe'
-                          }}
-                        >
-                          {s.status}
-                        </span>
-                      </td>
-                      <td>
-                        {s.customStatus || s.customNote ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
-                            {s.customStatus && (
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  background: '#faf5ff',
-                                  color: '#7e22ce',
-                                  border: '1px solid #d8b4fe',
-                                  padding: '2px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '11px',
-                                  fontWeight: 600,
-                                  width: 'fit-content'
-                                }}
-                              >
-                                🏷️ {s.customStatus}
-                              </span>
-                            )}
-                            {s.customNote && (
-                              <span
-                                style={{
-                                  fontSize: '11px',
-                                  color: '#94a3b8',
-                                  lineHeight: 1.35,
-                                  whiteSpace: 'normal',
-                                  wordBreak: 'break-word'
-                                }}
-                                title={s.customNote}
-                              >
-                                📝 {s.customNote}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
+              <div className="shipment-table-wrapper">
+                <table className="admin-data-table" style={{ minWidth: '980px', width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '120px' }}>Shipment ID</th>
+                      <th style={{ width: '150px' }}>Booking / Client</th>
+                      <th style={{ width: '180px' }}>Origin → Destination</th>
+                      <th style={{ width: '160px' }}>Driver &amp; Vehicle</th>
+                      <th style={{ width: '170px' }}>Current Checkpoint</th>
+                      <th style={{ width: '130px' }}>{t('Status', 'स्थिति')}</th>
+                      <th style={{ width: '200px' }}>Custom Name / Notes</th>
+                      <th style={{ width: '120px', textAlign: 'center' }}>Dispatch Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredShipments.map((s, idx) => (
+                      <tr 
+                        key={idx} 
+                        className="shipment-table-row"
+                        onClick={() => openUpdateShipmentModal(s)}
+                        title="Click to update status"
+                      >
+                        <td>
+                          <strong style={{ color: '#0b72e7', fontFamily: 'monospace', fontSize: '13px' }}>{s.shipmentNo}</strong>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>{s.updatedAt}</div>
+                        </td>
+                        <td>
+                          <strong style={{ color: 'var(--text-primary, #0f172a)' }}>{s.customer}</strong>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>Waybill: {s.bookingNo}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{s.origin}</div>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>→ {s.destination}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{s.driver}</div>
+                          <div style={{ fontSize: '11px', color: '#0b72e7', fontWeight: 600 }}>{s.vehicle}</div>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                            📍 {s.currentLocation}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`shipment-status-pill ${
+                            s.status === 'In Transit' ? 'in-transit' :
+                            s.status === 'Delivered' ? 'delivered' :
+                            s.status === 'Out for Delivery' ? 'out-for-delivery' :
+                            s.status === 'Pending' ? 'pending' : 'custom'
+                          }`}>
+                            {s.status === 'In Transit' && '🚚 '}
+                            {s.status === 'Delivered' && '✅ '}
+                            {s.status === 'Out for Delivery' && '🎯 '}
+                            {s.status === 'Pending' && '⏳ '}
+                            {s.status}
+                          </span>
+                        </td>
+                        <td>
+                          {s.customStatus || s.customNote ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
+                              {s.customStatus && (
+                                <span
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    background: 'rgba(139, 92, 246, 0.12)',
+                                    color: '#8b5cf6',
+                                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                                    padding: '3px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    width: 'fit-content'
+                                  }}
+                                >
+                                  🏷️ {s.customStatus}
+                                </span>
+                              )}
+                              {s.customNote && (
+                                <span
+                                  style={{
+                                    fontSize: '11px',
+                                    color: 'var(--text-secondary, #94a3b8)',
+                                    lineHeight: 1.35,
+                                    whiteSpace: 'normal',
+                                    wordBreak: 'break-word'
+                                  }}
+                                  title={s.customNote}
+                                >
+                                  📝 {s.customNote}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={e => {
+                                e.stopPropagation();
+                                openUpdateShipmentModal(s);
+                              }}
+                              style={{
+                                background: 'transparent',
+                                border: '1px dashed var(--border, #64748b)',
+                                color: 'var(--text-secondary, #94a3b8)',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              + Add Custom Note
+                            </button>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             type="button"
-                            onClick={() => openUpdateShipmentModal(s)}
-                            style={{
-                              background: 'transparent',
-                              border: '1px dashed #475569',
-                              color: '#94a3b8',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              cursor: 'pointer'
+                            className="shipment-btn-action"
+                            onClick={e => {
+                              e.stopPropagation();
+                              openUpdateShipmentModal(s);
                             }}
                           >
-                            + Add Custom / Note
+                            ✏️ Update Status
                           </button>
-                        )}
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="admin-btn-view"
-                          onClick={() => openUpdateShipmentModal(s)}
-                        >
-                          Update Status
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -5833,14 +5848,25 @@ export default function Dashboard() {
           <div className="st-modal-overlay" onClick={() => setShowUpdateShipmentModal(false)}>
             <div className="st-drawer-box" onClick={e => e.stopPropagation()}>
               <div className="st-drawer-head">
-                <div>
-                  <h2>Update Shipment Status</h2>
-                  <p>Shipment: {selectedShipment.shipmentNo} ({selectedShipment.customer})</p>
+                <div className="shipment-modal-head-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="shipment-modal-badge">#{selectedShipment.shipmentNo}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Waybill: {selectedShipment.bookingNo}</span>
+                  </div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                    Update Shipment Status
+                  </h2>
+                  <div className="shipment-route-pill">
+                    <span>{selectedShipment.customer}</span>
+                    <span>•</span>
+                    <span>📍 {selectedShipment.origin} ➔ {selectedShipment.destination}</span>
+                  </div>
                 </div>
                 <button
                   type="button"
                   className="st-drawer-close"
                   onClick={() => setShowUpdateShipmentModal(false)}
+                  title="Close"
                 >
                   &times;
                 </button>
@@ -5849,38 +5875,33 @@ export default function Dashboard() {
               <form onSubmit={handleSaveShipmentStatus}>
                 <div className="st-drawer-body">
                   <div className="st-form-field">
-                    <label>Current Status</label>
+                    <label className="shipment-field-label">Current Status</label>
                     <select
+                      className="shipment-select"
                       value={newStatus}
                       onChange={e => setNewStatus(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     >
-                      <option value="Pending">Pending (Awaiting Pickup)</option>
-                      <option value="Picked Up">Picked Up (At Origin Hub)</option>
-                      <option value="In Transit">In Transit (On Highway)</option>
-                      <option value="Out for Delivery">Out for Delivery (Last Mile)</option>
-                      <option value="Delivered">Delivered (Completed)</option>
-                      <option value="Custom">Custom Status / Other Stage</option>
+                      <option value="Pending">⏳ Pending (Awaiting Pickup)</option>
+                      <option value="Picked Up">📦 Picked Up (At Origin Hub)</option>
+                      <option value="In Transit">🚚 In Transit (On Highway)</option>
+                      <option value="Out for Delivery">🎯 Out for Delivery (Last Mile)</option>
+                      <option value="Delivered">✅ Delivered (Completed)</option>
+                      <option value="Custom">🏷️ Custom Status / Special Stage</option>
                     </select>
                   </div>
 
                   {/* CUSTOM NAME / STAGE INPUT & QUICK PRESET PILLS */}
-                  <div className="st-form-field" style={{ background: '#f5f3ff', padding: '12px', borderRadius: '8px', border: '1px solid #ddd6fe' }}>
-                    <label style={{ color: '#6b21a8', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+                  <div className="shipment-custom-card">
+                    <label className="shipment-field-label" style={{ color: '#8b5cf6', margin: 0 }}>
                       <span>🏷️ Custom Name / Stage Title</span>
-                      <span style={{ fontSize: '11px', color: '#7c3aed', fontWeight: 'normal' }}>Optional or Custom Stage</span>
+                      <span style={{ fontSize: '11px', opacity: 0.85, fontWeight: 'normal', textTransform: 'none' }}>
+                        Optional or Custom Stage
+                      </span>
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Held at Border RTO, Dock Holding, Weather Hold, Consignee Delayed..."
+                      className="shipment-input"
+                      placeholder="e.g. Held at Border RTO, Weather Hold, Dock Holding..."
                       value={customStatusName}
                       onChange={e => {
                         setCustomStatusName(e.target.value);
@@ -5888,79 +5909,59 @@ export default function Dashboard() {
                           setNewStatus('Custom');
                         }
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     />
 
                     {/* QUICK PRESET PILLS FOR EASY 1-CLICK ENTRY */}
-                    <div style={{ marginTop: '8px' }}>
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Quick One-Click Tags: </span>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 700 }}>
+                        Quick One-Click Tags:
+                      </span>
+                      <div className="shipment-tag-grid">
                         {[
                           '🚨 Held at Border RTO',
                           '🌧️ Weather Hold',
                           '🔄 Hub Transshipment',
                           '⏱️ Customer Rescheduled',
                           '🔧 Breakdown Maintenance',
-                          '✅ Gate Pass Verified'
-                        ].map(preset => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setCustomStatusName(preset);
-                              setNewStatus('Custom');
-                            }}
-                            style={{
-                              background: '#ffffff',
-                              border: '1px solid #d8b4fe',
-                              color: '#7e22ce',
-                              borderRadius: '6px',
-                              padding: '3px 8px',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            {preset}
-                          </button>
-                        ))}
+                          '✅ Gate Pass Verified',
+                          '🛑 RTO Inspection',
+                          '📦 Weight Verified'
+                        ].map(preset => {
+                          const isTagActive = customStatusName === preset;
+                          return (
+                            <button
+                              key={preset}
+                              type="button"
+                              className={`shipment-tag-btn ${isTagActive ? 'active' : ''}`}
+                              onClick={() => {
+                                setCustomStatusName(preset);
+                                setNewStatus('Custom');
+                              }}
+                            >
+                              {preset}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
 
                   <div className="st-form-field">
-                    <label>Current Checkpoint / Location *</label>
+                    <label className="shipment-field-label">Current Checkpoint / Location *</label>
                     <input
                       type="text"
-                      placeholder="e.g., Jaipur Logistics Terminal or Delhi Ring Road"
+                      className="shipment-input"
+                      placeholder="e.g., Jaipur Logistics Terminal or NH-48 Toll Plaza"
                       value={newLocation}
                       onChange={e => setNewLocation(e.target.value)}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     />
                   </div>
 
                   <div className="st-form-field">
-                    <label>📝 Custom Note / Milestone Remarks</label>
+                    <label className="shipment-field-label">📝 Custom Note / Milestone Remarks</label>
                     <textarea
+                      className="shipment-textarea"
                       placeholder="e.g., Consignment inspected, seal locks intact, departed terminal or any custom instructions..."
                       value={customNoteText}
                       onChange={e => {
@@ -5968,22 +5969,23 @@ export default function Dashboard() {
                         setMilestoneNote(e.target.value);
                       }}
                       rows={3}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box',
-                        background: '#ffffff',
-                        color: '#0f172a'
-                      }}
                     />
                   </div>
 
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b' }}>
-                    <div>Driver Assigned: <strong>{selectedShipment.driver}</strong></div>
-                    <div>Vehicle Assigned: <strong>{selectedShipment.vehicle}</strong></div>
+                  {/* DRIVER & VEHICLE INFO CARD */}
+                  <div className="shipment-driver-box">
+                    <div className="shipment-driver-meta">
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary, #94a3b8)', fontWeight: 700 }}>
+                        Assigned Driver
+                      </span>
+                      <strong>👤 {selectedShipment.driver}</strong>
+                    </div>
+                    <div className="shipment-driver-meta" style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary, #94a3b8)', fontWeight: 700 }}>
+                        Assigned Vehicle
+                      </span>
+                      <strong style={{ color: '#2563eb' }}>🚛 {selectedShipment.vehicle}</strong>
+                    </div>
                   </div>
                 </div>
 
@@ -5996,7 +5998,7 @@ export default function Dashboard() {
                     Cancel
                   </button>
                   <button type="submit" className="st-btn-submit">
-                    Update Status &amp; Notify Client
+                    ✓ Update Status &amp; Notify Client
                   </button>
                 </div>
               </form>
