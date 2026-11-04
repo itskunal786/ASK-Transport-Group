@@ -606,34 +606,37 @@ export const RtoBorderCheckpostVault: React.FC = () => {
       {showQrModal && (() => {
         const verifyUrl = `${window.location.origin}/verify-rto?token=${selectedDossier.dossierQrToken}&vehicle=${encodeURIComponent(selectedDossier.vehicleNumber)}`;
         return (
-          <div className="rto-vault-modal-overlay">
-            <div className="rto-vault-modal-card">
+          <div className="rto-vault-modal-overlay" onClick={() => setShowQrModal(false)}>
+            <div className="rto-vault-modal-card" onClick={(e) => e.stopPropagation()}>
               <div className="rto-vault-modal-head">
                 <span>{t('RTO Border Officer Token', 'RTO चेक-पोस्ट ऑफिसर टोकन')}</span>
                 <button
                   type="button"
                   onClick={() => setShowQrModal(false)}
                   className="rto-vault-modal-close"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* REAL SCANNABLE QR CODE CONTAINER */}
-              <div className="rto-vault-qr-box">
-                <QrCodeView
-                  value={verifyUrl}
-                  size={170}
-                  darkColor="#064e3b"
-                  lightColor="#ffffff"
-                  errorCorrectionLevel="M"
-                />
-                <span className="rto-vault-qr-token-pill">
+              <div className="rto-vault-qr-wrapper">
+                <div className="rto-vault-qr-box">
+                  <QrCodeView
+                    value={verifyUrl}
+                    size={176}
+                    darkColor="#064e3b"
+                    lightColor="#ffffff"
+                    errorCorrectionLevel="M"
+                  />
+                </div>
+                <div className="rto-vault-qr-token-pill">
                   {selectedDossier.dossierQrToken}
-                </span>
-                <span className="rto-vault-qr-hint">
+                </div>
+                <div className="rto-vault-qr-hint">
                   📷 {t('SCAN WITH PHONE CAMERA / QR SCANNER', 'फ़ोन कैमरा या QR स्कैनर से स्कैन करें')}
-                </span>
+                </div>
               </div>
 
               <h3 className="rto-vault-modal-plate">{selectedDossier.vehicleNumber}</h3>
