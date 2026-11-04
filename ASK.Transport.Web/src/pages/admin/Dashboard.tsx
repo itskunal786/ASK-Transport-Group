@@ -458,12 +458,83 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
-  // Active view in Admin Panel
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  // Active view in Admin Panel (Preserved on Page Refresh / F5 via URL & LocalStorage)
+  const validAdminTabs: AdminTab[] = [
+    'dashboard', 'bookings', 'customers', 'shipments', 'drivers', 'vehicles', 
+    'hubs', 'tariff', 'telematics', 'ewaybill', 'support', 'audit', 'settings', 
+    'reports', 'access', 'ai_automation', 'fleet_mgmt', 'enterprise_b2b', 
+    'finance_accounting', 'dock_yard', 'weighbridge', 'rto_vault', 
+    'driver_settlement', 'ais140_safety', 'cargo_claims', 'executive_pnl', 
+    'tax_audit', 'pod_inward'
+  ];
+
+  const getInitialAdminTab = (): AdminTab => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab') as AdminTab;
+      if (urlTab && validAdminTabs.includes(urlTab)) {
+        return urlTab;
+      }
+      const savedTab = localStorage.getItem('ask_admin_active_tab') as AdminTab;
+      if (savedTab && validAdminTabs.includes(savedTab)) {
+        return savedTab;
+      }
+    } catch {
+      // ignore
+    }
+    return 'dashboard';
+  };
+
+  const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
+
+  const setActiveTab = (tab: AdminTab, optionalSubTab?: string) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('ask_admin_active_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      if (optionalSubTab) {
+        url.searchParams.set('subtab', optionalSubTab);
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
+  const getInitialFinanceSubTab = (): 'einv' | 'erp' | 'credit' | 'settlement' => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlSub = params.get('subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
+      if (urlSub && ['einv', 'erp', 'credit', 'settlement'].includes(urlSub)) {
+        return urlSub;
+      }
+      const saved = localStorage.getItem('ask_admin_finance_subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
+      if (saved && ['einv', 'erp', 'credit', 'settlement'].includes(saved)) {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return 'einv';
+  };
+
+  const [financeDeckSubTab, setFinanceDeckSubTabState] = useState<'einv' | 'erp' | 'credit' | 'settlement'>(getInitialFinanceSubTab);
+
+  const setFinanceDeckSubTab = (subTab: 'einv' | 'erp' | 'credit' | 'settlement') => {
+    setFinanceDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_finance_subtab', subTab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('subtab', subTab);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
 
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
-  const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Auto-scroll main window to top on tab switch and close mobile drawer
@@ -2009,6 +2080,14 @@ export default function Dashboard() {
             <strong>ASK TRANSPORT</strong>
             <small>LOGISTICS &amp; SUPPLY CHAIN</small>
           </div>
+          <button
+            type="button"
+            className="admin-sidebar-close-btn"
+            onClick={() => setIsMobileNavOpen(false)}
+            aria-label="Close navigation"
+          >
+            ✕
+          </button>
         </div>
 
         {/* NAVIGATION ACCORDION / DROPDOWN MENU */}
@@ -2283,7 +2362,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'settlement' ? 'active' : ''}`}
-                  onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting'); }}
+                  onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting', 'settlement'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Hired Fleet & 194C TDS', 'किराए का बेड़ा और 194C टीडीएस')}</span>
@@ -2292,7 +2371,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab !== 'settlement' ? 'active' : ''}`}
-                  onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting'); }}
+                  onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting', 'einv'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('GST E-Invoice & ERP Ledgers', 'जीएसटी ई-चालान और ईआरपी लेजर')}</span>
@@ -2528,7 +2607,8 @@ export default function Dashboard() {
       <main className="admin-main-viewport">
         {/* TOPBAR */}
         <header className="admin-topbar">
-          <div className="admin-topbar-left-group">
+          <div className="admin-topbar-row-top">
+            <div className="admin-topbar-left-group">
             <button
               type="button"
               className="admin-mobile-hamburger"
@@ -2547,42 +2627,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="admin-top-search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              placeholder={t(`Search ${activeTab}...`, 'डैशबोर्ड में खोजें...')}
-              value={
-                activeTab === 'bookings'
-                  ? bookingSearch
-                  : activeTab === 'customers'
-                  ? customerSearch
-                  : activeTab === 'shipments'
-                  ? shipmentSearch
-                  : activeTab === 'drivers'
-                  ? driverSearch
-                  : activeTab === 'vehicles'
-                  ? vehicleSearch
-                  : activeTab === 'hubs'
-                  ? hubSearchQuery
-                  : ''
-              }
-              onChange={e => {
-                const val = e.target.value;
-                if (activeTab === 'bookings') setBookingSearch(val);
-                else if (activeTab === 'customers') setCustomerSearch(val);
-                else if (activeTab === 'shipments') setShipmentSearch(val);
-                else if (activeTab === 'drivers') setDriverSearch(val);
-                else if (activeTab === 'vehicles') setVehicleSearch(val);
-                else if (activeTab === 'hubs') setHubSearchQuery(val);
-              }}
-            />
-          </div>
-
-          <div className="admin-topbar-quick-actions">
+            <div className="admin-topbar-quick-actions">
             <button
               type="button"
               onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
@@ -2742,6 +2787,42 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+          </div>
+
+          <div className="admin-top-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder={t(`Search ${activeTab}...`, 'डैशबोर्ड में खोजें...')}
+              value={
+                activeTab === 'bookings'
+                  ? bookingSearch
+                  : activeTab === 'customers'
+                  ? customerSearch
+                  : activeTab === 'shipments'
+                  ? shipmentSearch
+                  : activeTab === 'drivers'
+                  ? driverSearch
+                  : activeTab === 'vehicles'
+                  ? vehicleSearch
+                  : activeTab === 'hubs'
+                  ? hubSearchQuery
+                  : ''
+              }
+              onChange={e => {
+                const val = e.target.value;
+                if (activeTab === 'bookings') setBookingSearch(val);
+                else if (activeTab === 'customers') setCustomerSearch(val);
+                else if (activeTab === 'shipments') setShipmentSearch(val);
+                else if (activeTab === 'drivers') setDriverSearch(val);
+                else if (activeTab === 'vehicles') setVehicleSearch(val);
+                else if (activeTab === 'hubs') setHubSearchQuery(val);
+              }}
+            />
+          </div>
         </header>
 
         {/* EMERGENCY MAINTENANCE CONTROL BAR */}
@@ -2863,7 +2944,7 @@ export default function Dashboard() {
             </div>
 
             {/* 2026 FLEET, DRIVER & EXPENSE COMMAND SUITE */}
-            <div style={{
+            <div className="admin-suite-banner" style={{
               marginTop: '20px',
               marginBottom: '24px',
               padding: '22px 24px',
@@ -3231,7 +3312,7 @@ export default function Dashboard() {
         {activeTab === 'finance_accounting' && (
           <div className="admin-content-pad">
             <ErrorBoundary fallbackTitle="Finance & Accounting Suite Error">
-              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} />
+              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} onSubTabChange={setFinanceDeckSubTab} />
             </ErrorBoundary>
           </div>
         )}
@@ -6313,7 +6394,7 @@ export default function Dashboard() {
                     <span className="shipment-modal-badge">#{selectedShipment.shipmentNo}</span>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Waybill: {selectedShipment.bookingNo}</span>
                   </div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                  <h2 className="shipment-modal-title">
                     Update Shipment Status
                   </h2>
                   <div className="shipment-route-pill">
@@ -6478,7 +6559,7 @@ export default function Dashboard() {
                     <span className="shipment-modal-badge">NEW DISPATCH</span>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>AIS-140 Fleet Gateway</span>
                   </div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                  <h2 className="shipment-modal-title">
                     Create &amp; Dispatch New Highway Shipment
                   </h2>
                   <div className="shipment-route-pill">
@@ -6498,16 +6579,8 @@ export default function Dashboard() {
               </div>
 
               {/* 1-CLICK INDUSTRY PRESETS BAR */}
-              <div style={{
-                background: 'var(--bg-input, #f8fafc)',
-                borderBottom: '1px solid var(--border, #e2e8f0)',
-                padding: '10px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap'
-              }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase' }}>
+              <div className="shipment-preset-bar">
+                <span className="shipment-preset-bar-title">
                   ⚡ 1-Click Fast Fill:
                 </span>
                 <button
@@ -6850,7 +6923,7 @@ export default function Dashboard() {
               </div>
 
               <form onSubmit={handleAddVehicle}>
-                <div style={{ margin: '14px 24px 0', padding: '10px 14px', background: '#ecfdf5', border: '1px dashed #34d399', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="st-ai-scan-banner">
                   <div>
                     <strong style={{ fontSize: '12px', color: '#065f46' }}>🤖 AI Auto-Scan Vehicle RC Book</strong>
                     <p style={{ margin: 0, fontSize: '11px', color: '#059669' }}>Upload RC photo to auto-fill plate no, model &amp; Vahan payload</p>
@@ -7700,6 +7773,21 @@ export default function Dashboard() {
 
           <button
             type="button"
+            className={`mobile-dock-btn ${activeTab === 'bookings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bookings')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Bookings</span>
+          </button>
+
+          <button
+            type="button"
             className={`mobile-dock-btn ${activeTab === 'shipments' ? 'active' : ''}`}
             onClick={() => setActiveTab('shipments')}
           >
@@ -7726,26 +7814,15 @@ export default function Dashboard() {
 
           <button
             type="button"
-            className={`mobile-dock-btn ${activeTab === 'ai_automation' ? 'active' : ''}`}
-            onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-            </svg>
-            <span>AI Lab</span>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-dock-btn"
-            onClick={() => setIsMobileNavOpen(true)}
+            className={`mobile-dock-btn ${isMobileNavOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileNavOpen(prev => !prev)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
-            <span>Menu</span>
+            <span>More</span>
           </button>
         </nav>
       </main>

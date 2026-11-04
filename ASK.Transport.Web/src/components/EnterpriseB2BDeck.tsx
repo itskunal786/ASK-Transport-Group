@@ -7,7 +7,30 @@ import { useLanguage } from '../context/LanguageContext';
 import './EnterpriseB2BDeck.css';
 
 export default function EnterpriseB2BDeck() {
-  const [activeTab, setActiveTab] = useState<'bulk' | 'marketplace' | 'reverse'>('bulk');
+  const [activeTab, setActiveTabState] = useState<'bulk' | 'marketplace' | 'reverse'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlSub = params.get('subtab') as any;
+      if (urlSub && ['bulk', 'marketplace', 'reverse'].includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_b2b_subtab') as any;
+      if (saved && ['bulk', 'marketplace', 'reverse'].includes(saved)) return saved;
+    } catch {
+      // ignore
+    }
+    return 'reverse'; // default to reverse logistics since active
+  });
+
+  const setActiveTab = (tab: 'bulk' | 'marketplace' | 'reverse') => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('ask_admin_b2b_subtab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('subtab', tab);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
   const { t } = useLanguage();
 
   return (

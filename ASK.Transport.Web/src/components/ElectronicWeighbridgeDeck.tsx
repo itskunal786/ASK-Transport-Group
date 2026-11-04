@@ -1068,40 +1068,41 @@ export default function ElectronicWeighbridgeDeck() {
       {showAddVehicleModal && (
         <div className="weighbridge-modal-overlay" onClick={() => setShowAddVehicleModal(false)}>
           <div className="weighbridge-modal-card" style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+            <div className="wb-modal-header">
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                <h3 className="wb-modal-title">
                   ➕ {t('Add Vehicle to Dharam Kanta Weighbridge', 'धर्म कांटा वेईब्रिज में नया वाहन जोड़ें')}
                 </h3>
-                <small style={{ color: '#64748b', fontSize: '12px' }}>
+                <small className="wb-modal-subtitle">
                   {t('Register on-ramp truck weighing, gross weight & axle compliance', 'कांटा रैंप पर ट्रक वजन, सकल भार एवं एक्सल अनुपालन दर्ज करें')}
                 </small>
               </div>
               <button
                 type="button"
+                className="wb-modal-close"
                 onClick={() => setShowAddVehicleModal(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}
+                aria-label="Close"
               >
                 ✕
               </button>
             </div>
 
             {/* QUICK PRESETS */}
-            <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+            <div className="wb-presets-bar">
+              <span className="wb-presets-title">
                 ⚡ 1-Click Truck Presets:
               </span>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                <button type="button" onClick={() => applyVehicleTemplate('tata')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                <button type="button" className="wb-preset-btn" onClick={() => applyVehicleTemplate('tata')}>
                   🚛 Tata 16-W (43.5T - Pune)
                 </button>
-                <button type="button" onClick={() => applyVehicleTemplate('ashok')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                <button type="button" className="wb-preset-btn" onClick={() => applyVehicleTemplate('ashok')}>
                   🚛 Ashok Leyland 14-W (35T)
                 </button>
-                <button type="button" onClick={() => applyVehicleTemplate('bharatbenz')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                <button type="button" className="wb-preset-btn" onClick={() => applyVehicleTemplate('bharatbenz')}>
                   🚛 BharatBenz 14-W (Steel)
                 </button>
-                <button type="button" onClick={() => applyVehicleTemplate('eicher')} style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                <button type="button" className="wb-preset-btn" onClick={() => applyVehicleTemplate('eicher')}>
                   🚛 Eicher 10-W (28T FMCG)
                 </button>
               </div>
@@ -1110,7 +1111,7 @@ export default function ElectronicWeighbridgeDeck() {
             <form onSubmit={handleSaveAddVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Vehicle Registration Number *
                   </label>
                   <input
@@ -1119,12 +1120,13 @@ export default function ElectronicWeighbridgeDeck() {
                     value={formPlate}
                     onChange={e => setFormPlate(e.target.value.toUpperCase())}
                     placeholder="e.g. MH-14-GH-6021"
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', fontWeight: 800, boxSizing: 'border-box' }}
+                    className="wb-form-input"
+                    style={{ fontFamily: 'monospace', fontWeight: 800 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Truck Model &amp; Specification *
                   </label>
                   <input
@@ -1133,18 +1135,18 @@ export default function ElectronicWeighbridgeDeck() {
                     value={formTruckModel}
                     onChange={e => setFormTruckModel(e.target.value)}
                     placeholder="e.g. Tata Signa 4825.TK 16-Wheeler"
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                    className="wb-form-input"
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Axle Category (RTO Limit) *
                   </label>
                   <select
                     value={formAxleCategory}
                     onChange={e => setFormAxleCategory(e.target.value as VehicleAxleCategory)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                    className="wb-form-select"
                   >
                     <option value="2-AXLE_6WHEEL">2-Axle (6-Wheel) - Limit 18,500 KG (18.5T)</option>
                     <option value="3-AXLE_10WHEEL">3-Axle (10-Wheel) - Limit 28,000 KG (28.0T)</option>
@@ -1155,7 +1157,7 @@ export default function ElectronicWeighbridgeDeck() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Driver Name &amp; Phone *
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
@@ -1164,35 +1166,35 @@ export default function ElectronicWeighbridgeDeck() {
                       required
                       value={formDriverName}
                       onChange={e => setFormDriverName(e.target.value)}
-                      placeholder="Driver Name"
-                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      placeholder="Ramesh Yadav"
+                      className="wb-form-input"
                     />
                     <input
                       type="text"
                       required
                       value={formDriverPhone}
                       onChange={e => setFormDriverPhone(e.target.value)}
-                      placeholder="+91 Phone"
-                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      placeholder="+91 98220 11445"
+                      className="wb-form-input"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Transporter / Fleet Agency
                   </label>
                   <input
                     type="text"
                     value={formTransporterName}
                     onChange={e => setFormTransporterName(e.target.value)}
-                    placeholder="e.g. Rajputana Roadways"
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                    placeholder="e.g. ASK Dedicated Fleet"
+                    className="wb-form-input"
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Consignment / Bilty No &amp; Material
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
@@ -1201,20 +1203,22 @@ export default function ElectronicWeighbridgeDeck() {
                       value={formConsignmentNo}
                       onChange={e => setFormConsignmentNo(e.target.value)}
                       placeholder="Bilty / LR No"
-                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      className="wb-form-input"
+                      style={{ fontSize: '12px' }}
                     />
                     <input
                       type="text"
                       value={formMaterialName}
                       onChange={e => setFormMaterialName(e.target.value)}
                       placeholder="Material Name"
-                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      className="wb-form-input"
+                      style={{ fontSize: '12px' }}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Tare Weight (Empty Truck KG) *
                   </label>
                   <input
@@ -1222,12 +1226,13 @@ export default function ElectronicWeighbridgeDeck() {
                     required
                     value={formTareWeightKg}
                     onChange={e => setFormTareWeightKg(Number(e.target.value))}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, boxSizing: 'border-box' }}
+                    className="wb-form-input"
+                    style={{ fontWeight: 700 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Gross Scale Weight (Loaded Truck KG) *
                   </label>
                   <input
@@ -1235,24 +1240,25 @@ export default function ElectronicWeighbridgeDeck() {
                     required
                     value={formGrossWeightKg}
                     onChange={e => setFormGrossWeightKg(Number(e.target.value))}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 800, color: '#0f172a', boxSizing: 'border-box' }}
+                    className="wb-form-input"
+                    style={{ fontWeight: 800 }}
                   />
                 </div>
               </div>
 
               {/* LIVE COMPUTATION SUMMARY */}
-              <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div className="wb-computation-summary">
                 <div>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>NET CARGO: </span>
-                  <strong style={{ fontSize: '13px', color: '#15803d' }}>{Math.max(0, formGrossWeightKg - formTareWeightKg).toLocaleString('en-IN')} KG</strong>
+                  <span className="wb-computation-label">NET CARGO: </span>
+                  <strong style={{ fontSize: '13px', color: '#10b981' }}>{Math.max(0, formGrossWeightKg - formTareWeightKg).toLocaleString('en-IN')} KG</strong>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>RTO CAP: </span>
-                  <strong style={{ fontSize: '13px', color: '#0369a1' }}>{(AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500).toLocaleString('en-IN')} KG</strong>
+                  <span className="wb-computation-label">RTO CAP: </span>
+                  <strong style={{ fontSize: '13px', color: '#38bdf8' }}>{(AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500).toLocaleString('en-IN')} KG</strong>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>STATUS: </span>
-                  <strong style={{ fontSize: '13px', color: formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500) ? '#dc2626' : '#16a34a' }}>
+                  <span className="wb-computation-label">STATUS: </span>
+                  <strong style={{ fontSize: '13px', color: formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500) ? '#f87171' : '#34d399' }}>
                     {formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)
                       ? `🚨 OVERLOAD (+${(formGrossWeightKg - (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)).toLocaleString('en-IN')} KG)`
                       : '✓ LEGAL COMPLIANT'}
@@ -1263,14 +1269,14 @@ export default function ElectronicWeighbridgeDeck() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
                 <button
                   type="button"
+                  className="wb-btn-cancel"
                   onClick={() => setShowAddVehicleModal(false)}
-                  style={{ padding: '10px 18px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', color: '#475569' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
+                  className="wb-btn-submit"
                 >
                   🚀 {t('Save & Place on Ramp', 'सेव करें एवं कांटा पर रखें')}
                 </button>
@@ -1284,19 +1290,20 @@ export default function ElectronicWeighbridgeDeck() {
       {showEditVehicleModal && editingSlip && (
         <div className="weighbridge-modal-overlay" onClick={() => setShowEditVehicleModal(false)}>
           <div className="weighbridge-modal-card" style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+            <div className="wb-modal-header">
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
+                <h3 className="wb-modal-title">
                   ✏️ {t('Edit Vehicle Weighment Record', 'वाहन वजन रिकॉर्ड एडिट करें')}
                 </h3>
-                <small style={{ color: '#64748b', fontSize: '12px' }}>
+                <small className="wb-modal-subtitle">
                   Slip: {editingSlip.slipNumber} • Truck: {editingSlip.vehicleNumber}
                 </small>
               </div>
               <button
                 type="button"
+                className="wb-modal-close"
                 onClick={() => setShowEditVehicleModal(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}
+                aria-label="Close"
               >
                 ✕
               </button>
@@ -1305,7 +1312,7 @@ export default function ElectronicWeighbridgeDeck() {
             <form onSubmit={handleSaveEditVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Vehicle Registration Number *
                   </label>
                   <input
@@ -1313,12 +1320,13 @@ export default function ElectronicWeighbridgeDeck() {
                     required
                     value={formPlate}
                     onChange={e => setFormPlate(e.target.value.toUpperCase())}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', fontWeight: 800, boxSizing: 'border-box' }}
+                    className="wb-form-input"
+                    style={{ fontFamily: 'monospace', fontWeight: 800 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Truck Model *
                   </label>
                   <input
@@ -1326,18 +1334,18 @@ export default function ElectronicWeighbridgeDeck() {
                     required
                     value={formTruckModel}
                     onChange={e => setFormTruckModel(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                    className="wb-form-input"
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Axle Category (RTO Limit) *
                   </label>
                   <select
                     value={formAxleCategory}
                     onChange={e => setFormAxleCategory(e.target.value as VehicleAxleCategory)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                    className="wb-form-select"
                   >
                     <option value="2-AXLE_6WHEEL">2-Axle (6-Wheel) - Limit 18,500 KG (18.5T)</option>
                     <option value="3-AXLE_10WHEEL">3-Axle (10-Wheel) - Limit 28,000 KG (28.0T)</option>
@@ -1348,7 +1356,7 @@ export default function ElectronicWeighbridgeDeck() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Driver Name &amp; Phone *
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
@@ -1358,7 +1366,7 @@ export default function ElectronicWeighbridgeDeck() {
                       value={formDriverName}
                       onChange={e => setFormDriverName(e.target.value)}
                       placeholder="Driver Name"
-                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      className="wb-form-input"
                     />
                     <input
                       type="text"
@@ -1366,13 +1374,13 @@ export default function ElectronicWeighbridgeDeck() {
                       value={formDriverPhone}
                       onChange={e => setFormDriverPhone(e.target.value)}
                       placeholder="+91 Phone"
-                      style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      className="wb-form-input"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Tare Weight (Empty Truck KG) *
                   </label>
                   <input
@@ -1380,12 +1388,13 @@ export default function ElectronicWeighbridgeDeck() {
                     required
                     value={formTareWeightKg}
                     onChange={e => setFormTareWeightKg(Number(e.target.value))}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, boxSizing: 'border-box' }}
+                    className="wb-form-input"
+                    style={{ fontWeight: 700 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  <label className="wb-form-label">
                     Gross Weight (Loaded Truck KG) *
                   </label>
                   <input
@@ -1393,24 +1402,25 @@ export default function ElectronicWeighbridgeDeck() {
                     required
                     value={formGrossWeightKg}
                     onChange={e => setFormGrossWeightKg(Number(e.target.value))}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 800, color: '#0f172a', boxSizing: 'border-box' }}
+                    className="wb-form-input"
+                    style={{ fontWeight: 800 }}
                   />
                 </div>
               </div>
 
               {/* LIVE COMPUTATION SUMMARY */}
-              <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div className="wb-computation-summary">
                 <div>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>NET CARGO: </span>
-                  <strong style={{ fontSize: '13px', color: '#15803d' }}>{Math.max(0, formGrossWeightKg - formTareWeightKg).toLocaleString('en-IN')} KG</strong>
+                  <span className="wb-computation-label">NET CARGO: </span>
+                  <strong style={{ fontSize: '13px', color: '#10b981' }}>{Math.max(0, formGrossWeightKg - formTareWeightKg).toLocaleString('en-IN')} KG</strong>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>RTO CAP: </span>
-                  <strong style={{ fontSize: '13px', color: '#0369a1' }}>{(AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500).toLocaleString('en-IN')} KG</strong>
+                  <span className="wb-computation-label">RTO CAP: </span>
+                  <strong style={{ fontSize: '13px', color: '#38bdf8' }}>{(AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500).toLocaleString('en-IN')} KG</strong>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>STATUS: </span>
-                  <strong style={{ fontSize: '13px', color: formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500) ? '#dc2626' : '#16a34a' }}>
+                  <span className="wb-computation-label">STATUS: </span>
+                  <strong style={{ fontSize: '13px', color: formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500) ? '#f87171' : '#34d399' }}>
                     {formGrossWeightKg > (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)
                       ? `🚨 OVERLOAD (+${(formGrossWeightKg - (AXLE_CONFIG_MAP[formAxleCategory]?.limitKg || 43500)).toLocaleString('en-IN')} KG)`
                       : '✓ LEGAL COMPLIANT'}
@@ -1421,16 +1431,17 @@ export default function ElectronicWeighbridgeDeck() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
                 <button
                   type="button"
+                  className="wb-btn-cancel"
                   onClick={() => setShowEditVehicleModal(false)}
-                  style={{ padding: '10px 18px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', color: '#475569' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '10px 24px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+                  className="wb-btn-submit"
+                  style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)' }}
                 >
-                  💾 {t('Save Vehicle Changes', 'परिवर्तन सेव करें')}
+                  💾 Save Vehicle Changes
                 </button>
               </div>
             </form>

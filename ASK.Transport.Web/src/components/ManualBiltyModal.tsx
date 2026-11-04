@@ -99,7 +99,7 @@ export default function ManualBiltyModal({ onClose, onSubmit }: Props) {
             </div>
 
             {/* SENDER & RECEIVER COLUMNS */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="manual-bilty-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {/* SENDER */}
               <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                 <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: '#0f172a', fontWeight: 800 }}>
@@ -232,7 +232,7 @@ export default function ManualBiltyModal({ onClose, onSubmit }: Props) {
               <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: '#0f172a', fontWeight: 800 }}>
                 📦 Cargo Specification &amp; Packaging
               </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+              <div className="manual-bilty-4col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Commodity Type</label>
                   <select
@@ -311,7 +311,7 @@ export default function ManualBiltyModal({ onClose, onSubmit }: Props) {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+              <div className="manual-bilty-4col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Base Freight (₹)</label>
                   <input
