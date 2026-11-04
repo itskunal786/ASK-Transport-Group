@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, CheckCircle2, X, PlusCircle, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import {
   getReverseLogisticsCases,
   initiateRtoCase,
   updateRtoStatus,
-  type RtoReturnCase,
   type RtoSummaryResponse
 } from '../api/enterpriseApi';
+import './ReverseLogisticsRtoManager.css';
 
 export default function ReverseLogisticsRtoManager() {
   const [data, setData] = useState<RtoSummaryResponse | null>(null);
@@ -78,7 +78,9 @@ export default function ReverseLogisticsRtoManager() {
       setTimeout(() => setSuccessMsg(null), 8000);
       loadData();
     } catch (err: any) {
-      setSuccessMsg('Notice: RTO initiated in local offline registry'); setTimeout(() => setSuccessMsg(null), 5000); loadData();
+      setSuccessMsg('Notice: ' + (err?.message || 'RTO initiated in local offline registry'));
+      setTimeout(() => setSuccessMsg(null), 5000);
+      loadData();
     } finally {
       setLoading(false);
     }
@@ -94,42 +96,78 @@ export default function ReverseLogisticsRtoManager() {
       });
       loadData();
     } catch (err: any) {
-      setSuccessMsg('Notice: Status updated in local offline registry'); setTimeout(() => setSuccessMsg(null), 5000); loadData();
+      setSuccessMsg('Notice: ' + (err?.message || 'Status updated in local offline registry'));
+      setTimeout(() => setSuccessMsg(null), 5000);
+      loadData();
     } finally {
       setLoading(false);
     }
   }
 
+  // Preset Fast-Fill Templates
+  const applyPreset = (preset: 'auto' | 'steel' | 'fmcg' | 'impact') => {
+    if (preset === 'auto') {
+      setOrigBooking(`ASK-BK-${Math.floor(9100 + Math.random() * 900)}`);
+      setOrigLr(`ASK-LR-2026-${Math.floor(98000 + Math.random() * 900)}`);
+      setOriginFactory('North Star Auto Components (Pune Hub 4)');
+      setConsigneeName('Speedcraft Motors Depot (Gurugram NH-48)');
+      setReturnReason('Damaged in Transit / Water Ingress');
+      setDamageSeverity('Major Goods Damaged');
+      setClaimAmount('48500');
+    } else if (preset === 'steel') {
+      setOrigBooking(`ASK-BK-${Math.floor(8800 + Math.random() * 900)}`);
+      setOrigLr(`ASK-LR-2026-${Math.floor(97000 + Math.random() * 900)}`);
+      setOriginFactory('Tata Steel Tubes Division (Jamshedpur)');
+      setConsigneeName('Larsen & Toubro ECC Hub (Ahmedabad)');
+      setReturnReason('Wrong Item Dispatched by Factory');
+      setDamageSeverity('None - Intact Return');
+      setClaimAmount('125000');
+    } else if (preset === 'fmcg') {
+      setOrigBooking(`ASK-BK-${Math.floor(9300 + Math.random() * 900)}`);
+      setOrigLr(`ASK-LR-2026-${Math.floor(98500 + Math.random() * 900)}`);
+      setOriginFactory('Hindustan Unilever B2B CDC (Bhiwandi)');
+      setConsigneeName('Reliance Retail Mega DC (Bengaluru)');
+      setReturnReason('Seal Broken / Tampered Outer Carton');
+      setDamageSeverity('Minor Packaging Damage');
+      setClaimAmount('32000');
+    } else {
+      setOrigBooking(`ASK-BK-${Math.floor(9400 + Math.random() * 900)}`);
+      setOrigLr(`ASK-LR-2026-${Math.floor(99000 + Math.random() * 900)}`);
+      setOriginFactory('Bajaj Heavy Engineering Ltd (Bhosari)');
+      setConsigneeName('Hero MotoCorp Ancillary Hub (Haridwar)');
+      setReturnReason('Damaged in Transit / Water Ingress');
+      setDamageSeverity('Total Loss');
+      setClaimAmount('215000');
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="rto-container">
       {/* HEADER & CONTROLS */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '14px' }}>
+      <div className="rto-header-card">
         <div>
-          <h2 style={{ margin: 0, fontSize: '18px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🔄</span> Reverse Logistics &amp; Damaged Goods Return (RTO Management)
+          <h2 className="rto-header-title">
+            <RotateCcw size={20} style={{ color: '#ef4444' }} />
+            <span>{t('Reverse Logistics & Damaged Goods Return (RTO Management)', 'रिवर्स लॉजिस्टिक्स एवं क्षतिग्रस्त माल वापसी (RTO प्रबंधन)')}</span>
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748b' }}>
-            Automate consignee rejections, damage inspection photo logging, reverse waybill (RLR) creation, and tracking back to origin manufacturing hub.
+          <p className="rto-header-desc">
+            {t(
+              'Automate consignee rejections, damage inspection photo logging, reverse waybill (RLR) creation, and tracking back to origin manufacturing hub.',
+              'कंसाइनी अस्वीकृति, क्षति निरीक्षण फोटो लॉगिंग, रिवर्स वे-बिल (RLR) निर्माण व स्रोत विनिर्माण हब तक पूर्ण रिवर्स ट्रैकिंग स्वचालित करें।'
+            )}
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div className="rto-header-actions">
           <button
             type="button"
             onClick={() => loadData(true)}
             disabled={loading}
+            className="rto-btn-refresh"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 15px',
-              background: justRefreshed ? 'rgba(16, 185, 129, 0.15)' : '#f1f5f9',
-              color: justRefreshed ? '#10b981' : '#334155',
-              border: justRefreshed ? '1px solid #10b981' : '1px solid #cbd5e1',
-              borderRadius: '8px',
-              fontSize: '12.5px',
-              fontWeight: 800,
-              cursor: 'pointer',
+              borderColor: justRefreshed ? '#10b981' : undefined,
+              color: justRefreshed ? '#10b981' : undefined,
+              background: justRefreshed ? 'rgba(16, 185, 129, 0.15)' : undefined,
               boxShadow: justRefreshed ? '0 0 12px rgba(16, 185, 129, 0.25)' : undefined,
               transition: 'all 0.25s ease'
             }}
@@ -151,174 +189,145 @@ export default function ReverseLogisticsRtoManager() {
           <button
             type="button"
             onClick={() => setShowInitiateModal(true)}
-            style={{ padding: '8px 16px', background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12.5px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="rto-btn-initiate"
           >
-            <span>+</span> Initiate Return / RTO Case
+            <PlusCircle size={15} />
+            <span>{t('Initiate Return / RTO Case', 'नया RTO केस दर्ज करें')}</span>
           </button>
         </div>
       </div>
 
       {successMsg && (
-        <div style={{ padding: '14px 20px', background: '#dcfce7', border: '1px solid #86efac', borderRadius: '10px', color: '#15803d', fontSize: '13.5px', fontWeight: 800 }}>
-          {successMsg}
+        <div style={{
+          padding: '14px 20px',
+          background: '#dcfce7',
+          border: '1px solid #86efac',
+          borderRadius: '12px',
+          color: '#15803d',
+          fontSize: '13.5px',
+          fontWeight: 800,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <CheckCircle2 size={18} />
+          <span>{successMsg}</span>
         </div>
       )}
 
       {/* KPI METRICS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #ef4444' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>TOTAL RTO CASES</span>
-          <strong style={{ fontSize: '24px', color: '#dc2626', display: 'block', margin: '4px 0' }}>
-            {data?.metrics?.totalReturns ?? 0} Returns
+      <div className="rto-kpi-grid">
+        <div className="rto-kpi-card red">
+          <span className="rto-kpi-label">{t('TOTAL RTO CASES', 'कुल RTO मामले')}</span>
+          <strong className="rto-kpi-value red">
+            {data?.metrics?.totalReturns ?? 0} {t('Returns', 'वापसी')}
           </strong>
-          <span style={{ fontSize: '11.5px', color: '#b91c1c' }}>Rejected or damaged shipments</span>
+          <span className="rto-kpi-sub">{t('Rejected or damaged shipments', 'अस्वीकृत या क्षतिग्रस्त शिपमेंट्स')}</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>REVERSE IN-TRANSIT</span>
-          <strong style={{ fontSize: '24px', color: '#d97706', display: 'block', margin: '4px 0' }}>
-            {data?.metrics?.inTransit ?? 0} Returning
+        <div className="rto-kpi-card amber">
+          <span className="rto-kpi-label">{t('REVERSE IN-TRANSIT', 'रिवर्स रास्ते में')}</span>
+          <strong className="rto-kpi-value amber">
+            {data?.metrics?.inTransit ?? 0} {t('Returning', 'वापस जा रहे')}
           </strong>
-          <span style={{ fontSize: '11.5px', color: '#b45309' }}>En route to source manufacturing hub</span>
+          <span className="rto-kpi-sub">{t('En route to source manufacturing hub', 'स्रोत विनिर्माण हब की ओर रास्ते में')}</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #7c3aed' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>DAMAGE CLAIMS VALUE</span>
-          <strong style={{ fontSize: '24px', color: '#7c3aed', display: 'block', margin: '4px 0' }}>
+        <div className="rto-kpi-card purple">
+          <span className="rto-kpi-label">{t('DAMAGE CLAIMS VALUE', 'क्षति दावा राशि')}</span>
+          <strong className="rto-kpi-value purple">
             ₹{(data?.metrics?.totalClaims ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '11.5px', color: '#64748b' }}>Cargo insurance inspection ready</span>
+          <span className="rto-kpi-sub">{t('Cargo insurance inspection ready', 'कार्गो बीमा निरीक्षण हेतु तैयार')}</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>RESTOCKED TO FACTORY</span>
-          <strong style={{ fontSize: '24px', color: '#16a34a', display: 'block', margin: '4px 0' }}>
-            {data?.metrics?.restocked ?? 0} Consignments
+        <div className="rto-kpi-card emerald">
+          <span className="rto-kpi-label">{t('RESTOCKED TO FACTORY', 'फैक्ट्री में पुनः स्टॉक')}</span>
+          <strong className="rto-kpi-value emerald">
+            {data?.metrics?.restocked ?? 0} {t('Consignments', 'कंसाइनमेंट्स')}
           </strong>
-          <span style={{ fontSize: '11.5px', color: '#059669' }}>QC inspected &amp; inventory reconciled</span>
+          <span className="rto-kpi-sub">{t('QC inspected & inventory reconciled', 'QC निरीक्षण व इन्वेंट्री रीकंसाइल्ड')}</span>
         </div>
       </div>
 
-      {/* RTO CASES LIST */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {(data?.cases || []).map((c: RtoReturnCase) => {
+      {/* CASES CARDS LIST */}
+      <div className="rto-cases-list">
+        {(!data?.cases || data.cases.length === 0) && (
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--bg-surface, #ffffff)', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', color: 'var(--text-secondary, #64748b)' }}>
+            <p style={{ margin: 0, fontSize: '14px' }}>No active RTO return cases found. Click 'Initiate Return / RTO Case' to file a consignment return.</p>
+          </div>
+        )}
+
+        {data?.cases?.map(c => {
           const isRestocked = c.status === 'Restocked_To_Factory';
-          const isInTransit = c.status === 'Reverse_In_Transit';
-
           return (
-            <div
-              key={c.id}
-              style={{
-                background: 'var(--bg-surface, #ffffff)',
-                borderRadius: '14px',
-                border: isRestocked ? '2px solid #10b981' : isInTransit ? '1.5px solid #f59e0b' : '1px solid var(--border-color, #e2e8f0)',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}
-            >
-              {/* TOP HEADER */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ padding: '4px 10px', borderRadius: '6px', background: '#fee2e2', color: '#dc2626', fontSize: '12px', fontWeight: 800 }}>
-                    {c.caseNumber}
-                  </span>
-                  <div>
-                    <strong style={{ fontSize: '14px', color: '#0f172a' }}>Reason: {c.returnReason}</strong>
-                    <div style={{ fontSize: '11.5px', color: '#64748b' }}>
-                      Original LR: <strong>{c.originalLrNumber}</strong> → Reverse LR: <strong style={{ color: '#2563eb' }}>{c.reverseLrNumber}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11.5px',
-                    fontWeight: 800,
-                    background: c.damageSeverity.includes('Major') ? '#fee2e2' : c.damageSeverity.includes('None') ? '#dcfce7' : '#fef3c7',
-                    color: c.damageSeverity.includes('Major') ? '#dc2626' : c.damageSeverity.includes('None') ? '#15803d' : '#b45309'
-                  }}>
-                    {c.damageSeverity}
-                  </span>
-
-                  <span style={{
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontSize: '11.5px',
-                    fontWeight: 800,
-                    background: isRestocked ? '#dcfce7' : '#eff6ff',
-                    color: isRestocked ? '#15803d' : '#1d4ed8'
-                  }}>
-                    {c.status.replace(/_/g, ' ')}
-                  </span>
-                </div>
-              </div>
-
-              {/* ROUTE & DAMAGE EVIDENCE */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', background: '#f8fafc', padding: '14px', borderRadius: '10px' }}>
+            <div key={c.id} className="rto-case-card">
+              <div className="rto-case-header">
                 <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>ORIGIN FACTORY (RECIPIENT OF RETURN):</span>
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
-                    🏭 {c.originFactory}
-                  </div>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>REJECTED BY CONSIGNEE:</span>
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#dc2626', marginTop: '2px' }}>
-                    🏢 {c.consigneeWhoRejected}
-                  </div>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>CURRENT REVERSE HUB:</span>
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#2563eb', marginTop: '2px' }}>
-                    📍 {c.currentReverseHub}
-                  </div>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>CUSTOMER CLAIM AMOUNT:</span>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#7c3aed', marginTop: '2px' }}>
-                    {(c.customerRefundClaimed ?? 0) > 0 ? `₹${(c.customerRefundClaimed ?? 0).toLocaleString('en-IN')}` : 'Nil (Stock Exchange)'}
-                  </div>
-                </div>
-              </div>
-
-              {/* PHOTO PROOF & PROGRESSION CONTROLS */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={c.damagePhotoUrl}
-                    alt="Damage Evidence"
-                    onClick={() => setSelectedPhoto(c.damagePhotoUrl)}
-                    style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #cbd5e1', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155', display: 'block' }}>
-                      📸 Transit Damage Proof Photo
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span className="rto-case-num">{c.caseNumber}</span>
+                    <span className={`rto-case-badge ${
+                      c.status === 'RTO_Initiated' ? 'initiated' :
+                      c.status === 'Reverse_In_Transit' ? 'transit' :
+                      c.status === 'Arrived_At_Source_Hub' ? 'arrived' :
+                      c.status === 'Restocked_To_Factory' ? 'restocked' : 'insurance'
+                    }`}>
+                      {c.status.replace(/_/g, ' ')}
                     </span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                    <span><strong>Original LR:</strong> {c.originalLrNumber}</span>
+                    <span><strong>Reverse Waybill:</strong> <span style={{ color: '#ef4444', fontWeight: 800 }}>{c.reverseLrNumber}</span></span>
+                    <span><strong>Damage Severity:</strong> {c.damageSeverity}</span>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800 }}>CLAIM DEMAND</div>
+                  <strong style={{ fontSize: '17px', color: '#dc2626' }}>₹{c.customerRefundClaimed.toLocaleString('en-IN')}</strong>
+                </div>
+              </div>
+
+              {/* ROUTING INFO */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>RETURN DESTINATION (ORIGIN FACTORY):</span>
+                  <div style={{ fontSize: '12.5px', fontWeight: 700, marginTop: '2px', color: 'var(--text-primary, #0f172a)' }}>{c.originFactory}</div>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>REJECTING CONSIGNEE:</span>
+                  <div style={{ fontSize: '12.5px', fontWeight: 700, marginTop: '2px', color: 'var(--text-primary, #0f172a)' }}>{c.consigneeWhoRejected}</div>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>REASON FOR REJECTION:</span>
+                  <div style={{ fontSize: '12.5px', fontWeight: 700, marginTop: '2px', color: '#b91c1c' }}>{c.returnReason}</div>
+                </div>
+              </div>
+
+              {/* ACTION MILESTONES & PHOTO */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {c.damagePhotoUrl && (
                     <button
                       type="button"
                       onClick={() => setSelectedPhoto(c.damagePhotoUrl)}
-                      style={{ padding: '2px 8px', background: 'transparent', border: 'none', color: '#2563eb', fontSize: '11px', fontWeight: 700, cursor: 'pointer', paddingLeft: 0 }}
+                      style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '6px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                     >
-                      Click to inspect full photo ↗
+                      <span>📷</span> View Inspection Evidence
                     </button>
-                  </div>
+                  )}
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
+                    Current Terminal: <strong>{c.currentReverseHub}</strong>
+                  </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   {c.status === 'RTO_Initiated' && (
                     <button
                       type="button"
                       disabled={loading}
                       onClick={() => handleAdvanceStatus(c.id, 'Reverse_In_Transit', 'Agra Highway Transit Hub')}
-                      style={{ padding: '8px 14px', background: '#d97706', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                      style={{ padding: '8px 14px', background: '#d97706', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
                     >
                       🛣️ Dispatch on Reverse Truck
                     </button>
@@ -329,7 +338,7 @@ export default function ReverseLogisticsRtoManager() {
                       type="button"
                       disabled={loading}
                       onClick={() => handleAdvanceStatus(c.id, 'Arrived_At_Source_Hub', 'Pune Chakan Hub Gate')}
-                      style={{ padding: '8px 14px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                      style={{ padding: '8px 14px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
                     >
                       📍 Mark Arrived at Source Hub
                     </button>
@@ -340,32 +349,30 @@ export default function ReverseLogisticsRtoManager() {
                       type="button"
                       disabled={loading}
                       onClick={() => handleAdvanceStatus(c.id, 'Restocked_To_Factory', 'Pune Factory Central Warehouse')}
-                      style={{ padding: '8px 16px', background: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
+                      style={{ padding: '8px 16px', background: '#059669', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
                     >
                       ✓ Pass QC &amp; Restock to Inventory
                     </button>
                   )}
 
                   {isRestocked && (
-                    <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 800 }}>
-                      ✓ Case Closed &amp; Restocked
+                    <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle2 size={15} /> Case Closed &amp; Restocked
                     </span>
                   )}
                 </div>
               </div>
 
               {/* TIMELINE STEPS */}
-              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
-                <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '8px' }}>
-                  REVERSE AUDIT TIMELINE:
-                </span>
+              <div className="rto-timeline-wrap">
+                <span className="rto-timeline-label">REVERSE AUDIT TIMELINE:</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {c.timeline.map((ev, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px' }}>
+                  {c.timeline?.map((ev, i) => (
+                    <div key={i} className="rto-timeline-item">
                       <span style={{ color: '#2563eb' }}>●</span>
-                      <strong style={{ color: '#0f172a' }}>{ev.title}:</strong>
-                      <span style={{ color: '#475569' }}>{ev.description}</span>
-                      <small style={{ color: '#94a3b8', marginLeft: 'auto' }}>{new Date(ev.timestamp).toLocaleTimeString()}</small>
+                      <strong style={{ color: 'var(--text-primary, #0f172a)' }}>{ev.title}:</strong>
+                      <span style={{ color: 'var(--text-secondary, #475569)' }}>{ev.description}</span>
+                      <small style={{ color: '#94a3b8', marginLeft: 'auto' }}>{ev.timestamp}</small>
                     </div>
                   ))}
                 </div>
@@ -377,61 +384,93 @@ export default function ReverseLogisticsRtoManager() {
 
       {/* INITIATE RETURN MODAL */}
       {showInitiateModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '540px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: '0 0 14px', fontSize: '17px', color: '#0f172a' }}>
-              🔄 Initiate Consignment Return / RTO
-            </h3>
+        <div className="rto-modal-overlay">
+          <div className="rto-modal-card">
+            <div className="rto-modal-header">
+              <h3 className="rto-modal-title">
+                <RotateCcw size={18} style={{ color: '#ef4444' }} />
+                <span>{t('Initiate Consignment Return / RTO', 'कंसाइनमेंट वापसी / RTO दर्ज करें')}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowInitiateModal(false)}
+                className="rto-modal-close"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
-            <form onSubmit={handleInitiateRto} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            {/* 1-CLICK FAST FILL PRESETS */}
+            <div className="rto-presets-bar">
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#ef4444' }}>⚡ 1-CLICK TEMPLATES:</span>
+              <button type="button" onClick={() => applyPreset('auto')} className="rto-preset-chip">
+                Auto Components (Water Ingress)
+              </button>
+              <button type="button" onClick={() => applyPreset('steel')} className="rto-preset-chip">
+                Steel Tubes (Wrong Spec)
+              </button>
+              <button type="button" onClick={() => applyPreset('fmcg')} className="rto-preset-chip">
+                FMCG Retail (Outer Damaged)
+              </button>
+              <button type="button" onClick={() => applyPreset('impact')} className="rto-preset-chip">
+                Heavy Machinery (Impact)
+              </button>
+            </div>
+
+            <form onSubmit={handleInitiateRto} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>ORIGINAL BOOKING #:</label>
+                  <label className="rto-form-label">ORIGINAL BOOKING #:</label>
                   <input
                     type="text"
                     value={origBooking}
                     onChange={e => setOrigBooking(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12.5px' }}
+                    required
+                    className="rto-form-input"
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>ORIGINAL LR BILTY #:</label>
+                  <label className="rto-form-label">ORIGINAL LR BILTY #:</label>
                   <input
                     type="text"
                     value={origLr}
                     onChange={e => setOrigLr(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12.5px' }}
+                    required
+                    className="rto-form-input"
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>ORIGIN FACTORY (RETURN DESTINATION):</label>
+                <label className="rto-form-label">ORIGIN FACTORY (RETURN DESTINATION):</label>
                 <input
                   type="text"
                   value={originFactory}
                   onChange={e => setOriginFactory(e.target.value)}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12.5px' }}
+                  required
+                  className="rto-form-input"
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>CONSIGNEE WHO REFUSED DELIVERY:</label>
+                <label className="rto-form-label">CONSIGNEE WHO REFUSED DELIVERY:</label>
                 <input
                   type="text"
                   value={consigneeName}
                   onChange={e => setConsigneeName(e.target.value)}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12.5px' }}
+                  required
+                  className="rto-form-input"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>RETURN REASON:</label>
+                  <label className="rto-form-label">RETURN REASON:</label>
                   <select
                     value={returnReason}
                     onChange={e => setReturnReason(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px' }}
+                    className="rto-form-input"
                   >
                     <option value="Damaged in Transit / Water Ingress">Damaged in Transit / Water Ingress</option>
                     <option value="Consignee Refused Delivery">Consignee Refused Delivery</option>
@@ -442,11 +481,11 @@ export default function ReverseLogisticsRtoManager() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>DAMAGE SEVERITY:</label>
+                  <label className="rto-form-label">DAMAGE SEVERITY:</label>
                   <select
                     value={damageSeverity}
                     onChange={e => setDamageSeverity(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px' }}
+                    className="rto-form-input"
                   >
                     <option value="Major Goods Damaged">Major Goods Damaged</option>
                     <option value="Minor Packaging Damage">Minor Packaging Damage</option>
@@ -456,41 +495,50 @@ export default function ReverseLogisticsRtoManager() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>CLAIM / REFUND AMOUNT (₹):</label>
+                  <label className="rto-form-label">CLAIM / REFUND AMOUNT (₹):</label>
                   <input
                     type="number"
                     value={claimAmount}
                     onChange={e => setClaimAmount(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12.5px' }}
+                    required
+                    className="rto-form-input"
+                    style={{ fontWeight: 800, color: '#ef4444' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>DAMAGE PHOTO URL:</label>
+                  <label className="rto-form-label">DAMAGE PHOTO URL:</label>
                   <input
                     type="text"
                     value={damagePhoto}
                     onChange={e => setDamagePhoto(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12.5px' }}
+                    className="rto-form-input"
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+              <div className="rto-modal-actions">
                 <button
                   type="button"
                   onClick={() => setShowInitiateModal(false)}
-                  style={{ padding: '8px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                  className="rto-btn-cancel"
                 >
-                  Cancel
+                  {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ padding: '8px 20px', background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 800, cursor: 'pointer' }}
+                  className="rto-btn-submit"
                 >
-                  Generate Reverse LR &amp; Schedule
+                  {loading ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      <span>{t('Generating Reverse LR...', 'रिवर्स LR बन रहा है...')}</span>
+                    </>
+                  ) : (
+                    <span>{t('Generate Reverse LR & Schedule', 'रिवर्स LR बनाएं व शेड्यूल करें')}</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -500,15 +548,24 @@ export default function ReverseLogisticsRtoManager() {
 
       {/* PHOTO PREVIEW MODAL */}
       {selectedPhoto && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', padding: '16px', maxWidth: '640px', width: '100%', textAlign: 'center' }}>
-            <h4 style={{ margin: '0 0 10px', fontSize: '15px', color: '#0f172a' }}>Damage Evidence Inspection</h4>
-            <img src={selectedPhoto} alt="Full Damage Proof" style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '8px', objectFit: 'contain' }} />
-            <div style={{ marginTop: '14px' }}>
+        <div className="rto-modal-overlay">
+          <div className="rto-modal-card" style={{ maxWidth: '640px', textAlign: 'center' }}>
+            <div className="rto-modal-header">
+              <h4 className="rto-modal-title">Damage Evidence Inspection</h4>
               <button
                 type="button"
                 onClick={() => setSelectedPhoto(null)}
-                style={{ padding: '6px 20px', background: '#334155', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
+                className="rto-modal-close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <img src={selectedPhoto} alt="Full Damage Proof" style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '10px', objectFit: 'contain' }} />
+            <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedPhoto(null)}
+                className="rto-btn-cancel"
               >
                 Close Preview
               </button>
