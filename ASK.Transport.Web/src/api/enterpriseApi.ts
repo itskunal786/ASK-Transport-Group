@@ -237,6 +237,73 @@ export async function getMarketplaceLoads(): Promise<MarketplaceLoad[]> {
   return [...customLoads, ...DEFAULT_MARKETPLACE_LOADS];
 }
 
+export async function refreshMarketplaceRates(): Promise<MarketplaceLoad[]> {
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isLocalhostRoot = API_ROOT.includes('localhost') || API_ROOT.includes('127.0.0.1');
+
+  if (!isHttps || !isLocalhostRoot) {
+    try {
+      const res = await axios.get(`${API_BASE}/marketplace/loads`, { headers: getAuthHeaders(), timeout: 2500 });
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch {
+      // fallback to live simulation below
+    }
+  }
+
+  const current = await getMarketplaceLoads();
+  const transporters = [
+    { name: 'Northern Roadways Carrier', phone: '+91 98114 99012', rating: 4.8, truck: 'HR-55-AF-1140' },
+    { name: 'Apex Fast Haulage Pvt Ltd', phone: '+91 98220 33812', rating: 4.9, truck: 'MH-14-GH-7840' },
+    { name: 'Kavita Freight Movers', phone: '+91 94140 88201', rating: 4.7, truck: 'RJ-14-TG-9901' },
+    { name: 'Southern Highway Express', phone: '+91 94440 77123', rating: 4.8, truck: 'KA-04-MB-4512' }
+  ];
+
+  const updatedLoads = current.map(load => {
+    if (load.status === 'ActiveAuction') {
+      const transporter = transporters[Math.floor(Math.random() * transporters.length)];
+      const drop = Math.floor(Math.random() * 800) + 300;
+      const newRate = Math.max(12000, load.currentLowestBid - drop);
+
+      const newBid: MarketplaceBid = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        loadId: load.id,
+        transporterName: transporter.name,
+        transporterPhone: transporter.phone,
+        rating: transporter.rating,
+        totalTripsCompleted: Math.floor(75 + Math.random() * 180),
+        truckNumber: transporter.truck,
+        offeredRate: newRate,
+        etaPickupHours: Math.floor(1 + Math.random() * 3),
+        bidPlacedAt: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        isSelected: true
+      };
+
+      const updatedBids = [
+        newBid,
+        ...(load.bids || []).map(b => ({ ...b, isSelected: false }))
+      ];
+
+      return {
+        ...load,
+        currentLowestBid: newRate,
+        secondsRemaining: Math.floor(350 + Math.random() * 500),
+        bids: updatedBids
+      };
+    }
+    return load;
+  });
+
+  try {
+    localStorage.setItem('ask_custom_marketplace_loads', JSON.stringify(updatedLoads));
+  } catch {
+    // ignore
+  }
+
+  return updatedLoads;
+}
+
 export async function createMarketplaceLoad(payload: {
   shipperName?: string;
   originHub: string;

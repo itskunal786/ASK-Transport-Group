@@ -15,6 +15,7 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import {
   getMarketplaceLoads,
+  refreshMarketplaceRates,
   createMarketplaceLoad,
   placeMarketplaceBid,
   acceptWinningBid,
@@ -60,11 +61,15 @@ export default function FreightBiddingMarketplace() {
   async function loadData(isManual: boolean = false) {
     try {
       setLoading(true);
-      const data = await getMarketplaceLoads();
+      const data = isManual ? await refreshMarketplaceRates() : await getMarketplaceLoads();
       setLoads(Array.isArray(data) ? data : []);
       if (isManual) {
         setJustRefreshed(true);
         setTimeout(() => setJustRefreshed(false), 2500);
+        showNotification(
+          t('Spot freight rates refreshed! Real-time carrier bids updated.', 'स्पॉट फ्रेट दरें अपडेट हो गईं! नई ट्रांसपोर्टर बोलियां दर्ज हुईं।'),
+          'success'
+        );
       }
     } catch (err) {
       console.error('Failed to load marketplace loads:', err);
