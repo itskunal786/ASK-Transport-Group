@@ -487,12 +487,46 @@ export default function Dashboard() {
 
   const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
 
-  const setActiveTab = (tab: AdminTab) => {
+  const setActiveTab = (tab: AdminTab, optionalSubTab?: string) => {
     setActiveTabState(tab);
     try {
       localStorage.setItem('ask_admin_active_tab', tab);
       const url = new URL(window.location.href);
       url.searchParams.set('tab', tab);
+      if (optionalSubTab) {
+        url.searchParams.set('subtab', optionalSubTab);
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
+  const getInitialFinanceSubTab = (): 'einv' | 'erp' | 'credit' | 'settlement' => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlSub = params.get('subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
+      if (urlSub && ['einv', 'erp', 'credit', 'settlement'].includes(urlSub)) {
+        return urlSub;
+      }
+      const saved = localStorage.getItem('ask_admin_finance_subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
+      if (saved && ['einv', 'erp', 'credit', 'settlement'].includes(saved)) {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return 'einv';
+  };
+
+  const [financeDeckSubTab, setFinanceDeckSubTabState] = useState<'einv' | 'erp' | 'credit' | 'settlement'>(getInitialFinanceSubTab);
+
+  const setFinanceDeckSubTab = (subTab: 'einv' | 'erp' | 'credit' | 'settlement') => {
+    setFinanceDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_finance_subtab', subTab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('subtab', subTab);
       window.history.replaceState(null, '', url.toString());
     } catch {
       // ignore
@@ -501,7 +535,6 @@ export default function Dashboard() {
 
   const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
   const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
-  const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Auto-scroll main window to top on tab switch and close mobile drawer
@@ -2329,7 +2362,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'settlement' ? 'active' : ''}`}
-                  onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting'); }}
+                  onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting', 'settlement'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Hired Fleet & 194C TDS', 'किराए का बेड़ा और 194C टीडीएस')}</span>
@@ -2338,7 +2371,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab !== 'settlement' ? 'active' : ''}`}
-                  onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting'); }}
+                  onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting', 'einv'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('GST E-Invoice & ERP Ledgers', 'जीएसटी ई-चालान और ईआरपी लेजर')}</span>
@@ -3279,7 +3312,7 @@ export default function Dashboard() {
         {activeTab === 'finance_accounting' && (
           <div className="admin-content-pad">
             <ErrorBoundary fallbackTitle="Finance & Accounting Suite Error">
-              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} />
+              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} onSubTabChange={setFinanceDeckSubTab} />
             </ErrorBoundary>
           </div>
         )}

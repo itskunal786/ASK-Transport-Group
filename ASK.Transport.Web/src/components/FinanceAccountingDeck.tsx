@@ -7,10 +7,35 @@ import ErrorBoundary from './ErrorBoundary';
 
 export interface FinanceAccountingDeckProps {
   initialSubTab?: 'einv' | 'erp' | 'credit' | 'settlement';
+  onSubTabChange?: (tab: 'einv' | 'erp' | 'credit' | 'settlement') => void;
 }
 
-export default function FinanceAccountingDeck({ initialSubTab = 'einv' }: FinanceAccountingDeckProps) {
-  const [activeTab, setActiveTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>(initialSubTab);
+export default function FinanceAccountingDeck({ initialSubTab = 'einv', onSubTabChange }: FinanceAccountingDeckProps) {
+  const [activeTab, setActiveTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlSub = params.get('subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
+      if (urlSub && ['einv', 'erp', 'credit', 'settlement'].includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_finance_subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
+      if (saved && ['einv', 'erp', 'credit', 'settlement'].includes(saved)) return saved;
+    } catch {
+      // ignore
+    }
+    return initialSubTab;
+  });
+
+  const handleTabChange = (tab: 'einv' | 'erp' | 'credit' | 'settlement') => {
+    setActiveTab(tab);
+    onSubTabChange?.(tab);
+    try {
+      localStorage.setItem('ask_admin_finance_subtab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('subtab', tab);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     if (initialSubTab) {
@@ -49,7 +74,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv' }: Financ
         <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.08)', padding: '5px', borderRadius: '12px', gap: '6px', border: '1px solid rgba(255, 255, 255, 0.1)', flexWrap: 'wrap' }}>
           <button
             type="button"
-            onClick={() => setActiveTab('settlement')}
+            onClick={() => handleTabChange('settlement')}
             style={{
               padding: '9px 18px',
               borderRadius: '9px',
@@ -70,7 +95,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv' }: Financ
 
           <button
             type="button"
-            onClick={() => setActiveTab('einv')}
+            onClick={() => handleTabChange('einv')}
             style={{
               padding: '9px 18px',
               borderRadius: '9px',
@@ -91,7 +116,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv' }: Financ
 
           <button
             type="button"
-            onClick={() => setActiveTab('erp')}
+            onClick={() => handleTabChange('erp')}
             style={{
               padding: '9px 18px',
               borderRadius: '9px',
@@ -112,7 +137,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv' }: Financ
 
           <button
             type="button"
-            onClick={() => setActiveTab('credit')}
+            onClick={() => handleTabChange('credit')}
             style={{
               padding: '9px 18px',
               borderRadius: '9px',

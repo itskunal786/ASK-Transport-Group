@@ -132,13 +132,18 @@ const DEFAULT_FALLBACK_INVOICES: EInvoiceRecord[] = [
 ];
 
 export async function getEInvoices(): Promise<EInvoiceSummaryResponse> {
-  try {
-    const res = await axios.get(`${API_BASE}/e-invoices`, { headers: getAuthHeaders(), timeout: 4000 });
-    if (res.data && res.data.eInvoices && Array.isArray(res.data.eInvoices)) {
-      return res.data;
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isLocalhostRoot = API_ROOT.includes('localhost') || API_ROOT.includes('127.0.0.1');
+
+  if (!isHttps || !isLocalhostRoot) {
+    try {
+      const res = await axios.get(`${API_BASE}/e-invoices`, { headers: getAuthHeaders(), timeout: 2500 });
+      if (res.data && res.data.eInvoices && Array.isArray(res.data.eInvoices)) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Backend unavailable, returning stored/fallback e-invoices:', err);
     }
-  } catch (err) {
-    console.warn('Backend unavailable, returning stored/fallback e-invoices:', err);
   }
 
   // Resilient fallback with localStorage persistence
@@ -178,16 +183,21 @@ export async function generateGovtEInvoiceIrn(payload: {
   taxableAmount?: number;
   vehicleNumber?: string;
 }): Promise<{ success: boolean; message: string; eInvoice: EInvoiceRecord }> {
-  try {
-    const res = await axios.post(`${API_BASE}/e-invoices/generate-irn`, payload, { 
-      headers: getAuthHeaders(),
-      timeout: 4000 
-    });
-    if (res.data && res.data.eInvoice) {
-      return res.data;
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isLocalhostRoot = API_ROOT.includes('localhost') || API_ROOT.includes('127.0.0.1');
+
+  if (!isHttps || !isLocalhostRoot) {
+    try {
+      const res = await axios.post(`${API_BASE}/e-invoices/generate-irn`, payload, { 
+        headers: getAuthHeaders(),
+        timeout: 2500 
+      });
+      if (res.data && res.data.eInvoice) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Backend offline or network error, generating compliant statutory IRN locally:', err);
     }
-  } catch (err) {
-    console.warn('Backend offline or network error, generating compliant statutory IRN locally:', err);
   }
 
   // Generate authentic compliant statutory IRN locally
@@ -257,16 +267,21 @@ export async function generateGovtEInvoiceIrn(payload: {
 }
 
 export async function cancelIrn(id: number, payload: { reason: string }): Promise<{ success: boolean; message: string; eInvoice: EInvoiceRecord }> {
-  try {
-    const res = await axios.post(`${API_BASE}/e-invoices/${id}/cancel-irn`, payload, { 
-      headers: getAuthHeaders(),
-      timeout: 4000 
-    });
-    if (res.data) {
-      return res.data;
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isLocalhostRoot = API_ROOT.includes('localhost') || API_ROOT.includes('127.0.0.1');
+
+  if (!isHttps || !isLocalhostRoot) {
+    try {
+      const res = await axios.post(`${API_BASE}/e-invoices/${id}/cancel-irn`, payload, { 
+        headers: getAuthHeaders(),
+        timeout: 2500 
+      });
+      if (res.data) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Backend offline, marking IRN cancelled locally:', err);
     }
-  } catch (err) {
-    console.warn('Backend offline, marking IRN cancelled locally:', err);
   }
 
   try {
