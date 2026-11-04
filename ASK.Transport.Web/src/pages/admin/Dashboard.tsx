@@ -6323,7 +6323,7 @@ export default function Dashboard() {
                     <span className="shipment-modal-badge">#{selectedShipment.shipmentNo}</span>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Waybill: {selectedShipment.bookingNo}</span>
                   </div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                  <h2 className="shipment-modal-title">
                     Update Shipment Status
                   </h2>
                   <div className="shipment-route-pill">
@@ -6488,7 +6488,7 @@ export default function Dashboard() {
                     <span className="shipment-modal-badge">NEW DISPATCH</span>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>AIS-140 Fleet Gateway</span>
                   </div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                  <h2 className="shipment-modal-title">
                     Create &amp; Dispatch New Highway Shipment
                   </h2>
                   <div className="shipment-route-pill">
@@ -6508,16 +6508,8 @@ export default function Dashboard() {
               </div>
 
               {/* 1-CLICK INDUSTRY PRESETS BAR */}
-              <div style={{
-                background: 'var(--bg-input, #f8fafc)',
-                borderBottom: '1px solid var(--border, #e2e8f0)',
-                padding: '10px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap'
-              }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase' }}>
+              <div className="shipment-preset-bar">
+                <span className="shipment-preset-bar-title">
                   ⚡ 1-Click Fast Fill:
                 </span>
                 <button

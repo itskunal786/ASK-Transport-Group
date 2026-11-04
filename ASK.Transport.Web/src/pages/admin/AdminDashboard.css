@@ -5894,3 +5894,221 @@ body.dark .hub-btn-delete {
     gap: 10px !important;
   }
 }
+
+
+/* ============================================================================
+   SHIPMENT & DISPATCH MODAL THEME HARMONIZATION (LIGHT & DARK MODE)
+   ============================================================================ */
+
+.shipment-modal-title {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  margin: 4px 0 0 !important;
+  color: var(--text-primary, #0f172a) !important;
+  letter-spacing: -0.01em !important;
+}
+
+[data-theme='dark'] .shipment-modal-title,
+body.dark .shipment-modal-title,
+.dark .shipment-modal-title {
+  color: #f8fafc !important;
+}
+
+.shipment-preset-bar {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 10px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+[data-theme='dark'] .shipment-preset-bar,
+body.dark .shipment-preset-bar,
+.dark .shipment-preset-bar {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.shipment-preset-bar-title {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+}
+
+[data-theme='dark'] .shipment-preset-bar-title,
+body.dark .shipment-preset-bar-title,
+.dark .shipment-preset-bar-title {
+  color: #94a3b8 !important;
+}
+
+.shipment-preset-pill {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+[data-theme='dark'] .shipment-preset-pill,
+body.dark .shipment-preset-pill,
+.dark .shipment-preset-pill {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+.shipment-preset-pill:hover,
+[data-theme='dark'] .shipment-preset-pill:hover,
+body.dark .shipment-preset-pill:hover,
+.dark .shipment-preset-pill:hover {
+  background: rgba(2, 132, 199, 0.25) !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Modal Drawer Close Button */
+.st-drawer-close {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #64748b !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.st-drawer-close:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+[data-theme='dark'] .st-drawer-close,
+body.dark .st-drawer-close,
+.dark .st-drawer-close {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme='dark'] .st-drawer-close:hover,
+body.dark .st-drawer-close:hover,
+.dark .st-drawer-close:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+
+/* Modal Actions Buttons */
+.st-drawer-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid var(--border, #e2e8f0) !important;
+  background: var(--bg-card, #ffffff) !important;
+  flex-shrink: 0 !important;
+}
+
+[data-theme='dark'] .st-drawer-actions,
+body.dark .st-drawer-actions,
+.dark .st-drawer-actions {
+  background: #0f172a !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.st-btn-cancel {
+  padding: 9px 20px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  transition: all 0.15s ease !important;
+}
+
+.st-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme='dark'] .st-btn-cancel,
+body.dark .st-btn-cancel,
+.dark .st-btn-cancel {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme='dark'] .st-btn-cancel:hover,
+body.dark .st-btn-cancel:hover,
+.dark .st-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.st-btn-submit {
+  padding: 9px 22px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border: 1px solid #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.st-btn-submit:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5) !important;
+}
+
+/* Modal Body Scrollbar */
+.st-drawer-body {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent !important;
+}
+
+.st-drawer-body::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.st-drawer-body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.st-drawer-body::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3) !important;
+  border-radius: 999px !important;
+}
+
+.st-drawer-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6) !important;
+}
