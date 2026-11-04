@@ -50,6 +50,7 @@ import CorporateCargoClaimsManager from '../../components/CorporateCargoClaimsMa
 import ExecutiveProfitabilityRadar from '../../components/ExecutiveProfitabilityRadar';
 import CaTaxAuditVault from '../../components/CaTaxAuditVault';
 import PhysicalPodInwardDeck from '../../components/PhysicalPodInwardDeck';
+import DynamicTariffEngine from '../../components/DynamicTariffEngine';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -585,10 +586,7 @@ export default function Dashboard() {
   const [tariffHandlingFee, setTariffHandlingFee] = useState('250');
   const [tariffSaving, setTariffSaving] = useState(false);
 
-  // Rate Simulator State
-  const [simDistanceKm, setSimDistanceKm] = useState<number>(750);
-  const [simWeightKg, setSimWeightKg] = useState<number>(1200);
-  const [simService, setSimService] = useState<'FTL' | 'PTL' | 'Express'>('PTL');
+
 
   // Audit Logs Filter
   const [auditActionFilter, setAuditActionFilter] = useState('All');
@@ -1859,15 +1857,7 @@ export default function Dashboard() {
     return 0;
   });
 
-  // Simulator calculation
-  const simBaseFreight = simService === 'FTL'
-    ? Math.max(simDistanceKm * parseFloat(tariffFtlPerKm || '14.5'), parseFloat(tariffFtlMinTrip || '12000'))
-    : Math.max((simDistanceKm * parseFloat(tariffPtlPerKgKm || '1.85') * (simWeightKg / 100)), parseFloat(tariffPtlMinFloor || '450')) * (simService === 'Express' ? parseFloat(tariffExpressMult || '1.75') : 1.0);
-  const simFuelCharge = Math.round(simBaseFreight * (parseFloat(tariffFuelSurcharge || '11.5') / 100));
-  const simHandling = parseFloat(tariffHandlingFee || '250');
-  const simSubtotal = Math.round(simBaseFreight + simFuelCharge + simHandling);
-  const simGst = Math.round(simSubtotal * (parseFloat(tariffGstPercent || '18') / 100));
-  const simTotal = simSubtotal + simGst;
+
 
   return (
     <div className="admin-layout-container">
@@ -5108,228 +5098,31 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'tariff' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>⚡ Dynamic Tariff &amp; Rate Matrix Engine</h1>
-                <p>Governs commercial freight tariffs, diesel fuel surcharge index, GST tax slabs, and real-time public rate calculations</p>
-              </div>
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-primary"
-                  onClick={handleSaveTariffMatrix}
-                  disabled={tariffSaving}
-                >
-                  {tariffSaving ? 'Broadcasting...' : '💾 Save & Broadcast Tariff to Portal'}
-                </button>
-              </div>
-            </div>
-
-            {/* TARIFF CARDS GRID */}
-            <div className="tariff-grid">
-              {/* Card 1: FTL Full Truckload */}
-              <div className="tariff-card">
-                <div className="tariff-card-header">
-                  <span style={{ fontSize: '1.4rem' }}>🚛</span>
-                  <h3>Full Truckload (FTL) Freight Slab</h3>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Base Tariff (₹ per Ton / KM)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={tariffFtlPerKm}
-                      onChange={e => setTariffFtlPerKm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Minimum Corridor Trip Charge (Floor)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      value={tariffFtlMinTrip}
-                      onChange={e => setTariffFtlMinTrip(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <small style={{ color: '#64748b', fontSize: '11px' }}>
-                  Applied automatically to 32ft MXL, 24ft, and containerized fleet.
-                </small>
-              </div>
-
-              {/* Card 2: PTL Part Truckload */}
-              <div className="tariff-card">
-                <div className="tariff-card-header">
-                  <span style={{ fontSize: '1.4rem' }}>📦</span>
-                  <h3>Part Truckload (PTL / Parcel)</h3>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Base Freight (₹ per Kg / KM)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      step="0.05"
-                      value={tariffPtlPerKgKm}
-                      onChange={e => setTariffPtlPerKgKm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Minimum Parcel Booking Fee</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      value={tariffPtlMinFloor}
-                      onChange={e => setTariffPtlMinFloor(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <small style={{ color: '#64748b', fontSize: '11px' }}>
-                  Calculated dynamically with volumetric weight formula (CFT).
-                </small>
-              </div>
-
-              {/* Card 3: Priority & Fuel Surcharges */}
-              <div className="tariff-card">
-                <div className="tariff-card-header">
-                  <span style={{ fontSize: '1.4rem' }}>⚡</span>
-                  <h3>Surcharges &amp; Taxes</h3>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Express / Air Cargo Multiplier (x)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">x</span>
-                    <input
-                      type="number"
-                      step="0.05"
-                      value={tariffExpressMult}
-                      onChange={e => setTariffExpressMult(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Diesel Price Fuel Surcharge (%)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">%</span>
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={tariffFuelSurcharge}
-                      onChange={e => setTariffFuelSurcharge(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>GST Freight Rate (%)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">%</span>
-                    <input
-                      type="number"
-                      value={tariffGstPercent}
-                      onChange={e => setTariffGstPercent(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="tariff-input-group">
-                  <label>Dock Handling &amp; Toll Surcharge (Fixed)</label>
-                  <div className="tariff-input-wrap">
-                    <span className="tariff-input-prefix">₹</span>
-                    <input
-                      type="number"
-                      value={tariffHandlingFee}
-                      onChange={e => setTariffHandlingFee(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* LIVE SIMULATOR FOR SUPER ADMIN */}
-            <div className="tariff-sim-box">
-              <div className="tariff-sim-title">
-                <div>
-                  <h3>🧪 Real-Time Tariff Simulator</h3>
-                  <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '13px' }}>
-                    Verify how customer rate calculator responds to current matrix parameters
-                  </p>
-                </div>
-                <span style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
-                  Interactive Preview
-                </span>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Trip Distance: <strong>{simDistanceKm} KM</strong></label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="3000"
-                    step="50"
-                    value={simDistanceKm}
-                    onChange={e => setSimDistanceKm(parseInt(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Consignment Weight: <strong>{simWeightKg} KG</strong></label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="24000"
-                    step="50"
-                    value={simWeightKg}
-                    onChange={e => setSimWeightKg(parseInt(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Freight Service Mode</label>
-                  <select
-                    value={simService}
-                    onChange={e => setSimService(e.target.value as any)}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', background: '#07192b', color: '#fff', border: '1px solid #1e3355' }}
-                  >
-                    <option value="PTL">Part Truckload (PTL)</option>
-                    <option value="FTL">Full Truckload (FTL Dedicated)</option>
-                    <option value="Express">Express Air/Highway Priority</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="tariff-sim-result-card">
-                <div className="sim-row">
-                  <span>Base Haulage Freight ({simDistanceKm} km × {simWeightKg} kg):</span>
-                  <strong>₹{simBaseFreight.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row">
-                  <span>Diesel Fuel Surcharge ({tariffFuelSurcharge}%):</span>
-                  <strong>₹{simFuelCharge.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row">
-                  <span>Terminal Handling &amp; Dock Fee:</span>
-                  <strong>₹{simHandling.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row">
-                  <span>GST Road Transport SAC 9965 ({tariffGstPercent}%):</span>
-                  <strong>₹{simGst.toLocaleString('en-IN')}</strong>
-                </div>
-                <div className="sim-row total">
-                  <span>Total Calculated Client Tariff:</span>
-                  <span>₹{simTotal.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-            </div>
+            <DynamicTariffEngine
+              tariffFtlPerKm={tariffFtlPerKm}
+              setTariffFtlPerKm={setTariffFtlPerKm}
+              tariffFtlMinTrip={tariffFtlMinTrip}
+              setTariffFtlMinTrip={setTariffFtlMinTrip}
+              tariffPtlPerKgKm={tariffPtlPerKgKm}
+              setTariffPtlPerKgKm={setTariffPtlPerKgKm}
+              tariffPtlMinFloor={tariffPtlMinFloor}
+              setTariffPtlMinFloor={setTariffPtlMinFloor}
+              tariffExpressMult={tariffExpressMult}
+              setTariffExpressMult={setTariffExpressMult}
+              tariffFuelSurcharge={tariffFuelSurcharge}
+              setTariffFuelSurcharge={setTariffFuelSurcharge}
+              tariffGstPercent={tariffGstPercent}
+              setTariffGstPercent={setTariffGstPercent}
+              tariffHandlingFee={tariffHandlingFee}
+              setTariffHandlingFee={setTariffHandlingFee}
+              tariffSaving={tariffSaving}
+              onSaveTariff={handleSaveTariffMatrix}
+              showToast={showToast}
+            />
           </div>
         )}
 
-        {/* ============================================================== */}
+                {/* ============================================================== */}
         {/* VIEW: FLEET TELEMATICS & GPS RADAR */}
         {/* ============================================================== */}
         {activeTab === 'telematics' && (
