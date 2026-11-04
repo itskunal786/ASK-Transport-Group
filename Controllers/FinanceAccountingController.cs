@@ -509,6 +509,132 @@ public class FinanceAccountingController : ControllerBase
         }
     }
 
+    [HttpPost("credit-ledgers")]
+    public IActionResult CreateCreditLedger([FromBody] SaveCustomerCreditLedgerRequest request)
+    {
+        lock (_syncLock)
+        {
+            if (string.IsNullOrWhiteSpace(request.CompanyName))
+                return BadRequest(new { message = "Company Name is required." });
+
+            int nextId = _creditLedgers.Any() ? _creditLedgers.Max(x => x.ClientId) + 1 : 1;
+            decimal limit = request.CreditLimit > 0 ? request.CreditLimit : 1000000;
+            decimal outstanding = request.CurrentOutstanding;
+            double util = limit > 0 ? Math.Round((double)(outstanding / limit) * 100, 1) : 0;
+            string status = request.AccountStatus;
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                if (util > 100) status = "Credit_Frozen";
+                else if (util > 85) status = "Credit_Warning";
+                else status = "Active";
+            }
+
+            var newClient = new CustomerCreditLedger
+            {
+                ClientId = nextId,
+                CompanyName = request.CompanyName.Trim(),
+                Gstin = request.Gstin?.Trim().ToUpperInvariant() ?? "",
+                BillingAddress = request.BillingAddress?.Trim() ?? "",
+                ContactPerson = request.ContactPerson?.Trim() ?? "",
+                ContactPhone = request.ContactPhone?.Trim() ?? "",
+                CreditLimit = limit,
+                CurrentOutstanding = outstanding,
+                OverdueAmount = request.OverdueAmount,
+                CreditUtilizationPercent = util,
+                PaymentTerms = !string.IsNullOrWhiteSpace(request.PaymentTerms) ? request.PaymentTerms : "30 Days Net",
+                BillingCycle = !string.IsNullOrWhiteSpace(request.BillingCycle) ? request.BillingCycle : "Monthly 1st to 30th",
+                AccountStatus = status,
+                UnbilledTripsCount = request.UnbilledTripsCount,
+                UnbilledTripsValue = request.UnbilledTripsValue
+            };
+
+            _creditLedgers.Add(newClient);
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Credit ledger for '{newClient.CompanyName}' created successfully.",
+                client = newClient
+            });
+        }
+    }
+
+    [HttpPut("credit-ledgers/{clientId:int}")]
+    public IActionResult UpdateCreditLedger(int clientId, [FromBody] SaveCustomerCreditLedgerRequest request)
+    {
+        lock (_syncLock)
+        {
+            var client = _creditLedgers.FirstOrDefault(x => x.ClientId == clientId);
+            if (client == null)
+                return NotFound(new { message = $"Client #{clientId} not found." });
+
+            if (!string.IsNullOrWhiteSpace(request.CompanyName))
+                client.CompanyName = request.CompanyName.Trim();
+            if (!string.IsNullOrWhiteSpace(request.Gstin))
+                client.Gstin = request.Gstin.Trim().ToUpperInvariant();
+            if (request.BillingAddress != null)
+                client.BillingAddress = request.BillingAddress.Trim();
+            if (request.ContactPerson != null)
+                client.ContactPerson = request.ContactPerson.Trim();
+            if (request.ContactPhone != null)
+                client.ContactPhone = request.ContactPhone.Trim();
+            if (request.CreditLimit > 0)
+                client.CreditLimit = request.CreditLimit;
+            if (request.CurrentOutstanding >= 0)
+                client.CurrentOutstanding = request.CurrentOutstanding;
+            if (request.OverdueAmount >= 0)
+                client.OverdueAmount = request.OverdueAmount;
+            if (!string.IsNullOrWhiteSpace(request.PaymentTerms))
+                client.PaymentTerms = request.PaymentTerms;
+            if (!string.IsNullOrWhiteSpace(request.BillingCycle))
+                client.BillingCycle = request.BillingCycle;
+            if (request.UnbilledTripsCount >= 0)
+                client.UnbilledTripsCount = request.UnbilledTripsCount;
+            if (request.UnbilledTripsValue >= 0)
+                client.UnbilledTripsValue = request.UnbilledTripsValue;
+
+            client.CreditUtilizationPercent = client.CreditLimit > 0
+                ? Math.Round((double)(client.CurrentOutstanding / client.CreditLimit) * 100, 1)
+                : 0;
+
+            if (!string.IsNullOrWhiteSpace(request.AccountStatus))
+                client.AccountStatus = request.AccountStatus;
+            else if (client.CreditUtilizationPercent > 100)
+                client.AccountStatus = "Credit_Frozen";
+            else if (client.CreditUtilizationPercent > 85)
+                client.AccountStatus = "Credit_Warning";
+            else
+                client.AccountStatus = "Active";
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Credit ledger for '{client.CompanyName}' updated successfully.",
+                client
+            });
+        }
+    }
+
+    [HttpDelete("credit-ledgers/{clientId:int}")]
+    public IActionResult DeleteCreditLedger(int clientId)
+    {
+        lock (_syncLock)
+        {
+            var client = _creditLedgers.FirstOrDefault(x => x.ClientId == clientId);
+            if (client == null)
+                return NotFound(new { message = $"Client #{clientId} not found." });
+
+            string name = client.CompanyName;
+            _creditLedgers.Remove(client);
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Credit ledger '{name}' (#{clientId}) deleted successfully."
+            });
+        }
+    }
+
     [HttpPost("credit-ledgers/{clientId:int}/update-limit")]
     public IActionResult UpdateCreditLimit(int clientId, [FromBody] UpdateCreditLimitRequest request)
     {
@@ -751,4 +877,21 @@ public class UpdateCreditLimitRequest
 {
     public decimal CreditLimit { get; set; }
     public string? PaymentTerms { get; set; }
+}
+
+public class SaveCustomerCreditLedgerRequest
+{
+    public string CompanyName { get; set; } = "";
+    public string Gstin { get; set; } = "";
+    public string BillingAddress { get; set; } = "";
+    public string ContactPerson { get; set; } = "";
+    public string ContactPhone { get; set; } = "";
+    public decimal CreditLimit { get; set; }
+    public decimal CurrentOutstanding { get; set; }
+    public decimal OverdueAmount { get; set; }
+    public string PaymentTerms { get; set; } = "30 Days Net";
+    public string BillingCycle { get; set; } = "Monthly 1st to 30th";
+    public string AccountStatus { get; set; } = "Active";
+    public int UnbilledTripsCount { get; set; }
+    public decimal UnbilledTripsValue { get; set; }
 }
