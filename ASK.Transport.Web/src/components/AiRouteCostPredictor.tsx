@@ -130,6 +130,11 @@ export default function AiRouteCostPredictor() {
       setData(localRes);
     } finally {
       setLoading(false);
+      if (e) {
+        setTimeout(() => {
+          document.getElementById('ai-predictor-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     }
   }
 
@@ -367,7 +372,7 @@ PROJECTED NET PROFIT:    ₹${data.profitability.netOperatingProfit.toLocaleStri
       {data && (
         <>
           {/* TOP SUMMARY STATS */}
-          <div className="ai-kpi-grid">
+          <div id="ai-predictor-results" className="ai-kpi-grid">
             <div className="ai-kpi-card kpi-blue">
               <span className="ai-kpi-label">{t('HIGHWAY DISTANCE', 'हाईवे दूरी (KM)')}</span>
               <strong className="ai-kpi-value">

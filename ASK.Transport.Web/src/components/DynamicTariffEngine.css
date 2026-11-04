@@ -767,3 +767,113 @@ body.dark .dte-corridor-pricing,
   background: #111a2e;
   border-color: #1e2c47;
 }
+
+
+/* ============================================================================
+   MOBILE RESPONSIVENESS & TOUCH OPTIMIZATION (PHONES & TABLETS)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .dte-hero {
+    padding: 16px 14px !important;
+    border-radius: 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .dte-hero-left {
+    max-width: 100% !important;
+  }
+
+  .dte-hero-title {
+    font-size: 18px !important;
+  }
+
+  .dte-hero-desc {
+    font-size: 12px !important;
+  }
+
+  .dte-hero-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .dte-btn-broadcast,
+  .dte-btn-reset {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 11px 16px !important;
+  }
+
+  .dte-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .dte-kpi-card {
+    padding: 12px 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .dte-kpi-val {
+    font-size: 18px !important;
+  }
+
+  .dte-kpi-label {
+    font-size: 9.5px !important;
+  }
+
+  .dte-kpi-sub {
+    font-size: 10px !important;
+  }
+
+  .dte-config-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .dte-config-card {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .dte-corridor-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .dte-sim-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .dte-corridor-pricing {
+    padding: 16px 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dte-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .dte-kpi-val {
+    font-size: 16px !important;
+  }
+
+  .dte-card-title {
+    font-size: 14px !important;
+  }
+
+  .dte-input-stepper-wrap {
+    height: 42px !important;
+  }
+
+  .dte-receipt-total-val {
+    font-size: 20px !important;
+  }
+}

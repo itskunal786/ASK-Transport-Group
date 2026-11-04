@@ -337,6 +337,10 @@ export async function predictRouteAndCosts(params: {
   dieselPricePerLiter?: number;
   customMileageKmPerLiter?: number;
 }): Promise<RouteCostPredictionResult> {
+  // If running on HTTPS production and API_BASE points to HTTP localhost, skip network hang
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && API_BASE.startsWith('http://localhost')) {
+    return calculateLocalRoutePrediction(params);
+  }
   try {
     const token = localStorage.getItem('token');
     const res = await axios.post(`${API_BASE}/route-toll-cost-predictor`, params, {

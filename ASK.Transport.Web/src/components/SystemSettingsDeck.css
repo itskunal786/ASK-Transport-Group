@@ -919,3 +919,91 @@ body.dark .ssd-empty h3 {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ============================================================================
+   ADVANCED MOBILE & TOUCH SCREEN OPTIMIZATION (PHONES & TABLETS)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .ssd-hero {
+    padding: 16px 14px !important;
+    border-radius: 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .ssd-hero h1 {
+    font-size: 18px !important;
+  }
+
+  .ssd-hero p {
+    font-size: 12px !important;
+  }
+
+  .ssd-hero-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .ssd-btn-primary,
+  .ssd-btn-secondary,
+  .ssd-btn-ghost {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+  }
+
+  .ssd-kpi-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .ssd-kpi-card {
+    padding: 12px 10px !important;
+    border-radius: 10px !important;
+    gap: 10px !important;
+  }
+
+  .ssd-kpi-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+  }
+
+  .ssd-kpi-val {
+    font-size: 18px !important;
+  }
+
+  .ssd-kpi-label {
+    font-size: 10px !important;
+  }
+
+  .ssd-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .ssd-card {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .ssd-kpi-strip {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .ssd-kpi-val {
+    font-size: 16px !important;
+  }
+
+  .ssd-hero h1 {
+    font-size: 16px !important;
+  }
+}

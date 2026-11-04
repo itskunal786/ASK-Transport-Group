@@ -7681,6 +7681,73 @@ export default function Dashboard() {
             onClose={() => setSelectedLr(null)}
           />
         )}
+
+        {/* MOBILE BOTTOM NAVIGATION BAR (FIXED APP-STYLE DOCK) */}
+        <nav className="admin-mobile-bottom-nav" aria-label="Mobile Navigation">
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+            <span>Overview</span>
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'shipments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('shipments')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="1" y="3" width="15" height="13" rx="2" />
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+              <circle cx="5.5" cy="18.5" r="2.5" />
+              <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+            <span>Shipments</span>
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'hubs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('hubs')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Hubs</span>
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-dock-btn ${activeTab === 'ai_automation' ? 'active' : ''}`}
+            onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+            <span>AI Lab</span>
+          </button>
+
+          <button
+            type="button"
+            className="mobile-dock-btn"
+            onClick={() => setIsMobileNavOpen(true)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <span>Menu</span>
+          </button>
+        </nav>
       </main>
     </div>
   );
