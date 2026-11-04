@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import './NicEwayBillAutoExtensionSuite.css';
 
@@ -39,6 +39,9 @@ export interface EwayBillItem {
   recipientPincode: string;
   docNo: string;
   docDate: string;
+  transactionType?: 'Outward' | 'Inward';
+  subType?: string;
+  docType?: string;
   hsnCode: string;
   cargoDescription: string;
   cargoValue: number;
@@ -278,9 +281,269 @@ const AVAILABLE_STANDBY_VEHICLES = [
 
 export default function NicEwayBillAutoExtensionSuite() {
   const { t } = useLanguage();
-  const [ewayBills, setEwayBills] = useState<EwayBillItem[]>(INITIAL_EWAY_BILLS);
+  const [ewayBills, setEwayBills] = useState<EwayBillItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ask_admin_ewaybills');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return INITIAL_EWAY_BILLS;
+  });
+
+  // Auto-sync ewayBills to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('ask_admin_ewaybills', JSON.stringify(ewayBills));
+      } catch (err) {
+        console.error('Failed to sync eway bills to localStorage', err);
+      }
+    }
+  }, [ewayBills]);
+
   const [filterTab, setFilterTab] = useState<'ALL' | 'CRITICAL' | 'WARNING' | 'EXTENDED' | 'EXPIRED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // --------------------------------------------------------------------------
+  // ADD NEW E-WAY BILL MODAL STATE
+  // --------------------------------------------------------------------------
+  const [showAddEwbModal, setShowAddEwbModal] = useState(false);
+  const [newEwbNo, setNewEwbNo] = useState('');
+  const [newDocNo, setNewDocNo] = useState('');
+  const [newDocDate, setNewDocDate] = useState(() => new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
+  const [newTransactionType, setNewTransactionType] = useState<'Outward' | 'Inward'>('Outward');
+  const [newSubType, setNewSubType] = useState<'Supply' | 'Job Work' | 'Export' | 'SKD/CKD' | 'Line Item' | 'Others'>('Supply');
+  const [newDocType, setNewDocType] = useState<'Tax Invoice' | 'Bill of Supply' | 'Delivery Challan'>('Tax Invoice');
+  
+  // Consignor / Part-A
+  const [newSupplierName, setNewSupplierName] = useState('');
+  const [newSupplierGstin, setNewSupplierGstin] = useState('');
+  const [newSupplierPlace, setNewSupplierPlace] = useState('');
+  const [newSupplierPincode, setNewSupplierPincode] = useState('');
+  
+  // Consignee / Part-A
+  const [newRecipientName, setNewRecipientName] = useState('');
+  const [newRecipientGstin, setNewRecipientGstin] = useState('');
+  const [newRecipientPlace, setNewRecipientPlace] = useState('');
+  const [newRecipientPincode, setNewRecipientPincode] = useState('');
+  
+  // Item / Goods
+  const [newCargoDescription, setNewCargoDescription] = useState('');
+  const [newHsnCode, setNewHsnCode] = useState('');
+  const [newCargoValue, setNewCargoValue] = useState<number>(1850000);
+  const [newGstRate, setNewGstRate] = useState<number>(18);
+  
+  // Part-B Vehicle & Driver
+  const [newVehiclePlateInput, setNewVehiclePlateInput] = useState('');
+  const [newDriverNameInput, setNewDriverNameInput] = useState('');
+  const [newDriverPhoneInput, setNewDriverPhoneInput] = useState('+91 98');
+  const [newTotalDistanceInput, setNewTotalDistanceInput] = useState<number>(650);
+  const [newTransporterDocInput, setNewTransporterDocInput] = useState('');
+  const [newHighwayCorridor, setNewHighwayCorridor] = useState('Mumbai-Ahmedabad Corridor (NH-48)');
+
+  const handleOpenAddModal = () => {
+    const randPart = Math.floor(10000000 + Math.random() * 90000000);
+    setNewEwbNo(`2410-${String(randPart).slice(0, 4)}-${String(randPart).slice(4, 8)}`);
+    setNewDocNo(`INV-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+    setNewDocDate(new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
+    setNewTransactionType('Outward');
+    setNewSubType('Supply');
+    setNewDocType('Tax Invoice');
+    setNewSupplierName('ASK Central Logistics Hub');
+    setNewSupplierGstin('27AABCA1234F1Z8');
+    setNewSupplierPlace('Bhiwandi SuperHub, Mumbai');
+    setNewSupplierPincode('421302');
+    setNewRecipientName('');
+    setNewRecipientGstin('');
+    setNewRecipientPlace('');
+    setNewRecipientPincode('');
+    setNewCargoDescription('');
+    setNewHsnCode('8708.29.00');
+    setNewCargoValue(1850000);
+    setNewGstRate(18);
+    setNewVehiclePlateInput(AVAILABLE_STANDBY_VEHICLES[0]?.plateNo || 'MH-12-PQ-9081');
+    setNewDriverNameInput('Ramesh Yadav');
+    setNewDriverPhoneInput('+91 98112 23344');
+    setNewTotalDistanceInput(650);
+    setNewTransporterDocInput(`ASK-LR-${Math.floor(10000 + Math.random() * 90000)}`);
+    setNewHighwayCorridor('Mumbai-Ahmedabad Corridor (NH-48)');
+    setShowAddEwbModal(true);
+  };
+
+  const applyEwbTemplate = (type: 'auto' | 'pharma' | 'steel' | 'fmcg') => {
+    const randPart = Math.floor(10000000 + Math.random() * 90000000);
+    const ewb = `2410-${String(randPart).slice(0, 4)}-${String(randPart).slice(4, 8)}`;
+    setNewEwbNo(ewb);
+    
+    if (type === 'auto') {
+      setNewSupplierName('Tata Motors Commercial Hub');
+      setNewSupplierGstin('27AAACT2727Q1ZT');
+      setNewSupplierPlace('Pune MIDC, Maharashtra');
+      setNewSupplierPincode('411018');
+      setNewRecipientName('Reliance Retail Mega DC');
+      setNewRecipientGstin('24AABCR2424P1Z3');
+      setNewRecipientPlace('Sanand Industrial Estate, Ahmedabad');
+      setNewRecipientPincode('382110');
+      setNewDocNo(`TM-INV-${Math.floor(1000 + Math.random() * 9000)}`);
+      setNewCargoDescription('Precision Chassis Sub-Assemblies & Transmission Gear Units');
+      setNewHsnCode('8708.29.00');
+      setNewCargoValue(3450000);
+      setNewGstRate(18);
+      setNewVehiclePlateInput('MH-12-PQ-9081');
+      setNewDriverNameInput('Suresh Rawat');
+      setNewDriverPhoneInput('+91 98230 45678');
+      setNewTotalDistanceInput(650);
+      setNewHighwayCorridor('Mumbai-Ahmedabad Golden Quadrilateral (NH-48)');
+    } else if (type === 'pharma') {
+      setNewSupplierName('Sun Pharmaceutical Industries Ltd');
+      setNewSupplierGstin('24AAACS1122K1Z9');
+      setNewSupplierPlace('Makarpura GIDC, Vadodara');
+      setNewSupplierPincode('390010');
+      setNewRecipientName('Cipla Formulations & Active Health Hub');
+      setNewRecipientGstin('02AAACC3344M1Z5');
+      setNewRecipientPlace('Baddi Industrial Area, Solan, Himachal Pradesh');
+      setNewRecipientPincode('173205');
+      setNewDocNo(`SP-PHARMA-${Math.floor(1000 + Math.random() * 9000)}`);
+      setNewCargoDescription('Life Saving Antibiotics & Cold-Chain Bulk Formulations');
+      setNewHsnCode('3004.90.99');
+      setNewCargoValue(5200000);
+      setNewGstRate(12);
+      setNewVehiclePlateInput('HR-55-XY-7711');
+      setNewDriverNameInput('Satish Verma');
+      setNewDriverPhoneInput('+91 98101 44556');
+      setNewTotalDistanceInput(1320);
+      setNewHighwayCorridor('Delhi-Chandigarh-Himachal Expressway (NH-44)');
+    } else if (type === 'steel') {
+      setNewSupplierName('Jindal Steel & Power Integrated Mill');
+      setNewSupplierGstin('22AAACJ4455P1ZK');
+      setNewSupplierPlace('OP Jindal Industrial Park, Raigarh, CG');
+      setNewSupplierPincode('496001');
+      setNewRecipientName('Havells Heavy Manufacturing Facility');
+      setNewRecipientGstin('06AAACH7788Q1ZR');
+      setNewRecipientPlace('Faridabad Sector-25 Industrial Corridor, HR');
+      setNewRecipientPincode('121004');
+      setNewDocNo(`JSPL-COIL-${Math.floor(1000 + Math.random() * 9000)}`);
+      setNewCargoDescription('Hot-Rolled High-Tensile Structural Steel Coils');
+      setNewHsnCode('7208.27.00');
+      setNewCargoValue(2850000);
+      setNewGstRate(18);
+      setNewVehiclePlateInput('DL-01-AB-1234');
+      setNewDriverNameInput('Ramesh Yadav');
+      setNewDriverPhoneInput('+91 98112 23344');
+      setNewTotalDistanceInput(1180);
+      setNewHighwayCorridor('Agra-Lucknow & East-West Highway Corridor');
+    } else {
+      setNewSupplierName('Hindustan Unilever Master Hub');
+      setNewSupplierGstin('29AAACH2702H1ZQ');
+      setNewSupplierPlace('Whitefield Industrial Zone, Bengaluru');
+      setNewSupplierPincode('560066');
+      setNewRecipientName('Spencers Retail Regional DC');
+      setNewRecipientGstin('33AAACS9988K1ZR');
+      setNewRecipientPlace('Sriperumbudur Logistic Gateway, Chennai');
+      setNewRecipientPincode('602105');
+      setNewDocNo(`HUL-FMCG-${Math.floor(1000 + Math.random() * 9000)}`);
+      setNewCargoDescription('FMCG Packaged Goods & Personal Care Consignments');
+      setNewHsnCode('3401.11.10');
+      setNewCargoValue(1620000);
+      setNewGstRate(18);
+      setNewVehiclePlateInput('RJ-14-GH-3321');
+      setNewDriverNameInput('Balwant Singh');
+      setNewDriverPhoneInput('+91 97110 99887');
+      setNewTotalDistanceInput(350);
+      setNewHighwayCorridor('Bengaluru-Chennai Highway Corridor (NH-48)');
+    }
+    showToast(`✓ Template loaded for ${type.toUpperCase()} consignment!`);
+  };
+
+  const handleCreateNewEwayBill = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEwbNo.trim()) {
+      alert('Please provide or generate a valid 12-digit E-Way Bill Number.');
+      return;
+    }
+    if (!newSupplierName.trim() || !newRecipientName.trim()) {
+      alert('Please fill in both Consignor (Supplier) and Consignee (Recipient) details.');
+      return;
+    }
+    if (!newVehiclePlateInput.trim()) {
+      alert('Please enter or select a Vehicle Registration Number for Part-B.');
+      return;
+    }
+
+    const dist = Math.max(10, Number(newTotalDistanceInput) || 450);
+    const validDays = Math.max(1, Math.ceil(dist / 200)); // Rule 138 CGST: 200 KM per day
+    const hours = validDays * 24;
+
+    const now = new Date();
+    const validFromStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+                         now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    
+    const futureDate = new Date(now.getTime() + validDays * 24 * 60 * 60 * 1000);
+    const validUntilStr = futureDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' 11:59 PM';
+
+    const calculatedTax = Math.round((Number(newCargoValue) * (Number(newGstRate) / 100)));
+
+    const createdRecord: EwayBillItem = {
+      id: `EWB-${Date.now()}`,
+      ewbNo: newEwbNo.trim(),
+      ewbDate: validFromStr,
+      validFrom: validFromStr,
+      validUntil: validUntilStr,
+      hoursRemaining: hours,
+      status: 'ACTIVE_SAFE',
+      supplierName: newSupplierName.trim(),
+      supplierGstin: newSupplierGstin.trim() || '27AABCA1234F1Z8',
+      supplierPlace: newSupplierPlace.trim() || 'Mumbai, Maharashtra',
+      supplierPincode: newSupplierPincode.trim() || '400001',
+      recipientName: newRecipientName.trim(),
+      recipientGstin: newRecipientGstin.trim() || '24AABCR2424P1Z3',
+      recipientPlace: newRecipientPlace.trim() || 'Ahmedabad, Gujarat',
+      recipientPincode: newRecipientPincode.trim() || '380001',
+      docNo: newDocNo.trim() || `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+      docDate: newDocDate,
+      transactionType: newTransactionType,
+      subType: newSubType,
+      docType: newDocType,
+      hsnCode: newHsnCode.trim() || '8708.29.00',
+      cargoDescription: newCargoDescription.trim() || 'General Commercial Consignment',
+      cargoValue: Number(newCargoValue) || 1500000,
+      taxAmount: calculatedTax,
+      vehicleNo: newVehiclePlateInput.trim().toUpperCase(),
+      driverName: newDriverNameInput.trim() || 'Assigned Fleet Pilot',
+      driverPhone: newDriverPhoneInput.trim() || '+91 98112 00112',
+      totalDistanceKm: dist,
+      remainingDistanceKm: dist,
+      currentLocationName: `${newSupplierPlace.split(',')[0]} Origin Terminal`,
+      currentPincode: newSupplierPincode.trim() || '400001',
+      highwayCorridor: newHighwayCorridor,
+      speedKmH: 45,
+      extensionCount: 0,
+      partBHistory: [
+        {
+          mode: 'Road',
+          vehicleNo: newVehiclePlateInput.trim().toUpperCase(),
+          vehicleType: 'Regular',
+          fromPlace: newSupplierPlace.trim(),
+          fromState: newSupplierPlace.split(',')[1]?.trim() || 'Maharashtra',
+          fromPincode: newSupplierPincode.trim() || '400001',
+          enteredDate: validFromStr,
+          enteredBy: '27AABCA1234F1Z8 (ASK Transport)',
+          transporterDocNo: newTransporterDocInput.trim() || `ASK-LR-${Math.floor(10000 + Math.random() * 90000)}`,
+          reasonForChange: 'Original Dispatch Load'
+        }
+      ],
+      driverNotified: false
+    };
+
+    setEwayBills(prev => [createdRecord, ...prev]);
+    setShowAddEwbModal(false);
+    setSearchQuery(createdRecord.ewbNo);
+    showToast(`✓ E-Way Bill ${createdRecord.ewbNo} successfully registered & synced with Part-A & Part-B!`);
+  };
   
   // Extension Modal State
   const [selectedForExtension, setSelectedForExtension] = useState<EwayBillItem | null>(null);
@@ -627,15 +890,41 @@ export default function NicEwayBillAutoExtensionSuite() {
           </div>
         </div>
 
-        <div className="ewb-gateway-status-pill">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="ewb-status-indicator" />
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981' }}>{t('NIC Gateway: Active', 'एनआईसी गेटवे: सक्रिय')}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="ewb-gateway-status-pill">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="ewb-status-indicator" />
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981' }}>{t('NIC Gateway: Active', 'एनआईसी गेटवे: सक्रिय')}</span>
+            </div>
+            <span style={{ color: 'var(--border-color, #cbd5e1)' }}>|</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
+              TRANSIN: <strong style={{ color: 'var(--text-primary, #0f172a)', fontFamily: 'monospace' }}>27AABCA1234F1Z8</strong>
+            </span>
           </div>
-          <span style={{ color: 'var(--border-color, #cbd5e1)' }}>|</span>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
-            TRANSIN: <strong style={{ color: 'var(--text-primary, #0f172a)', fontFamily: 'monospace' }}>27AABCA1234F1Z8</strong>
-          </span>
+
+          <button
+            type="button"
+            className="ewb-btn-add-new"
+            onClick={handleOpenAddModal}
+            style={{
+              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '10px 18px',
+              fontSize: '13px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>➕</span>
+            <span>{t('+ Generate / Add New E-Way Bill', '+ नया ई-वे बिल जोड़ें')}</span>
+          </button>
         </div>
       </div>
 
@@ -813,17 +1102,42 @@ export default function NicEwayBillAutoExtensionSuite() {
           </button>
         </div>
 
-        <div className="ewb-search-box">
-          <svg className="ewb-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder={t('Search by EWB, Vehicle, Consignor, Route...', 'ई-वे बिल, वाहन, पार्टी या मार्ग खोजें...')}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="ewb-search-box">
+            <svg className="ewb-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder={t('Search by EWB, Vehicle, Consignor, Route...', 'ई-वे बिल, वाहन, पार्टी या मार्ग खोजें...')}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenAddModal}
+            style={{
+              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '12px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>➕</span>
+            <span>{t('+ Add New E-Way Bill', '+ नया ई-वे बिल जोड़ें')}</span>
+          </button>
         </div>
       </div>
 
@@ -2069,6 +2383,621 @@ export default function NicEwayBillAutoExtensionSuite() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================== */}
+      {/* MODAL 6: GENERATE & REGISTER NEW GOVT E-WAY BILL (PART-A + PART-B) */}
+      {/* ===================================================================== */}
+      {showAddEwbModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 999999,
+          padding: '16px'
+        }} onClick={() => setShowAddEwbModal(false)}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '860px',
+            width: '100%',
+            maxHeight: '92vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)'
+          }} onClick={e => e.stopPropagation()}>
+            
+            {/* MODAL HEADER */}
+            <div style={{
+              background: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)',
+              padding: '20px 24px',
+              color: '#ffffff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+            }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.2)', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span>🏛️</span> Govt Rule 138 CGST Suite
+                </div>
+                <h2 style={{ margin: '8px 0 4px', fontSize: '20px', fontWeight: 900 }}>
+                  Generate / Register New E-Way Bill (EWB-01)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>
+                  Direct Part-A (Consignor, Consignee, Goods) &amp; Part-B (Vehicle &amp; Distance) Compliance Gateway
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAddEwbModal(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  fontSize: '20px',
+                  lineHeight: '1',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* QUICK 1-CLICK DEMO TEMPLATES BAR */}
+            <div style={{
+              background: '#f8fafc',
+              borderBottom: '1px solid #e2e8f0',
+              padding: '12px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+                ⚡ 1-Click Fast Fill Templates:
+              </span>
+              <button
+                type="button"
+                onClick={() => applyEwbTemplate('auto')}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer'
+                }}
+              >
+                🏭 Auto FTL (Pune ➔ Sanand)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyEwbTemplate('pharma')}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer'
+                }}
+              >
+                💊 Pharma Cold-Chain (Vadodara ➔ Baddi)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyEwbTemplate('steel')}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer'
+                }}
+              >
+                🏗️ Steel Heavy (Raigarh ➔ Faridabad)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyEwbTemplate('fmcg')}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer'
+                }}
+              >
+                📦 FMCG Retail (Bengaluru ➔ Chennai)
+              </button>
+            </div>
+
+            {/* FORM BODY (SCROLLABLE) */}
+            <form onSubmit={handleCreateNewEwayBill} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+                
+                {/* SECTION 1: EWB & DOCUMENT PROFILE */}
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>📄 1. E-Way Bill Number &amp; Invoice Profile</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const rand = Math.floor(10000000 + Math.random() * 90000000);
+                        setNewEwbNo(`2410-${String(rand).slice(0, 4)}-${String(rand).slice(4, 8)}`);
+                      }}
+                      style={{
+                        background: '#e0f2fe',
+                        border: '1px solid #bae6fd',
+                        color: '#0284c7',
+                        borderRadius: '6px',
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⚡ Auto-Generate 12-Digit EWB No
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        E-Way Bill Number *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newEwbNo}
+                        onChange={e => setNewEwbNo(e.target.value)}
+                        placeholder="e.g. 2410-8921-7711"
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Doc / Invoice Number *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newDocNo}
+                        onChange={e => setNewDocNo(e.target.value)}
+                        placeholder="e.g. INV-2026-9021"
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Invoice Date
+                      </label>
+                      <input
+                        type="text"
+                        value={newDocDate}
+                        onChange={e => setNewDocDate(e.target.value)}
+                        placeholder="e.g. 28-Oct-2026"
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Document Type
+                      </label>
+                      <select
+                        value={newDocType}
+                        onChange={e => setNewDocType(e.target.value as any)}
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      >
+                        <option value="Tax Invoice">Tax Invoice</option>
+                        <option value="Bill of Supply">Bill of Supply</option>
+                        <option value="Delivery Challan">Delivery Challan</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Sub-Type
+                      </label>
+                      <select
+                        value={newSubType}
+                        onChange={e => setNewSubType(e.target.value as any)}
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      >
+                        <option value="Supply">Supply</option>
+                        <option value="Job Work">Job Work</option>
+                        <option value="Export">Export</option>
+                        <option value="SKD/CKD">SKD / CKD</option>
+                        <option value="Line Item">Line Item</option>
+                        <option value="Others">Others</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 2 & 3: CONSIGNOR & CONSIGNEE (PART-A) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+                  
+                  {/* CONSIGNOR (FROM) */}
+                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                      🏭 2. Consignor / Supplier (Dispatched From)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          Supplier Company Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newSupplierName}
+                          onChange={e => setNewSupplierName(e.target.value)}
+                          placeholder="e.g. Tata Motors Commercial Hub"
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          Supplier GSTIN *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newSupplierGstin}
+                          onChange={e => setNewSupplierGstin(e.target.value)}
+                          placeholder="e.g. 27AAACT2727Q1ZT"
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                            Dispatch Place / Hub *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newSupplierPlace}
+                            onChange={e => setNewSupplierPlace(e.target.value)}
+                            placeholder="e.g. Pune MIDC, Maharashtra"
+                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                            PIN Code *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newSupplierPincode}
+                            onChange={e => setNewSupplierPincode(e.target.value)}
+                            placeholder="411018"
+                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CONSIGNEE (TO) */}
+                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                      🏢 3. Consignee / Recipient (Delivery Destination)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          Recipient / Customer Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newRecipientName}
+                          onChange={e => setNewRecipientName(e.target.value)}
+                          placeholder="e.g. Reliance Retail Mega DC"
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          Recipient GSTIN *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newRecipientGstin}
+                          onChange={e => setNewRecipientGstin(e.target.value)}
+                          placeholder="e.g. 24AABCR2424P1Z3"
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                            Destination City / Plant *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newRecipientPlace}
+                            onChange={e => setNewRecipientPlace(e.target.value)}
+                            placeholder="e.g. Sanand Industrial Estate, Ahmedabad"
+                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                            PIN Code *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newRecipientPincode}
+                            onChange={e => setNewRecipientPincode(e.target.value)}
+                            placeholder="382110"
+                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 4: CARGO & VALUATION */}
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                    📦 4. Cargo Specifications, HSN Code &amp; Tax Valuation
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Product / Cargo Description *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newCargoDescription}
+                        onChange={e => setNewCargoDescription(e.target.value)}
+                        placeholder="e.g. Precision Chassis Sub-Assemblies & Transmission Gear Units"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        HSN Code *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newHsnCode}
+                        onChange={e => setNewHsnCode(e.target.value)}
+                        placeholder="8708.29.00"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Total Consignment Value (₹) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={newCargoValue}
+                        onChange={e => setNewCargoValue(Number(e.target.value))}
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontWeight: 800, boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        GST Rate (%)
+                      </label>
+                      <select
+                        value={newGstRate}
+                        onChange={e => setNewGstRate(Number(e.target.value))}
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      >
+                        <option value={5}>5% GST</option>
+                        <option value={12}>12% GST</option>
+                        <option value={18}>18% GST (Standard)</option>
+                        <option value={28}>28% GST</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        Computed Tax Amount (₹)
+                      </label>
+                      <div style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+                        ₹{Math.round((newCargoValue * (newGstRate / 100))).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 5: PART-B TRANSPORT & VEHICLE ASSIGNMENT */}
+                <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#166534', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>🚛 5. Part-B Transport, Vehicle &amp; Pilot Assignment</span>
+                    <span style={{ fontSize: '11px', color: '#15803d', fontWeight: 600 }}>Rule 138 CGST Vehicle Tagged</span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                        Vehicle Registration Number *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newVehiclePlateInput}
+                        onChange={e => setNewVehiclePlateInput(e.target.value.toUpperCase())}
+                        placeholder="e.g. MH-12-PQ-9081"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 800, background: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                        Pilot / Driver Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newDriverNameInput}
+                        onChange={e => setNewDriverNameInput(e.target.value)}
+                        placeholder="e.g. Suresh Rawat"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                        Driver Phone (WhatsApp Link) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newDriverPhoneInput}
+                        onChange={e => setNewDriverPhoneInput(e.target.value)}
+                        placeholder="+91 98230 45678"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                        Total Transit Distance (KM) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={newTotalDistanceInput}
+                        onChange={e => setNewTotalDistanceInput(Number(e.target.value))}
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', fontWeight: 800, background: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                        Transporter LR / Doc No
+                      </label>
+                      <input
+                        type="text"
+                        value={newTransporterDocInput}
+                        onChange={e => setNewTransporterDocInput(e.target.value)}
+                        placeholder="ASK-LR-90812"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                        Highway Corridor
+                      </label>
+                      <input
+                        type="text"
+                        value={newHighwayCorridor}
+                        onChange={e => setNewHighwayCorridor(e.target.value)}
+                        placeholder="Mumbai-Ahmedabad Corridor (NH-48)"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* COMPUTED VALIDITY NOTICE */}
+                  <div style={{ marginTop: '12px', background: 'rgba(255, 255, 255, 0.8)', border: '1px dashed #86efac', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', color: '#166534' }}>
+                    ⚡ <strong>Govt Rule 138 Automatic Validity Calculation:</strong> Based on <strong>{newTotalDistanceInput} KM</strong>, validity granted is <strong>{Math.max(1, Math.ceil(newTotalDistanceInput / 200))} Days ({Math.max(1, Math.ceil(newTotalDistanceInput / 200)) * 24} Hours)</strong> at standard 200 KM/day norm.
+                  </div>
+                </div>
+
+              </div>
+
+              {/* MODAL ACTIONS */}
+              <div style={{
+                background: '#f8fafc',
+                borderTop: '1px solid #e2e8f0',
+                padding: '16px 24px',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddEwbModal(false)}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '10px 18px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  style={{
+                    background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '10px 24px',
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <span>🚀</span>
+                  <span>Register &amp; Generate E-Way Bill</span>
+                </button>
+              </div>
+            </form>
+
           </div>
         </div>
       )}
