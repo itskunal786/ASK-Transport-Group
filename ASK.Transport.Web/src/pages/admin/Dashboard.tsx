@@ -51,6 +51,7 @@ import ExecutiveProfitabilityRadar from '../../components/ExecutiveProfitability
 import CaTaxAuditVault from '../../components/CaTaxAuditVault';
 import PhysicalPodInwardDeck from '../../components/PhysicalPodInwardDeck';
 import DynamicTariffEngine from '../../components/DynamicTariffEngine';
+import FinancialPnlAnalyticsDeck from '../../components/FinancialPnlAnalyticsDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 interface BookingRow {
@@ -4232,199 +4233,18 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'reports' && (
           <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>📈 Financial &amp; P&amp;L Performance Analytics</h1>
-                <p>Monthly turnover, cash realization, sundry debtors, hub contributions, and fleet cost margins</p>
-              </div>
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-primary"
-                  onClick={exportPnlToCSV}
-                >
-                  📥 Download P&amp;L Statement (CSV)
-                </button>
-              </div>
-            </div>
-
-            {/* FINANCIAL & PNL SUMMARY CARDS */}
-            <div className="pnl-grid">
-              <div className="pnl-card" style={{ borderLeft: '4px solid #0b72e7' }}>
-                <small>Gross Monthly Turnover</small>
-                <strong>₹42,50,000</strong>
-                <span style={{ color: '#10b981' }}>↑ 14.8% vs last month</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #10b981' }}>
-                <small>Cash Realized (Paid)</small>
-                <strong>₹36,80,000</strong>
-                <span style={{ color: '#10b981' }}>86.5% Collection Rate</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-                <small>Sundry Debtors (Pending)</small>
-                <strong>₹5,70,000</strong>
-                <span style={{ color: '#b45309' }}>13.5% Receivables (B2B 30-Day)</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
-                <small>Fleet Fuel &amp; Toll Costs</small>
-                <strong>₹18,40,000</strong>
-                <span style={{ color: '#6d28d9' }}>43.3% Cost of Operations</span>
-              </div>
-
-              <div className="pnl-card" style={{ borderLeft: '4px solid #059669' }}>
-                <small>EBITDA Net Margin</small>
-                <strong style={{ color: '#059669' }}>₹18,40,000</strong>
-                <span style={{ color: '#059669' }}>43.2% Profit Margin</span>
-              </div>
-            </div>
-
-            {/* TWO-COLUMN ANALYTICS: HUB SHARE & ROUTE PROFITABILITY */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-              {/* Hub Revenue Share */}
-              <div style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '20px' }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
-                  🏢 Pan-India Hub Revenue Distribution
-                </h3>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Delhi Central Hub (HUB-DEL-01)</span>
-                    <strong>₹16.15 Lakh (38%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '38%', background: '#0b72e7' }} />
-                  </div>
-                </div>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Mumbai JNPT Terminal (HUB-MUM-02)</span>
-                    <strong>₹13.17 Lakh (31%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '31%', background: '#10b981' }} />
-                  </div>
-                </div>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Bengaluru Tech Cargo Park (HUB-BLR-03)</span>
-                    <strong>₹7.65 Lakh (18%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '18%', background: '#f59e0b' }} />
-                  </div>
-                </div>
-
-                <div className="hub-bar-item">
-                  <div className="hub-bar-head">
-                    <span>Kolkata East Logistics Gateway (HUB-CCU-04)</span>
-                    <strong>₹5.52 Lakh (13%)</strong>
-                  </div>
-                  <div className="hub-bar-track">
-                    <div className="hub-bar-fill" style={{ width: '13%', background: '#8b5cf6' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* High-Margin Corridors Table */}
-              <div style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '20px' }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
-                  🛣️ Top High-Margin Freight Corridors
-                </h3>
-
-                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border, #e2e8f0)', color: '#64748b', textAlign: 'left' }}>
-                      <th style={{ paddingBottom: '8px' }}>Route Corridor</th>
-                      <th style={{ paddingBottom: '8px' }}>Freight Mode</th>
-                      <th style={{ paddingBottom: '8px', textAlign: 'right' }}>Avg Trip Margin</th>
-                      <th style={{ paddingBottom: '8px', textAlign: 'right' }}>Margin %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Delhi ↔ Mumbai</td>
-                      <td style={{ color: '#64748b' }}>FTL 32ft MXL</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹28,400</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>48.2%</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Pune ↔ Hyderabad</td>
-                      <td style={{ color: '#64748b' }}>Express PTL</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹12,800</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>44.5%</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid var(--border, #f1f5f9)' }}>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Ahmedabad ↔ Surat</td>
-                      <td style={{ color: '#64748b' }}>Industrial Surface</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹8,500</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>39.0%</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '8px 0', fontWeight: 600 }}>Chennai ↔ Bengaluru</td>
-                      <td style={{ color: '#64748b' }}>Short Haul PTL</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#10b981' }}>₹6,200</td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>36.8%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* DOWNLOADABLE DATA LEDGERS */}
-            <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
-              📥 Export Structured Compliance Ledgers
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Bookings Ledger (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Full consignment records, routes, status, and client bookings history.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportBookingsToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Bookings CSV
-                </button>
-              </div>
-
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Revenue &amp; GST Ledger (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Monthly billing summary, freight revenue, and 18% GST collected for filing.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportRevenueToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Revenue CSV
-                </button>
-              </div>
-
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Fleet &amp; Drivers Report (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Commercial drivers, license numbers, and truck assignments.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportDriversToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Drivers CSV
-                </button>
-              </div>
-
-              <div className="admin-kpi-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '18px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '14px' }}>Vehicle Registry (CSV)</h4>
-                <p style={{ margin: '0 0 14px', fontSize: '12px', color: '#64748b' }}>
-                  Active vehicle models, tonnage capacity, assigned terminals, and fuel levels.
-                </p>
-                <button type="button" className="admin-btn-primary" onClick={exportVehiclesToCSV} style={{ width: '100%', fontSize: '12px', padding: '8px' }}>
-                  Download Vehicles CSV
-                </button>
-              </div>
-            </div>
+            <FinancialPnlAnalyticsDeck
+              onExportPnl={exportPnlToCSV}
+              onExportBookings={exportBookingsToCSV}
+              onExportRevenue={exportRevenueToCSV}
+              onExportDrivers={exportDriversToCSV}
+              onExportVehicles={exportVehiclesToCSV}
+              showToast={showToast}
+            />
           </div>
         )}
 
-        {/* ============================================================== */}
+                {/* ============================================================== */}
         {/* VIEW 8: SUPER ADMIN CONTROL & RIGHTS DELEGATION TAB */}
         {/* ============================================================== */}
         {activeTab === 'access' && (

@@ -1,0 +1,594 @@
+/* ============================================================================
+   FINANCIAL & P&L PERFORMANCE ANALYTICS DECK - THEME ADAPTIVE CSS
+   ============================================================================ */
+
+.pnl-deck-container {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+}
+
+/* 1. HERO HEADER BANNER */
+.pnl-hero {
+  background: linear-gradient(135deg, #091e3a 0%, #0c2d54 50%, #031024 100%);
+  color: #ffffff;
+  border-radius: 18px;
+  padding: 24px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 10px 25px -5px rgba(9, 30, 58, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.pnl-hero::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.pnl-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 680px;
+  z-index: 1;
+}
+
+.pnl-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.pnl-hero-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.pnl-hero-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.pnl-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.pnl-btn-download {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pnl-btn-download:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+.pnl-btn-print {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #cbd5e1;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pnl-btn-print:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* 2. FIVE-COLUMN BALANCED FINANCIAL KPI GRID */
+.pnl-kpi-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .pnl-kpi-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .pnl-kpi-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .pnl-kpi-grid-5 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pnl-kpi-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.pnl-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.pnl-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pnl-kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.pnl-kpi-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.pnl-kpi-amount {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-primary, #0f172a);
+}
+
+.pnl-kpi-trend {
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pnl-kpi-subtext {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* 3. SIX-MONTH TURNOVER & EBITDA GROWTH BAR CHART */
+.pnl-chart-box {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.pnl-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pnl-chart-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pnl-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pnl-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pnl-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.pnl-bars-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 14px;
+  height: 160px;
+  padding: 10px 10px 0;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.pnl-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.pnl-bar-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100%;
+  width: 100%;
+  max-width: 60px;
+  justify-content: center;
+}
+
+.pnl-bar-pill {
+  width: 45%;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.pnl-bar-pill.rev {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+}
+
+.pnl-bar-pill.ebitda {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.pnl-bar-month {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+.pnl-bar-amt-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #0284c7;
+}
+
+/* 4. SPLIT GRID: PAN-INDIA HUBS & HIGH-MARGIN CORRIDORS */
+.pnl-split-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.pnl-section-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pnl-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hub Progress Rows */
+.pnl-hub-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pnl-hub-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.pnl-hub-head strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+.pnl-hub-track {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pnl-hub-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+/* Corridor Table */
+.pnl-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+
+.pnl-table th {
+  padding: 8px 10px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.pnl-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  color: var(--text-primary, #0f172a);
+}
+
+.pnl-margin-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.pnl-margin-badge.super {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.pnl-margin-badge.high {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+/* 5. STRUCTURED COMPLIANCE EXPORT LEDGERS (4 CARDS) */
+.pnl-export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.pnl-export-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.pnl-export-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.pnl-export-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pnl-export-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.pnl-export-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pnl-export-btn:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* ============================================================================
+   DARK THEME SPECIFIC OVERRIDES ([data-theme="dark"], body.dark, .dark)
+   ============================================================================ */
+
+[data-theme="dark"] .pnl-kpi-card,
+body.dark .pnl-kpi-card,
+.dark .pnl-kpi-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .pnl-kpi-amount,
+body.dark .pnl-kpi-amount,
+.dark .pnl-kpi-amount {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pnl-chart-box,
+body.dark .pnl-chart-box,
+.dark .pnl-chart-box {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .pnl-chart-title,
+body.dark .pnl-chart-title,
+.dark .pnl-chart-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pnl-bars-flex,
+body.dark .pnl-bars-flex,
+.dark .pnl-bars-flex {
+  border-bottom-color: #1e2c47;
+}
+
+[data-theme="dark"] .pnl-section-card,
+body.dark .pnl-section-card,
+.dark .pnl-section-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .pnl-card-title,
+body.dark .pnl-card-title,
+.dark .pnl-card-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pnl-hub-head strong,
+body.dark .pnl-hub-head strong,
+.dark .pnl-hub-head strong {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pnl-hub-track,
+body.dark .pnl-hub-track,
+.dark .pnl-hub-track {
+  background: #090f1d;
+}
+
+[data-theme="dark"] .pnl-table th,
+body.dark .pnl-table th,
+.dark .pnl-table th {
+  border-bottom-color: #1e2c47;
+}
+
+[data-theme="dark"] .pnl-table td,
+body.dark .pnl-table td,
+.dark .pnl-table td {
+  border-bottom-color: #1e2c47;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pnl-export-card,
+body.dark .pnl-export-card,
+.dark .pnl-export-card {
+  background: #111a2e;
+  border-color: #1e2c47;
+}
+
+[data-theme="dark"] .pnl-export-title,
+body.dark .pnl-export-title,
+.dark .pnl-export-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pnl-export-btn,
+body.dark .pnl-export-btn,
+.dark .pnl-export-btn {
+  background: #090f1d;
+  border-color: #1e2c47;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .pnl-export-btn:hover,
+body.dark .pnl-export-btn:hover,
+.dark .pnl-export-btn:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
