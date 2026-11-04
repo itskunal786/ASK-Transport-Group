@@ -1,0 +1,176 @@
+/* ============================================================================
+   VEHICLE MAINTENANCE & RENEWAL RADAR STYLESHEET
+   Supports Light & Luxury Dark Modes with 100% High-Contrast Typography
+   ============================================================================ */
+
+.maintenance-radar-container {
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+[data-theme="dark"] .maintenance-radar-container,
+body.dark .maintenance-radar-container,
+.dark .maintenance-radar-container {
+  --bg-surface: #111a2e;
+  --bg-subtle: #090f1d;
+  --bg-hover: rgba(56, 189, 248, 0.08);
+  --border-color: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+}
+
+.maintenance-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.maintenance-kpi-card {
+  background: var(--bg-surface);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.maintenance-kpi-card.critical { border-left: 4px solid #ef4444; }
+.maintenance-kpi-card.warning { border-left: 4px solid #f59e0b; }
+.maintenance-kpi-card.healthy { border-left: 4px solid #10b981; }
+.maintenance-kpi-card.total { border-left: 4px solid #38bdf8; }
+
+.maintenance-kpi-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.maintenance-kpi-val {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text-primary);
+  display: block;
+  margin: 4px 0;
+}
+
+.maintenance-filter-bar {
+  background: var(--bg-surface);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.maintenance-filter-pill {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--border-color);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.maintenance-filter-pill:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.maintenance-filter-pill.active {
+  border-color: #0284c7;
+  background: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+}
+
+[data-theme="light"] .maintenance-filter-pill.active,
+body:not(.dark) .maintenance-filter-pill.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.maintenance-table-card {
+  background: var(--bg-surface);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.maintenance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.maintenance-table thead tr {
+  background: var(--bg-subtle);
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.maintenance-table th {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.maintenance-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.15s ease;
+}
+
+.maintenance-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.maintenance-table td {
+  padding: 13px 16px;
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.maintenance-truck-plate {
+  font-size: 13.5px;
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-primary) !important;
+}
+
+.maintenance-truck-model {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.maintenance-driver-info {
+  font-size: 11px;
+  color: #38bdf8;
+  margin-top: 2px;
+}
+
+[data-theme="light"] .maintenance-driver-info,
+body:not(.dark) .maintenance-driver-info {
+  color: #2563eb;
+}

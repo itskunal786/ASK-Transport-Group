@@ -1,3 +1,4 @@
+import './FleetTripExpenseManager.css';
 import { useEffect, useState } from 'react';
 import {
   getTripExpenses,
@@ -214,91 +215,91 @@ export default function FleetTripExpenseManager() {
   const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="fleet-expense-container">
       {/* TOP P&L BANNER & EXPENSE METRICS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #10b981' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>APPROVED EXPENSES</span>
-          <strong style={{ fontSize: '22px', color: '#0f172a', display: 'block', margin: '4px 0' }}>
+      <div className="fleet-expense-kpi-grid">
+        <div className="fleet-expense-kpi-card approved">
+          <span className="fleet-expense-kpi-label">APPROVED EXPENSES</span>
+          <strong className="fleet-expense-kpi-val" style={{ color: '#10b981' }}>
             ₹{(metrics?.totalApproved ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>{metrics?.approvedCount ?? 0} Claims Verified</span>
+          <span className="fleet-expense-kpi-sub green">{metrics?.approvedCount ?? 0} Claims Verified</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #f59e0b' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>PENDING REVIEW</span>
-          <strong style={{ fontSize: '22px', color: '#b45309', display: 'block', margin: '4px 0' }}>
+        <div className="fleet-expense-kpi-card pending">
+          <span className="fleet-expense-kpi-label">PENDING REVIEW</span>
+          <strong className="fleet-expense-kpi-val" style={{ color: '#f59e0b' }}>
             ₹{(metrics?.totalPending ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700 }}>{metrics?.pendingCount ?? 0} Slips Require Action</span>
+          <span className="fleet-expense-kpi-sub amber">{metrics?.pendingCount ?? 0} Slips Require Action</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #2563eb' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>DIESEL PUMP EXPENSES</span>
-          <strong style={{ fontSize: '22px', color: '#2563eb', display: 'block', margin: '4px 0' }}>
+        <div className="fleet-expense-kpi-card diesel">
+          <span className="fleet-expense-kpi-label">DIESEL PUMP EXPENSES</span>
+          <strong className="fleet-expense-kpi-val" style={{ color: '#0284c7' }}>
             ₹{(metrics?.totalDiesel ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Highway Bulk Refueling</span>
+          <span className="fleet-expense-kpi-sub muted">Highway Bulk Refueling</span>
         </div>
 
-        <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', borderLeft: '4px solid #7c3aed' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>HIGHWAY TOLL TAX</span>
-          <strong style={{ fontSize: '22px', color: '#7c3aed', display: 'block', margin: '4px 0' }}>
+        <div className="fleet-expense-kpi-card toll">
+          <span className="fleet-expense-kpi-label">HIGHWAY TOLL TAX</span>
+          <strong className="fleet-expense-kpi-val" style={{ color: '#8b5cf6' }}>
             ₹{(metrics?.totalToll ?? 0).toLocaleString('en-IN')}
           </strong>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Fastag Corridor Deductions</span>
+          <span className="fleet-expense-kpi-sub muted">Fastag Corridor Deductions</span>
         </div>
       </div>
 
       {/* ACTIVE TRIP REAL-TIME P&L SHEET */}
       {pnl && (
-        <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#ffffff', borderRadius: '14px', padding: '20px 24px', border: '1px solid #334155', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px', borderBottom: '1px solid #334155', paddingBottom: '12px' }}>
+        <div className="fleet-expense-pnl-card">
+          <div className="fleet-expense-pnl-header">
             <div>
-              <span style={{ padding: '3px 8px', background: '#38bdf8', color: '#0f172a', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>LIVE TRIP P&amp;L</span>
-              <strong style={{ fontSize: '16px', marginLeft: '10px' }}>{pnl.tripNumber || 'Active Trip'} — {pnl.route || 'Transit Route'}</strong>
+              <span className="fleet-expense-pnl-pill">LIVE TRIP P&amp;L</span>
+              <strong className="fleet-expense-pnl-title">{pnl.tripNumber || 'Active Trip'} — {pnl.route || 'Transit Route'}</strong>
             </div>
-            <div style={{ fontSize: '12.5px', color: '#94a3b8' }}>
-              Truck: <strong style={{ color: '#ffffff' }}>{pnl.vehicleNumber || '—'}</strong> • Driver: <strong style={{ color: '#ffffff' }}>{pnl.driverName || '—'}</strong>
+            <div className="fleet-expense-pnl-vehicle">
+              Truck: <strong>{pnl.vehicleNumber || '—'}</strong> • Driver: <strong>{pnl.driverName || '—'}</strong>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-            <div>
-              <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>Gross Freight Revenue</span>
-              <strong style={{ fontSize: '20px', color: '#ffffff', display: 'block' }}>₹{(pnl.financials?.grossFreightRevenue ?? 0).toLocaleString('en-IN')}</strong>
+          <div className="fleet-expense-pnl-grid">
+            <div className="fleet-expense-pnl-item">
+              <span style={{ color: '#94a3b8' }}>Gross Freight Revenue</span>
+              <strong style={{ fontSize: '20px', color: '#ffffff' }}>₹{(pnl.financials?.grossFreightRevenue ?? 0).toLocaleString('en-IN')}</strong>
             </div>
 
-            <div>
-              <span style={{ fontSize: '11px', color: '#f87171', textTransform: 'uppercase' }}>Total Operating Expenses</span>
-              <strong style={{ fontSize: '20px', color: '#f87171', display: 'block' }}>- ₹{(pnl.financials?.totalOperatingExpenses ?? 0).toLocaleString('en-IN')}</strong>
-              <small style={{ fontSize: '11px', color: '#94a3b8' }}>Diesel (₹{pnl.breakdown?.dieselTotal ?? 0}) + Toll (₹{pnl.breakdown?.tollTotal ?? 0})</small>
+            <div className="fleet-expense-pnl-item">
+              <span style={{ color: '#f87171' }}>Total Operating Expenses</span>
+              <strong style={{ fontSize: '20px', color: '#f87171' }}>- ₹{(pnl.financials?.totalOperatingExpenses ?? 0).toLocaleString('en-IN')}</strong>
+              <small style={{ color: '#94a3b8' }}>Diesel (₹{pnl.breakdown?.dieselTotal ?? 0}) + Toll (₹{pnl.breakdown?.tollTotal ?? 0})</small>
             </div>
 
-            <div>
-              <span style={{ fontSize: '11px', color: '#4ade80', textTransform: 'uppercase' }}>Net Trip Profit</span>
-              <strong style={{ fontSize: '22px', color: '#4ade80', display: 'block' }}>₹{(pnl.financials?.netProfit ?? 0).toLocaleString('en-IN')}</strong>
+            <div className="fleet-expense-pnl-item">
+              <span style={{ color: '#4ade80' }}>Net Trip Profit</span>
+              <strong style={{ fontSize: '22px', color: '#4ade80' }}>₹{(pnl.financials?.netProfit ?? 0).toLocaleString('en-IN')}</strong>
               <span style={{ fontSize: '12px', color: '#4ade80', fontWeight: 700 }}>Margin: {pnl.financials?.netMarginPercent ?? 0}%</span>
             </div>
 
-            <div>
-              <span style={{ fontSize: '11px', color: '#c7d2fe', textTransform: 'uppercase' }}>Driver Petty Cash Balance</span>
-              <strong style={{ fontSize: '20px', color: '#38bdf8', display: 'block' }}>₹{(pnl.financials?.driverPettyCashBalance ?? 0).toLocaleString('en-IN')}</strong>
-              <small style={{ fontSize: '11px', color: '#94a3b8' }}>Advance: ₹{pnl.financials?.driverAdvanceGiven ?? 0}</small>
+            <div className="fleet-expense-pnl-item">
+              <span style={{ color: '#c7d2fe' }}>Driver Petty Cash Balance</span>
+              <strong style={{ fontSize: '20px', color: '#38bdf8' }}>₹{(pnl.financials?.driverPettyCashBalance ?? 0).toLocaleString('en-IN')}</strong>
+              <small style={{ color: '#94a3b8' }}>Advance: ₹{pnl.financials?.driverAdvanceGiven ?? 0}</small>
             </div>
           </div>
         </div>
       )}
 
       {/* FILTER & ACTIONS BAR */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', marginRight: '6px' }}>STATUS:</label>
+      <div className="fleet-expense-filter-bar">
+        <div className="fleet-expense-filter-group">
+          <div className="fleet-expense-filter-item">
+            <label className="fleet-expense-filter-label">STATUS:</label>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="fleet-expense-select"
             >
               <option value="All">All Statuses</option>
               <option value="Pending">Pending Review</option>
@@ -307,12 +308,12 @@ export default function FleetTripExpenseManager() {
             </select>
           </div>
 
-          <div>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', marginRight: '6px' }}>EXPENSE TYPE:</label>
+          <div className="fleet-expense-filter-item">
+            <label className="fleet-expense-filter-label">EXPENSE TYPE:</label>
             <select
               value={typeFilter}
               onChange={e => setTypeFilter(e.target.value)}
-              style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="fleet-expense-select"
             >
               <option value="All">All Types</option>
               <option value="Diesel">Diesel</option>
@@ -321,154 +322,160 @@ export default function FleetTripExpenseManager() {
               <option value="TyrePuncture">Tyre / Maintenance</option>
               <option value="BorderEntry">Border Entry</option>
             </select>
-            {loading && <span style={{ fontSize: '11px', color: '#6366f1', marginLeft: '8px', fontWeight: 600 }}>Syncing...</span>}
+            {loading && <span style={{ fontSize: '11px', color: '#38bdf8', marginLeft: '8px', fontWeight: 600 }}>Syncing...</span>}
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          style={{ padding: '8px 16px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer' }}
+          className="fleet-expense-btn-add"
         >
           + Record Trip Expense
         </button>
       </div>
 
       {/* EXPENSE RECORDS TABLE */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
-          <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-              <th style={{ padding: '10px 14px' }}>Trip #</th>
-              <th style={{ padding: '10px 14px' }}>Driver &amp; Truck</th>
-              <th style={{ padding: '10px 14px' }}>Type</th>
-              <th style={{ padding: '10px 14px' }}>Details / Station</th>
-              <th style={{ padding: '10px 14px' }}>Amount</th>
-              <th style={{ padding: '10px 14px' }}>Slip / Receipt</th>
-              <th style={{ padding: '10px 14px' }}>Status</th>
-              <th style={{ padding: '10px 14px', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {safeExpenses.length === 0 ? (
+      <div className="fleet-expense-table-card">
+        <div style={{ overflowX: 'auto' }}>
+          <table className="fleet-expense-table">
+            <thead>
               <tr>
-                <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
-                  No trip expenses found for the selected filters.
-                </td>
+                <th>Trip #</th>
+                <th>Driver &amp; Truck</th>
+                <th>Type</th>
+                <th>Details / Station</th>
+                <th>Amount</th>
+                <th>Slip / Receipt</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
-            ) : (
-              safeExpenses.map(exp => (
-                <tr key={exp.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '10px 14px' }}>
-                    <strong style={{ color: '#2563eb' }}>{exp.tripNumber}</strong>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>
-                      {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : '—'}
-                    </div>
-                  </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <strong>{exp.driverName}</strong>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>{exp.vehicleNumber}</div>
-                  </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, background: exp.expenseType === 'Diesel' ? '#eff6ff' : exp.expenseType === 'Toll' ? '#fef3c7' : '#f1f5f9', color: exp.expenseType === 'Diesel' ? '#1d4ed8' : exp.expenseType === 'Toll' ? '#b45309' : '#334155' }}>
-                      {exp.expenseType}
-                    </span>
-                  </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <div style={{ fontWeight: 600 }}>{exp.fuelStationName || 'Direct Highway Expense'}</div>
-                    {exp.liters && <span style={{ fontSize: '11px', color: '#64748b' }}>{exp.liters} Liters</span>}
-                    {exp.odometerReading && <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px' }}>• Odo: {exp.odometerReading} km</span>}
-                  </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{(exp.amount ?? 0).toLocaleString('en-IN')}</strong>
-                  </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    {exp.receiptPhotoUrl ? (
-                      <button
-                        type="button"
-                        onClick={() => setPreviewReceiptUrl(exp.receiptPhotoUrl!)}
-                        style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 700, background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', borderRadius: '6px', cursor: 'pointer' }}
-                      >
-                        👁️ View Slip
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>No Slip</span>
-                    )}
-                  </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <span
-                      style={{
-                        padding: '3px 8px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        background: exp.status === 'Approved' ? '#dcfce7' : exp.status === 'Rejected' ? '#fee2e2' : '#fef3c7',
-                        color: exp.status === 'Approved' ? '#15803d' : exp.status === 'Rejected' ? '#b91c1c' : '#b45309'
-                      }}
-                    >
-                      {exp.status === 'Approved' ? '✓ Approved' : exp.status === 'Rejected' ? '✕ Rejected' : '⏳ Pending'}
-                    </span>
-                    {exp.rejectionReason && (
-                      <div style={{ fontSize: '10.5px', color: '#b91c1c', marginTop: '2px' }}>{exp.rejectionReason}</div>
-                    )}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                    {exp.status === 'Pending' ? (
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleApprove(exp.id)}
-                          style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 700, background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                          ✓ Approve
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRejectId(exp.id)}
-                          style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 700, background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                          ✕ Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        {exp.status === 'Approved' ? 'Verified by Admin' : 'Closed'}
-                      </span>
-                    )}
+            </thead>
+            <tbody>
+              {safeExpenses.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No trip expenses found for the selected filters.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                safeExpenses.map(exp => (
+                  <tr key={exp.id}>
+                    <td>
+                      <strong className="fleet-expense-trip-no">{exp.tripNumber}</strong>
+                      <div className="fleet-expense-date">
+                        {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : '—'}
+                      </div>
+                    </td>
+                    <td>
+                      <strong className="fleet-expense-driver-name">{exp.driverName}</strong>
+                      <div className="fleet-expense-truck-no">{exp.vehicleNumber}</div>
+                    </td>
+                    <td>
+                      <span className={`fleet-expense-badge ${
+                        exp.expenseType === 'Diesel' ? 'diesel' :
+                        exp.expenseType === 'Toll' ? 'toll' :
+                        exp.expenseType === 'DriverBhatta' ? 'driver-bhatta' :
+                        exp.expenseType === 'TyrePuncture' ? 'tyre' :
+                        exp.expenseType === 'BorderEntry' ? 'border' : 'default'
+                      }`}>
+                        {exp.expenseType}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="fleet-expense-station-title">{exp.fuelStationName || 'Direct Highway Expense'}</div>
+                      <div className="fleet-expense-station-meta">
+                        {exp.liters && <span>{exp.liters} Liters</span>}
+                        {exp.odometerReading && <span>{exp.liters ? ' • ' : ''}Odo: {exp.odometerReading} km</span>}
+                      </div>
+                    </td>
+                    <td>
+                      <strong className="fleet-expense-amount">₹{(exp.amount ?? 0).toLocaleString('en-IN')}</strong>
+                    </td>
+                    <td>
+                      {exp.receiptPhotoUrl ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewReceiptUrl(exp.receiptPhotoUrl!)}
+                          className="fleet-expense-btn-slip"
+                        >
+                          👁️ View Slip
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No Slip</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`fleet-expense-status-badge ${
+                        exp.status === 'Approved' ? 'approved' :
+                        exp.status === 'Rejected' ? 'rejected' : 'pending'
+                      }`}>
+                        {exp.status === 'Approved' ? '✓ Approved' : exp.status === 'Rejected' ? '✕ Rejected' : '⏳ Pending'}
+                      </span>
+                      {exp.rejectionReason && (
+                        <div style={{ fontSize: '10.5px', color: '#f87171', marginTop: '3px' }}>{exp.rejectionReason}</div>
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      {exp.status === 'Pending' ? (
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleApprove(exp.id)}
+                            className="fleet-expense-btn-approve"
+                          >
+                            ✓ Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRejectId(exp.id)}
+                            className="fleet-expense-btn-reject"
+                          >
+                            ✕ Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="fleet-expense-verified-tag">
+                          {exp.status === 'Approved' ? 'Verified by Admin' : 'Closed'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* RECEIPT PREVIEW MODAL */}
       {previewReceiptUrl && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setPreviewReceiptUrl(null)}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', padding: '16px', maxWidth: '480px', width: '100%', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 10px', fontSize: '15px' }}>Diesel / Expense Slip Proof</h3>
-            <img src={previewReceiptUrl} alt="Slip" style={{ width: '100%', maxHeight: '400px', objectFit: 'contain', borderRadius: '8px' }} />
-            <button type="button" onClick={() => setPreviewReceiptUrl(null)} style={{ marginTop: '12px', padding: '6px 16px', background: '#334155', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Close</button>
+        <div className="fleet-expense-modal-overlay" onClick={() => setPreviewReceiptUrl(null)}>
+          <div className="fleet-expense-modal-card" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: 'var(--text-primary)' }}>Diesel / Expense Slip Proof</h3>
+            <img src={previewReceiptUrl} alt="Slip" style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '8px', background: '#000' }} />
+            <button type="button" onClick={() => setPreviewReceiptUrl(null)} className="fleet-expense-btn-cancel" style={{ marginTop: '14px' }}>Close</button>
           </div>
         </div>
       )}
 
       {/* REJECT MODAL */}
       {rejectId && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setRejectId(null)}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', padding: '20px', maxWidth: '420px', width: '100%' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 8px', fontSize: '16px', color: '#b91c1c' }}>Reject Trip Expense #{rejectId}</h3>
-            <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>Please specify a reason so the driver can re-submit a clear slip.</p>
+        <div className="fleet-expense-modal-overlay" onClick={() => setRejectId(null)}>
+          <div className="fleet-expense-modal-card" style={{ maxWidth: '420px' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 8px', fontSize: '16px', color: '#ef4444' }}>Reject Trip Expense #{rejectId}</h3>
+            <p style={{ margin: '0 0 14px', fontSize: '12px', color: 'var(--text-secondary)' }}>Please specify a reason so the driver can re-submit a clear slip.</p>
             <input
               type="text"
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
-              style={{ width: '100%', padding: '8px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '14px' }}
+              placeholder="e.g., Unclear fuel meter receipt / invalid GST number"
+              className="fleet-expense-input"
+              style={{ marginBottom: '16px' }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button type="button" onClick={() => setRejectId(null)} style={{ padding: '6px 14px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
-              <button type="button" onClick={handleConfirmReject} style={{ padding: '6px 14px', background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>Confirm Reject</button>
+              <button type="button" onClick={() => setRejectId(null)} className="fleet-expense-btn-cancel">Cancel</button>
+              <button type="button" onClick={handleConfirmReject} className="fleet-expense-btn-reject" style={{ padding: '8px 16px' }}>Confirm Reject</button>
             </div>
           </div>
         </div>
@@ -476,21 +483,21 @@ export default function FleetTripExpenseManager() {
 
       {/* ADD EXPENSE MODAL */}
       {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAddModal(false)}>
-          <div style={{ background: '#ffffff', borderRadius: '14px', padding: '22px', maxWidth: '480px', width: '100%' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 14px', fontSize: '16px', color: '#0f172a' }}>Record Driver Trip Expense</h3>
-            <form onSubmit={handleCreateManualExpense} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="fleet-expense-modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="fleet-expense-modal-card" onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '17px', color: 'var(--text-primary)', fontWeight: 800 }}>Record Driver Trip Expense</h3>
+            <form onSubmit={handleCreateManualExpense} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>TRIP #</label>
-                <select value={newTripId} onChange={e => setNewTripId(e.target.value)} style={{ width: '100%', padding: '8px', fontSize: '12.5px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>TRIP #</label>
+                <select value={newTripId} onChange={e => setNewTripId(e.target.value)} className="fleet-expense-modal-select">
                   <option value="101">TRIP-2026-98102 (Pune → Gurugram)</option>
                   <option value="102">TRIP-2026-98105 (Mumbai → Ahmedabad)</option>
                 </select>
               </div>
 
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>EXPENSE TYPE</label>
-                <select value={newExpType} onChange={e => setNewExpType(e.target.value)} style={{ width: '100%', padding: '8px', fontSize: '12.5px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>EXPENSE TYPE</label>
+                <select value={newExpType} onChange={e => setNewExpType(e.target.value)} className="fleet-expense-modal-select">
                   <option value="Diesel">Diesel</option>
                   <option value="Toll">Highway Fastag Toll</option>
                   <option value="DriverBhatta">Driver Daily Bhatta</option>
@@ -500,26 +507,26 @@ export default function FleetTripExpenseManager() {
               </div>
 
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>AMOUNT (₹) *</label>
-                <input type="number" placeholder="e.g. 4500" value={newAmount} onChange={e => setNewAmount(e.target.value)} required style={{ width: '100%', padding: '8px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>AMOUNT (₹) *</label>
+                <input type="number" placeholder="e.g. 4500" value={newAmount} onChange={e => setNewAmount(e.target.value)} required className="fleet-expense-input" />
               </div>
 
               {newExpType === 'Diesel' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Liters</label>
-                    <input type="number" step="0.1" placeholder="e.g. 50" value={newLiters} onChange={e => setNewLiters(e.target.value)} style={{ width: '100%', padding: '8px', fontSize: '12.5px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Liters</label>
+                    <input type="number" step="0.1" placeholder="e.g. 50" value={newLiters} onChange={e => setNewLiters(e.target.value)} className="fleet-expense-input" />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Pump Station</label>
-                    <input type="text" placeholder="e.g. HPCL Highway" value={newStation} onChange={e => setNewStation(e.target.value)} style={{ width: '100%', padding: '8px', fontSize: '12.5px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Pump Station</label>
+                    <input type="text" placeholder="e.g. HPCL Highway" value={newStation} onChange={e => setNewStation(e.target.value)} className="fleet-expense-input" />
                   </div>
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} style={{ padding: '8px 14px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" style={{ padding: '8px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>Save Expense</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+                <button type="button" onClick={() => setShowAddModal(false)} className="fleet-expense-btn-cancel">Cancel</button>
+                <button type="submit" className="fleet-expense-btn-add">Save Expense</button>
               </div>
             </form>
           </div>
