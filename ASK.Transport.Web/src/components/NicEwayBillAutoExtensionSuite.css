@@ -1267,3 +1267,84 @@ body.dark .ewb-modal-footer {
   background: #0f172a;
   border-top-color: rgba(255, 255, 255, 0.08);
 }
+
+
+/* ============================================================================
+   E-WAY BILL SUITE - RESPONSIVE MOBILE OPTIMIZATION
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .ewb-suite-container {
+    padding: 10px 8px !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  .ewb-hero-banner {
+    padding: 18px 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .ewb-hero-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .ewb-btn-hero-primary,
+  .ewb-btn-hero-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .ewb-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .ewb-metric-card {
+    padding: 12px 14px !important;
+  }
+
+  .ewb-metric-val {
+    font-size: 20px !important;
+  }
+
+  .ewb-table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: block !important;
+  }
+
+  .ewb-filter-tabs {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 6px !important;
+  }
+
+  .ewb-filter-tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .ewb-metrics-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .ewb-metric-card {
+    padding: 10px 8px !important;
+  }
+
+  .ewb-metric-val {
+    font-size: 16px !important;
+  }
+}

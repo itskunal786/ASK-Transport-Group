@@ -1066,6 +1066,7 @@ export default function Dashboard() {
   }, [user]);
 
   useEffect(() => {
+    setIsMobileNavOpen(false);
     if (activeTab === 'hubs') loadHubs();
     if (activeTab === 'audit') loadAuditLogs();
     if (activeTab === 'settings') loadSettings();

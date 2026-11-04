@@ -5052,3 +5052,370 @@ body.dark .hub-btn-delete {
   background: #dc2626;
   color: #ffffff;
 }
+
+
+/* ============================================================================
+   ENTERPRISE MOBILE RESPONSIVENESS & TOUCH ADAPTATION (PHONE & TABLET)
+   ============================================================================ */
+
+@media (max-width: 992px) {
+  html, body, #root, .admin-layout-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  .admin-main-viewport {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 10px 10px 70px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .admin-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 290px !important;
+    max-width: 82vw !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 10000 !important;
+    box-shadow: 4px 0 28px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .admin-mobile-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(10, 15, 29, 0.72) !important;
+    backdrop-filter: blur(5px) !important;
+    z-index: 9999 !important;
+    display: block !important;
+  }
+
+  .admin-topbar {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .admin-mobile-hamburger {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+    background: var(--bg-card, #0f172a) !important;
+    color: var(--text-primary, #ffffff) !important;
+    border: 1px solid var(--border, #334155) !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hero banners touch optimization */
+  .shipments-hero-banner,
+  .hubs-hero-banner,
+  .ewb-hero-banner,
+  .admin-hero-banner {
+    padding: 18px 16px !important;
+    border-radius: 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .shipments-hero-left,
+  .hubs-hero-left,
+  .ewb-hero-left {
+    max-width: 100% !important;
+    gap: 6px !important;
+  }
+
+  .shipments-hero-left h1,
+  .hubs-hero-left h1,
+  .ewb-hero-left h1 {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+  }
+
+  .shipments-hero-left p,
+  .hubs-hero-left p,
+  .ewb-hero-left p {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+
+  .shipments-hero-tags,
+  .hubs-hero-tags,
+  .ewb-hero-tags {
+    gap: 6px !important;
+    margin-top: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .shipments-hero-tag,
+  .hubs-hero-tag,
+  .ewb-hero-tag {
+    font-size: 10.5px !important;
+    padding: 3px 8px !important;
+  }
+
+  .shipments-hero-actions,
+  .hubs-hero-actions,
+  .ewb-hero-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .shipments-btn-hero-primary,
+  .shipments-btn-hero-secondary,
+  .hubs-btn-hero-primary,
+  .hubs-btn-hero-secondary,
+  .ewb-btn-hero-primary,
+  .ewb-btn-hero-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 2-column KPI grids on tablet/phone */
+  .shipments-kpi-grid,
+  .hubs-kpi-grid,
+  .ewb-metrics-grid,
+  .admin-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .shipments-kpi-card,
+  .hubs-kpi-card,
+  .ewb-metric-card,
+  .admin-metric-box {
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .shipments-kpi-val,
+  .hubs-kpi-val,
+  .ewb-metric-val {
+    font-size: 20px !important;
+    margin: 4px 0 2px !important;
+  }
+
+  .shipments-kpi-head,
+  .hubs-kpi-head,
+  .ewb-metric-label {
+    font-size: 10.5px !important;
+  }
+
+  .shipments-kpi-sub,
+  .hubs-kpi-sub,
+  .ewb-metric-sub {
+    font-size: 10px !important;
+  }
+
+  /* Search & Filter Toolbars */
+  .admin-table-toolbar,
+  .hubs-toolbar-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .admin-toolbar-search,
+  .hubs-search-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100% !important;
+  }
+
+  .admin-toolbar-filter,
+  .hubs-filter-group {
+    width: 100% !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 4px !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-filter-pill,
+  .hubs-filter-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+  }
+
+  .shipments-view-toggle {
+    width: 100% !important;
+    display: flex !important;
+  }
+
+  .shipments-view-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Smaller mobile phone optimizations (360px - 414px) */
+  .shipments-kpi-grid,
+  .hubs-kpi-grid,
+  .ewb-metrics-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .shipments-kpi-card,
+  .hubs-kpi-card,
+  .ewb-metric-card {
+    padding: 10px 8px !important;
+  }
+
+  .shipments-kpi-val,
+  .hubs-kpi-val,
+  .ewb-metric-val {
+    font-size: 16px !important;
+  }
+
+  .shipments-kpi-head,
+  .hubs-kpi-head,
+  .ewb-metric-label {
+    font-size: 9.5px !important;
+  }
+
+  .shipments-kpi-sub,
+  .hubs-kpi-sub,
+  .ewb-metric-sub {
+    font-size: 9px !important;
+  }
+
+  .shipments-hero-left h1,
+  .hubs-hero-left h1,
+  .ewb-hero-left h1 {
+    font-size: 17px !important;
+  }
+}
+
+/* Table Wrappers and Tables */
+.shipment-table-wrapper,
+.admin-table-wrapper,
+.admin-table-container,
+.shipment-table-wrapper table,
+.admin-data-table {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.shipment-table-wrapper,
+.admin-table-wrapper,
+.admin-table-container {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  display: block !important;
+  width: 100% !important;
+  border-radius: 12px !important;
+}
+
+.admin-data-table {
+  display: table !important;
+  width: 100% !important;
+}
+
+/* Modals & Drawers on Mobile */
+@media (max-width: 640px) {
+  .st-modal-overlay,
+  .ewb-modal-overlay,
+  .admin-modal-overlay {
+    padding: 6px !important;
+    align-items: flex-end !important;
+  }
+
+  .st-drawer-box,
+  .ewb-modal-box,
+  .admin-modal-content {
+    max-width: 100vw !important;
+    width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 18px 18px 0 0 !important;
+    margin: 0 !important;
+  }
+
+  .st-drawer-head,
+  .ewb-modal-header {
+    padding: 14px 16px !important;
+  }
+
+  .st-drawer-body {
+    padding: 14px 16px !important;
+    gap: 12px !important;
+  }
+
+  .st-drawer-body [style*="gridTemplateColumns"],
+  .ewb-modal-box [style*="gridTemplateColumns"],
+  .ewb-modal-box .ewb-modal-section [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .st-drawer-actions,
+  .ewb-modal-footer {
+    padding: 12px 16px !important;
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+
+  .st-btn-cancel,
+  .st-btn-submit,
+  .ewb-modal-footer button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .hubs-grid,
+  .shipments-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .hub-card,
+  .shipment-card {
+    padding: 16px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .hub-card-actions,
+  .shipment-card-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .hub-btn-toggle,
+  .hub-btn-dock,
+  .hub-btn-delete,
+  .shipment-btn-action {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
