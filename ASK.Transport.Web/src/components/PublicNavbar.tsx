@@ -200,8 +200,6 @@ export default function PublicNavbar() {
                         </div>
                       </Link>
 
-                      
-
                       {/* Admin Portal */}
                       <Link
                         to="/login?portal=admin"
