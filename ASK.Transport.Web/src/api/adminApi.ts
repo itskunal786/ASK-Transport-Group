@@ -174,6 +174,19 @@ export async function forceLogoutUser(userId: number): Promise<{ message: string
   });
 }
 
+
+export async function changeUserPassword(payload: {
+  email?: string;
+  currentPassword?: string;
+  newPassword: string;
+  isSuperAdminOverride?: boolean;
+}): Promise<{ message: string }> {
+  return request<{ message: string }>('/Auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function getAllRights(): Promise<SystemPermissionItem[]> {
   return request<SystemPermissionItem[]>('/Admin/rights');
 }

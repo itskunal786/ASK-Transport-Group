@@ -53,6 +53,7 @@ import PhysicalPodInwardDeck from '../../components/PhysicalPodInwardDeck';
 import DynamicTariffEngine from '../../components/DynamicTariffEngine';
 import FinancialPnlAnalyticsDeck from '../../components/FinancialPnlAnalyticsDeck';
 import SystemSettingsDeck from '../../components/SystemSettingsDeck';
+import AdminPasswordChangeModal from '../../components/AdminPasswordChangeModal';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import DashboardAnalyticsCharts from '../../components/DashboardAnalyticsCharts';
 
@@ -558,6 +559,19 @@ export default function Dashboard() {
   const { t } = useLanguage();
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const [passwordModalUser, setPasswordModalUser] = useState<AdminUserData | null>(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setShowProfileDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Active view in Admin Panel (Preserved on Page Refresh / F5 via URL & LocalStorage)
   const validAdminTabs: AdminTab[] = [
@@ -3015,19 +3029,132 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className="admin-profile-pill">
+            <div className="admin-profile-container" ref={profileDropdownRef} style={{ position: 'relative' }}>
               <div
-                className="admin-user-avatar"
-                style={user?.role === 'SuperAdmin' ? { background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' } : {}}
+                className="admin-profile-pill"
+                onClick={() => setShowProfileDropdown(prev => !prev)}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+                title="Account Settings & Password"
               >
-                {user?.name?.charAt(0).toUpperCase() || 'A'}
+                <div
+                  className="admin-user-avatar"
+                  style={user?.role === 'SuperAdmin' ? { background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' } : {}}
+                >
+                  {user?.name?.charAt(0).toUpperCase() || 'A'}
+                </div>
+                <div className="admin-user-names">
+                  <strong>{user?.name || 'Administrator'}</strong>
+                  <small style={user?.role === 'SuperAdmin' ? { color: '#f59e0b', fontWeight: 700 } : {}}>
+                    {user?.role === 'SuperAdmin' ? t('👑 Super Admin • Full Rights', '👑 सुपर एडमिन • पूर्ण अधिकार') : t('Admin • Operations Access', 'एडमिन • संचालन अधिकार')}
+                  </small>
+                </div>
+                <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>▼</span>
               </div>
-              <div className="admin-user-names">
-                <strong>{user?.name || 'Administrator'}</strong>
-                <small style={user?.role === 'SuperAdmin' ? { color: '#f59e0b', fontWeight: 700 } : {}}>
-                  {user?.role === 'SuperAdmin' ? t('👑 Super Admin • Full Rights', '👑 सुपर एडमिन • पूर्ण अधिकार') : t('Admin • Operations Access', 'एडमिन • संचालन अधिकार')}
-                </small>
-              </div>
+
+              {/* PROFILE DROPDOWN MENU */}
+              {showProfileDropdown && (
+                <div
+                  className="admin-profile-dropdown"
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: '260px',
+                    background: 'var(--bg-card, #111a2e)',
+                    border: '1px solid var(--border-color, #1e2c47)',
+                    borderRadius: '12px',
+                    boxShadow: '0 15px 30px rgba(0, 0, 0, 0.4)',
+                    padding: '12px',
+                    zIndex: 1000,
+                    color: 'var(--text-primary, #f8fafc)'
+                  }}
+                >
+                  <div style={{ padding: '4px 6px 12px', borderBottom: '1px solid rgba(51, 65, 85, 0.5)' }}>
+                    <div style={{ fontWeight: 800, fontSize: '13.5px' }}>{user?.name}</div>
+                    <div style={{ fontSize: '11.5px', color: '#38bdf8' }}>{user?.email}</div>
+                    <div style={{ marginTop: '4px', fontSize: '11px', color: user?.role === 'SuperAdmin' ? '#f59e0b' : '#10b981', fontWeight: 700 }}>
+                      {user?.role === 'SuperAdmin' ? '👑 Master Super Admin' : '⚡ Operational Administrator'}
+                    </div>
+                  </div>
+
+                  <div style={{ paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        setPasswordModalUser(user as any);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        background: 'rgba(59, 130, 246, 0.12)',
+                        border: '1px solid rgba(59, 130, 246, 0.3)',
+                        color: '#60a5fa',
+                        fontSize: '12.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span>🔑</span> Change Password
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        setActiveTab('settings');
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#cbd5e1',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span>⚙️</span> System Settings
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        logout();
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#ef4444',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span>🚪</span> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -4042,6 +4169,25 @@ export default function Dashboard() {
                                 title="Edit user details"
                               >
                                 ✏️ Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                className="admin-btn-action-password"
+                                onClick={() => setPasswordModalUser(u)}
+                                title="Change or reset user password"
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #3b82f6',
+                                  background: 'rgba(59, 130, 246, 0.12)',
+                                  color: '#3b82f6',
+                                  fontWeight: 700,
+                                  fontSize: '11px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🔑 Password
                               </button>
 
                               <button
@@ -5080,6 +5226,25 @@ export default function Dashboard() {
                                 onClick={() => handleOpenRoleModal(staff)}
                               >
                                 👑 Change Role
+                              </button>
+
+                              <button
+                                type="button"
+                                className="admin-btn-action-password"
+                                onClick={() => setPasswordModalUser(staff)}
+                                title="Update staff password"
+                                style={{
+                                  padding: '5px 12px',
+                                  borderRadius: '6px',
+                                  background: 'rgba(59, 130, 246, 0.12)',
+                                  border: '1px solid rgba(59, 130, 246, 0.35)',
+                                  color: '#3b82f6',
+                                  fontWeight: 700,
+                                  fontSize: '12px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🔑 Reset Password
                               </button>
                             </div>
                           ) : (
@@ -7886,6 +8051,26 @@ export default function Dashboard() {
           <ElectronicPodModal
             data={viewingElectronicPod}
             onClose={() => setViewingElectronicPod(null)}
+          />
+        )}
+
+        {/* ADMIN / SUPER ADMIN PASSWORD CHANGE MODAL */}
+        {passwordModalUser && (
+          <AdminPasswordChangeModal
+            targetUser={{
+              id: passwordModalUser.id,
+              name: passwordModalUser.name,
+              email: passwordModalUser.email,
+              role: passwordModalUser.role
+            }}
+            currentUserRole={user?.role}
+            currentUserId={user?.id}
+            currentUserEmail={user?.email}
+            onClose={() => setPasswordModalUser(null)}
+            onSuccess={(msg) => {
+              showToast(msg);
+              loadUsers();
+            }}
           />
         )}
 

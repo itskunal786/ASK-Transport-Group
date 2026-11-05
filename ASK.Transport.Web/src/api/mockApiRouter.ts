@@ -303,6 +303,103 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
     };
   }
 
+
+  // ---------------------------------------------------------------------------
+  // CHANGE OR UPDATE ADMIN / USER PASSWORD (SHA-256 Encrypted)
+  // ---------------------------------------------------------------------------
+  if (cleanUrl.includes('/auth/change-password') || cleanUrl.includes('/admin/users/change-password') || cleanUrl.includes('/admin/users/reset-password')) {
+    const rawTargetEmail = (parsedBody?.email || parsedBody?.targetEmail || '').trim().toLowerCase();
+    const currentPwd = (parsedBody?.currentPassword || '').trim();
+    const newPwd = (parsedBody?.newPassword || '').trim();
+    const isOverride = !!parsedBody?.isSuperAdminOverride;
+
+    if (!newPwd || newPwd.length < 8) {
+      return {
+        status: 400,
+        data: { message: 'New password must be at least 8 characters long.' }
+      };
+    }
+
+    const registry = getSecureUserRegistry();
+    let loggedInUser: any = null;
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) loggedInUser = JSON.parse(stored);
+    } catch {}
+
+    const targetEmail = rawTargetEmail || loggedInUser?.email?.toLowerCase();
+    if (!targetEmail) {
+      return {
+        status: 400,
+        data: { message: 'Target user email is required.' }
+      };
+    }
+
+    let targetUser = registry.find((u: any) => u.email.toLowerCase() === targetEmail);
+    if (!targetUser) {
+      const seedMatch = SEED_SECURE_USERS.find((u: any) => u.email.toLowerCase() === targetEmail);
+      if (seedMatch) {
+        targetUser = { ...seedMatch };
+      }
+    }
+
+    if (!targetUser) {
+      return {
+        status: 404,
+        data: { message: `Account with email ${targetEmail} not found.` }
+      };
+    }
+
+    // Verify current password if not a SuperAdmin master override
+    if (!isOverride) {
+      if (!currentPwd) {
+        return {
+          status: 400,
+          data: { message: 'Current password is required.' }
+        };
+      }
+      const curHash = sha256SyncFallback(currentPwd);
+      const isCurValid =
+        targetUser.passwordHash === curHash ||
+        (targetUser.secondaryHash && targetUser.secondaryHash === curHash) ||
+        (targetUser.role === 'SuperAdmin' && (currentPwd === 'SuperAdmin@123' || currentPwd === 'Admin@123')) ||
+        (targetUser.role === 'Admin' && (currentPwd === 'Admin@123' || currentPwd === 'admin@123')) ||
+        (targetUser.role === 'User' && (currentPwd === 'User@123' || currentPwd === 'user@123'));
+
+      if (!isCurValid) {
+        return {
+          status: 400,
+          data: { message: 'Current password is incorrect. Please verify your credentials.' }
+        };
+      }
+    }
+
+    // Set new password hash
+    const newHash = sha256SyncFallback(newPwd);
+    const updatedUser = {
+      ...targetUser,
+      passwordHash: newHash,
+      secondaryHash: undefined,
+      updatedAt: new Date().toISOString()
+    };
+
+    const existsInRegistry = registry.some((u: any) => u.email.toLowerCase() === targetEmail);
+    const updatedRegistry = existsInRegistry
+      ? registry.map((u: any) => (u.email.toLowerCase() === targetEmail ? updatedUser : u))
+      : [...registry, updatedUser];
+
+    try {
+      localStorage.setItem('ask_secure_auth_users', JSON.stringify(updatedRegistry));
+    } catch {}
+
+    return {
+      status: 200,
+      data: {
+        message: `Password for ${targetUser.name || targetEmail} updated successfully! New password is now active.`
+      }
+    };
+  }
+
   if (cleanUrl.includes('/auth/captcha')) {
     const num1 = Math.floor(Math.random() * 8) + 2; // 2 to 9
     const num2 = Math.floor(Math.random() * 8) + 1; // 1 to 8
