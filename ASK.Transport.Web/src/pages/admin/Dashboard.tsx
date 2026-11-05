@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
 import LanguageToggle from '../../components/LanguageToggle';
@@ -557,6 +557,8 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // Active view in Admin Panel (Preserved on Page Refresh / F5 via URL & LocalStorage)
   const validAdminTabs: AdminTab[] = [
     'dashboard', 'bookings', 'customers', 'shipments', 'drivers', 'vehicles', 
@@ -567,10 +569,18 @@ export default function Dashboard() {
     'tax_audit', 'pod_inward'
   ];
 
+  const validFleetSubTabs = ['expenses', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar'] as const;
+  type FleetSubTab = typeof validFleetSubTabs[number];
+
+  const validAiSubTabs = ['3d_load', 'ocr_scanner', 'route_predictor', 'spot_rate_ai', 'whatsapp_bot'] as const;
+  type AiSubTab = typeof validAiSubTabs[number];
+
+  const validFinanceSubTabs = ['einv', 'erp', 'credit', 'settlement'] as const;
+  type FinanceSubTab = typeof validFinanceSubTabs[number];
+
   const getInitialAdminTab = (): AdminTab => {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const urlTab = params.get('tab') as AdminTab;
+      const urlTab = searchParams.get('tab') as AdminTab;
       if (urlTab && validAdminTabs.includes(urlTab)) {
         return urlTab;
       }
@@ -584,29 +594,41 @@ export default function Dashboard() {
     return 'dashboard';
   };
 
-  const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
-  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
-  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
-  const getInitialFinanceSubTab = (): 'einv' | 'erp' | 'credit' | 'settlement' => {
+  const getInitialFleetSubTab = (): FleetSubTab => {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const urlSub = params.get('subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
-      if (urlSub && ['einv', 'erp', 'credit', 'settlement'].includes(urlSub)) {
-        return urlSub;
-      }
-      const saved = localStorage.getItem('ask_admin_finance_subtab') as 'einv' | 'erp' | 'credit' | 'settlement';
-      if (saved && ['einv', 'erp', 'credit', 'settlement'].includes(saved)) {
-        return saved;
-      }
-    } catch {
-      // ignore
-    }
+      const urlSub = searchParams.get('subtab') as FleetSubTab;
+      if (urlSub && validFleetSubTabs.includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_fleet_subtab') as FleetSubTab;
+      if (saved && validFleetSubTabs.includes(saved)) return saved;
+    } catch {}
+    return 'expenses';
+  };
+
+  const getInitialAiSubTab = (): AiSubTab => {
+    try {
+      const urlSub = searchParams.get('subtab') as AiSubTab;
+      if (urlSub && validAiSubTabs.includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_ai_subtab') as AiSubTab;
+      if (saved && validAiSubTabs.includes(saved)) return saved;
+    } catch {}
+    return '3d_load';
+  };
+
+  const getInitialFinanceSubTab = (): FinanceSubTab => {
+    try {
+      const urlSub = searchParams.get('subtab') as FinanceSubTab;
+      if (urlSub && validFinanceSubTabs.includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_finance_subtab') as FinanceSubTab;
+      if (saved && validFinanceSubTabs.includes(saved)) return saved;
+    } catch {}
     return 'einv';
   };
 
-  const [financeDeckSubTab, setFinanceDeckSubTabState] = useState<'einv' | 'erp' | 'credit' | 'settlement'>(getInitialFinanceSubTab);
+  const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
+  const [fleetDeckSubTab, setFleetDeckSubTabState] = useState<FleetSubTab>(getInitialFleetSubTab);
+  const [aiDeckSubTab, setAiDeckSubTabState] = useState<AiSubTab>(getInitialAiSubTab);
+  const [financeDeckSubTab, setFinanceDeckSubTabState] = useState<FinanceSubTab>(getInitialFinanceSubTab);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const currentTabInfo = getTabHeaderInfo(activeTab, fleetDeckSubTab, financeDeckSubTab, aiDeckSubTab);
 
@@ -615,71 +637,98 @@ export default function Dashboard() {
     document.title = `${currentTabInfo.tabTitle} | ASK Transport Enterprise Admin`;
   }, [currentTabInfo.tabTitle]);
 
-  // Synchronize address bar URL header with active tab and support browser Back/Forward navigation
+  // Synchronize React Router search parameters, address bar URL, and local persistence
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tab') !== activeTab) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('tab', activeTab);
-        window.history.replaceState({ tab: activeTab }, '', url.toString());
+    const urlTab = searchParams.get('tab') as AdminTab;
+    const urlSub = searchParams.get('subtab');
+
+    if (urlTab && validAdminTabs.includes(urlTab)) {
+      if (urlTab !== activeTab) {
+        setActiveTabState(urlTab);
+        localStorage.setItem('ask_admin_active_tab', urlTab);
       }
-    } catch {}
+    } else {
+      // Keep URL search params in sync with activeTab or saved tab
+      const savedTab = localStorage.getItem('ask_admin_active_tab') as AdminTab;
+      const targetTab = (savedTab && validAdminTabs.includes(savedTab)) ? savedTab : (activeTab || 'dashboard');
+      if (activeTab !== targetTab) {
+        setActiveTabState(targetTab);
+      }
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', targetTab);
+      setSearchParams(newParams, { replace: true });
+    }
 
-    const handlePopState = () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const t = params.get('tab') as AdminTab;
-        if (t && validAdminTabs.includes(t)) {
-          setActiveTabState(t);
-        }
-        const st = params.get('subtab');
-        if (st) {
-          if (['expenses', 'fuel_theft', 'cold_chain', 'maintenance', 'mobile_driver', 'tyre_radar'].includes(st)) {
-            setFleetDeckSubTab(st as any);
-          }
-          if (['einv', 'erp', 'credit', 'settlement'].includes(st)) {
-            setFinanceDeckSubTabState(st as any);
-          }
-          if (['3d_load', 'ocr_scanner', 'route_predictor', 'whatsapp_bot', 'spot_rate_ai'].includes(st)) {
-            setAiDeckSubTab(st as any);
-          }
-        }
-      } catch {}
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [activeTab]);
+    if (urlSub) {
+      if (validFleetSubTabs.includes(urlSub as any) && urlSub !== fleetDeckSubTab) {
+        setFleetDeckSubTabState(urlSub as any);
+        localStorage.setItem('ask_admin_fleet_subtab', urlSub);
+      }
+      if (validAiSubTabs.includes(urlSub as any) && urlSub !== aiDeckSubTab) {
+        setAiDeckSubTabState(urlSub as any);
+        localStorage.setItem('ask_admin_ai_subtab', urlSub);
+      }
+      if (validFinanceSubTabs.includes(urlSub as any) && urlSub !== financeDeckSubTab) {
+        setFinanceDeckSubTabState(urlSub as any);
+        localStorage.setItem('ask_admin_finance_subtab', urlSub);
+      }
+    }
+  }, [searchParams]);
 
   const setActiveTab = (tab: AdminTab, optionalSubTab?: string) => {
     setActiveTabState(tab);
     try {
       localStorage.setItem('ask_admin_active_tab', tab);
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', tab);
       if (optionalSubTab) {
-        url.searchParams.set('subtab', optionalSubTab);
+        newParams.set('subtab', optionalSubTab);
+        if (tab === 'fleet_mgmt') localStorage.setItem('ask_admin_fleet_subtab', optionalSubTab);
+        if (tab === 'ai_automation') localStorage.setItem('ask_admin_ai_subtab', optionalSubTab);
+        if (tab === 'finance_accounting') localStorage.setItem('ask_admin_finance_subtab', optionalSubTab);
       } else {
-        url.searchParams.delete('subtab');
+        newParams.delete('subtab');
       }
-      // Instantly update browser address bar header
-      window.history.pushState({ tab, optionalSubTab }, '', url.toString());
-    } catch {
-      // ignore
+      setSearchParams(newParams, { replace: true });
+    } catch (err) {
+      console.error('Error persisting active tab:', err);
     }
   };
 
-  const setFinanceDeckSubTab = (subTab: 'einv' | 'erp' | 'credit' | 'settlement') => {
+  const setFleetDeckSubTab = (subTab: FleetSubTab) => {
+    setFleetDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_fleet_subtab', subTab);
+      localStorage.setItem('ask_admin_active_tab', 'fleet_mgmt');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'fleet_mgmt');
+      newParams.set('subtab', subTab);
+      setSearchParams(newParams, { replace: true });
+    } catch {}
+  };
+
+  const setAiDeckSubTab = (subTab: AiSubTab) => {
+    setAiDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_ai_subtab', subTab);
+      localStorage.setItem('ask_admin_active_tab', 'ai_automation');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'ai_automation');
+      newParams.set('subtab', subTab);
+      setSearchParams(newParams, { replace: true });
+    } catch {}
+  };
+
+  const setFinanceDeckSubTab = (subTab: FinanceSubTab) => {
     setFinanceDeckSubTabState(subTab);
     try {
       localStorage.setItem('ask_admin_finance_subtab', subTab);
-      const url = new URL(window.location.href);
-      url.searchParams.set('subtab', subTab);
-      window.history.pushState({ tab: activeTab, subtab: subTab }, '', url.toString());
-    } catch {
-      // ignore
-    }
+      localStorage.setItem('ask_admin_active_tab', 'finance_accounting');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'finance_accounting');
+      newParams.set('subtab', subTab);
+      setSearchParams(newParams, { replace: true });
+    } catch {}
   };
 
   // Auto-scroll main window to top on tab switch and close mobile drawer
@@ -2379,7 +2428,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Trip Petty Cash & P&L', 'ट्रिप खर्च और लाभ-हानि')}</span>
@@ -2388,7 +2437,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fuel_theft' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt', 'fuel_theft'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Fuel & Diesel Theft Radar', 'ईंधन और डीजल रडार')}</span>
@@ -2397,7 +2446,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'cold_chain' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt', 'cold_chain'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Cold-Chain Temp Radar', 'कोल्ड-चेन तापमान रडार')}</span>
@@ -2406,7 +2455,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Fitness & Renewal Alerts', 'फिटनेस और नवीनीकरण अलर्ट')}</span>
@@ -2415,7 +2464,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'tyre_radar' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt', 'tyre_radar'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Tyre & TPMS Radar', 'टायर और टीपीएमएस रडार')}</span>
@@ -2590,7 +2639,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === '3d_load' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('3d_load'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('3d_load'); setActiveTab('ai_automation', '3d_load'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>3D Cargo Load Planner</span>
@@ -2599,7 +2648,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'ocr_scanner' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('ocr_scanner'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('ocr_scanner'); setActiveTab('ai_automation', 'ocr_scanner'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('AI Bilty Scanner (OCR)', 'एआई बिल्टी स्कैनर (ओसीआर)')}</span>
@@ -2608,7 +2657,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'route_predictor' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation', 'route_predictor'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Highway Route Predictor', 'हाईवे मार्ग अनुमान')}</span>
@@ -2617,7 +2666,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'spot_rate_ai' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation', 'spot_rate_ai'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Spot Freight Rate AI', 'स्पॉट भाड़ा दर एआई')}</span>
@@ -2626,7 +2675,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'whatsapp_bot' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation', 'whatsapp_bot'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('WhatsApp AI Logistics Bot', 'व्हाट्सएप एआई लॉजिस्टिक्स बॉट')}</span>
@@ -2790,7 +2839,7 @@ export default function Dashboard() {
             <div className="admin-topbar-quick-actions">
             <button
               type="button"
-              onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+              onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -2812,7 +2861,7 @@ export default function Dashboard() {
 
             <button
               type="button"
-              onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+              onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -3146,7 +3195,7 @@ export default function Dashboard() {
                   <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
                     <button
                       type="button"
-                      onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                      onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                       style={{
                         flex: 1,
                         padding: '9px 14px',
@@ -3246,7 +3295,7 @@ export default function Dashboard() {
                   <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
                     <button
                       type="button"
-                      onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                      onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                       style={{
                         flex: 1,
                         padding: '9px 14px',
@@ -4543,7 +4592,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                   style={{
                     background: '#10b981',
                     color: '#ffffff',
@@ -4670,7 +4719,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                   style={{
                     background: '#ffffff',
                     color: '#b91c1c',
@@ -4687,7 +4736,7 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                   style={{
                     background: '#059669',
                     color: '#ffffff',
