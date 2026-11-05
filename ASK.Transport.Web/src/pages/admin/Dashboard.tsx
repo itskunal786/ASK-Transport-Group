@@ -2813,8 +2813,7 @@ export default function Dashboard() {
       <main className="admin-main-viewport">
         {/* TOPBAR */}
         <header className="admin-topbar">
-          <div className="admin-topbar-row-top">
-            <div className="admin-topbar-left-group">
+          <div className="admin-topbar-left-group">
             <button
               type="button"
               className="admin-mobile-hamburger"
@@ -2855,7 +2854,42 @@ export default function Dashboard() {
             </div>
           </div>
 
-            <div className="admin-topbar-quick-actions">
+          <div className="admin-top-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder={t(`Search in ${currentTabInfo.tabTitle}...`, `${currentTabInfo.tabTitle} में खोजें...`)}
+              value={
+                activeTab === 'bookings'
+                  ? bookingSearch
+                  : activeTab === 'customers'
+                  ? customerSearch
+                  : activeTab === 'shipments'
+                  ? shipmentSearch
+                  : activeTab === 'drivers'
+                  ? driverSearch
+                  : activeTab === 'vehicles'
+                  ? vehicleSearch
+                  : activeTab === 'hubs'
+                  ? hubSearchQuery
+                  : ''
+              }
+              onChange={e => {
+                const val = e.target.value;
+                if (activeTab === 'bookings') setBookingSearch(val);
+                else if (activeTab === 'customers') setCustomerSearch(val);
+                else if (activeTab === 'shipments') setShipmentSearch(val);
+                else if (activeTab === 'drivers') setDriverSearch(val);
+                else if (activeTab === 'vehicles') setVehicleSearch(val);
+                else if (activeTab === 'hubs') setHubSearchQuery(val);
+              }}
+            />
+          </div>
+
+          <div className="admin-topbar-quick-actions">
             <button
               type="button"
               onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
@@ -2995,42 +3029,6 @@ export default function Dashboard() {
                 </small>
               </div>
             </div>
-          </div>
-          </div>
-
-          <div className="admin-top-search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              placeholder={t(`Search in ${currentTabInfo.tabTitle}...`, `${currentTabInfo.tabTitle} में खोजें...`)}
-              value={
-                activeTab === 'bookings'
-                  ? bookingSearch
-                  : activeTab === 'customers'
-                  ? customerSearch
-                  : activeTab === 'shipments'
-                  ? shipmentSearch
-                  : activeTab === 'drivers'
-                  ? driverSearch
-                  : activeTab === 'vehicles'
-                  ? vehicleSearch
-                  : activeTab === 'hubs'
-                  ? hubSearchQuery
-                  : ''
-              }
-              onChange={e => {
-                const val = e.target.value;
-                if (activeTab === 'bookings') setBookingSearch(val);
-                else if (activeTab === 'customers') setCustomerSearch(val);
-                else if (activeTab === 'shipments') setShipmentSearch(val);
-                else if (activeTab === 'drivers') setDriverSearch(val);
-                else if (activeTab === 'vehicles') setVehicleSearch(val);
-                else if (activeTab === 'hubs') setHubSearchQuery(val);
-              }}
-            />
           </div>
         </header>
 
