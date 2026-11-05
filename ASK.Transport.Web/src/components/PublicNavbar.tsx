@@ -10,7 +10,11 @@ import {
   LayoutDashboard, 
   LogOut, 
   Menu, 
-  X
+  X,
+  Layers,
+  Globe,
+  Search,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -92,7 +96,8 @@ export default function PublicNavbar() {
             to="/services"
             className={`landing-nav-link ${location.pathname === '/services' ? 'active' : ''}`}
           >
-            {t('Services', 'सेवाएं')}
+            <Layers size={16} className="landing-nav-icon" />
+            <span>{t('Services', 'सेवाएं')}</span>
           </Link>
 
           <a
@@ -103,7 +108,8 @@ export default function PublicNavbar() {
               handleNetworkClick();
             }}
           >
-            {t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}
+            <Globe size={16} className="landing-nav-icon" />
+            <span>{t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}</span>
           </a>
 
           <a
@@ -114,16 +120,17 @@ export default function PublicNavbar() {
               handleTrackClick();
             }}
           >
-            {t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}
+            <Search size={16} className="landing-nav-icon" />
+            <span>{t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}</span>
           </a>
 
           <Link
             to="/about"
             className={`landing-nav-link ${location.pathname === '/about' ? 'active' : ''}`}
           >
-            {t('About Us', 'हमारे बारे में')}
+            <Building2 size={16} className="landing-nav-icon" />
+            <span>{t('About Us', 'हमारे बारे में')}</span>
           </Link>
-
         </nav>
 
         {/* RIGHT ACTION CENTER */}
@@ -253,7 +260,8 @@ export default function PublicNavbar() {
               to="/services"
               className={`mobile-drawer-link ${location.pathname === '/services' ? 'active' : ''}`}
             >
-              {t('Services', 'सेवाएं')}
+              <Layers size={18} />
+              <span>{t('Services', 'सेवाएं')}</span>
             </Link>
 
             <a
@@ -264,7 +272,8 @@ export default function PublicNavbar() {
                 handleNetworkClick();
               }}
             >
-              {t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}
+              <Globe size={18} />
+              <span>{t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}</span>
             </a>
 
             <a
@@ -275,16 +284,17 @@ export default function PublicNavbar() {
                 handleTrackClick();
               }}
             >
-              {t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}
+              <Search size={18} />
+              <span>{t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}</span>
             </a>
 
             <Link
               to="/about"
               className={`mobile-drawer-link ${location.pathname === '/about' ? 'active' : ''}`}
             >
-              {t('About Us', 'हमारे बारे में')}
+              <Building2 size={18} />
+              <span>{t('About Us', 'हमारे बारे में')}</span>
             </Link>
-
           </div>
 
           <div className="mobile-drawer-actions">
