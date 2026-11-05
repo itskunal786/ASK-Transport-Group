@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useLanguage } from '../context/LanguageContext';
 import './NicEwayBillAutoExtensionSuite.css';
 
@@ -320,30 +321,30 @@ export default function NicEwayBillAutoExtensionSuite() {
   const [newDocType, setNewDocType] = useState<'Tax Invoice' | 'Bill of Supply' | 'Delivery Challan'>('Tax Invoice');
   
   // Consignor / Part-A
-  const [newSupplierName, setNewSupplierName] = useState('');
-  const [newSupplierGstin, setNewSupplierGstin] = useState('');
-  const [newSupplierPlace, setNewSupplierPlace] = useState('');
-  const [newSupplierPincode, setNewSupplierPincode] = useState('');
+  const [newSupplierName, setNewSupplierName] = useState('ASK Central Logistics Hub');
+  const [newSupplierGstin, setNewSupplierGstin] = useState('27AABCA1234F1Z8');
+  const [newSupplierPlace, setNewSupplierPlace] = useState('Bhiwandi SuperHub, Mumbai, Maharashtra');
+  const [newSupplierPincode, setNewSupplierPincode] = useState('421302');
   
   // Consignee / Part-A
-  const [newRecipientName, setNewRecipientName] = useState('');
-  const [newRecipientGstin, setNewRecipientGstin] = useState('');
-  const [newRecipientPlace, setNewRecipientPlace] = useState('');
-  const [newRecipientPincode, setNewRecipientPincode] = useState('');
+  const [newRecipientName, setNewRecipientName] = useState('Reliance Retail Mega DC');
+  const [newRecipientGstin, setNewRecipientGstin] = useState('24AABCR2424P1Z3');
+  const [newRecipientPlace, setNewRecipientPlace] = useState('Sanand Industrial Estate, Ahmedabad, Gujarat');
+  const [newRecipientPincode, setNewRecipientPincode] = useState('382110');
   
   // Item / Goods
-  const [newCargoDescription, setNewCargoDescription] = useState('');
-  const [newHsnCode, setNewHsnCode] = useState('');
+  const [newCargoDescription, setNewCargoDescription] = useState('Precision Auto Transmission Gearboxes & Sub-Assemblies');
+  const [newHsnCode, setNewHsnCode] = useState('8708.29.00');
   const [newCargoValue, setNewCargoValue] = useState<number>(1850000);
   const [newGstRate, setNewGstRate] = useState<number>(18);
   
   // Part-B Vehicle & Driver
-  const [newVehiclePlateInput, setNewVehiclePlateInput] = useState('');
-  const [newDriverNameInput, setNewDriverNameInput] = useState('');
-  const [newDriverPhoneInput, setNewDriverPhoneInput] = useState('+91 98');
+  const [newVehiclePlateInput, setNewVehiclePlateInput] = useState('MH-12-PQ-9081');
+  const [newDriverNameInput, setNewDriverNameInput] = useState('Ramesh Yadav');
+  const [newDriverPhoneInput, setNewDriverPhoneInput] = useState('+91 98112 23344');
   const [newTotalDistanceInput, setNewTotalDistanceInput] = useState<number>(650);
-  const [newTransporterDocInput, setNewTransporterDocInput] = useState('');
-  const [newHighwayCorridor, setNewHighwayCorridor] = useState('Mumbai-Ahmedabad Corridor (NH-48)');
+  const [newTransporterDocInput, setNewTransporterDocInput] = useState('ASK-LR-98012');
+  const [newHighwayCorridor, setNewHighwayCorridor] = useState('Mumbai-Ahmedabad Golden Quadrilateral (NH-48)');
 
   const handleOpenAddModal = () => {
     const randPart = Math.floor(10000000 + Math.random() * 90000000);
@@ -355,13 +356,13 @@ export default function NicEwayBillAutoExtensionSuite() {
     setNewDocType('Tax Invoice');
     setNewSupplierName('ASK Central Logistics Hub');
     setNewSupplierGstin('27AABCA1234F1Z8');
-    setNewSupplierPlace('Bhiwandi SuperHub, Mumbai');
+    setNewSupplierPlace('Bhiwandi SuperHub, Mumbai, Maharashtra');
     setNewSupplierPincode('421302');
-    setNewRecipientName('');
-    setNewRecipientGstin('');
-    setNewRecipientPlace('');
-    setNewRecipientPincode('');
-    setNewCargoDescription('');
+    setNewRecipientName('Reliance Retail Mega DC');
+    setNewRecipientGstin('24AABCR2424P1Z3');
+    setNewRecipientPlace('Sanand Industrial Estate, Ahmedabad, Gujarat');
+    setNewRecipientPincode('382110');
+    setNewCargoDescription('Precision Auto Transmission Gearboxes & Sub-Assemblies');
     setNewHsnCode('8708.29.00');
     setNewCargoValue(1850000);
     setNewGstRate(18);
@@ -370,7 +371,7 @@ export default function NicEwayBillAutoExtensionSuite() {
     setNewDriverPhoneInput('+91 98112 23344');
     setNewTotalDistanceInput(650);
     setNewTransporterDocInput(`ASK-LR-${Math.floor(10000 + Math.random() * 90000)}`);
-    setNewHighwayCorridor('Mumbai-Ahmedabad Corridor (NH-48)');
+    setNewHighwayCorridor('Mumbai-Ahmedabad Golden Quadrilateral (NH-48)');
     setShowAddEwbModal(true);
   };
 
@@ -541,7 +542,9 @@ export default function NicEwayBillAutoExtensionSuite() {
 
     setEwayBills(prev => [createdRecord, ...prev]);
     setShowAddEwbModal(false);
-    setSearchQuery(createdRecord.ewbNo);
+    setFilterTab('ALL');
+    setSearchQuery('');
+    setSelectedForPrint(createdRecord);
     showToast(`✓ E-Way Bill ${createdRecord.ewbNo} successfully registered & synced with Part-A & Part-B!`);
   };
   
@@ -2200,8 +2203,8 @@ export default function NicEwayBillAutoExtensionSuite() {
       {/* ===================================================================== */}
       {/* MODAL 5: OFFICIAL PRINTABLE FORM GST EWB-01 DOCUMENT */}
       {/* ===================================================================== */}
-      {selectedForPrint && (
-        <div style={{
+      {selectedForPrint && typeof document !== 'undefined' && createPortal(
+        <div className="ewb-print-modal-overlay" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -2412,13 +2415,14 @@ export default function NicEwayBillAutoExtensionSuite() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ===================================================================== */}
       {/* MODAL 6: GENERATE & REGISTER NEW GOVT E-WAY BILL (PART-A + PART-B) */}
       {/* ===================================================================== */}
-      {showAddEwbModal && (
+      {showAddEwbModal && typeof document !== 'undefined' && createPortal(
         <div className="ewb-modal-overlay" onClick={() => setShowAddEwbModal(false)}>
           <div className="ewb-modal-box" onClick={e => e.stopPropagation()}>
             
@@ -2921,7 +2925,8 @@ export default function NicEwayBillAutoExtensionSuite() {
             </form>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

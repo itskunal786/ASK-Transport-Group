@@ -1615,3 +1615,43 @@ body.dark .ewb-btn-cancel:hover,
 .ewb-modal-body::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.6) !important;
 }
+
+/* ============================================================================
+   @MEDIA PRINT RULES FOR GOVT E-WAY BILL FORM GST EWB-01
+   ============================================================================ */
+
+@media print {
+  body:has(.ewb-print-modal-overlay) #root {
+    display: none !important;
+  }
+  
+  body:has(.ewb-print-modal-overlay) {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ewb-print-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .ewb-print-modal-overlay > div {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+  }
+
+  .ewb-print-modal-overlay div[style*="background: rgb(15, 23, 42)"],
+  .ewb-print-modal-overlay div[style*="background: #0f172a"] {
+    display: none !important;
+  }
+}
