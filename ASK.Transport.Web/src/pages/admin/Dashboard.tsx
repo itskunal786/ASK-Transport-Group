@@ -737,23 +737,41 @@ export default function Dashboard() {
     setIsMobileNavOpen(false);
   }, [activeTab, aiDeckSubTab, fleetDeckSubTab, financeDeckSubTab]);
 
-  // Hierarchical Navigation Accordion State
-  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
-    operations: true,
-    fleet: true,
-    enterprise: true,
-    ai: true,
-    governance: false,
-  });
-
-  const toggleNavGroup = (groupKey: string) => {
-    setOpenNavGroups(prev => ({
-      ...prev,
-      [groupKey]: !prev[groupKey]
-    }));
+  // Hierarchical Navigation Accordion State (Single-Open Accordion: Only one group expands at a time)
+  const getInitialNavGroups = (tab: AdminTab): Record<string, boolean> => {
+    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(tab)) {
+      return { operations: true, fleet: false, enterprise: false, ai: false, governance: false };
+    }
+    if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(tab)) {
+      return { operations: false, fleet: true, enterprise: false, ai: false, governance: false };
+    }
+    if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims', 'executive_pnl', 'tax_audit'].includes(tab)) {
+      return { operations: false, fleet: false, enterprise: true, ai: false, governance: false };
+    }
+    if (tab === 'ai_automation') {
+      return { operations: false, fleet: false, enterprise: false, ai: true, governance: false };
+    }
+    if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(tab)) {
+      return { operations: false, fleet: false, enterprise: false, ai: false, governance: true };
+    }
+    return { operations: true, fleet: false, enterprise: false, ai: false, governance: false };
   };
 
-  // Simple Dropdown Navigation State
+  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>(() => getInitialNavGroups(activeTab));
+
+  const toggleNavGroup = (groupKey: string) => {
+    setOpenNavGroups(prev => {
+      const isCurrentlyOpen = !!prev[groupKey];
+      // Accordion mode: Clicking a category opens ONLY that category and closes all others!
+      return {
+        operations: groupKey === 'operations' ? !isCurrentlyOpen : false,
+        fleet: groupKey === 'fleet' ? !isCurrentlyOpen : false,
+        enterprise: groupKey === 'enterprise' ? !isCurrentlyOpen : false,
+        ai: groupKey === 'ai' ? !isCurrentlyOpen : false,
+        governance: groupKey === 'governance' ? !isCurrentlyOpen : false
+      };
+    });
+  };
 
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
     switch (group) {
@@ -772,17 +790,18 @@ export default function Dashboard() {
     }
   };
 
+  // When activeTab changes, auto-expand ONLY the active tab's parent category and collapse all others
   useEffect(() => {
     if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.operations ? prev : { ...prev, operations: true }));
+      setOpenNavGroups({ operations: true, fleet: false, enterprise: false, ai: false, governance: false });
     } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.fleet ? prev : { ...prev, fleet: true }));
+      setOpenNavGroups({ operations: false, fleet: true, enterprise: false, ai: false, governance: false });
     } else if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims', 'executive_pnl', 'tax_audit'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.enterprise ? prev : { ...prev, enterprise: true }));
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: true, ai: false, governance: false });
     } else if (activeTab === 'ai_automation') {
-      setOpenNavGroups(prev => (prev.ai ? prev : { ...prev, ai: true }));
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: true, governance: false });
     } else if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.governance ? prev : { ...prev, governance: true }));
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: false, governance: true });
     }
   }, [activeTab]);
 
