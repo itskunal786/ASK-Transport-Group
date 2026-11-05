@@ -70,7 +70,8 @@ export default function Login() {
 
       // Smart role-based portal routing:
       if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-        navigate('/admin');
+        localStorage.setItem('ask_admin_active_tab', 'dashboard');
+        navigate('/admin?tab=dashboard');
       } else {
         navigate('/dashboard');
       }

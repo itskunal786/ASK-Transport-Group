@@ -648,12 +648,12 @@ export default function Dashboard() {
         localStorage.setItem('ask_admin_active_tab', urlTab);
       }
     } else {
-      // Keep URL search params in sync with activeTab or saved tab
-      const savedTab = localStorage.getItem('ask_admin_active_tab') as AdminTab;
-      const targetTab = (savedTab && validAdminTabs.includes(savedTab)) ? savedTab : (activeTab || 'dashboard');
+      // Visiting /admin directly lands on 'dashboard'
+      const targetTab = 'dashboard';
       if (activeTab !== targetTab) {
         setActiveTabState(targetTab);
       }
+      localStorage.setItem('ask_admin_active_tab', targetTab);
       const newParams = new URLSearchParams(searchParams);
       newParams.set('tab', targetTab);
       setSearchParams(newParams, { replace: true });
@@ -3497,6 +3497,7 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'ai_automation' && (
           <div className="admin-content-pad">
+            <ErrorBoundary fallbackTitle="AI Operations Deck Unavailable">
             <AiOperationsDeck
               initialDeckTab={aiDeckSubTab}
               onApplyOcrData={(type, extracted) => {
@@ -3517,6 +3518,7 @@ export default function Dashboard() {
                 }
               }}
             />
+            </ErrorBoundary>
           </div>
         )}
 

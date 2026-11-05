@@ -608,32 +608,80 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
   // 4. 3D TRUCK LOAD PLANNER
   // ---------------------------------------------------------------------------
   if (cleanUrl.includes('/optimize-3d-load')) {
-    const totalItems = parsedBody?.boxes?.length || 24;
+    const truckType = parsedBody?.truckType || '19ft_container';
+    const is14 = truckType.includes('14ft');
+    const is24 = truckType.includes('24ft');
+    const is32 = truckType.includes('32ft');
+    const lengthFt = is14 ? 14 : is24 ? 24 : is32 ? 32 : 19;
+    const widthFt = is14 ? 6.5 : is24 ? 7.8 : is32 ? 8.2 : 7.2;
+    const heightFt = is14 ? 6.5 : is24 ? 7.8 : is32 ? 8.5 : 7.5;
+    const totalVol = Math.round(lengthFt * widthFt * heightFt);
+    const maxPay = is14 ? 4500 : is24 ? 14000 : is32 ? 21000 : 8500;
+
+    const inputBoxes = parsedBody?.boxes || [];
+    const packed: any[] = [];
+    let curX = 0.2;
+    let curZ = 0.2;
+    let curY = 0;
+    let totWeight = 0;
+    let totVol = 0;
+
+    inputBoxes.forEach((b: any, bIdx: number) => {
+      for (let q = 0; q < (b.quantity || 1); q++) {
+        if (curX + (b.lengthFt || 2) > lengthFt) {
+          curX = 0.2;
+          curZ += (b.widthFt || 2) + 0.3;
+        }
+        if (curZ + (b.widthFt || 2) > widthFt) {
+          curZ = 0.2;
+          curY += (b.heightFt || 2) + 0.2;
+        }
+        if (curY + (b.heightFt || 2) <= heightFt) {
+          packed.push({
+            id: `${b.id || bIdx}_${q}`,
+            label: `${b.label || 'Carton'} #${q + 1}`,
+            x: Number(curX.toFixed(1)),
+            y: Number(curY.toFixed(1)),
+            z: Number(curZ.toFixed(1)),
+            l: b.lengthFt || 2,
+            w: b.widthFt || 2,
+            h: b.heightFt || 2,
+            weightKg: b.weightKg || 50,
+            color: b.color || '#3b82f6',
+            isFragile: !!b.isFragile
+          });
+          totWeight += (b.weightKg || 50);
+          totVol += (b.lengthFt || 2) * (b.widthFt || 2) * (b.heightFt || 2);
+          curX += (b.lengthFt || 2) + 0.3;
+        }
+      }
+    });
+
     return {
       status: 200,
       data: {
-        success: true,
-        summary: {
-          totalPackages: totalItems,
-          totalWeightKg: parsedBody?.totalWeight || 16400,
-          containerVolumeCuFt: 2150,
-          utilizedVolumeCuFt: 1890,
-          volumeUtilizationPercent: 87.9,
-          weightUtilizationPercent: 91.2,
-          axleWeightDistribution: { frontAxleKg: 5200, driveAxleKg: 9100, trailerAxleKg: 10800 },
-          centerOfGravityScore: 94.5,
-          isRtoCompliant: true
+        truckSpecs: {
+          truckType,
+          lengthFt,
+          widthFt,
+          heightFt,
+          maxPayloadKg: maxPay,
+          totalVolumeCuFt: totalVol
         },
-        placements: (parsedBody?.boxes || []).map((b: any, i: number) => ({
-          boxId: b.id || `BOX-${i + 1}`,
-          x: (i % 4) * 80,
-          y: Math.floor(i / 12) * 90,
-          z: Math.floor((i % 12) / 4) * 80,
-          width: 80,
-          height: 90,
-          depth: 80,
-          color: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][i % 4]
-        }))
+        utilization: {
+          volumePercent: Math.min(100, Math.round((totVol / totalVol) * 100)),
+          weightPercent: Math.min(100, Math.round((totWeight / maxPay) * 100)),
+          totalWeightKg: totWeight,
+          usedVolumeCuFt: Math.round(totVol),
+          remainingPayloadKg: Math.max(0, maxPay - totWeight),
+          isAxleOverloaded: totWeight > maxPay
+        },
+        stackingRecommendations: [
+          'Heavy industrial units placed lowest directly above drive and trailer axles',
+          'Fragile consignments arranged as top layer with anti-shock padding',
+          'Even weight distribution maintained with zero lateral tilt'
+        ],
+        packedBoxes: packed
       }
     };
   }
