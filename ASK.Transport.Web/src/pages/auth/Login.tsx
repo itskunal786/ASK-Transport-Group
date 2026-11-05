@@ -70,7 +70,8 @@ export default function Login() {
 
       // Smart role-based portal routing:
       if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-        navigate('/admin');
+        localStorage.setItem('ask_admin_active_tab', 'dashboard');
+        navigate('/admin?tab=dashboard');
       } else {
         navigate('/dashboard');
       }
@@ -294,7 +295,7 @@ export default function Login() {
                 id="email"
                 name="ask_no_autofill_email"
                 type="email"
-                placeholder={loginRole === 'admin' ? 'admin@askgroup.com' : 'you@company.com'}
+                placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={() => handleEmailChange(email)}
@@ -381,12 +382,6 @@ export default function Login() {
             <Link to="/register">
               Create an account
             </Link>
-          </div>
-
-
-          <div className="secure-login" style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <span className="secure-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-            🔒 256-Bit SSL Encryption &amp; SHA-256 Hashed Protection. Passwords are never stored in plain text.
           </div>
 
         </form>

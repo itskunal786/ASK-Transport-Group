@@ -46,7 +46,12 @@ export default function Register() {
       const result = await getCaptcha();
 
       setCaptchaId(result.id);
-      setCaptchaQuestion(result.question);
+      let q = result.question || '';
+      if (q.includes('=')) {
+        const parts = q.split('=');
+        q = parts[0].trim() + ' = ?';
+      }
+      setCaptchaQuestion(q);
     } catch (err) {
       setCaptchaId('');
       setCaptchaQuestion('');
@@ -318,7 +323,7 @@ export default function Register() {
             <input
               id="email"
               type="email"
-              placeholder="you@company.com"
+              placeholder="Enter your email address"
               value={email}
               onChange={(e) =>
                 setEmail(e.target.value)
