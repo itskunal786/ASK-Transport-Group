@@ -17,11 +17,7 @@ import { useLanguage } from '../context/LanguageContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 
-interface PublicNavbarProps {
-  onSwitchHeroTab?: (tab: 'track' | 'quote') => void;
-}
-
-export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
+export default function PublicNavbar() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -47,23 +43,14 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
     setShowPortalMenu(false);
   }, [location.pathname]);
 
-  function handleRateCalcClick() {
-    setMobileMenuOpen(false);
-    if (location.pathname === '/' || location.pathname === '/landing') {
-      if (onSwitchHeroTab) onSwitchHeroTab('quote');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate('/?tab=quote');
-    }
-  }
-
   function handleTrackClick() {
     setMobileMenuOpen(false);
     if (location.pathname === '/' || location.pathname === '/landing') {
-      if (onSwitchHeroTab) onSwitchHeroTab('track');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const el = document.getElementById('tracking');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate('/?tab=track');
+      navigate('/#tracking');
     }
   }
 
@@ -107,17 +94,6 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
           >
             {t('Services', 'सेवाएं')}
           </Link>
-
-          <a
-            href="#calculator"
-            className="landing-nav-link"
-            onClick={(e) => {
-              e.preventDefault();
-              handleRateCalcClick();
-            }}
-          >
-            {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
-          </a>
 
           <a
             href="#network"
@@ -281,17 +257,6 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             >
               {t('Services', 'सेवाएं')}
             </Link>
-
-            <a
-              href="#calculator"
-              className="mobile-drawer-link"
-              onClick={(e) => {
-                e.preventDefault();
-                handleRateCalcClick();
-              }}
-            >
-              {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
-            </a>
 
             <a
               href="#network"

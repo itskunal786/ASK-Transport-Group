@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import PublicNavbar from '../../components/PublicNavbar';
@@ -21,22 +21,14 @@ interface TrackingResult {
 export default function LandingPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
   // Emergency Maintenance status set by Super Admin
   const isMaintenanceActive = localStorage.getItem('ask_system_maintenance') === 'true';
 
-  // Hero Tabs: 'track' | 'quote'
-  const [activeHeroTab, setActiveHeroTab] = useState<'track' | 'quote'>('track');
-
-  // Handle URL tab param or hash (e.g. from nav clicks on other pages)
+  // Handle URL hash navigation (e.g. from nav clicks on other pages)
   useEffect(() => {
-    const tab = searchParams.get('tab');
-    if (tab === 'quote' || tab === 'track') {
-      setActiveHeroTab(tab);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (window.location.hash) {
+    if (window.location.hash) {
       const id = window.location.hash.replace('#', '');
       const el = document.getElementById(id);
       if (el) {
@@ -51,18 +43,7 @@ export default function LandingPage() {
   const [trackResult, setTrackResult] = useState<TrackingResult | null>(null);
   const [trackError, setTrackError] = useState('');
 
-  // Rate Calculator State
-  const [originPincode, setOriginPincode] = useState('');
-  const [destPincode, setDestPincode] = useState('');
-  const [weightKg, setWeightKg] = useState('50');
-  const [serviceType, setServiceType] = useState('Standard Surface');
-  const [calcResult, setCalcResult] = useState<{
-    baseFreight: number;
-    fuelSurcharge: number;
-    gst: number;
-    totalAmount: number;
-    estimatedDays: string;
-  } | null>(null);
+
 
   // Quick Tracking submit
   function handleQuickTrack(e?: FormEvent, overrideNumber?: string) {
@@ -103,40 +84,12 @@ export default function LandingPage() {
     }, 500);
   }
 
-  // Rate Calculator submit
-  function handleCalculateRate(e: FormEvent) {
-    e.preventDefault();
-    const wt = parseFloat(weightKg) || 10;
-    let ratePerKg = 18; // Base rate
-    let days = '2 - 3 Days';
 
-    if (serviceType === 'Express Cargo') {
-      ratePerKg = 32;
-      days = 'Next Day Delivery';
-    } else if (serviceType === 'Full Truckload (FTL)') {
-      ratePerKg = 12;
-      days = '3 - 4 Days';
-    }
-
-    const baseFreight = Math.max(wt * ratePerKg, 450);
-    const fuelSurcharge = Math.round(baseFreight * 0.10);
-    const subtotal = baseFreight + fuelSurcharge;
-    const gst = Math.round(subtotal * 0.18);
-    const totalAmount = subtotal + gst;
-
-    setCalcResult({
-      baseFreight,
-      fuelSurcharge,
-      gst,
-      totalAmount,
-      estimatedDays: days
-    });
-  }
 
   return (
     <div className="landing-page-wrapper">
       {/* 1. TOP NAVBAR */}
-      <PublicNavbar onSwitchHeroTab={(tab) => setActiveHeroTab(tab)} />
+      <PublicNavbar />
 
       {/* EMERGENCY MAINTENANCE BANNER */}
       {isMaintenanceActive && (
@@ -189,11 +142,10 @@ export default function LandingPage() {
                 type="button"
                 className="hero-btn-secondary"
                 onClick={() => {
-                  setActiveHeroTab('quote');
                   document.getElementById('tracking')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                {t('⚡ Calculate Tariff →', '⚡ भाड़ा दर गणना करें →')}
+                {t('🔍 Track Consignment →', '🔍 कंसाइनमेंट ट्रैक करें →')}
               </button>
             </div>
 
@@ -217,41 +169,21 @@ export default function LandingPage() {
 
           {/* HERO INTERACTIVE WIDGET (TRACK & CALCULATOR) */}
           <div className="landing-hero-widget-box" id="tracking">
-            <div className="widget-tab-headers">
-              <button
-                type="button"
-                className={`widget-tab-btn ${activeHeroTab === 'track' ? 'active' : ''}`}
-                onClick={() => setActiveHeroTab('track')}
+            <div className="widget-tab-headers" style={{ gridTemplateColumns: '1fr' }}>
+              <div
+                className="widget-tab-btn active"
+                style={{ justifyContent: 'flex-start', padding: '16px 24px', cursor: 'default' }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <circle cx="12" cy="12" r="6" />
                   <circle cx="12" cy="12" r="2" />
                 </svg>
-                {t('Track Shipment', 'शिपमेंट ट्रैक करें')}
-              </button>
-
-              <button
-                type="button"
-                className={`widget-tab-btn ${activeHeroTab === 'quote' ? 'active' : ''}`}
-                onClick={() => setActiveHeroTab('quote')}
-                id="calculator"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <line x1="6" y1="8" x2="6" y2="8" />
-                  <line x1="10" y1="8" x2="10" y2="8" />
-                  <line x1="14" y1="8" x2="18" y2="8" />
-                  <line x1="6" y1="12" x2="6" y2="12" />
-                  <line x1="10" y1="12" x2="10" y2="12" />
-                  <line x1="14" y1="12" x2="18" y2="12" />
-                </svg>
-                {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
-              </button>
+                {t('Track Shipment & Real-Time Consignment GPS', 'शिपमेंट ट्रैक करें एवं रीयल-टाइम जीपीएस')}
+              </div>
             </div>
 
             <div className="widget-body">
-              {activeHeroTab === 'track' ? (
                 <div className="widget-track-panel">
                   <form onSubmit={handleQuickTrack} className="quick-track-form">
                     <label>{t('Enter Waybill, Bilty, or Booking Number', 'वे-बिल, बिल्टी या बुकिंग संख्या दर्ज करें')}</label>
@@ -315,97 +247,6 @@ export default function LandingPage() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="widget-quote-panel">
-                  <form onSubmit={handleCalculateRate} className="quick-quote-form">
-                    <div className="quote-grid-2">
-                      <div className="quote-field">
-                        <label>Pickup PinCode</label>
-                        <input
-                          type="text"
-                          maxLength={6}
-                          placeholder="e.g. 110001 (Delhi)"
-                          value={originPincode}
-                          onChange={(e) => setOriginPincode(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="quote-field">
-                        <label>Delivery PinCode</label>
-                        <input
-                          type="text"
-                          maxLength={6}
-                          placeholder="e.g. 400001 (Mumbai)"
-                          value={destPincode}
-                          onChange={(e) => setDestPincode(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="quote-grid-2">
-                      <div className="quote-field">
-                        <label>Weight (kg)</label>
-                        <input
-                          type="number"
-                          min="1"
-                          placeholder="50"
-                          value={weightKg}
-                          onChange={(e) => setWeightKg(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="quote-field">
-                        <label>Service Mode</label>
-                        <select value={serviceType} onChange={(e) => setServiceType(e.target.value)}>
-                          <option>Standard Surface</option>
-                          <option>Express Cargo</option>
-                          <option>Full Truckload (FTL)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <button type="submit" className="quick-quote-submit-btn">
-                      Calculate Instant Estimate &rarr;
-                    </button>
-                  </form>
-
-                  {calcResult && (
-                    <div className="widget-quote-result-card">
-                      <div className="quote-res-row">
-                        <span>Base Freight ({weightKg} kg):</span>
-                        <strong>₹{calcResult.baseFreight.toLocaleString('en-IN')}</strong>
-                      </div>
-                      <div className="quote-res-row">
-                        <span>Fuel Surcharge &amp; Handling:</span>
-                        <strong>₹{calcResult.fuelSurcharge.toLocaleString('en-IN')}</strong>
-                      </div>
-                      <div className="quote-res-row">
-                        <span>GST (18%):</span>
-                        <strong>₹{calcResult.gst.toLocaleString('en-IN')}</strong>
-                      </div>
-                      <div className="quote-res-total">
-                        <div>
-                          <span>Estimated Cost</span>
-                          <h3>₹{calcResult.totalAmount.toLocaleString('en-IN')}</h3>
-                        </div>
-                        <div className="quote-eta-badge">
-                          <span>Transit Time</span>
-                          <strong>{calcResult.estimatedDays}</strong>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="quote-book-cta-btn"
-                        onClick={() => navigate(user ? '/book' : '/login')}
-                      >
-                        {user ? 'Proceed to Book Now →' : 'Sign In to Book with this Rate →'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>

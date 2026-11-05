@@ -2971,7 +2971,7 @@ export default function Dashboard() {
           <div className="maintenance-info">
             <span className="pulse-dot" />
             <strong>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : t('🟢 PLATFORM LIVE & FULLY OPERATIONAL', '🟢 प्लेटफ़ॉर्म लाइव और पूर्णतः संचालित')}</strong>
-            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public rate calculators, online bookings, and vehicle dispatches running normally', 'सभी सार्वजनिक दर कैलकुलेटर, ऑनलाइन बुकिंग और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
+            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public booking engines, tracking portals, and vehicle dispatches running normally', 'सभी सार्वजनिक बुकिंग इंजन, ट्रैकिंग पोर्टल और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
           </div>
           {user?.role === 'SuperAdmin' && (
             <button
