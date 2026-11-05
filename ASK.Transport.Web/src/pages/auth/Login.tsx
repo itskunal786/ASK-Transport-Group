@@ -294,7 +294,7 @@ export default function Login() {
                 id="email"
                 name="ask_no_autofill_email"
                 type="email"
-                placeholder={loginRole === 'admin' ? 'admin@askgroup.com' : 'you@company.com'}
+                placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={() => handleEmailChange(email)}

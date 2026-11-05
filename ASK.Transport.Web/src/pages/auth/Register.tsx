@@ -318,7 +318,7 @@ export default function Register() {
             <input
               id="email"
               type="email"
-              placeholder="you@company.com"
+              placeholder="Enter your email address"
               value={email}
               onChange={(e) =>
                 setEmail(e.target.value)
