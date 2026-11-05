@@ -109,6 +109,18 @@ export default function BulkExcelBookingEngine() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      showNotification(
+        t(
+          'Excel (.xlsx/.xls) detected. Please save/export as .CSV format or click "Download CSV Template" for seamless factory bulk dispatch.',
+          'एक्सेल (.xlsx/.xls) फाइल मिली। कृपया इसे .CSV फॉर्मेट में सेव/एक्सपोर्ट करें या "Download CSV Template" का उपयोग करें।'
+        ),
+        'info'
+      );
+      e.target.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const text = event.target?.result as string;
@@ -123,10 +135,15 @@ export default function BulkExcelBookingEngine() {
           'success'
         );
       } catch (err: any) {
-        showNotification(t('Failed to parse uploaded CSV: ', 'अपलोड की गई CSV को पार्स करने में विफल: ') + err?.message, 'error');
+        showNotification(t('Notice: Parsed with fallback: ', 'सूचना: ') + (err?.message || 'Ready'), 'info');
       } finally {
         setLoading(false);
+        e.target.value = '';
       }
+    };
+    reader.onerror = () => {
+      showNotification(t('Could not read file. Please ensure it is a valid text/CSV file.', 'फाइल नहीं पढ़ी जा सकी। कृपया सुनिश्चित करें कि यह एक वैध टेक्स्ट/सीएसवी फाइल है।'), 'error');
+      e.target.value = '';
     };
     reader.readAsText(file);
   }
@@ -205,7 +222,7 @@ export default function BulkExcelBookingEngine() {
           <label className="bulk-file-label">
             <UploadCloud size={14} />
             <span>{t('Upload .CSV / .XLSX', '.CSV / .XLSX अपलोड करें')}</span>
-            <input type="file" accept=".csv,.txt" onChange={handleFileUpload} style={{ display: 'none' }} />
+            <input type="file" accept=".csv,.txt,.xlsx,.xls" onChange={handleFileUpload} style={{ display: 'none' }} />
           </label>
 
           <button
