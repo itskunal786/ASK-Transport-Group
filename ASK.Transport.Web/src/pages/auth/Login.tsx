@@ -384,12 +384,6 @@ export default function Login() {
             </Link>
           </div>
 
-
-          <div className="secure-login" style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <span className="secure-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-            🔒 256-Bit SSL Encryption &amp; SHA-256 Hashed Protection. Passwords are never stored in plain text.
-          </div>
-
         </form>
 
       </section>
