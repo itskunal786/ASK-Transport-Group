@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Truck, 
-  Smartphone, 
   Shield, 
   User, 
   UserPlus, 
@@ -11,8 +10,7 @@ import {
   LayoutDashboard, 
   LogOut, 
   Menu, 
-  X,
-  ExternalLink
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -150,15 +148,6 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             {t('About Us', 'हमारे बारे में')}
           </Link>
 
-          <Link
-            to="/driver"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="landing-nav-driver-pill"
-          >
-            <Smartphone size={13} />
-            <span>{t('Driver App', 'ड्राइवर ऐप')}</span>
-          </Link>
         </nav>
 
         {/* RIGHT ACTION CENTER */}
@@ -235,25 +224,7 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         </div>
                       </Link>
 
-                      {/* Driver Console */}
-                      <Link
-                        to="/driver"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setShowPortalMenu(false)}
-                        className="portal-dropdown-card"
-                      >
-                        <div className="portal-card-icon emerald">
-                          <Smartphone size={18} />
-                        </div>
-                        <div className="portal-card-body">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <strong>{t('Mobile Driver Console', 'मोबाइल ड्राइवर कंसोल')}</strong>
-                            <ExternalLink size={12} style={{ opacity: 0.6 }} />
-                          </div>
-                          <small>{t('Digital trip sheet, diesel advance & live e-POD', 'डिजिटल ट्रिप शीट, डीज़ल एडवांस और e-POD')}</small>
-                        </div>
-                      </Link>
+                      
 
                       {/* Admin Portal */}
                       <Link
@@ -351,15 +322,6 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               {t('About Us', 'हमारे बारे में')}
             </Link>
 
-            <Link
-              to="/driver"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mobile-drawer-link driver-highlight"
-            >
-              <Smartphone size={15} />
-              <span>{t('Driver App', 'ड्राइवर ऐप')}</span>
-            </Link>
           </div>
 
           <div className="mobile-drawer-actions">

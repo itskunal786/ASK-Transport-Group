@@ -2421,14 +2421,7 @@ export default function Dashboard() {
                   <span>{t('Tyre & TPMS Radar', 'टायर और टीपीएमएस रडार')}</span>
                 </button>
 
-                <button
-                  type="button"
-                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'mobile_driver' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('mobile_driver'); setActiveTab('fleet_mgmt'); }}
-                >
-                  <span className="nav-sub-bullet">•</span>
-                  <span>{t('Driver Mobile Mode', 'ड्राइवर मोबाइल मोड')}</span>
-                </button>
+
 
                 <button
                   type="button"
@@ -2815,26 +2808,7 @@ export default function Dashboard() {
               <span>🚛</span> Petty Cash (P&amp;L)
             </button>
 
-            <a
-              href="/driver"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                background: 'rgba(37, 99, 235, 0.12)',
-                color: '#2563eb',
-                border: '1px solid rgba(37, 99, 235, 0.3)',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 700,
-                textDecoration: 'none'
-              }}
-            >
-              <span>📱</span> {t('Driver App (/driver) ↗', 'ड्राइवर ऐप (/driver) ↗')}
-            </a>
+
 
             <button
               type="button"
@@ -3130,7 +3104,7 @@ export default function Dashboard() {
                     <span>⚡</span> {t('2026 Fleet & Driver Operations Live Hub', '2026 फ्लीट एवं चालक संचालन लाइव हब')}
                   </div>
                   <h2 style={{ margin: '8px 0 4px', fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-                    {t('Driver Petty Cash, Mobile Driver Mode & Fleet Compliance Suite', 'चालक खर्च, मोबाइल चालक मोड और वाहन अनुपालन सूट')}
+                    {t('Fleet Petty Cash, Telematics & Vehicle Compliance Suite', 'चालक खर्च, मोबाइल चालक मोड और वाहन अनुपालन सूट')}
                   </h2>
                   <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
                     {t('Manage diesel expense slips, launch regional driver mobile app, and monitor RTO fitness & insurance expiry alerts.', 'डीजल पर्ची प्रबंधित करें, क्षेत्रीय ड्राइवर मोबाइल ऐप खोलें, और आरटीओ फिटनेस व बीमा समाप्ति अलर्ट देखें।')}
@@ -3138,26 +3112,7 @@ export default function Dashboard() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <a
-                    href="/driver"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: '#ffffff',
-                      textDecoration: 'none',
-                      padding: '10px 18px',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 800,
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                    }}
-                  >
-                    <span>📱</span> {t('Launch Driver Mobile Mode (/driver) ↗', 'ड्राइवर मोबाइल मोड शुरू करें (/driver) ↗')}
-                  </a>
+
                 </div>
               </div>
 
@@ -3213,7 +3168,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* CARD 2: DEDICATED MOBILE DRIVER APP */}
+                {/* CARD 2: GPS TELEMATICS & HIGHWAY RADAR */}
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.04)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -3226,57 +3181,39 @@ export default function Dashboard() {
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
-                      📱
+                      📡
                     </div>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {t('2. Mobile Driver Mode', '2. मोबाइल चालक मोड')}
-                        <span style={{ background: '#3b82f6', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>HINDI/ENG</span>
+                        {t('2. GPS Telematics & Radar', '2. जीपीएस टेलीमैटिक्स और रडार')}
+                        <span style={{ background: '#3b82f6', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>LIVE GPS</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                        {t('Highway smartphone interface at /driver: Odometer start, 1-tap Google Maps GPS, Camera slip upload, Consignee OTP & POD signature.', '/driver पर मोबाइल इंटरफेस: ओडोमीटर रीडिंग, 1-टैप गूगल मैप्स जीपीएस, कैमरा रसीद अपलोड, ओटीपी और डिजिटल हस्ताक्षर।')}
+                        {t('Real-time AIS-140 GPS tracking, live highway speed monitor, ignition status, geo-fencing alerts and corridor arrival estimates.', 'रीयल-टाइम एआईएस-140 जीपीएस ट्रैकिंग, हाईवे स्पीड मॉनिटर, इग्निशन स्टेटस, जियो-फेंसिंग अलर्ट और कॉरिडोर आगमन अनुमान।')}
                       </p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-                    <a
-                      href="/driver"
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('telematics')}
                       style={{
                         flex: 1,
                         padding: '9px 14px',
                         background: '#2563eb',
                         color: '#ffffff',
-                        textDecoration: 'none',
+                        border: 'none',
                         borderRadius: '6px',
                         fontSize: '12px',
                         fontWeight: 700,
-                        textAlign: 'center',
+                        cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px'
                       }}
                     >
-                      {t('Open Mobile App (/driver) ↗', 'मोबाइल ऐप खोलें (/driver) ↗')}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => { setFleetDeckSubTab('mobile_driver'); setActiveTab('fleet_mgmt'); }}
-                      style={{
-                        padding: '9px 12px',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: '#e2e8f0',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                      title="Preview Driver Console inside Admin"
-                    >
-                      Admin Preview
+                      {t('Open GPS Telematics Radar →', 'जीपीएस रडार खोलें →')}
                     </button>
                   </div>
                 </div>
@@ -4580,7 +4517,7 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {activeTab === 'drivers' && (
           <div className="admin-content-pad">
-            {/* MOBILE DRIVER MODE & PETTY CASH BANNER */}
+            {/* SARATHI COMPLIANCE & PETTY CASH BANNER */}
             <div style={{
               background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
               borderRadius: '12px',
@@ -4596,31 +4533,14 @@ export default function Dashboard() {
             }}>
               <div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.2)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>
-                  <span>📱</span> HIGHWAY DRIVER APP READY
+                  <span>🛡️</span> GOVT SARATHI &amp; MORTH COMPLIANCE HUB
                 </div>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Dedicated Mobile Driver Mode (Bilingual Hindi / English)</h3>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Verified Heavy Commercial Vehicle (HCV) Drivers Registry</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#bfdbfe' }}>
-                  Drivers can access <strong>http://localhost:5173/driver</strong> from any smartphone to start trips, navigate via Google Maps, capture diesel slips, and collect consignee delivery OTP &amp; POD.
+                  National Parivahan Sarathi verified commercial driver profiles with digital license, Aadhaar e-KYC, hazard endorsement &amp; safety scores.
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <a
-                  href="/driver"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    background: '#ffffff',
-                    color: '#1d4ed8',
-                    textDecoration: 'none',
-                    padding: '9px 16px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  🚀 Open Driver Console (/driver) ↗
-                </a>
                 <button
                   type="button"
                   onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
@@ -4639,6 +4559,7 @@ export default function Dashboard() {
                 </button>
               </div>
             </div>
+
             <div className="admin-page-title-row">
               <div>
                 <h1>Drivers &amp; Operators Directory</h1>

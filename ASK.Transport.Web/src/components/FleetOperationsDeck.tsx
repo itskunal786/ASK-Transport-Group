@@ -50,26 +50,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         {/* DRIVER CONSOLE SHORTCUT */}
         <div style={{ display: 'flex', gap: '10px' }}>
-          <a
-            href="/driver"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              padding: '11px 18px',
-              borderRadius: '10px',
-              background: '#ffffff',
-              color: '#065f46',
-              textDecoration: 'none',
-              fontSize: '13px',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-          >
-            <span>📱</span> Launch Mobile Driver App
-          </a>
+          
         </div>
       </div>
 
@@ -175,25 +156,6 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
           <span>🛞</span> Tyre &amp; TPMS Radar
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('mobile_driver')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeTab === 'mobile_driver' ? '#10b981' : 'var(--text-secondary, #94a3b8)',
-            borderBottom: activeTab === 'mobile_driver' ? '3px solid #059669' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <span>📱</span> Driver Mobile Mode Preview (Hindi/Bilingual)
-        </button>
       </div>
 
       {/* VIEWPORT */}
@@ -228,38 +190,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
           </ErrorBoundary>
         )}
 
-        {activeTab === 'mobile_driver' && (
-          <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)', textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>📱</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
-              Dedicated Mobile Driver App Mode (Hindi + English)
-            </h3>
-            <p style={{ margin: '0 auto 20px', maxWidth: '540px', fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
-              A high-contrast mobile interface designed specifically for truck drivers on highway routes. Includes 1-tap Google Maps consignee navigation, Diesel &amp; Toll slip capture, Customer Delivery OTP verification, and Physical POD Bilty photo upload.
-            </p>
-
-            <a
-              href="/driver"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 26px',
-                background: '#059669',
-                color: '#ffffff',
-                textDecoration: 'none',
-                borderRadius: '10px',
-                fontSize: '14px',
-                fontWeight: 800,
-                boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)'
-              }}
-            >
-              🚀 Open /driver Console in Mobile Viewport
-            </a>
-          </div>
-        )}
+        
       </div>
     </div>
   );

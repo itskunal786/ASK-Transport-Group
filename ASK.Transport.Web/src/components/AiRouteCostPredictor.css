@@ -723,3 +723,481 @@ body.dark .ai-predictor-secondary-btn:hover,
     padding: 6px 0 !important;
   }
 }
+
+
+/* ============================================================================
+   OFFICIAL HIGHWAY ROUTE SLIP MODAL & PRINT STYLES
+   ============================================================================ */
+
+.ai-route-slip-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 10005;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.ai-route-slip-modal-container {
+  width: 100%;
+  max-width: 840px;
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: aiModalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aiModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ai-route-slip-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.ai-route-slip-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f1f5f9;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ai-route-slip-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-route-slip-btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ai-route-slip-btn-print:hover {
+  background: #0369a1;
+}
+
+.ai-route-slip-btn-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  background: #334155;
+  color: #f1f5f9;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ai-route-slip-btn-close:hover {
+  background: #475569;
+}
+
+/* Printable sheet screen view */
+.ai-route-slip-sheet {
+  padding: 24px 28px;
+  background: #ffffff;
+  color: #0f172a;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ai-slip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #0f172a;
+  margin-bottom: 14px;
+}
+
+.ai-slip-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-slip-logo-badge {
+  width: 48px;
+  height: 48px;
+  background: #0284c7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 18px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+}
+
+.ai-slip-company-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+}
+
+.ai-slip-company-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.ai-slip-company-meta {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.ai-slip-header-meta {
+  text-align: right;
+}
+
+.ai-slip-ref-pill {
+  display: inline-block;
+  padding: 3px 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.ai-slip-ref-id {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.ai-slip-date {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.ai-slip-corridor-box {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.ai-slip-corridor-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.ai-slip-label {
+  display: block;
+  font-size: 9.5px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ai-slip-value-lg {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ai-slip-arrow {
+  font-size: 18px;
+  color: #0284c7;
+  font-weight: 900;
+}
+
+.ai-slip-sub-text {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.ai-slip-highway-bar {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 8px;
+  font-size: 11px;
+  color: #334155;
+}
+
+.ai-slip-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.ai-slip-table th {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ai-slip-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.ai-slip-total-row td {
+  background: #f1f5f9;
+  border-top: 2px solid #0f172a;
+  border-bottom: 2px solid #0f172a;
+  font-size: 12.5px;
+}
+
+.ai-slip-highlight-row td {
+  background: #ecfdf5;
+  border-bottom: 2px solid #059669;
+}
+
+.ai-slip-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+
+.ai-slip-mini-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+.ai-slip-mini-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-slip-mini-list li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dotted #e2e8f0;
+  padding-bottom: 3px;
+  color: #334155;
+}
+
+.ai-slip-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1.5px solid #0f172a;
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.ai-slip-legal-notice {
+  max-width: 55%;
+  font-size: 9.5px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.ai-slip-legal-notice p {
+  margin: 3px 0 0;
+}
+
+.ai-slip-signature-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ai-slip-seal {
+  width: 90px;
+  height: 90px;
+  border: 2px dashed #0284c7;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #0284c7;
+  margin-bottom: 6px;
+  transform: rotate(-5deg);
+}
+
+.ai-slip-sig-line {
+  width: 140px;
+  border-top: 1.5px solid #0f172a;
+  margin-bottom: 4px;
+}
+
+.ai-slip-sig-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ai-slip-sig-title {
+  font-size: 9.5px;
+  color: #64748b;
+}
+
+/* ============================================================================
+   @MEDIA PRINT FOR HIGHWAY ROUTE SLIP
+   ============================================================================ */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  body.ai-route-slip-printing #root,
+  body:has(.ai-route-slip-overlay) #root {
+    display: none !important;
+  }
+
+  body.ai-route-slip-printing,
+  body:has(.ai-route-slip-overlay) {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ai-route-slip-overlay {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .ai-route-slip-modal-container {
+    position: static !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .ai-predictor-no-print {
+    display: none !important;
+  }
+
+  .ai-route-slip-sheet {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1.5px solid #000000 !important;
+    box-shadow: none !important;
+    padding: 6mm 8mm !important;
+    width: 100% !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .ai-route-slip-sheet * {
+    visibility: visible !important;
+    color: #000000 !important;
+  }
+
+  .ai-slip-logo-badge {
+    background: #000000 !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .ai-slip-table th {
+    background: #000000 !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .ai-slip-total-row td {
+    background: #f1f5f9 !important;
+    border-top: 1.5px solid #000000 !important;
+    border-bottom: 1.5px solid #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .ai-slip-highlight-row td {
+    background: #e6f4ea !important;
+    border-bottom: 1.5px solid #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .ai-slip-seal {
+    border-color: #000000 !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
