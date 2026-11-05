@@ -1,3 +1,7 @@
+.admin-sidebar-close-btn {
+  display: none;
+}
+
 /* ========================================================
    ASK Transport - Pixel-Perfect Admin Command Center (Image 1)
    ======================================================== */
@@ -356,19 +360,33 @@
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 10px 20px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-  gap: 16px;
+  gap: 14px;
   flex-wrap: nowrap;
+  min-height: 58px;
+  box-sizing: border-box;
+}
+
+.admin-topbar-left-group {
+  display: none;
+}
+
+.admin-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .admin-top-search {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 0 1 260px;
-  min-width: 150px;
-  max-width: 300px;
+  flex: 0 1 280px;
+  min-width: 160px;
+  max-width: 320px;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -383,13 +401,16 @@
   width: 100%;
   color: #0f172a;
   background: transparent;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .admin-topbar-quick-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 
 @media (max-width: 1320px) {
@@ -5466,8 +5487,9 @@ body.dark .hub-btn-delete {
 @media (max-width: 768px) {
   .admin-topbar {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     gap: 8px !important;
     padding: 10px 12px !important;
     width: 100% !important;
@@ -5477,19 +5499,12 @@ body.dark .hub-btn-delete {
     margin-bottom: 14px !important;
   }
 
-  .admin-topbar-row-top {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    gap: 8px !important;
-  }
-
   .admin-topbar-left-group {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
     flex-shrink: 0 !important;
+    order: 1 !important;
   }
 
   .admin-mobile-brand-title {
@@ -5504,13 +5519,23 @@ body.dark .hub-btn-delete {
     white-space: nowrap !important;
   }
 
+  .admin-top-profile {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+    order: 2 !important;
+  }
+
   .admin-top-search {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
-    margin: 0 !important;
+    margin: 4px 0 0 0 !important;
     flex: 1 1 100% !important;
     box-sizing: border-box !important;
+    order: 3 !important;
   }
 
   .admin-top-search input {
@@ -5522,11 +5547,12 @@ body.dark .hub-btn-delete {
     box-sizing: border-box !important;
   }
 
-  .admin-top-profile {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    flex-shrink: 0 !important;
+  .admin-header-breadcrumb {
+    display: none !important;
+  }
+
+  .admin-topbar-quick-actions {
+    display: none !important;
   }
 
   .admin-user-names {
@@ -6396,4 +6422,16 @@ body.dark .st-ai-scan-banner p,
   .breadcrumb-separator {
     display: none !important;
   }
+}
+
+/* Enhanced contrast for dark mode maintenance status bar */
+[data-theme='dark'] .admin-maintenance-bar.normal,
+body.dark .admin-maintenance-bar.normal {
+  background: rgba(16, 185, 129, 0.16) !important;
+  border-color: rgba(52, 211, 153, 0.45) !important;
+}
+
+[data-theme='dark'] .admin-maintenance-bar.normal .maintenance-info span:not(.pulse-dot),
+body.dark .admin-maintenance-bar.normal .maintenance-info span:not(.pulse-dot) {
+  color: #e2e8f0 !important;
 }
