@@ -54,6 +54,7 @@ import DynamicTariffEngine from '../../components/DynamicTariffEngine';
 import FinancialPnlAnalyticsDeck from '../../components/FinancialPnlAnalyticsDeck';
 import SystemSettingsDeck from '../../components/SystemSettingsDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import DashboardAnalyticsCharts from '../../components/DashboardAnalyticsCharts';
 
 interface BookingRow {
   bookingNo: string;
@@ -3108,6 +3109,9 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {/* RICH INTERACTIVE ANALYTICS & PIE CHARTS SUITE */}
+            <DashboardAnalyticsCharts />
 
             {/* 2026 FLEET, DRIVER & EXPENSE COMMAND SUITE */}
             <div className="admin-suite-banner" style={{
