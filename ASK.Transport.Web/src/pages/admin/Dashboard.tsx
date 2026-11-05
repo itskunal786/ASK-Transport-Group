@@ -2970,8 +2970,8 @@ export default function Dashboard() {
         <div className={`admin-maintenance-bar ${isMaintenanceActive ? 'alert' : 'normal'}`}>
           <div className="maintenance-info">
             <span className="pulse-dot" />
-            <strong>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : t('🟢 PLATFORM LIVE & FULLY OPERATIONAL', '🟢 प्लेटफ़ॉर्म लाइव और पूर्णतः संचालित')}</strong>
-            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public booking engines, tracking portals, and vehicle dispatches running normally', 'सभी सार्वजनिक बुकिंग इंजन, ट्रैकिंग पोर्टल और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
+            <strong style={{ color: isMaintenanceActive ? '#fca5a5' : '#34d399', fontWeight: 800, letterSpacing: '0.3px' }}>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : t('🟢 PLATFORM LIVE & FULLY OPERATIONAL', '🟢 प्लेटफ़ॉर्म लाइव और पूर्णतः संचालित')}</strong>
+            <span style={{ color: isMaintenanceActive ? '#fecaca' : '#a7f3d0', opacity: 1, fontWeight: 500 }}>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public booking engines, tracking portals, and vehicle dispatches running normally', 'सभी सार्वजनिक बुकिंग इंजन, ट्रैकिंग पोर्टल और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
           </div>
           {user?.role === 'SuperAdmin' && (
             <button

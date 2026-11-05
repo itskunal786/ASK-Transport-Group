@@ -1225,15 +1225,53 @@ body.dark .admin-badge-status[style*="f1f5f9"],
 }
 
 .admin-maintenance-bar.normal {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #065f46;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #34d399;
+}
+
+.admin-maintenance-bar.normal .maintenance-info strong {
+  color: #34d399;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.admin-maintenance-bar.normal .maintenance-info span:not(.pulse-dot) {
+  color: #a7f3d0;
+  opacity: 1;
+  font-weight: 500;
 }
 
 .admin-maintenance-bar.alert {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #991b1b;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fca5a5;
+}
+
+.admin-maintenance-bar.alert .maintenance-info strong {
+  color: #fca5a5;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.admin-maintenance-bar.alert .maintenance-info span:not(.pulse-dot) {
+  color: #fecaca;
+  opacity: 1;
+  font-weight: 500;
+}
+
+[data-theme='light'] .admin-maintenance-bar.normal {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+[data-theme='light'] .admin-maintenance-bar.normal .maintenance-info strong {
+  color: #065f46;
+}
+
+[data-theme='light'] .admin-maintenance-bar.normal .maintenance-info span:not(.pulse-dot) {
+  color: #047857;
 }
 
 .maintenance-info {
