@@ -255,6 +255,21 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
 
   if (cleanUrl.includes('/auth/register')) {
     const email = (parsedBody?.email || '').trim().toLowerCase();
+    const userCapId = parsedBody?.captchaId || '';
+    const userCapAns = (parsedBody?.captchaAnswer || '').trim();
+
+    try {
+      const activeCaptchas = JSON.parse(sessionStorage.getItem('ask_active_captchas') || '{}');
+      if (userCapId && activeCaptchas[userCapId] !== undefined) {
+        const expected = Number(activeCaptchas[userCapId]);
+        if (Number(userCapAns) !== expected) {
+          return {
+            status: 400,
+            data: { message: 'Incorrect security verification answer. Please try again.' }
+          };
+        }
+      }
+    } catch {}
     const name = (parsedBody?.name || 'Registered Shipper').trim();
     const phone = (parsedBody?.phone || '9876543210').trim();
     const plainPwd = (parsedBody?.password || '').trim();
@@ -289,11 +304,22 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
   }
 
   if (cleanUrl.includes('/auth/captcha')) {
+    const num1 = Math.floor(Math.random() * 8) + 2; // 2 to 9
+    const num2 = Math.floor(Math.random() * 8) + 1; // 1 to 8
+    const sum = num1 + num2;
+    const capId = `cap-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    try {
+      const activeCaptchas = JSON.parse(sessionStorage.getItem('ask_active_captchas') || '{}');
+      activeCaptchas[capId] = sum;
+      sessionStorage.setItem('ask_active_captchas', JSON.stringify(activeCaptchas));
+    } catch {}
+
     return {
       status: 200,
       data: {
-        id: `cap-${Date.now()}`,
-        question: 'Solve security verification: 9 + 4 = 13',
+        id: capId,
+        question: `${num1} + ${num2} = ?`,
         expiresInSeconds: 300
       }
     };

@@ -46,7 +46,12 @@ export default function Register() {
       const result = await getCaptcha();
 
       setCaptchaId(result.id);
-      setCaptchaQuestion(result.question);
+      let q = result.question || '';
+      if (q.includes('=')) {
+        const parts = q.split('=');
+        q = parts[0].trim() + ' = ?';
+      }
+      setCaptchaQuestion(q);
     } catch (err) {
       setCaptchaId('');
       setCaptchaQuestion('');
