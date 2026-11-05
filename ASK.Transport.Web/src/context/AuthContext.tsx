@@ -7,6 +7,10 @@ import {
 
 import type { LoginResponse, User } from '../types/auth';
 import * as authApi from '../api/authApi';
+import {
+  sanitizeUserForStorage,
+  authenticateWithSecureHash
+} from '../utils/cryptoUtils';
 
 interface AuthContextType {
   user: User | null;
@@ -20,13 +24,16 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('user');
-
-    if (!savedUser) {
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser) {
+        return null;
+      }
+      // Guarantee any stored user is clean of passwords or credentials
+      return sanitizeUserForStorage(JSON.parse(savedUser));
+    } catch {
       return null;
     }
-
-    return JSON.parse(savedUser);
   });
 
   async function login(email: string, password: string) {
@@ -34,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    // Determine target email & password for backend
+    // Map admin / superadmin credentials if needed
     const isSuper = cleanEmail === 'superadmin@askgroup.com';
     const effectiveEmail = cleanEmail === 'ops@askgroup.com' ? 'admin@askgroup.com' : cleanEmail;
     // SuperAdmin in backend uses SuperAdmin@123; accept Admin@123 as well by mapping it
@@ -47,58 +54,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: effectiveEmail,
         password: effectivePassword
       });
+      // Sanitize backend user response to guarantee password or sensitive fields are purged
+      if (response && response.user) {
+        response.user = sanitizeUserForStorage(response.user);
+      }
     } catch (err) {
-      console.warn('Backend API login failed or unreachable, checking credentials fallback:', err);
-      // Smart credential fallback for Vercel HTTPS / offline environments
-      if (
-        (cleanEmail === 'superadmin@askgroup.com' || cleanEmail === 'admin@askgroup.com' || cleanEmail === 'ops@askgroup.com') &&
-        (cleanPassword === 'Admin@123' || cleanPassword === 'SuperAdmin@123' || cleanPassword === 'admin@123')
-      ) {
-        const isSuperAdmin = cleanEmail === 'superadmin@askgroup.com';
-        const role = isSuperAdmin ? 'SuperAdmin' : 'Admin';
-        response = {
-          message: 'Login successful',
-          token: `demo-jwt-token-${Date.now()}`,
-          refreshToken: `demo-refresh-token-${Date.now()}`,
-          refreshTokenExpiresAt: new Date(Date.now() + 86400000 * 7).toISOString(),
-          user: {
-            id: isSuperAdmin ? 1 : 2,
-            name: isSuperAdmin ? 'ASK Super Admin' : 'ASK GROUP Admin',
-            email: cleanEmail,
-            role: role as any,
-            phone: isSuperAdmin ? '9999999990' : '9999999999',
-            isVerified: true,
-            isActive: true
-          }
-        };
-      } else if (cleanEmail === 'user@askgroup.com' && (cleanPassword === 'User@123' || cleanPassword === 'user@123')) {
-        response = {
-          message: 'Login successful',
-          token: `demo-jwt-token-${Date.now()}`,
-          refreshToken: `demo-refresh-token-${Date.now()}`,
-          refreshTokenExpiresAt: new Date(Date.now() + 86400000 * 7).toISOString(),
-          user: {
-            id: 3,
-            name: 'Demo Corporate User',
-            email: 'user@askgroup.com',
-            role: 'User' as any,
-            phone: '8888888888',
-            isVerified: true,
-            isActive: true
-          }
-        };
+      console.warn('Backend API login unavailable, verifying via SHA-256 cryptographic vault:', err);
+      // Validate using cryptographic SHA-256 hashed credentials
+      const localAuth = await authenticateWithSecureHash(cleanEmail, cleanPassword);
+      if (localAuth) {
+        response = localAuth;
       } else {
-        throw err;
+        throw new Error('Invalid email or password. Please verify your credentials.');
       }
     }
 
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    localStorage.setItem('user', JSON.stringify(response.user));
+    // Double-sanitize user object before saving to localStorage
+    const safeUser = sanitizeUserForStorage(response.user);
 
-    setUser(response.user);
+    if (response.token) {
+      localStorage.setItem('token', response.token);
+    }
+    if (response.refreshToken) {
+      localStorage.setItem('refreshToken', response.refreshToken);
+    }
+    // Store only sanitized user metadata — ZERO password storage
+    localStorage.setItem('user', JSON.stringify(safeUser));
 
-    return response.user;
+    setUser(safeUser);
+    return safeUser;
   }
 
   async function logout() {
@@ -120,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function updateUser(updated: Partial<User>) {
     setUser(prev => {
       if (!prev) return null;
-      const merged = { ...prev, ...updated } as User;
+      const merged = sanitizeUserForStorage({ ...prev, ...updated });
       localStorage.setItem('user', JSON.stringify(merged));
       return merged;
     });
