@@ -1,3 +1,53 @@
+
+/* MODULE NAVIGATION TABS */
+.dte-module-nav-tabs {
+  display: flex;
+  gap: 10px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 6px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.dte-module-nav-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dte-module-nav-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+[data-theme="dark"] .dte-module-nav-tabs {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .dte-module-nav-btn {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .dte-module-nav-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+}
+
 /* ============================================================================
    DYNAMIC TARIFF & RATE MATRIX ENGINE - ULTRA-PREMIUM THEME ADAPTIVE CSS
    ============================================================================ */

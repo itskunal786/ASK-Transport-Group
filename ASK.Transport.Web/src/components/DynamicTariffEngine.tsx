@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LaneRateCalculatorMaster from './LaneRateCalculatorMaster';
 import { createPortal } from 'react-dom';
 import {
   Zap,
@@ -70,6 +71,7 @@ export const DynamicTariffEngine: React.FC<DynamicTariffEngineProps> = ({
   const [showRateSlipModal, setShowRateSlipModal] = useState(false);
   const [quoteRefId] = useState<string>(() => `ASK-QTN-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`);
   const [selectedCorridorName, setSelectedCorridorName] = useState<string>('Delhi ➔ Mumbai (NH-48 Golden Quadrilateral)');
+  const [tariffModuleView, setTariffModuleView] = useState<'lane_rates' | 'formula'>('lane_rates');
 
   // Stepper Helper Functions
   const stepFtlRate = (delta: number) => {
@@ -294,6 +296,31 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
 
   return (
     <div className="dte-container">
+      {/* 0. MODULE NAVIGATION TABS */}
+      <div className="dte-module-nav-tabs">
+        <button
+          type="button"
+          onClick={() => setTariffModuleView('lane_rates')}
+          className={`dte-module-nav-btn ${tariffModuleView === 'lane_rates' ? 'active' : ''}`}
+        >
+          <MapPin size={17} />
+          <span>🛣️ Pan-India Lane Rates &amp; Route Calculator (कहाँ का कितना भाड़ा)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTariffModuleView('formula')}
+          className={`dte-module-nav-btn ${tariffModuleView === 'formula' ? 'active' : ''}`}
+        >
+          <Zap size={17} />
+          <span>⚡ Global MoRTH Formula, Surcharges &amp; SAC 9965 Taxes</span>
+        </button>
+      </div>
+
+      {tariffModuleView === 'lane_rates' ? (
+        <LaneRateCalculatorMaster />
+      ) : (
+        <>
       {/* 1. HERO HEADER BANNER */}
       <div className="dte-hero">
         <div className="dte-hero-left">
@@ -811,6 +838,9 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
           </button>
         </div>
       </div>
+
+        </>
+      )}
 
       {/* OFFICIAL FREIGHT TARIFF & RATE QUOTATION SLIP MODAL */}
       {showRateSlipModal && typeof document !== 'undefined' && createPortal(
