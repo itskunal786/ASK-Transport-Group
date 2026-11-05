@@ -286,34 +286,36 @@ export async function previewBulkConsignments(payload: { csvText?: string; items
     let rIdx = 1;
 
     for (const line of lines) {
-      const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
-      if (cols.length < 5) continue;
-      if (isHeader && (cols[0].toLowerCase().includes('consignor') || cols[1].toLowerCase().includes('consignee'))) {
+      const delimiter = line.includes('\t') ? '\t' : line.includes(';') ? ';' : line.includes('|') ? '|' : ',';
+      const cols = line.split(delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
+      if (isHeader && (cols[0].toLowerCase().includes('consignor') || (cols[1] && cols[1].toLowerCase().includes('consignee')))) {
         isHeader = false;
         continue;
       }
       isHeader = false;
 
-      const wt = parseFloat(cols[8]) || 250;
+      const wt = parseFloat(cols[8]) || (parseFloat(cols[2]) > 0 && parseFloat(cols[2]) < 5000 ? parseFloat(cols[2]) : 250);
       const val = parseFloat(cols[9]) || 35000;
       const pk = parseInt(cols[7], 10) || 10;
-      const phone = cols[2] || '9800000000';
-      const pin = cols[4] || '411001';
+      const phone = cols[2] || '';
+      const pin = cols[4] || '';
 
       const errors: string[] = [];
-      if (!cols[1]) errors.push('Consignee name is required.');
+      const consignee = cols[1] || cols[0] || '';
+      if (!consignee || consignee.length < 2) errors.push('Consignee name is required.');
       if (phone.replace(/\D/g, '').length < 10) errors.push('Consignee phone must have at least 10 digits.');
       if (pin.replace(/\D/g, '').length !== 6) errors.push('Indian PIN code must be exactly 6 digits.');
+      if (cols.length < 5) errors.push('Row has insufficient columns (11 expected).');
 
       const estFreight = Math.round((450 + wt * 9.5) * 1.05);
 
       parsed.push({
         rowIndex: rIdx++,
         consignorName: cols[0] || 'Factory Shipper',
-        consigneeName: cols[1] || 'Consignee Partner',
-        consigneePhone: phone,
-        deliveryAddress: cols[3] || 'Industrial Depot',
-        pincode: pin,
+        consigneeName: consignee || 'Unspecified Consignee',
+        consigneePhone: phone || 'Missing Phone',
+        deliveryAddress: cols[3] || line,
+        pincode: pin || '000000',
         city: cols[5] || 'Destination Hub',
         goodsDescription: cols[6] || 'General Cargo',
         packageCount: pk,

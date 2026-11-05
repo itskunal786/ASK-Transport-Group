@@ -302,14 +302,44 @@ export default function BulkExcelBookingEngine() {
             placeholder="ConsignorName,ConsigneeName,ConsigneePhone,DeliveryAddress,Pincode,City,GoodsDescription,PackageCount,WeightKg,DeclaredValue,PaymentMode..."
             className="bulk-paste-textarea"
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '6px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setCsvText(
+                  `ConsignorName,ConsigneeName,ConsigneePhone,DeliveryAddress,Pincode,City,GoodsDescription,PackageCount,WeightKg,DeclaredValue,PaymentMode\n` +
+                  `Tata Motors Ltd,North Star Auto,9811044219,Plot 88 Phase 2 IMT Manesar,122050,Gurugram,Auto Gear Castings,24,650.0,78000,To-Pay\n` +
+                  `Bajaj Industrial,Speedway Logistics,9823011452,Warehouse 4 GIDC Naroda,382330,Ahmedabad,Two-Wheeler Brake Discs,16,420.0,46000,Prepaid\n` +
+                  `Bharat Forge Ltd,Kirloskar Engine Hub,9890044123,Plot 14 Industrial Area,560058,Bengaluru,Forged Crankshafts,8,890.0,125000,To-Pay`
+                );
+              }}
+              style={{
+                background: 'rgba(56, 189, 248, 0.1)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                color: '#38bdf8',
+                borderRadius: '6px',
+                padding: '6px 14px',
+                fontSize: '11.5px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              ⚡ {t('Insert Sample CSV Rows', 'सैंपल CSV पंक्तियाँ डालें')}
+            </button>
             <button
               type="button"
               onClick={handleParsePastedText}
               disabled={loading}
               className="bulk-btn-action"
             >
-              {loading ? t('Parsing...', 'पार्सिंग...') : t('Parse & Preview', 'पार्स एवं प्रीव्यू')}
+              {loading ? (
+                <>
+                  <RefreshCw size={14} className="animate-spin" />
+                  <span>{t('Parsing...', 'पार्सिंग...')}</span>
+                </>
+              ) : (
+                <span>{t('Parse & Preview', 'पार्स एवं प्रीव्यू')}</span>
+              )}
             </button>
           </div>
         </div>
