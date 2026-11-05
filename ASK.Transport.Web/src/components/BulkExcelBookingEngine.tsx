@@ -36,6 +36,7 @@ export default function BulkExcelBookingEngine() {
   const [showPasteBox, setShowPasteBox] = useState(false);
   const [loading, setLoading] = useState(false);
   const [justLoaded, setJustLoaded] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   // Initialize immediately with 8 demo consignments so it's never empty
   const [previewData, setPreviewData] = useState<BulkImportPreviewResponse | null>(() => {
@@ -90,8 +91,22 @@ export default function BulkExcelBookingEngine() {
 
   async function handleDownloadTemplate() {
     try {
-      const data = await getBulkSampleTemplate();
-      const blob = new Blob([data.sampleCsv], { type: 'text/csv;charset=utf-8;' });
+      let sampleCsv = '';
+      try {
+        const data = await getBulkSampleTemplate();
+        sampleCsv = data?.sampleCsv || '';
+      } catch {
+        // fallback
+      }
+      if (!sampleCsv) {
+        sampleCsv = `ConsignorName,ConsigneeName,ConsigneePhone,DeliveryAddress,Pincode,City,GoodsDescription,PackageCount,WeightKg,DeclaredValue,PaymentMode\n` +
+          `Tata Motors Ltd,North Star Auto,9811044219,Plot 88 Phase 2 IMT Manesar,122050,Gurugram,Auto Gear Castings,24,650.0,78000,To-Pay\n` +
+          `Bajaj Industrial,Speedway Logistics,9823011452,Warehouse 4 GIDC Naroda,382330,Ahmedabad,Two-Wheeler Brake Discs,16,420.0,46000,Prepaid\n` +
+          `Bharat Forge Ltd,Kirloskar Engine Hub,9890044123,Plot 14 Industrial Area,560058,Bengaluru,Forged Crankshafts,8,890.0,125000,To-Pay\n` +
+          `Mahindra Auto,Apex Assemblies,9711033214,Gala 102 Sector 8,201301,Noida,Engine Mount Brackets,30,510.0,62000,COD\n` +
+          `Lucas TVS Ltd,Southern Auto Spares,9444012891,Ambattur Estate Road 3,600058,Chennai,Alternator Assemblies,18,340.0,55000,Prepaid`;
+      }
+      const blob = new Blob([sampleCsv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
@@ -99,9 +114,11 @@ export default function BulkExcelBookingEngine() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showNotification(t('Template downloaded successfully!', 'टेम्पलेट सफलतापूर्वक डाउनलोड हो गया!'), 'success');
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2500);
+      showNotification(t('Template downloaded successfully! (ASK_Bulk_Consignment_Template.csv)', 'टेम्पलेट सफलतापूर्वक डाउनलोड हो गया!'), 'success');
     } catch (err: any) {
-      showNotification(t('Failed to download template: ', 'टेम्पलेट डाउनलोड करने में विफल: ') + err?.message, 'error');
+      showNotification(t('Failed to download template: ', 'टेम्पलेट डाउनलोड करने में विफल: ') + (err?.message || 'Error'), 'error');
     }
   }
 
@@ -214,9 +231,27 @@ export default function BulkExcelBookingEngine() {
             type="button"
             onClick={handleDownloadTemplate}
             className="bulk-btn-secondary"
+            style={
+              downloaded
+                ? {
+                    background: '#059669',
+                    borderColor: '#10b981',
+                    color: '#ffffff'
+                  }
+                : undefined
+            }
           >
-            <Download size={14} />
-            <span>{t('Download CSV Template', 'सीएसवी टेम्पलेट डाउनलोड')}</span>
+            {downloaded ? (
+              <>
+                <CheckCircle2 size={14} />
+                <span>{t('Downloaded! ✓', 'डाउनलोड हो गया! ✓')}</span>
+              </>
+            ) : (
+              <>
+                <Download size={14} />
+                <span>{t('Download CSV Template', 'सीएसवी टेम्पलेट डाउनलोड')}</span>
+              </>
+            )}
           </button>
 
           <label className="bulk-file-label">
