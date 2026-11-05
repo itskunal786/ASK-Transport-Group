@@ -138,15 +138,6 @@ export default function LandingPage() {
               <Link to={user ? "/book" : "/login"} className="hero-btn-primary">
                 {t('📦 Book a Shipment →', '📦 शिपमेंट बुक करें →')}
               </Link>
-              <button
-                type="button"
-                className="hero-btn-secondary"
-                onClick={() => {
-                  document.getElementById('tracking')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                {t('🔍 Track Consignment →', '🔍 कंसाइनमेंट ट्रैक करें →')}
-              </button>
             </div>
 
             <div className="landing-hero-stats">
