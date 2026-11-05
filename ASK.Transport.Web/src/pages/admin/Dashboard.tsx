@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -454,6 +454,104 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
 
 type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge' | 'rto_vault' | 'driver_settlement' | 'ais140_safety' | 'cargo_claims' | 'executive_pnl' | 'tax_audit' | 'pod_inward';
 
+export interface TabHeaderInfo {
+  groupTitle: string;
+  groupIcon: string;
+  tabTitle: string;
+  tabIcon: string;
+  subTabTitle?: string;
+  code: string;
+}
+
+export function getTabHeaderInfo(
+  tab: AdminTab,
+  fleetSub?: string,
+  financeSub?: string,
+  aiSub?: string
+): TabHeaderInfo {
+  switch (tab) {
+    case 'dashboard':
+      return { groupTitle: 'Overview', groupIcon: '📊', tabTitle: 'Executive Logistics Deck', tabIcon: '⚡', code: 'HQ-OPS' };
+    case 'bookings':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Bookings & Bilty', tabIcon: '📝', code: 'BKG-OPS' };
+    case 'shipments':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Shipments & Dispatch', tabIcon: '🚚', code: 'DISPATCH-LIVE' };
+    case 'ewaybill':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'NIC E-Way Bill & Part-B', tabIcon: '🏛️', code: 'EWB-01' };
+    case 'hubs':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Hubs & Terminals', tabIcon: '🏢', code: 'HUB-DEPOT' };
+    case 'dock_yard':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Gate Pass & Dock Yard', tabIcon: '🚪', code: 'DOCK-YARD' };
+    case 'weighbridge':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Dharam Kanta & Weighbridge', tabIcon: '⚖️', code: 'WB-AXLE' };
+    case 'rto_vault':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'RTO Check-Post Vault', tabIcon: '🛑', code: 'RTO-VAULT' };
+    case 'pod_inward':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Physical POD & SOS Rescue', tabIcon: '📑', code: 'POD-INWARD' };
+    case 'fleet_mgmt': {
+      let subTitle = 'Trip Petty Cash & P&L';
+      let code = 'FLEET-CASH';
+      if (fleetSub === 'fuel_theft') { subTitle = 'Fuel & Diesel Theft Radar'; code = 'DIESEL-RADAR'; }
+      else if (fleetSub === 'cold_chain') { subTitle = 'Cold-Chain Temp Radar'; code = 'TEMP-REEFER'; }
+      else if (fleetSub === 'maintenance') { subTitle = 'Fitness & Renewal Alerts'; code = 'FITNESS-ALERT'; }
+      else if (fleetSub === 'tyre_radar') { subTitle = 'Tyre & TPMS Radar'; code = 'TPMS-RADAR'; }
+      else if (fleetSub === 'mobile_driver') { subTitle = 'Driver Mobile Mode'; code = 'DRIVER-APP'; }
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Fleet & Trip Operations', tabIcon: '⛽', subTabTitle: subTitle, code };
+    }
+    case 'vehicles':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Fleet & Vehicles', tabIcon: '🚛', code: 'VEH-REG' };
+    case 'drivers':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Sarathi Drivers', tabIcon: '👤', code: 'SARATHI-DL' };
+    case 'telematics':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'GPS Telematics Radar', tabIcon: '🛰️', code: 'GPS-TELE' };
+    case 'driver_settlement':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Trip Settlement & Hisaab', tabIcon: '🧾', code: 'TRIP-HISAAB' };
+    case 'ais140_safety':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'AIS-140 Highway Safety', tabIcon: '🚨', code: 'AIS-140' };
+    case 'enterprise_b2b':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'B2B Bulk, Auction & RTO', tabIcon: '📦', code: 'B2B-BULK' };
+    case 'finance_accounting': {
+      let subTitle = 'Hired Fleet & 194C TDS';
+      let code = 'FIN-TDS';
+      if (financeSub === 'einv') { subTitle = 'GST E-Invoice & ERP Ledgers'; code = 'GST-EINV'; }
+      else if (financeSub === 'erp') { subTitle = 'Tally & Zoho ERP Sync'; code = 'ERP-SYNC'; }
+      else if (financeSub === 'credit') { subTitle = 'Customer Credit Ledgers'; code = 'CREDIT-LEDGER'; }
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Enterprise Finance & ERP', tabIcon: '🏦', subTabTitle: subTitle, code };
+    }
+    case 'cargo_claims':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Cargo Claims & SLA Shield', tabIcon: '🛡️', code: 'CARGO-CLAIMS' };
+    case 'executive_pnl':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Executive P&L Margins Radar', tabIcon: '📈', code: 'EXEC-PNL' };
+    case 'tax_audit':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'CA 1-Click Tax & Audit Vault', tabIcon: '💼', code: 'TAX-AUDIT' };
+    case 'tariff':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Tariff & Rate Matrix', tabIcon: '💲', code: 'TARIFF-ENGINE' };
+    case 'ai_automation': {
+      let subTitle = '3D Cargo Load Planner';
+      let code = 'AI-3D-LOAD';
+      if (aiSub === 'ocr_scanner') { subTitle = 'AI Bilty Scanner (OCR)'; code = 'AI-OCR'; }
+      else if (aiSub === 'route_predictor') { subTitle = 'Highway Route Predictor'; code = 'AI-ROUTE'; }
+      else if (aiSub === 'spot_rate_ai') { subTitle = 'Spot Freight Rate AI'; code = 'AI-SPOT'; }
+      else if (aiSub === 'whatsapp_bot') { subTitle = 'WhatsApp AI Logistics Bot'; code = 'AI-WHATSAPP'; }
+      return { groupTitle: 'AI & Automation', groupIcon: '🤖', tabTitle: 'AI & Automation Deck', tabIcon: '🤖', subTabTitle: subTitle, code };
+    }
+    case 'customers':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'User Directory', tabIcon: '👥', code: 'USERS-MGMT' };
+    case 'access':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'Access Control & Rights', tabIcon: '👑', code: 'ACCESS-RIGHTS' };
+    case 'audit':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'System Audit Logs', tabIcon: '🛡️', code: 'AUDIT-LOGS' };
+    case 'support':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'Help Desk & Support', tabIcon: '🎧', code: 'SUPPORT-DESK' };
+    case 'reports':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'Executive Reports', tabIcon: '📊', code: 'MIS-REPORTS' };
+    case 'settings':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'System Settings', tabIcon: '⚙️', code: 'SETTINGS-CONF' };
+    default:
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Operations Deck', tabIcon: '⚡', code: 'OPS-DECK' };
+  }
+}
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
@@ -486,21 +584,9 @@ export default function Dashboard() {
   };
 
   const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
-
-  const setActiveTab = (tab: AdminTab, optionalSubTab?: string) => {
-    setActiveTabState(tab);
-    try {
-      localStorage.setItem('ask_admin_active_tab', tab);
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
-      if (optionalSubTab) {
-        url.searchParams.set('subtab', optionalSubTab);
-      }
-      window.history.replaceState(null, '', url.toString());
-    } catch {
-      // ignore
-    }
-  };
+  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
+  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const getInitialFinanceSubTab = (): 'einv' | 'erp' | 'credit' | 'settlement' => {
     try {
@@ -521,21 +607,79 @@ export default function Dashboard() {
 
   const [financeDeckSubTab, setFinanceDeckSubTabState] = useState<'einv' | 'erp' | 'credit' | 'settlement'>(getInitialFinanceSubTab);
 
+  const currentTabInfo = getTabHeaderInfo(activeTab, fleetDeckSubTab, financeDeckSubTab, aiDeckSubTab);
+
+  // Synchronize document title so the browser header / window tab reflects active page
+  useEffect(() => {
+    document.title = `${currentTabInfo.tabTitle} | ASK Transport Enterprise Admin`;
+  }, [currentTabInfo.tabTitle]);
+
+  // Synchronize address bar URL header with active tab and support browser Back/Forward navigation
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') !== activeTab) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', activeTab);
+        window.history.replaceState({ tab: activeTab }, '', url.toString());
+      }
+    } catch {}
+
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab') as AdminTab;
+        if (t && validAdminTabs.includes(t)) {
+          setActiveTabState(t);
+        }
+        const st = params.get('subtab');
+        if (st) {
+          if (['expenses', 'fuel_theft', 'cold_chain', 'maintenance', 'mobile_driver', 'tyre_radar'].includes(st)) {
+            setFleetDeckSubTab(st as any);
+          }
+          if (['einv', 'erp', 'credit', 'settlement'].includes(st)) {
+            setFinanceDeckSubTabState(st as any);
+          }
+          if (['3d_load', 'ocr_scanner', 'route_predictor', 'whatsapp_bot', 'spot_rate_ai'].includes(st)) {
+            setAiDeckSubTab(st as any);
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeTab]);
+
+  const setActiveTab = (tab: AdminTab, optionalSubTab?: string) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('ask_admin_active_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      if (optionalSubTab) {
+        url.searchParams.set('subtab', optionalSubTab);
+      } else {
+        url.searchParams.delete('subtab');
+      }
+      // Instantly update browser address bar header
+      window.history.pushState({ tab, optionalSubTab }, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
   const setFinanceDeckSubTab = (subTab: 'einv' | 'erp' | 'credit' | 'settlement') => {
     setFinanceDeckSubTabState(subTab);
     try {
       localStorage.setItem('ask_admin_finance_subtab', subTab);
       const url = new URL(window.location.href);
       url.searchParams.set('subtab', subTab);
-      window.history.replaceState(null, '', url.toString());
+      window.history.pushState({ tab: activeTab, subtab: subTab }, '', url.toString());
     } catch {
       // ignore
     }
   };
-
-  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
-  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Auto-scroll main window to top on tab switch and close mobile drawer
   useEffect(() => {
@@ -2627,6 +2771,28 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* LIVE ACTIVE PAGE BREADCRUMB & MODULE TITLE IN TOPBAR HEADER */}
+          <div className="admin-header-breadcrumb">
+            <div className="breadcrumb-category">
+              <span className="breadcrumb-category-icon">{currentTabInfo.groupIcon}</span>
+              <span className="breadcrumb-category-name">{currentTabInfo.groupTitle}</span>
+            </div>
+            <span className="breadcrumb-separator">›</span>
+            <div className="breadcrumb-active-item">
+              <span className="breadcrumb-active-title">{currentTabInfo.tabTitle}</span>
+              {currentTabInfo.subTabTitle && (
+                <>
+                  <span className="breadcrumb-separator">›</span>
+                  <span className="breadcrumb-subpage-badge">{currentTabInfo.subTabTitle}</span>
+                </>
+              )}
+              <span className="breadcrumb-live-badge" title="Active Module Indicator">
+                <span className="live-pulse-dot"></span>
+                {currentTabInfo.code}
+              </span>
+            </div>
+          </div>
+
             <div className="admin-topbar-quick-actions">
             <button
               type="button"
@@ -2796,7 +2962,7 @@ export default function Dashboard() {
             </svg>
             <input
               type="text"
-              placeholder={t(`Search ${activeTab}...`, 'डैशबोर्ड में खोजें...')}
+              placeholder={t(`Search in ${currentTabInfo.tabTitle}...`, `${currentTabInfo.tabTitle} में खोजें...`)}
               value={
                 activeTab === 'bookings'
                   ? bookingSearch
