@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Calendar, Check, X, RotateCcw } from 'lucide-react';
 import './DashboardAnalyticsCharts.css';
 
 interface DataPoint {
@@ -7,6 +8,11 @@ interface DataPoint {
   consignments: number;
   tonnageMt: number;
 }
+
+const MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
 
 const DATA_7_DAYS: DataPoint[] = [
   { month: '29 Oct', revenueLakhs: 1.45, consignments: 38, tonnageMt: 165 },
@@ -42,6 +48,83 @@ const YEAR_2026_DATA: DataPoint[] = [
   { month: 'Dec (Est)', revenueLakhs: 44.8, consignments: 1310, tonnageMt: 5240 }
 ];
 
+// Helper to generate 4-week breakdown for any of the 12 months in 2026
+function getMonthWeeklyData(monthIdx: number): DataPoint[] {
+  const base = YEAR_2026_DATA[monthIdx] || YEAR_2026_DATA[10];
+  const mName = base.month.replace(' (Est)', '');
+  
+  const w1Rev = +(base.revenueLakhs * 0.23).toFixed(1);
+  const w2Rev = +(base.revenueLakhs * 0.25).toFixed(1);
+  const w3Rev = +(base.revenueLakhs * 0.28).toFixed(1);
+  const w4Rev = +(base.revenueLakhs - w1Rev - w2Rev - w3Rev).toFixed(1);
+
+  const w1Bilties = Math.round(base.consignments * 0.23);
+  const w2Bilties = Math.round(base.consignments * 0.25);
+  const w3Bilties = Math.round(base.consignments * 0.28);
+  const w4Bilties = base.consignments - w1Bilties - w2Bilties - w3Bilties;
+
+  const w1Mt = Math.round(base.tonnageMt * 0.23);
+  const w2Mt = Math.round(base.tonnageMt * 0.25);
+  const w3Mt = Math.round(base.tonnageMt * 0.28);
+  const w4Mt = base.tonnageMt - w1Mt - w2Mt - w3Mt;
+
+  return [
+    { month: `W1 (01-07 ${mName})`, revenueLakhs: w1Rev, consignments: w1Bilties, tonnageMt: w1Mt },
+    { month: `W2 (08-14 ${mName})`, revenueLakhs: w2Rev, consignments: w2Bilties, tonnageMt: w2Mt },
+    { month: `W3 (15-21 ${mName})`, revenueLakhs: w3Rev, consignments: w3Bilties, tonnageMt: w3Mt },
+    { month: `W4 (22-end ${mName})`, revenueLakhs: w4Rev, consignments: w4Bilties, tonnageMt: w4Mt }
+  ];
+}
+
+// Helper to compute custom date range metrics and checkpoints
+function getCustomRangeData(startDate: string, endDate: string): {
+  dataPoints: DataPoint[];
+  totalRevenue: number;
+  totalBilties: number;
+  totalTonnage: number;
+  label: string;
+} {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diffTime = Math.max(end.getTime() - start.getTime(), 1000 * 60 * 60 * 24);
+  const diffDays = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1);
+
+  const totalRevenue = +(diffDays * 1.48).toFixed(1);
+  const totalBilties = Math.round(diffDays * 42.8);
+  const totalTonnage = Math.round(diffDays * 170.6);
+
+  const steps = Math.min(diffDays, 6);
+  const dataPoints: DataPoint[] = [];
+
+  for (let i = 0; i < steps; i++) {
+    const fraction = steps > 1 ? i / (steps - 1) : 0.5;
+    const ptDate = new Date(start.getTime() + fraction * diffTime);
+    const dayStr = ptDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    
+    const ptRev = +(totalRevenue / steps * (0.85 + 0.3 * Math.sin(i * 1.5))).toFixed(1);
+    const ptBilties = Math.round(totalBilties / steps * (0.85 + 0.3 * Math.sin(i * 1.5)));
+    const ptMt = Math.round(totalTonnage / steps * (0.85 + 0.3 * Math.sin(i * 1.5)));
+
+    dataPoints.push({
+      month: dayStr,
+      revenueLakhs: Math.max(0.5, ptRev),
+      consignments: Math.max(10, ptBilties),
+      tonnageMt: Math.max(40, ptMt)
+    });
+  }
+
+  const startFormatted = start.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+  const endFormatted = end.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  return {
+    dataPoints,
+    totalRevenue,
+    totalBilties,
+    totalTonnage,
+    label: `${startFormatted} – ${endFormatted}`
+  };
+}
+
 interface PeriodConfig {
   curveSubtitle: string;
   peakLabel: string;
@@ -62,66 +145,6 @@ interface PeriodConfig {
   fleetStripGps: string;
 }
 
-const PERIOD_CONFIG: Record<'7d' | '30d' | '2026', PeriodConfig> = {
-  '7d': {
-    curveSubtitle: 'Interactive 7-Day Velocity Curve (29 Oct – 04 Nov)',
-    peakLabel: 'Peak Day Revenue',
-    peakValue: '₹2.10 L (02 Nov)',
-    speedLabel: 'Average Dispatch Speed',
-    speedValue: '99.2% On-Time SLA',
-    tonnageLabel: '7-Day Dispatched Tonnage',
-    tonnageValue: '1,394 MT Dispatched',
-    activeShipmentsBadge: '294 Active Bilties',
-    centerDefaultCount: '294',
-    centerDefaultLabel: '7-Day Bilties',
-    networkSlaBadge: '✓ 99.1% 7-Day SLA',
-    fleetBadge: '245 Monitored Vehicles',
-    fleetCenterDefaultCount: '192',
-    fleetCenterDefaultLabel: '7D Active Trips',
-    fleetStripUtil: '91.4% 7D Fleet Utilization',
-    fleetStripTat: '58 Mins Loading TAT',
-    fleetStripGps: '100% MoRTH Connected'
-  },
-  '30d': {
-    curveSubtitle: 'Interactive 30-Day Velocity Curve (05 Oct – 04 Nov)',
-    peakLabel: 'Peak Week Revenue',
-    peakValue: '₹10.4 L (W4 Oct)',
-    speedLabel: 'Average Dispatch Speed',
-    speedValue: '98.8% On-Time SLA',
-    tonnageLabel: '30-Day Dispatched Tonnage',
-    tonnageValue: '6,140 MT Dispatched',
-    activeShipmentsBadge: '1,284 Active Shipments',
-    centerDefaultCount: '1,284',
-    centerDefaultLabel: '30-Day Bilties',
-    networkSlaBadge: '✓ 98.1% Network SLA',
-    fleetBadge: '245 Commercial Units',
-    fleetCenterDefaultCount: '184',
-    fleetCenterDefaultLabel: 'On Highway',
-    fleetStripUtil: '88.2% Active Utilization',
-    fleetStripTat: '68 Mins Loading TAT',
-    fleetStripGps: '100% MoRTH Connected'
-  },
-  '2026': {
-    curveSubtitle: 'Interactive 12-Month Pan-India Corridors Curve',
-    peakLabel: 'Peak Month Revenue',
-    peakValue: '₹46.2 L (Oct 2026)',
-    speedLabel: 'Average Dispatch Speed',
-    speedValue: '98.4% On-Time SLA',
-    tonnageLabel: 'Annual Dispatched Tonnage',
-    tonnageValue: '53,390 MT Dispatched',
-    activeShipmentsBadge: '13,440 Total Bilties',
-    centerDefaultCount: '13,440',
-    centerDefaultLabel: 'Annual Bilties',
-    networkSlaBadge: '✓ 97.8% Annual SLA',
-    fleetBadge: '245 Heavy Trucks',
-    fleetCenterDefaultCount: '184',
-    fleetCenterDefaultLabel: 'Avg Active Units',
-    fleetStripUtil: '89.6% Annual Utilization',
-    fleetStripTat: '64 Mins Loading TAT',
-    fleetStripGps: '100% MoRTH Connected'
-  }
-};
-
 interface CargoCategory {
   name: string;
   pct: number;
@@ -130,7 +153,7 @@ interface CargoCategory {
   color: string;
 }
 
-const CARGO_CATEGORIES_BY_PERIOD: Record<'7d' | '30d' | '2026', CargoCategory[]> = {
+const CARGO_CATEGORIES_PRESETS: Record<'7d' | '30d' | '2026', CargoCategory[]> = {
   '7d': [
     { name: 'Heavy FTL Freight (32ft Multi-Axle)', pct: 38, count: 112, revenue: '₹38.2 L', color: '#0284c7' },
     { name: 'PTL Express Parcel & LTL', pct: 27, count: 79, revenue: '₹26.4 L', color: '#10b981' },
@@ -154,6 +177,34 @@ const CARGO_CATEGORIES_BY_PERIOD: Record<'7d' | '30d' | '2026', CargoCategory[]>
   ]
 };
 
+function getDynamicCategories(totalBilties: number, totalRevenueLakhs: number): CargoCategory[] {
+  const pcts = [38, 27, 18, 12, 5];
+  const colors = ['#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+  const names = [
+    'Heavy FTL Freight (32ft Multi-Axle)',
+    'PTL Express Parcel & LTL',
+    'Reefer Cold-Chain & Pharma',
+    'Automotive Parts & Machinery',
+    'ODC & Project Consignments'
+  ];
+
+  return names.map((name, idx) => {
+    const pct = pcts[idx];
+    const count = Math.max(1, Math.round((pct / 100) * totalBilties));
+    const revLakhs = (pct / 100) * totalRevenueLakhs;
+    const revFormatted = revLakhs >= 100
+      ? `₹${(revLakhs / 100).toFixed(2)} Cr`
+      : `₹${revLakhs.toFixed(1)} L`;
+    return {
+      name,
+      pct,
+      count,
+      revenue: revFormatted,
+      color: colors[idx]
+    };
+  });
+}
+
 interface CorridorStat {
   corridor: string;
   km: number;
@@ -164,149 +215,38 @@ interface CorridorStat {
   color: string;
 }
 
-const CORRIDOR_PERFORMANCE_BY_PERIOD: Record<'7d' | '30d' | '2026', CorridorStat[]> = {
+const CORRIDOR_PRESETS: Record<'7d' | '30d' | '2026', CorridorStat[]> = {
   '7d': [
-    {
-      corridor: 'NH-48 (Delhi NCR ⟷ Mumbai Freightway)',
-      km: 1420,
-      slaPct: 99.4,
-      avgSpeed: '47 km/h',
-      toll: '₹2,840',
-      trips: 92,
-      color: '#0284c7'
-    },
-    {
-      corridor: 'NH-44 (Delhi NCR ⟷ Bengaluru Tech Line)',
-      km: 2150,
-      slaPct: 98.2,
-      avgSpeed: '44 km/h',
-      toll: '₹4,150',
-      trips: 74,
-      color: '#10b981'
-    },
-    {
-      corridor: 'NH-19 (Delhi NCR ⟷ Kolkata Eastern Trunk)',
-      km: 1530,
-      slaPct: 98.9,
-      avgSpeed: '45 km/h',
-      toll: '₹3,120',
-      trips: 63,
-      color: '#f59e0b'
-    },
-    {
-      corridor: 'NH-65 (Pune ⟷ Hyderabad Industrial Route)',
-      km: 860,
-      slaPct: 99.6,
-      avgSpeed: '48 km/h',
-      toll: '₹1,680',
-      trips: 44,
-      color: '#8b5cf6'
-    },
-    {
-      corridor: 'NH-16 (Chennai ⟷ Visakhapatnam Coastal Corridor)',
-      km: 800,
-      slaPct: 99.1,
-      avgSpeed: '46 km/h',
-      toll: '₹1,550',
-      trips: 37,
-      color: '#06b6d4'
-    }
+    { corridor: 'NH-48 (Delhi NCR ⟷ Mumbai Freightway)', km: 1420, slaPct: 99.4, avgSpeed: '47 km/h', toll: '₹2,840', trips: 92, color: '#0284c7' },
+    { corridor: 'NH-44 (Delhi NCR ⟷ Bengaluru Tech Line)', km: 2150, slaPct: 98.2, avgSpeed: '44 km/h', toll: '₹4,150', trips: 74, color: '#10b981' },
+    { corridor: 'NH-19 (Delhi NCR ⟷ Kolkata Eastern Trunk)', km: 1530, slaPct: 98.9, avgSpeed: '45 km/h', toll: '₹3,120', trips: 63, color: '#f59e0b' },
+    { corridor: 'NH-65 (Pune ⟷ Hyderabad Industrial Route)', km: 860, slaPct: 99.6, avgSpeed: '48 km/h', toll: '₹1,680', trips: 44, color: '#8b5cf6' },
+    { corridor: 'NH-16 (Chennai ⟷ Visakhapatnam Coastal Corridor)', km: 800, slaPct: 99.1, avgSpeed: '46 km/h', toll: '₹1,550', trips: 37, color: '#06b6d4' }
   ],
   '30d': [
-    {
-      corridor: 'NH-48 (Delhi NCR ⟷ Mumbai Freightway)',
-      km: 1420,
-      slaPct: 98.4,
-      avgSpeed: '45 km/h',
-      toll: '₹2,840',
-      trips: 412,
-      color: '#0284c7'
-    },
-    {
-      corridor: 'NH-44 (Delhi NCR ⟷ Bengaluru Tech Line)',
-      km: 2150,
-      slaPct: 96.8,
-      avgSpeed: '42 km/h',
-      toll: '₹4,150',
-      trips: 328,
-      color: '#10b981'
-    },
-    {
-      corridor: 'NH-19 (Delhi NCR ⟷ Kolkata Eastern Trunk)',
-      km: 1530,
-      slaPct: 97.2,
-      avgSpeed: '43 km/h',
-      toll: '₹3,120',
-      trips: 284,
-      color: '#f59e0b'
-    },
-    {
-      corridor: 'NH-65 (Pune ⟷ Hyderabad Industrial Route)',
-      km: 860,
-      slaPct: 99.1,
-      avgSpeed: '46 km/h',
-      toll: '₹1,680',
-      trips: 195,
-      color: '#8b5cf6'
-    },
-    {
-      corridor: 'NH-16 (Chennai ⟷ Visakhapatnam Coastal Corridor)',
-      km: 800,
-      slaPct: 98.6,
-      avgSpeed: '44 km/h',
-      toll: '₹1,550',
-      trips: 165,
-      color: '#06b6d4'
-    }
+    { corridor: 'NH-48 (Delhi NCR ⟷ Mumbai Freightway)', km: 1420, slaPct: 98.4, avgSpeed: '45 km/h', toll: '₹2,840', trips: 412, color: '#0284c7' },
+    { corridor: 'NH-44 (Delhi NCR ⟷ Bengaluru Tech Line)', km: 2150, slaPct: 96.8, avgSpeed: '42 km/h', toll: '₹4,150', trips: 328, color: '#10b981' },
+    { corridor: 'NH-19 (Delhi NCR ⟷ Kolkata Eastern Trunk)', km: 1530, slaPct: 97.2, avgSpeed: '43 km/h', toll: '₹3,120', trips: 284, color: '#f59e0b' },
+    { corridor: 'NH-65 (Pune ⟷ Hyderabad Industrial Route)', km: 860, slaPct: 99.1, avgSpeed: '46 km/h', toll: '₹1,680', trips: 195, color: '#8b5cf6' },
+    { corridor: 'NH-16 (Chennai ⟷ Visakhapatnam Coastal Corridor)', km: 800, slaPct: 98.6, avgSpeed: '44 km/h', toll: '₹1,550', trips: 165, color: '#06b6d4' }
   ],
   '2026': [
-    {
-      corridor: 'NH-48 (Delhi NCR ⟷ Mumbai Freightway)',
-      km: 1420,
-      slaPct: 98.0,
-      avgSpeed: '44 km/h',
-      toll: '₹2,840',
-      trips: 4850,
-      color: '#0284c7'
-    },
-    {
-      corridor: 'NH-44 (Delhi NCR ⟷ Bengaluru Tech Line)',
-      km: 2150,
-      slaPct: 96.5,
-      avgSpeed: '41 km/h',
-      toll: '₹4,150',
-      trips: 3910,
-      color: '#10b981'
-    },
-    {
-      corridor: 'NH-19 (Delhi NCR ⟷ Kolkata Eastern Trunk)',
-      km: 1530,
-      slaPct: 97.0,
-      avgSpeed: '42 km/h',
-      toll: '₹3,120',
-      trips: 3340,
-      color: '#f59e0b'
-    },
-    {
-      corridor: 'NH-65 (Pune ⟷ Hyderabad Industrial Route)',
-      km: 860,
-      slaPct: 98.8,
-      avgSpeed: '45 km/h',
-      toll: '₹1,680',
-      trips: 2280,
-      color: '#8b5cf6'
-    },
-    {
-      corridor: 'NH-16 (Chennai ⟷ Visakhapatnam Coastal Corridor)',
-      km: 800,
-      slaPct: 98.2,
-      avgSpeed: '43 km/h',
-      toll: '₹1,550',
-      trips: 1980,
-      color: '#06b6d4'
-    }
+    { corridor: 'NH-48 (Delhi NCR ⟷ Mumbai Freightway)', km: 1420, slaPct: 98.0, avgSpeed: '44 km/h', toll: '₹2,840', trips: 4850, color: '#0284c7' },
+    { corridor: 'NH-44 (Delhi NCR ⟷ Bengaluru Tech Line)', km: 2150, slaPct: 96.5, avgSpeed: '41 km/h', toll: '₹4,150', trips: 3910, color: '#10b981' },
+    { corridor: 'NH-19 (Delhi NCR ⟷ Kolkata Eastern Trunk)', km: 1530, slaPct: 97.0, avgSpeed: '42 km/h', toll: '₹3,120', trips: 3340, color: '#f59e0b' },
+    { corridor: 'NH-65 (Pune ⟷ Hyderabad Industrial Route)', km: 860, slaPct: 98.8, avgSpeed: '45 km/h', toll: '₹1,680', trips: 2280, color: '#8b5cf6' },
+    { corridor: 'NH-16 (Chennai ⟷ Visakhapatnam Coastal Corridor)', km: 800, slaPct: 98.2, avgSpeed: '43 km/h', toll: '₹1,550', trips: 1980, color: '#06b6d4' }
   ]
 };
+
+function getDynamicCorridors(totalBilties: number): CorridorStat[] {
+  const baseCorridors = CORRIDOR_PRESETS['30d'];
+  const ratio = Math.max(0.08, totalBilties / 1284);
+  return baseCorridors.map(c => ({
+    ...c,
+    trips: Math.max(5, Math.round(c.trips * ratio))
+  }));
+}
 
 interface FleetStatus {
   label: string;
@@ -315,52 +255,241 @@ interface FleetStatus {
   color: string;
 }
 
-const FLEET_STATUS_BY_PERIOD: Record<'7d' | '30d' | '2026', FleetStatus[]> = {
-  '7d': [
-    { label: 'Active In-Transit on Highways', count: 192, pct: 78.4, color: '#10b981' },
-    { label: 'Dock Inward / Hub Loading', count: 28, pct: 11.4, color: '#0284c7' },
-    { label: 'Yard Staging / Ready for Booking', count: 16, pct: 6.5, color: '#f59e0b' },
-    { label: 'Workshop Scheduled Maintenance', count: 9, pct: 3.7, color: '#ef4444' }
-  ],
-  '30d': [
-    { label: 'Active In-Transit on Highways', count: 184, pct: 75.1, color: '#10b981' },
-    { label: 'Dock Inward / Hub Loading', count: 32, pct: 13.1, color: '#0284c7' },
-    { label: 'Yard Staging / Ready for Booking', count: 18, pct: 7.3, color: '#f59e0b' },
-    { label: 'Workshop Scheduled Maintenance', count: 11, pct: 4.5, color: '#ef4444' }
-  ],
-  '2026': [
-    { label: 'Active In-Transit on Highways', count: 184, pct: 75.1, color: '#10b981' },
-    { label: 'Dock Inward / Hub Loading', count: 32, pct: 13.1, color: '#0284c7' },
-    { label: 'Yard Staging / Ready for Booking', count: 18, pct: 7.3, color: '#f59e0b' },
-    { label: 'Workshop Scheduled Maintenance', count: 11, pct: 4.5, color: '#ef4444' }
-  ]
-};
+const FLEET_STATUS_BREAKDOWN: FleetStatus[] = [
+  { label: 'Active In-Transit on Highways', count: 184, pct: 75.1, color: '#10b981' },
+  { label: 'Dock Inward / Hub Loading', count: 32, pct: 13.1, color: '#0284c7' },
+  { label: 'Yard Staging / Ready for Booking', count: 18, pct: 7.3, color: '#f59e0b' },
+  { label: 'Workshop Scheduled Maintenance', count: 11, pct: 4.5, color: '#ef4444' }
+];
+
+type PeriodMode = '7d' | '30d' | '2026' | 'month' | 'custom';
 
 export default function DashboardAnalyticsCharts() {
-  const [period, setPeriod] = useState<'7d' | '30d' | '2026'>('2026');
+  const [period, setPeriod] = useState<PeriodMode>('2026');
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState<number>(10); // Nov 2026
+  const [customStartDate, setCustomStartDate] = useState<string>('2026-10-15');
+  const [customEndDate, setCustomEndDate] = useState<string>('2026-11-05');
+  const [customRangeInfo, setCustomRangeInfo] = useState<{
+    dataPoints: DataPoint[];
+    totalRevenue: number;
+    totalBilties: number;
+    totalTonnage: number;
+    label: string;
+  } | null>(null);
+
+  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
+  const [calendarTab, setCalendarTab] = useState<'months' | 'range'>('months');
+
   const [graphMetric, setGraphMetric] = useState<'revenue' | 'consignments' | 'tonnage'>('revenue');
   const [hoveredPointIdx, setHoveredPointIdx] = useState<number | null>(null);
   const [hoveredCategoryIdx, setHoveredCategoryIdx] = useState<number | null>(null);
   const [hoveredFleetIdx, setHoveredFleetIdx] = useState<number | null>(null);
 
-  // Active dataset and configs according to selected period
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const calendarBoxRef = useRef<HTMLDivElement>(null);
+
+  // Close calendar popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isCalendarOpen &&
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node) &&
+        calendarBoxRef.current &&
+        !calendarBoxRef.current.contains(event.target as Node)
+      ) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCalendarOpen]);
+
+  // Handle standard period buttons
+  const handlePeriodChange = (newPeriod: '7d' | '30d' | '2026') => {
+    setPeriod(newPeriod);
+    setHoveredPointIdx(null);
+    setHoveredCategoryIdx(null);
+    setHoveredFleetIdx(null);
+    setIsCalendarOpen(false);
+  };
+
+  // Handle specific month selection
+  const handleSelectMonth = (idx: number) => {
+    setSelectedMonthIdx(idx);
+    setPeriod('month');
+    setHoveredPointIdx(null);
+    setIsCalendarOpen(false);
+  };
+
+  // Handle custom date range apply
+  const handleApplyCustomRange = (start: string, end: string) => {
+    const rangeResult = getCustomRangeData(start, end);
+    setCustomRangeInfo(rangeResult);
+    setPeriod('custom');
+    setHoveredPointIdx(null);
+    setIsCalendarOpen(false);
+  };
+
+  // Handle reset to live 2026
+  const handleResetLive = () => {
+    setPeriod('2026');
+    setHoveredPointIdx(null);
+    setCustomRangeInfo(null);
+    setIsCalendarOpen(false);
+  };
+
+  // Compute active dataset
   const activeDataset: DataPoint[] = useMemo(() => {
     if (period === '7d') return DATA_7_DAYS;
     if (period === '30d') return DATA_30_DAYS;
+    if (period === 'month') return getMonthWeeklyData(selectedMonthIdx);
+    if (period === 'custom' && customRangeInfo) return customRangeInfo.dataPoints;
     return YEAR_2026_DATA;
-  }, [period]);
+  }, [period, selectedMonthIdx, customRangeInfo]);
 
-  const periodConfig = PERIOD_CONFIG[period];
-  const currentCategories = CARGO_CATEGORIES_BY_PERIOD[period];
-  const currentCorridors = CORRIDOR_PERFORMANCE_BY_PERIOD[period];
-  const currentFleet = FLEET_STATUS_BY_PERIOD[period];
+  // Compute active period config and labels
+  const periodConfig: PeriodConfig = useMemo(() => {
+    if (period === '7d') {
+      return {
+        curveSubtitle: 'Interactive 7-Day Velocity Curve (29 Oct – 04 Nov)',
+        peakLabel: 'Peak Day Revenue',
+        peakValue: '₹2.10 L (02 Nov)',
+        speedLabel: 'Average Dispatch Speed',
+        speedValue: '99.2% On-Time SLA',
+        tonnageLabel: '7-Day Dispatched Tonnage',
+        tonnageValue: '1,394 MT Dispatched',
+        activeShipmentsBadge: '294 Active Bilties',
+        centerDefaultCount: '294',
+        centerDefaultLabel: '7-Day Bilties',
+        networkSlaBadge: '✓ 99.1% 7-Day SLA',
+        fleetBadge: '245 Monitored Vehicles',
+        fleetCenterDefaultCount: '192',
+        fleetCenterDefaultLabel: '7D Active Trips',
+        fleetStripUtil: '91.4% 7D Fleet Utilization',
+        fleetStripTat: '58 Mins Loading TAT',
+        fleetStripGps: '100% MoRTH Connected'
+      };
+    }
+    if (period === '30d') {
+      return {
+        curveSubtitle: 'Interactive 30-Day Velocity Curve (05 Oct – 04 Nov)',
+        peakLabel: 'Peak Week Revenue',
+        peakValue: '₹10.4 L (W4 Oct)',
+        speedLabel: 'Average Dispatch Speed',
+        speedValue: '98.8% On-Time SLA',
+        tonnageLabel: '30-Day Dispatched Tonnage',
+        tonnageValue: '6,140 MT Dispatched',
+        activeShipmentsBadge: '1,284 Active Shipments',
+        centerDefaultCount: '1,284',
+        centerDefaultLabel: '30-Day Bilties',
+        networkSlaBadge: '✓ 98.1% Network SLA',
+        fleetBadge: '245 Commercial Units',
+        fleetCenterDefaultCount: '184',
+        fleetCenterDefaultLabel: 'On Highway',
+        fleetStripUtil: '88.2% Active Utilization',
+        fleetStripTat: '68 Mins Loading TAT',
+        fleetStripGps: '100% MoRTH Connected'
+      };
+    }
+    if (period === 'month') {
+      const mData = YEAR_2026_DATA[selectedMonthIdx] || YEAR_2026_DATA[10];
+      const mName = MONTH_NAMES[selectedMonthIdx];
+      return {
+        curveSubtitle: `Focused Trajectory for ${mName} 2026 (4-Week Milestone Audit)`,
+        peakLabel: 'Peak Week Revenue',
+        peakValue: `₹${(mData.revenueLakhs * 0.28).toFixed(1)} L (W3 ${mName})`,
+        speedLabel: 'Dispatch Reliability',
+        speedValue: '98.9% On-Time SLA',
+        tonnageLabel: 'Monthly Dispatched Tonnage',
+        tonnageValue: `${mData.tonnageMt.toLocaleString('en-IN')} MT Dispatched`,
+        activeShipmentsBadge: `${mData.consignments.toLocaleString('en-IN')} Monthly Bilties`,
+        centerDefaultCount: `${mData.consignments.toLocaleString('en-IN')}`,
+        centerDefaultLabel: `${mName} Bilties`,
+        networkSlaBadge: '✓ 98.6% Monthly SLA',
+        fleetBadge: '245 Monitored Vehicles',
+        fleetCenterDefaultCount: '188',
+        fleetCenterDefaultLabel: 'Active Units',
+        fleetStripUtil: '90.2% Monthly Utilization',
+        fleetStripTat: '62 Mins Loading TAT',
+        fleetStripGps: '100% MoRTH Connected'
+      };
+    }
+    if (period === 'custom' && customRangeInfo) {
+      return {
+        curveSubtitle: `Custom Window Trajectory (${customRangeInfo.label})`,
+        peakLabel: 'Peak Window Revenue',
+        peakValue: `₹${(customRangeInfo.totalRevenue / 4.2).toFixed(1)} L Peak`,
+        speedLabel: 'Dispatch Speed',
+        speedValue: '98.7% On-Time SLA',
+        tonnageLabel: 'Window Dispatched Tonnage',
+        tonnageValue: `${customRangeInfo.totalTonnage.toLocaleString('en-IN')} MT Dispatched`,
+        activeShipmentsBadge: `${customRangeInfo.totalBilties.toLocaleString('en-IN')} Range Bilties`,
+        centerDefaultCount: `${customRangeInfo.totalBilties.toLocaleString('en-IN')}`,
+        centerDefaultLabel: 'Range Bilties',
+        networkSlaBadge: '✓ 98.4% Range SLA',
+        fleetBadge: '245 Commercial Units',
+        fleetCenterDefaultCount: '186',
+        fleetCenterDefaultLabel: 'Active Units',
+        fleetStripUtil: '89.4% Range Utilization',
+        fleetStripTat: '65 Mins TAT',
+        fleetStripGps: '100% MoRTH Connected'
+      };
+    }
+    // Default: Year 2026
+    return {
+      curveSubtitle: 'Interactive 12-Month Pan-India Corridors Curve',
+      peakLabel: 'Peak Month Revenue',
+      peakValue: '₹46.2 L (Oct 2026)',
+      speedLabel: 'Average Dispatch Speed',
+      speedValue: '98.4% On-Time SLA',
+      tonnageLabel: 'Annual Dispatched Tonnage',
+      tonnageValue: '53,390 MT Dispatched',
+      activeShipmentsBadge: '13,440 Total Bilties',
+      centerDefaultCount: '13,440',
+      centerDefaultLabel: 'Annual Bilties',
+      networkSlaBadge: '✓ 97.8% Annual SLA',
+      fleetBadge: '245 Heavy Trucks',
+      fleetCenterDefaultCount: '184',
+      fleetCenterDefaultLabel: 'Avg Active Units',
+      fleetStripUtil: '89.6% Annual Utilization',
+      fleetStripTat: '64 Mins Loading TAT',
+      fleetStripGps: '100% MoRTH Connected'
+    };
+  }, [period, selectedMonthIdx, customRangeInfo]);
 
-  const handlePeriodChange = (newPeriod: '7d' | '30d' | '2026') => {
-    setPeriod(newPeriod);
-    setHoveredPointIdx(null); // Defaults to the latest point of selected timeframe
-    setHoveredCategoryIdx(null);
-    setHoveredFleetIdx(null);
-  };
+  // Dynamic Categories
+  const currentCategories: CargoCategory[] = useMemo(() => {
+    if (period === '7d') return CARGO_CATEGORIES_PRESETS['7d'];
+    if (period === '30d') return CARGO_CATEGORIES_PRESETS['30d'];
+    if (period === '2026') return CARGO_CATEGORIES_PRESETS['2026'];
+    if (period === 'month') {
+      const mData = YEAR_2026_DATA[selectedMonthIdx] || YEAR_2026_DATA[10];
+      return getDynamicCategories(mData.consignments, mData.revenueLakhs);
+    }
+    if (period === 'custom' && customRangeInfo) {
+      return getDynamicCategories(customRangeInfo.totalBilties, customRangeInfo.totalRevenue);
+    }
+    return CARGO_CATEGORIES_PRESETS['2026'];
+  }, [period, selectedMonthIdx, customRangeInfo]);
+
+  // Dynamic Corridors
+  const currentCorridors: CorridorStat[] = useMemo(() => {
+    if (period === '7d') return CORRIDOR_PRESETS['7d'];
+    if (period === '30d') return CORRIDOR_PRESETS['30d'];
+    if (period === '2026') return CORRIDOR_PRESETS['2026'];
+    if (period === 'month') {
+      const mData = YEAR_2026_DATA[selectedMonthIdx] || YEAR_2026_DATA[10];
+      return getDynamicCorridors(mData.consignments);
+    }
+    if (period === 'custom' && customRangeInfo) {
+      return getDynamicCorridors(customRangeInfo.totalBilties);
+    }
+    return CORRIDOR_PRESETS['2026'];
+  }, [period, selectedMonthIdx, customRangeInfo]);
 
   // SVG Chart Geometry calculations
   const graphWidth = 620;
@@ -420,7 +549,7 @@ export default function DashboardAnalyticsCharts() {
     return `${linePath} L ${points[points.length - 1].x} ${bottomY} L ${points[0].x} ${bottomY} Z`;
   }, [linePath, points]);
 
-  // Hovered active point data (defaults to the latest item in timeframe)
+  // Active point data
   const activePoint = useMemo(() => {
     if (hoveredPointIdx !== null && activeDataset[hoveredPointIdx]) {
       return activeDataset[hoveredPointIdx];
@@ -429,6 +558,18 @@ export default function DashboardAnalyticsCharts() {
   }, [hoveredPointIdx, activeDataset]);
 
   const activePointIndex = hoveredPointIdx !== null ? hoveredPointIdx : activeDataset.length - 1;
+
+  // Formatted date label for calendar pill
+  const calendarBoxLabel = useMemo(() => {
+    if (hoveredPointIdx !== null && activeDataset[hoveredPointIdx]) {
+      return activeDataset[hoveredPointIdx].month;
+    }
+    if (period === 'month') return `${MONTH_NAMES[selectedMonthIdx]} 2026`;
+    if (period === 'custom' && customRangeInfo) return customRangeInfo.label;
+    if (period === '7d') return 'Last 7 Days';
+    if (period === '30d') return 'Last 30 Days';
+    return activePoint ? `${activePoint.month} 2026` : 'Nov 2026';
+  }, [hoveredPointIdx, activeDataset, period, selectedMonthIdx, customRangeInfo, activePoint]);
 
   return (
     <section className="dashboard-analytics-suite" aria-label="Operations Analytics and Visual Radar">
@@ -464,6 +605,21 @@ export default function DashboardAnalyticsCharts() {
             >
               Year 2026 (Live)
             </button>
+            <button
+              type="button"
+              className={`analytics-period-btn analytics-calendar-btn ${period === 'month' || period === 'custom' || isCalendarOpen ? 'active' : ''}`}
+              onClick={() => setIsCalendarOpen(prev => !prev)}
+              title="Open Calendar to select custom date range or month"
+            >
+              <Calendar size={13} />
+              <span>
+                {period === 'month'
+                  ? `${MONTH_NAMES[selectedMonthIdx]} 2026`
+                  : period === 'custom' && customRangeInfo
+                  ? customRangeInfo.label
+                  : 'Calendar ▾'}
+              </span>
+            </button>
           </div>
 
           <div className="analytics-live-tag">
@@ -479,7 +635,7 @@ export default function DashboardAnalyticsCharts() {
         {/* ------------------------------------------------------------- */}
         {/* CHART 1: REVENUE & FREIGHT VOLUME AREA GRAPH */}
         {/* ------------------------------------------------------------- */}
-        <div className="analytics-card">
+        <div className={`analytics-card ${isCalendarOpen ? 'has-calendar-open' : ''}`}>
           <div className="analytics-card-head">
             <div>
               <h3>
@@ -513,20 +669,239 @@ export default function DashboardAnalyticsCharts() {
             </div>
           </div>
 
-          {/* DYNAMIC HOVER TOOLTIP */}
-          {activePoint && (
-            <div className="graph-tooltip-box">
-              <span>🗓️ {activePoint.month} {period === '2026' ? '2026' : '(Trailing 2026)'}</span>
-              <strong>
-                {graphMetric === 'revenue'
-                  ? `₹${activePoint.revenueLakhs} Lakhs Gross`
-                  : graphMetric === 'consignments'
-                  ? `${activePoint.consignments.toLocaleString('en-IN')} Bilties`
-                  : `${activePoint.tonnageMt.toLocaleString('en-IN')} Metric Tons`}
-              </strong>
-              <small style={{ color: '#94a3b8' }}>
-                ₹{activePoint.revenueLakhs}L • {activePoint.consignments.toLocaleString('en-IN')} Bookings • {activePoint.tonnageMt.toLocaleString('en-IN')} MT
-              </small>
+          {/* DYNAMIC INTERACTIVE TELEMETRY CALENDAR BOX */}
+          <div
+            ref={calendarBoxRef}
+            className={`graph-calendar-box ${isCalendarOpen ? 'active' : ''}`}
+            onClick={() => setIsCalendarOpen(prev => !prev)}
+            title="Click to open Calendar & Date Range Picker"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsCalendarOpen(prev => !prev); }}
+          >
+            <div className="graph-calendar-box-header">
+              <span className="graph-calendar-title">
+                <Calendar size={13} style={{ color: '#38bdf8' }} />
+                <span>{calendarBoxLabel}</span>
+              </span>
+              <span className="graph-calendar-badge">
+                📅 Calendar ▾
+              </span>
+            </div>
+            <strong>
+              {graphMetric === 'revenue'
+                ? `₹${activePoint?.revenueLakhs || 42.5} Lakhs Gross`
+                : graphMetric === 'consignments'
+                ? `${(activePoint?.consignments || 1284).toLocaleString('en-IN')} Bilties`
+                : `${(activePoint?.tonnageMt || 5120).toLocaleString('en-IN')} Metric Tons`}
+            </strong>
+            <small>
+              ₹{activePoint?.revenueLakhs || 42.5}L • {(activePoint?.consignments || 1284).toLocaleString('en-IN')} Bookings • {(activePoint?.tonnageMt || 5120).toLocaleString('en-IN')} MT
+            </small>
+          </div>
+
+          {/* INTERACTIVE CALENDAR POPOVER / DROPDOWN */}
+          {isCalendarOpen && (
+            <div
+              ref={calendarRef}
+              className="analytics-calendar-popover"
+              role="dialog"
+              aria-label="Logistics Telemetry Calendar"
+            >
+              <div className="calendar-popover-header">
+                <h4>
+                  <Calendar size={15} style={{ color: '#38bdf8' }} />
+                  <span>Logistics Telemetry Calendar</span>
+                </h4>
+                <button
+                  type="button"
+                  className="calendar-close-btn"
+                  onClick={() => setIsCalendarOpen(false)}
+                  title="Close Calendar"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* TABS */}
+              <div className="calendar-tabs">
+                <button
+                  type="button"
+                  className={`calendar-tab ${calendarTab === 'months' ? 'active' : ''}`}
+                  onClick={() => setCalendarTab('months')}
+                >
+                  🗓️ Select Month (2026)
+                </button>
+                <button
+                  type="button"
+                  className={`calendar-tab ${calendarTab === 'range' ? 'active' : ''}`}
+                  onClick={() => setCalendarTab('range')}
+                >
+                  📅 Custom Date Range
+                </button>
+              </div>
+
+              {calendarTab === 'months' ? (
+                <>
+                  <div className="calendar-section-title">
+                    Choose any month of 2026 for focused 4-week milestone trajectory:
+                  </div>
+                  <div className="calendar-months-grid">
+                    {YEAR_2026_DATA.map((item, mIdx) => {
+                      const isSelected = period === 'month' && selectedMonthIdx === mIdx;
+                      const isNov = mIdx === 10;
+                      return (
+                        <button
+                          key={mIdx}
+                          type="button"
+                          className={`calendar-month-chip ${isSelected ? 'active' : ''}`}
+                          onClick={() => handleSelectMonth(mIdx)}
+                        >
+                          <span>{item.month.replace(' (Est)', '')}</span>
+                          <small>₹{item.revenueLakhs}L</small>
+                          {isNov && <span className="calendar-curr-dot" title="Current Month">• Live</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="calendar-actions-row">
+                    <button
+                      type="button"
+                      className="calendar-reset-btn"
+                      onClick={handleResetLive}
+                    >
+                      <RotateCcw size={13} />
+                      <span>Reset to 12-Month Live</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-apply-btn"
+                      onClick={() => setIsCalendarOpen(false)}
+                    >
+                      <span>Close</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="calendar-range-section">
+                  <div className="calendar-date-inputs">
+                    <div className="calendar-input-field">
+                      <label>Start Date (From):</label>
+                      <input
+                        type="date"
+                        className="calendar-date-input"
+                        value={customStartDate}
+                        min="2026-01-01"
+                        max="2026-12-31"
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="calendar-input-field">
+                      <label>End Date (To):</label>
+                      <input
+                        type="date"
+                        className="calendar-date-input"
+                        value={customEndDate}
+                        min="2026-01-01"
+                        max="2026-12-31"
+                        onChange={(e) => setCustomEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="calendar-section-title" style={{ marginTop: '4px' }}>
+                    Quick Telemetry Presets:
+                  </div>
+                  <div className="calendar-presets-grid">
+                    <button
+                      type="button"
+                      className="calendar-preset-btn"
+                      onClick={() => {
+                        setCustomStartDate('2026-10-29');
+                        setCustomEndDate('2026-11-04');
+                        handleApplyCustomRange('2026-10-29', '2026-11-04');
+                      }}
+                    >
+                      ⚡ Past 7 Days (29 Oct - 04 Nov)
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-preset-btn"
+                      onClick={() => {
+                        setCustomStartDate('2026-10-21');
+                        setCustomEndDate('2026-11-04');
+                        handleApplyCustomRange('2026-10-21', '2026-11-04');
+                      }}
+                    >
+                      📦 Past 14 Days (21 Oct - 04 Nov)
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-preset-btn"
+                      onClick={() => {
+                        setCustomStartDate('2026-10-05');
+                        setCustomEndDate('2026-11-04');
+                        handleApplyCustomRange('2026-10-05', '2026-11-04');
+                      }}
+                    >
+                      📊 Past 30 Days (05 Oct - 04 Nov)
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-preset-btn"
+                      onClick={() => {
+                        setCustomStartDate('2026-10-15');
+                        setCustomEndDate('2026-10-31');
+                        handleApplyCustomRange('2026-10-15', '2026-10-31');
+                      }}
+                    >
+                      🪔 Festive Surge (15 Oct - 31 Oct)
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-preset-btn"
+                      onClick={() => {
+                        setCustomStartDate('2026-07-01');
+                        setCustomEndDate('2026-09-30');
+                        handleApplyCustomRange('2026-07-01', '2026-09-30');
+                      }}
+                    >
+                      📈 Q3 Monsoon (Jul - Sep)
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-preset-btn"
+                      onClick={() => {
+                        setCustomStartDate('2026-01-01');
+                        setCustomEndDate('2026-11-05');
+                        handleApplyCustomRange('2026-01-01', '2026-11-05');
+                      }}
+                    >
+                      🏛️ YTD 2026 (Jan - Nov)
+                    </button>
+                  </div>
+
+                  <div className="calendar-actions-row">
+                    <button
+                      type="button"
+                      className="calendar-reset-btn"
+                      onClick={handleResetLive}
+                    >
+                      <RotateCcw size={13} />
+                      <span>Reset to Live</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-apply-btn"
+                      onClick={() => handleApplyCustomRange(customStartDate, customEndDate)}
+                    >
+                      <Check size={14} />
+                      <span>Apply Date Filter</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -638,7 +1013,7 @@ export default function DashboardAnalyticsCharts() {
               <svg viewBox="0 0 160 160" className="pie-svg">
                 {(() => {
                   let accumulatedPct = 0;
-                  const circumference = 2 * Math.PI * 50; // radius = 50
+                  const circumference = 2 * Math.PI * 50;
 
                   return currentCategories.map((cat, cIdx) => {
                     const strokeDasharray = `${(cat.pct / 100) * circumference} ${circumference}`;
@@ -780,7 +1155,7 @@ export default function DashboardAnalyticsCharts() {
                   let accumulatedPct = 0;
                   const circumference = 2 * Math.PI * 50;
 
-                  return currentFleet.map((item, fIdx) => {
+                  return FLEET_STATUS_BREAKDOWN.map((item, fIdx) => {
                     const strokeDasharray = `${(item.pct / 100) * circumference} ${circumference}`;
                     const strokeDashoffset = -((accumulatedPct / 100) * circumference);
                     accumulatedPct += item.pct;
@@ -807,7 +1182,7 @@ export default function DashboardAnalyticsCharts() {
               <div className="pie-center-badge">
                 <strong>
                   {hoveredFleetIdx !== null
-                    ? currentFleet[hoveredFleetIdx].count
+                    ? FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].count
                     : periodConfig.fleetCenterDefaultCount}
                 </strong>
                 <small>
@@ -818,7 +1193,7 @@ export default function DashboardAnalyticsCharts() {
 
             {/* LEGEND LIST */}
             <div className="pie-legend-list">
-              {currentFleet.map((item, fIdx) => {
+              {FLEET_STATUS_BREAKDOWN.map((item, fIdx) => {
                 const isHovered = hoveredFleetIdx === fIdx;
                 return (
                   <div
