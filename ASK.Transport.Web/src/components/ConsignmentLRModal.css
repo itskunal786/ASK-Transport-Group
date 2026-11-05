@@ -225,24 +225,24 @@
 }
 
 @media print {
-  body * {
+  body:has(.lr-modal-overlay) * {
     visibility: hidden;
   }
-  .lr-modal-overlay,
-  .lr-modal-wrapper,
-  .lr-sheet,
-  .lr-sheet * {
+  body:has(.lr-modal-overlay) .lr-modal-overlay,
+  body:has(.lr-modal-overlay) .lr-modal-wrapper,
+  body:has(.lr-modal-overlay) .lr-sheet,
+  body:has(.lr-modal-overlay) .lr-sheet * {
     visibility: visible;
   }
-  .lr-modal-overlay {
+  body:has(.lr-modal-overlay) .lr-modal-overlay {
     position: static;
     background: none;
     padding: 0;
   }
-  .lr-toolbar {
+  body:has(.lr-modal-overlay) .lr-toolbar {
     display: none !important;
   }
-  .lr-modal-wrapper {
+  body:has(.lr-modal-overlay) .lr-modal-wrapper {
     box-shadow: none;
     max-width: 100%;
   }

@@ -1821,11 +1821,11 @@ body.dark .gate-slip-security-notice,
 
 /* Print Styles */
 @media print {
-  body * {
+  body:has(.dockyard-modal-card.print-card) * {
     visibility: hidden !important;
   }
   
-  .dockyard-modal-overlay {
+  body:has(.dockyard-modal-card.print-card) .dockyard-modal-overlay {
     position: static !important;
     background: transparent !important;
     backdrop-filter: none !important;
@@ -1833,8 +1833,8 @@ body.dark .gate-slip-security-notice,
     display: block !important;
   }
   
-  .dockyard-modal-card.print-card,
-  .dockyard-modal-card.print-card * {
+  body:has(.dockyard-modal-card.print-card) .dockyard-modal-card.print-card,
+  body:has(.dockyard-modal-card.print-card) .dockyard-modal-card.print-card * {
     visibility: visible !important;
   }
   
