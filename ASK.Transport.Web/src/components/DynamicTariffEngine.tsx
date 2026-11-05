@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Zap,
   Truck,
@@ -230,9 +231,29 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
 
   const handlePrintRateSlip = () => {
     setShowRateSlipModal(true);
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('dte-rate-slip-printing');
+    }
     setTimeout(() => {
       window.print();
+      setTimeout(() => {
+        if (typeof document !== 'undefined') {
+          document.body.classList.remove('dte-rate-slip-printing');
+        }
+      }, 1000);
     }, 280);
+  };
+
+  const handleModalPrint = () => {
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('dte-rate-slip-printing');
+    }
+    window.print();
+    setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('dte-rate-slip-printing');
+      }
+    }, 1000);
   };
 
   // High-Volume Freight Corridors
@@ -792,7 +813,7 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
       </div>
 
       {/* OFFICIAL FREIGHT TARIFF & RATE QUOTATION SLIP MODAL */}
-      {showRateSlipModal && (
+      {showRateSlipModal && typeof document !== 'undefined' && createPortal(
         <div className="dte-rate-slip-overlay" onClick={() => setShowRateSlipModal(false)}>
           <div className="dte-rate-slip-modal-container" onClick={e => e.stopPropagation()}>
             {/* TOOLBAR (Screen Only) */}
@@ -804,7 +825,7 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
               <div className="dte-slip-toolbar-actions">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={handleModalPrint}
                   className="dte-slip-btn-print"
                 >
                   <Printer size={15} />
@@ -998,7 +1019,8 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

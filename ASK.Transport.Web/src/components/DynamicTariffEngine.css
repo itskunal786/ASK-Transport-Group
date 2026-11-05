@@ -1382,45 +1382,71 @@ body.dark .dte-corridor-pricing,
    ============================================================================ */
 
 @media print {
-  /* Hide the rest of the application when the rate slip modal is present */
-  body:has(.dte-rate-slip-overlay) * {
-    visibility: hidden !important;
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
   }
 
-  /* Make ONLY the printable slip sheet visible */
-  body:has(.dte-rate-slip-overlay) .dte-rate-slip-sheet,
-  body:has(.dte-rate-slip-overlay) .dte-rate-slip-sheet * {
-    visibility: visible !important;
+  /* Completely hide the application root when rate slip is open or printing */
+  body.dte-rate-slip-printing #root,
+  body:has(.dte-rate-slip-overlay) #root {
+    display: none !important;
+  }
+
+  body.dte-rate-slip-printing,
+  body:has(.dte-rate-slip-overlay) {
+    background: #ffffff !important;
     color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-rate-slip-overlay {
+  /* Rate Slip overlay sits directly in body */
+  .dte-rate-slip-overlay {
     position: static !important;
     background: transparent !important;
     padding: 0 !important;
     margin: 0 !important;
     display: block !important;
     overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    visibility: visible !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-rate-slip-modal-container {
+  .dte-rate-slip-modal-container {
     position: static !important;
-    background: transparent !important;
+    background: #ffffff !important;
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
+    width: 100% !important;
     box-shadow: none !important;
     border: none !important;
+    display: block !important;
+    overflow: visible !important;
+    visibility: visible !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-rate-slip-sheet {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+  .dte-slip-toolbar,
+  .dte-no-print {
+    display: none !important;
+  }
+
+  .dte-rate-slip-sheet,
+  .dte-rate-slip-sheet * {
+    visibility: visible !important;
+    color: #000000 !important;
+  }
+
+  .dte-rate-slip-sheet {
+    position: static !important;
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 8mm 10mm !important;
+    padding: 6mm 8mm !important;
     background: #ffffff !important;
     color: #000000 !important;
     border: 1.5px solid #000000 !important;
@@ -1432,21 +1458,21 @@ body.dark .dte-corridor-pricing,
     print-color-adjust: exact !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-slip-logo-badge {
+  .dte-slip-logo-badge {
     background: #000000 !important;
     color: #ffffff !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-slip-table th {
+  .dte-slip-table th {
     background: #000000 !important;
     color: #ffffff !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-slip-total-row td {
+  .dte-slip-total-row td {
     background: #f1f5f9 !important;
     color: #000000 !important;
     border: 1.5px solid #000000 !important;
@@ -1454,17 +1480,23 @@ body.dark .dte-corridor-pricing,
     print-color-adjust: exact !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-slip-total-title,
-  body:has(.dte-rate-slip-overlay) .dte-slip-total-amount {
+  .dte-slip-total-title,
+  .dte-slip-total-amount {
     color: #000000 !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-seal-stamp {
+  .dte-seal-stamp {
     border-color: #000000 !important;
     color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  body:has(.dte-rate-slip-overlay) .dte-bar-mock {
+  .dte-seal-inner {
+    border-color: #000000 !important;
+  }
+
+  .dte-bar-mock {
     background: repeating-linear-gradient(
       90deg,
       #000000 0px,
@@ -1486,15 +1518,5 @@ body.dark .dte-corridor-pricing,
     ) !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-  }
-
-  body:has(.dte-rate-slip-overlay) .dte-no-print,
-  body:has(.dte-rate-slip-overlay) .dte-slip-toolbar {
-    display: none !important;
-  }
-
-  @page {
-    size: A4 portrait;
-    margin: 8mm;
   }
 }
