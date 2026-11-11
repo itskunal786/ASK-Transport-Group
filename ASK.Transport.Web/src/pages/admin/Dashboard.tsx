@@ -561,6 +561,7 @@ export default function Dashboard() {
   const [telematicsFilter, setTelematicsFilter] = useState<'All' | 'Alerts' | 'Moving' | 'Stationary'>('All');
   const [telematicsSearch, setTelematicsSearch] = useState('');
   const [selectedRadarShipment, setSelectedRadarShipment] = useState<Shipment | null>(null);
+  const [selectedRadarVehicle, setSelectedRadarVehicle] = useState<TelematicsVehicle | null>(null);
 
   // Emergency Maintenance Switch
   const [isMaintenanceActive, setIsMaintenanceActive] = useState<boolean>(() => {
@@ -5867,11 +5868,12 @@ export default function Dashboard() {
                         <button
                           type="button"
                           onClick={() => {
+                            setSelectedRadarVehicle(v);
                             setSelectedRadarShipment({
                               id: 991,
                               trackingNumber: `TRK-${v.plateNo}`,
                               bookingNumber: `BK-${v.plateNo}`,
-                              status: v.speedKmH > 0 ? 'In Transit' : 'Halted at Highway Checkpoint',
+                              status: v.speedKmH > 0 ? 'In Transit' : v.haltDurationMinutes > 0 ? 'Halted at Highway Rest Stop' : 'Stopped at Dock Bay',
                               currentHubId: 1,
                               createdAt: new Date().toISOString()
                             });
@@ -8096,14 +8098,28 @@ export default function Dashboard() {
 
         {/* 6. TELEMATICS LIVE GPS ROUTE RADAR MODAL */}
         {selectedRadarShipment && (
-          <div className="lr-modal-overlay" onClick={() => setSelectedRadarShipment(null)}>
-            <div style={{ maxWidth: '850px', width: '100%' }} onClick={e => e.stopPropagation()}>
-              <LiveGpsRouteMap shipment={selectedRadarShipment} />
-              <div style={{ textAlign: 'center', marginTop: '12px' }}>
+          <div className="lr-modal-overlay" onClick={() => { setSelectedRadarShipment(null); setSelectedRadarVehicle(null); }}>
+            <div style={{ maxWidth: '880px', width: '100%' }} onClick={e => e.stopPropagation()}>
+              <LiveGpsRouteMap 
+                shipment={selectedRadarShipment} 
+                vehicleData={selectedRadarVehicle}
+              />
+              <div style={{ textAlign: 'center', marginTop: '14px' }}>
                 <button
                   type="button"
-                  style={{ padding: '8px 24px', background: '#334155', color: '#ffffff', borderRadius: '6px', cursor: 'pointer', border: 'none', fontWeight: 700 }}
-                  onClick={() => setSelectedRadarShipment(null)}
+                  style={{ 
+                    padding: '10px 28px', 
+                    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
+                    color: '#ffffff', 
+                    borderRadius: '10px', 
+                    cursor: 'pointer', 
+                    border: '1px solid rgba(255,255,255,0.15)', 
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onClick={() => { setSelectedRadarShipment(null); setSelectedRadarVehicle(null); }}
                 >
                   ✕ Close Live Telematics Map
                 </button>
