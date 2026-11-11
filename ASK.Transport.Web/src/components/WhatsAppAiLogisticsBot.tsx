@@ -755,40 +755,40 @@ export default function WhatsAppAiLogisticsBot() {
           {/* RIGHT SIDE: BUSINESS ADVANTAGES & LIVE METRICS */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* VALUE PROPOSITION CARD */}
-            <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '16px', padding: '24px' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
-                🚀 Why Shippers &amp; Consignees Love This AI Bot
+            <div className="bot-card">
+              <h3 className="bot-card-title">
+                <span>🚀</span> Why Shippers &amp; Consignees Love This AI Bot
               </h3>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
-                <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginTop: '16px' }}>
+                <div className="bot-rule-item">
                   <div style={{ fontSize: '24px', marginBottom: '6px' }}>📍</div>
-                  <strong style={{ fontSize: '13px', display: 'block', color: '#0f172a' }}>Instant 1-Tap Tracking</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                  <strong className="bot-rule-name" style={{ color: '#0284c7' }}>Instant 1-Tap Tracking</strong>
+                  <p className="bot-rule-detail">
                     Customers type LR number and receive live Google Maps radar coordinates, remaining KM, and driver contact instantly.
                   </p>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div className="bot-rule-item">
                   <div style={{ fontSize: '24px', marginBottom: '6px' }}>💰</div>
-                  <strong style={{ fontSize: '13px', display: 'block', color: '#0f172a' }}>Algorithmic Freight Quotes</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                  <strong className="bot-rule-name" style={{ color: '#d97706' }}>Algorithmic Freight Quotes</strong>
+                  <p className="bot-rule-detail">
                     Instant natural language parsing: calculates base freight, fuel surcharge, toll and GST, plus delivers an official PDF.
                   </p>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div className="bot-rule-item">
                   <div style={{ fontSize: '24px', marginBottom: '6px' }}>📄</div>
-                  <strong style={{ fontSize: '13px', display: 'block', color: '#0f172a' }}>Stamped Bilty &amp; Tax Invoice</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                  <strong className="bot-rule-name" style={{ color: '#059669' }}>Stamped Bilty &amp; Tax Invoice</strong>
+                  <p className="bot-rule-detail">
                     Consignees download signed proof of delivery and IRN tax invoices directly on WhatsApp without office follow-ups.
                   </p>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div className="bot-rule-item">
                   <div style={{ fontSize: '24px', marginBottom: '6px' }}>🛡️</div>
-                  <strong style={{ fontSize: '13px', display: 'block', color: '#0f172a' }}>24×7 Zero Call Center Load</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                  <strong className="bot-rule-name" style={{ color: '#6366f1' }}>24×7 Zero Call Center Load</strong>
+                  <p className="bot-rule-detail">
                     Automates 80%+ of repetitive "Gadi kahan hai?" calls, freeing operations managers for profitable load generation.
                   </p>
                 </div>
@@ -830,42 +830,48 @@ export default function WhatsAppAiLogisticsBot() {
 
       {/* TAB 2: LIVE INBOUND CHAT STREAM */}
       {activeTab === 'live_chats' && (
-        <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '16px', overflow: 'hidden' }}>
-          <div style={{ padding: '18px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Inbound WhatsApp Customer Queries (Live Stream)</h3>
-            <span style={{ background: 'rgba(37, 211, 102, 0.15)', color: '#075e54', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '12px' }}>
+        <div className="bot-table-container">
+          <div className="bot-table-head-strip">
+            <h3 className="bot-card-title" style={{ margin: 0 }}>
+              <span>💬</span> Inbound WhatsApp Customer Queries (Live Stream)
+            </h3>
+            <span style={{ background: 'rgba(37, 211, 102, 0.15)', color: '#15803d', fontSize: '11px', fontWeight: 800, padding: '4px 12px', borderRadius: '12px', border: '1px solid rgba(37, 211, 102, 0.3)' }}>
               ● 24×7 AI Auto-Answering Active
             </span>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+          <table className="bot-table">
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: '11px', textTransform: 'uppercase' }}>
-                <th style={{ padding: '12px 18px' }}>Customer &amp; Company</th>
-                <th style={{ padding: '12px 18px' }}>Phone</th>
-                <th style={{ padding: '12px 18px' }}>Last WhatsApp Query</th>
-                <th style={{ padding: '12px 18px' }}>Detected Intent</th>
-                <th style={{ padding: '12px 18px' }}>Resolution Status</th>
-                <th style={{ padding: '12px 18px' }}>Time</th>
+              <tr>
+                <th className="bot-th">Customer &amp; Company</th>
+                <th className="bot-th">Phone</th>
+                <th className="bot-th">Last WhatsApp Query</th>
+                <th className="bot-th">Detected Intent</th>
+                <th className="bot-th">Resolution Status</th>
+                <th className="bot-th">Time</th>
               </tr>
             </thead>
             <tbody>
               {RECENT_CUSTOMER_SESSIONS.map(session => (
-                <tr key={session.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '14px 18px' }}>
-                    <div style={{ fontWeight: 800, color: '#0f172a' }}>{session.customerName}</div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>🏢 {session.companyName}</div>
+                <tr key={session.id}>
+                  <td className="bot-td">
+                    <div style={{ fontWeight: 800 }}>{session.customerName}</div>
+                    <div style={{ fontSize: '11.5px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
+                      🏢 {session.companyName}
+                    </div>
                   </td>
-                  <td style={{ padding: '14px 18px', fontWeight: 600 }}>{session.customerPhone}</td>
-                  <td style={{ padding: '14px 18px', color: '#334155' }}>
-                    💬 <em>"{session.lastQuery}"</em>
+                  <td className="bot-td" style={{ fontWeight: 700 }}>
+                    {session.customerPhone}
                   </td>
-                  <td style={{ padding: '14px 18px' }}>
-                    <span style={{ background: '#f1f5f9', color: '#334155', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                  <td className="bot-td">
+                    💬 <em style={{ fontStyle: 'normal' }}>"{session.lastQuery}"</em>
+                  </td>
+                  <td className="bot-td">
+                    <span className="bot-code-pill" style={{ fontSize: '11px' }}>
                       {session.intent}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 18px' }}>
+                  <td className="bot-td">
                     <span
                       style={{
                         background: session.status === 'Auto-Resolved' ? '#dcfce7' : '#fee2e2',
@@ -879,7 +885,9 @@ export default function WhatsAppAiLogisticsBot() {
                       {session.status}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 18px', color: '#64748b' }}>{session.timestamp}</td>
+                  <td className="bot-td" style={{ color: 'var(--text-secondary, #64748b)', whiteSpace: 'nowrap' }}>
+                    {session.timestamp}
+                  </td>
                 </tr>
               ))}
             </tbody>
