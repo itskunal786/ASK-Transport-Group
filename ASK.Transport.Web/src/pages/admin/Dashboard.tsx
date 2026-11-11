@@ -4255,14 +4255,14 @@ export default function Dashboard() {
                   <table className="admin-data-table shipments-data-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '140px' }}>Shipment ID</th>
-                        <th style={{ width: '180px' }}>Booking / Client</th>
-                        <th style={{ width: '220px' }}>Corridor Route</th>
-                        <th style={{ width: '190px' }}>Driver &amp; Vehicle Plate</th>
-                        <th style={{ width: '200px' }}>Live Checkpoint</th>
-                        <th style={{ width: '150px' }}>{t('Status', 'स्थिति')}</th>
-                        <th style={{ width: '220px' }}>Custom Milestone / Note</th>
-                        <th className="shipments-sticky-actions" style={{ width: '150px', textAlign: 'center' }}>Dispatch Actions</th>
+                        <th style={{ width: '120px' }}>Shipment ID</th>
+                        <th style={{ width: '160px' }}>Booking / Client</th>
+                        <th style={{ width: '190px' }}>Corridor Route</th>
+                        <th style={{ width: '160px' }}>Driver &amp; Vehicle Plate</th>
+                        <th style={{ width: '170px' }}>Live Checkpoint</th>
+                        <th style={{ width: '130px' }}>{t('Status', 'स्थिति')}</th>
+                        <th style={{ width: '180px' }}>Custom Milestone / Note</th>
+                        <th className="shipments-sticky-actions" style={{ width: '145px', textAlign: 'center' }}>Dispatch Actions</th>
                       </tr>
                     </thead>
                     <tbody>

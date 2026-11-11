@@ -4041,24 +4041,34 @@ body.dark .milestone-note-snippet {
 .shipments-sticky-actions {
   position: sticky !important;
   right: 0 !important;
-  z-index: 4 !important;
+  z-index: 10 !important;
   background: var(--bg-card, #ffffff) !important;
-  box-shadow: -8px 0 16px rgba(0, 0, 0, 0.06);
+  box-shadow: -8px 0 16px rgba(0, 0, 0, 0.08);
 }
 
 [data-theme='dark'] .shipments-sticky-actions,
-body.dark .shipments-sticky-actions {
+body.dark .shipments-sticky-actions,
+.dark .shipments-sticky-actions {
   background: #0f172a !important;
   box-shadow: -8px 0 20px rgba(0, 0, 0, 0.5) !important;
 }
 
 .shipments-data-table th.shipments-sticky-actions {
+  position: sticky !important;
+  right: 0 !important;
+  top: 0 !important;
+  z-index: 25 !important;
   background: #f8fafc !important;
 }
 
 [data-theme='dark'] .shipments-data-table th.shipments-sticky-actions,
-body.dark .shipments-data-table th.shipments-sticky-actions {
+body.dark .shipments-data-table th.shipments-sticky-actions,
+.dark .shipments-data-table th.shipments-sticky-actions {
   background: #0c1527 !important;
+}
+
+.shipments-data-table tr:hover td.shipments-sticky-actions {
+  background: #172442 !important;
 }
 
 .shipment-actions-cell {
@@ -4153,8 +4163,9 @@ body.dark .shipment-btn-action-telemetry {
 
 .shipments-data-table {
   width: 100%;
-  border-collapse: collapse;
-  min-width: 1140px;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1080px;
 }
 
 .shipments-data-table thead th {

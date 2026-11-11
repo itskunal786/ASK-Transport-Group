@@ -1728,7 +1728,8 @@ export default function MarketFleetSettlementDeck() {
             maxWidth: '560px',
             width: '100%',
             overflow: 'hidden',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)'
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            color: '#0f172a'
           }}>
             <div style={{
               background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
@@ -1874,7 +1875,8 @@ export default function MarketFleetSettlementDeck() {
             maxWidth: '620px',
             width: '100%',
             overflow: 'hidden',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)'
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            color: '#0f172a'
           }}>
             <div style={{
               background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
@@ -1934,20 +1936,20 @@ export default function MarketFleetSettlementDeck() {
               {/* FINANCIAL AUDIT BREAKDOWN */}
               <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#64748b' }}>Total Agreed Freight:</span>
-                  <strong style={{ color: '#0f172a' }}>₹{selectedForBalance.agreedFreightInr.toLocaleString('en-IN')}</strong>
+                  <span style={{ color: '#475569', fontWeight: 600 }}>Total Agreed Freight:</span>
+                  <strong style={{ color: '#0f172a', fontWeight: 800 }}>₹{selectedForBalance.agreedFreightInr.toLocaleString('en-IN')}</strong>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#059669' }}>
-                  <span>Less 70% Advance Already Paid:</span>
-                  <strong>-₹{selectedForBalance.advanceAmountInr.toLocaleString('en-IN')}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#047857' }}>
+                  <span style={{ color: '#047857', fontWeight: 600 }}>Less 70% Advance Already Paid:</span>
+                  <strong style={{ color: '#047857', fontWeight: 800 }}>-₹{selectedForBalance.advanceAmountInr.toLocaleString('en-IN')}</strong>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-                  <span>Gross 30% Balance Receivable:</span>
-                  <span>₹{selectedForBalance.grossBalanceInr.toLocaleString('en-IN')}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, padding: '4px 0', borderTop: '1px dashed #cbd5e1', borderBottom: '1px dashed #cbd5e1' }}>
+                  <span style={{ color: '#0f172a', fontWeight: 700 }}>Gross 30% Balance Receivable:</span>
+                  <span style={{ color: '#0f172a', fontWeight: 900 }}>₹{selectedForBalance.grossBalanceInr.toLocaleString('en-IN')}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#b91c1c' }}>
-                  <span>Less Section 194C TDS ({selectedForBalance.tdsRatePercent}%):</span>
-                  <strong>-₹{selectedForBalance.tdsDeductedInr.toLocaleString('en-IN')}</strong>
+                  <span style={{ color: '#b91c1c', fontWeight: 600 }}>Less Section 194C TDS ({selectedForBalance.tdsRatePercent}%):</span>
+                  <strong style={{ color: '#b91c1c', fontWeight: 800 }}>-₹{selectedForBalance.tdsDeductedInr.toLocaleString('en-IN')}</strong>
                 </div>
               </div>
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import './AiTruckLoadVisualizer.css';
 import {
   optimize3dLoad,
   type BoxItem,
@@ -290,53 +291,44 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* HEADER & CONTROLS */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', background: 'var(--bg-surface, #ffffff)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-primary, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🚛</span> 3D Truck Load &amp; Volumetric Space Optimizer
+    <div className="ai-load-container">
+      {/* 1. HERO HEADER & TRUCK SELECTOR */}
+      <div className="ai-load-hero">
+        <div className="ai-load-hero-left">
+          <div className="ai-load-hero-badge">
+            <span>✨</span> AI Spatial Packing &amp; Stacking Engine
+          </div>
+          <h2 className="ai-load-hero-title">
+            <span>🚛</span> 3D Cargo Load &amp; Volumetric Space Optimizer
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-secondary, #64748b)' }}>
-            Real-time multi-box bin packing, volumetric utilization, and axle load balance analyzer
+          <p className="ai-load-hero-desc">
+            Real-time multi-box 3D bin packing, volumetric cargo allocation, axle weight balance, and RTO payload compliance.
           </p>
         </div>
 
         {/* TRUCK SELECTOR */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>TRUCK MODEL:</span>
-          {[
-            { id: '14ft_eicher', label: '14ft Eicher (4.5T)' },
-            { id: '19ft_container', label: '19ft Container (8.5T)' },
-            { id: '24ft_multiaxle', label: '24ft Multi-Axle (14T)' },
-            { id: '32ft_mxl_hq', label: '32ft MXL HQ (21T)' }
-          ].map(t => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTruckType(t.id)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                border: truckType === t.id ? '2px solid #2563eb' : '1px solid #cbd5e1',
-                background: truckType === t.id ? '#eff6ff' : '#ffffff',
-                color: truckType === t.id ? '#1d4ed8' : '#475569',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="ai-load-truck-selector">
+          <label>SELECT VEHICLE:</label>
+          <select
+            value={truckType}
+            onChange={e => {
+              setTruckType(e.target.value);
+              if (onSelectTruck) onSelectTruck(e.target.value);
+            }}
+            className="ai-load-truck-select"
+          >
+            <option value="14ft_eicher">14ft Eicher (4.5T Capacity)</option>
+            <option value="19ft_container">19ft Container (8.5T Capacity)</option>
+            <option value="24ft_multiaxle">24ft Multi-Axle (14T Capacity)</option>
+            <option value="32ft_mxl_hq">32ft MXL HQ (21T Capacity)</option>
+          </select>
         </div>
       </div>
 
-      {/* 3D CANVAS & METRICS SPLIT */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px' }}>
+      {/* 2. 3D WORKSPACE & METRICS GRID */}
+      <div className="ai-load-workspace-grid">
         {/* 3D CANVAS VIEWPORT */}
-        <div style={{ background: '#0f172a', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: '1px solid #334155', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+        <div className="ai-load-canvas-card">
           <canvas
             ref={canvasRef}
             width={640}
@@ -349,19 +341,19 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
           />
 
           {/* VIEWPORT OVERLAY BADGES */}
-          <div style={{ position: 'absolute', top: '14px', left: '16px', display: 'flex', gap: '8px' }}>
-            <span style={{ padding: '4px 10px', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(4px)', color: '#38bdf8', fontSize: '11px', fontWeight: 800, borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+          <div className="ai-load-canvas-overlay-badges">
+            <span className="ai-load-badge-orbit">
               3D PERSPECTIVE ORBIT
             </span>
-            <span style={{ padding: '4px 10px', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(4px)', color: '#a78bfa', fontSize: '11px', fontWeight: 700, borderRadius: '6px' }}>
+            <span className="ai-load-badge-hint">
               Drag to Rotate 360°
             </span>
           </div>
 
           {/* CANVAS CONTROLS FOOTER */}
-          <div style={{ position: 'absolute', bottom: '12px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15, 23, 42, 0.85)', padding: '8px 14px', borderRadius: '8px', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600 }}>Zoom:</span>
+          <div className="ai-load-canvas-controls-footer">
+            <div className="ai-load-controls-group">
+              <span className="ai-load-control-label">Zoom:</span>
               <input
                 type="range"
                 min="0.6"
@@ -371,7 +363,7 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
                 onChange={e => setZoom(Number(e.target.value))}
                 style={{ width: '80px', cursor: 'pointer' }}
               />
-              <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600, marginLeft: '8px' }}>Wall Transparency:</span>
+              <span className="ai-load-control-label" style={{ marginLeft: '8px' }}>Wall Transparency:</span>
               <input
                 type="range"
                 min="0.05"
@@ -390,29 +382,29 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
                 setRotY(-0.65);
                 setZoom(1.0);
               }}
-              style={{ padding: '3px 8px', fontSize: '11px', background: '#334155', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              className="ai-load-btn-reset-view"
             >
               Reset View
             </button>
           </div>
         </div>
 
-        {/* METRICS & EFFICIENCY GAUGES */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* SIDEBAR: METRICS & GUIDANCE */}
+        <div className="ai-load-sidebar">
           {/* LOAD UTILIZATION CARD */}
-          <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #0f172a)', display: 'flex', justifyContent: 'space-between' }}>
+          <div className="ai-load-metrics-card">
+            <div className="ai-load-card-header">
               <span>Container Efficiency Metrics</span>
-              <span style={{ fontSize: '12px', color: '#2563eb' }}>{data?.truckSpecs?.displayName || "Loading Truck Specifications..."}</span>
-            </h3>
+              <span className="ai-load-truck-tag">{data?.truckSpecs?.displayName || "Loading Truck Specifications..."}</span>
+            </div>
 
             {/* Volume Utilization Meter */}
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, marginBottom: '4px' }}>
+            <div className="ai-load-meter-group">
+              <div className="ai-load-meter-label-row">
                 <span>Volumetric Capacity Used:</span>
-                <span style={{ color: '#0284c7' }}>{data?.utilization?.volumeUtilizationPercent || 0}% ({data?.utilization?.loadedVolumeFt3 || 0} / {data?.truckSpecs?.totalVolumeFt3 || 0} cu.ft)</span>
+                <span style={{ color: '#0284c7', fontWeight: 800 }}>{data?.utilization?.volumeUtilizationPercent || 0}% ({data?.utilization?.loadedVolumeFt3 || 0} / {data?.truckSpecs?.totalVolumeFt3 || 0} cu.ft)</span>
               </div>
-              <div style={{ height: '10px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+              <div className="ai-load-meter-track">
                 <div
                   style={{
                     height: '100%',
@@ -426,14 +418,14 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
             </div>
 
             {/* Weight Utilization Meter */}
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, marginBottom: '4px' }}>
+            <div className="ai-load-meter-group">
+              <div className="ai-load-meter-label-row">
                 <span>Payload Weight Allocated:</span>
-                <span style={{ color: data?.utilization?.isAxleOverloaded ? '#ef4444' : '#059669' }}>
+                <span style={{ color: data?.utilization?.isAxleOverloaded ? '#ef4444' : '#10b981', fontWeight: 800 }}>
                   {data?.utilization?.weightUtilizationPercent || 0}% ({data?.utilization?.totalWeightKg || 0} / {data?.truckSpecs?.maxPayloadKg || 0} kg)
                 </span>
               </div>
-              <div style={{ height: '10px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+              <div className="ai-load-meter-track">
                 <div
                   style={{
                     height: '100%',
@@ -447,31 +439,31 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
             </div>
 
             {/* Axle Distribution & Center of Gravity */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <div className="ai-load-axle-grid">
               <div>
-                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Steer Axle (Front):</span>
-                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{data?.utilization?.centerOfGravity?.frontAxlePercent || 50}% Load</strong>
+                <span className="ai-load-axle-title">Steer Axle (Front):</span>
+                <span className="ai-load-axle-val">{data?.utilization?.centerOfGravity?.frontAxlePercent || 50}% Load</span>
               </div>
               <div>
-                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Drive Axles (Rear):</span>
-                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{data?.utilization?.centerOfGravity?.rearAxlePercent || 50}% Load</strong>
+                <span className="ai-load-axle-title">Drive Axles (Rear):</span>
+                <span className="ai-load-axle-val">{data?.utilization?.centerOfGravity?.rearAxlePercent || 50}% Load</span>
               </div>
             </div>
 
-            <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '4px', background: data?.utilization?.isAxleOverloaded ? '#fee2e2' : '#dcfce7', color: data?.utilization?.isAxleOverloaded ? '#b91c1c' : '#15803d' }}>
-                {data?.utilization?.isAxleOverloaded ? '⚠️ Overweight Warning' : '✓ RTO Axle Weight Compliant'}
+            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '6px', background: data?.utilization?.isAxleOverloaded ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: data?.utilization?.isAxleOverloaded ? '#f87171' : '#34d399', border: `1px solid ${data?.utilization?.isAxleOverloaded ? 'rgba(239, 68, 68, 0.4)' : 'rgba(16, 185, 129, 0.4)'}` }}>
+                {data?.utilization?.isAxleOverloaded ? '⚠️ Overweight Warning' : '✓ RTO Axle Compliant'}
               </span>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>Remaining: {data?.utilization?.remainingCapacityKg || 0} kg</span>
+              <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Remaining: <strong>{data?.utilization?.remainingCapacityKg || 0} kg</strong></span>
             </div>
           </div>
 
           {/* AI STACKING RECOMMENDATIONS */}
-          <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: '12px', fontWeight: 800, color: '#4338ca', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              🤖 AI Stacking Insights &amp; Guidance
+          <div className="ai-load-guidance-card">
+            <h4 className="ai-load-guidance-title">
+              <span>🤖</span> AI Stacking Insights &amp; Guidance
             </h4>
-            <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <ul className="ai-load-guidance-list">
               {(data?.stackingRecommendations || []).map((rec, i) => (
                 <li key={i}>{rec}</li>
               ))}
@@ -480,47 +472,60 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
         </div>
       </div>
 
-      {/* CARGO BOX INVENTORY & DYNAMIC BOX ADDER */}
-      <div style={{ background: 'var(--bg-surface, #ffffff)', padding: '18px 20px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-        <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
-          Cargo Manifest &amp; Consignment Packaging Items
-        </h3>
+      {/* 3. CARGO MANIFEST CARD & INVENTORY TABLE */}
+      <div className="ai-load-manifest-card">
+        <div className="ai-load-manifest-header">
+          <h3 className="ai-load-manifest-title">
+            <span>📦</span> Cargo Manifest &amp; Consignment Packaging Items
+          </h3>
+          <span className="ai-load-manifest-count-pill">
+            {boxes.length} Consignment Packages En Route
+          </span>
+        </div>
 
         {/* BOXES LIST TABLE */}
-        <div style={{ overflowX: 'auto', marginBottom: '16px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+        <div className="ai-load-table-wrapper">
+          <table className="ai-load-table">
             <thead>
-              <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', textAlign: 'left', color: '#475569' }}>
-                <th style={{ padding: '8px 12px' }}>Cargo Item Name</th>
-                <th style={{ padding: '8px 12px' }}>Dimensions (L × W × H)</th>
-                <th style={{ padding: '8px 12px' }}>Unit Weight</th>
-                <th style={{ padding: '8px 12px' }}>Quantity</th>
-                <th style={{ padding: '8px 12px' }}>Total Weight</th>
-                <th style={{ padding: '8px 12px' }}>Fragile</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Action</th>
+              <tr>
+                <th>Cargo Item Name</th>
+                <th>Dimensions (L × W × H)</th>
+                <th>Unit Weight</th>
+                <th>Quantity</th>
+                <th>Total Weight</th>
+                <th>Fragile Status</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {boxes.map(b => (
-                <tr key={b.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: b.color, display: 'inline-block' }} />
-                    <strong>{b.label}</strong>
+                <tr key={b.id}>
+                  <td>
+                    <div className="ai-load-item-cell">
+                      <span className="ai-load-color-swatch" style={{ background: b.color }} />
+                      <span className="ai-load-item-name">{b.label}</span>
+                    </div>
                   </td>
-                  <td style={{ padding: '8px 12px' }}>{b.lengthFt} × {b.widthFt} × {b.heightFt} ft</td>
-                  <td style={{ padding: '8px 12px' }}>{b.weightKg} kg</td>
-                  <td style={{ padding: '8px 12px' }}>{b.quantity} pcs</td>
-                  <td style={{ padding: '8px 12px' }}>{b.weightKg * b.quantity} kg</td>
-                  <td style={{ padding: '8px 12px' }}>
-                    {b.isFragile ? <span style={{ color: '#dc2626', fontWeight: 700 }}>⚠️ Yes</span> : <span style={{ color: '#64748b' }}>No</span>}
+                  <td><strong>{b.lengthFt} × {b.widthFt} × {b.heightFt}</strong> ft</td>
+                  <td><strong>{b.weightKg}</strong> kg</td>
+                  <td><strong>{b.quantity}</strong> pcs</td>
+                  <td style={{ color: '#38bdf8', fontWeight: 800 }}>{b.weightKg * b.quantity} kg</td>
+                  <td>
+                    {b.isFragile ? (
+                      <span className="ai-load-badge-fragile-yes">⚠️ Fragile</span>
+                    ) : (
+                      <span className="ai-load-badge-fragile-no">Standard</span>
+                    )}
                   </td>
-                  <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                  <td style={{ textAlign: 'right' }}>
                     <button
                       type="button"
                       onClick={() => handleRemoveBox(b.id)}
-                      style={{ padding: '2px 8px', fontSize: '11px', color: '#dc2626', background: '#fee2e2', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      className="ai-load-btn-delete"
+                      title="Remove box from manifest"
                     >
-                      Delete
+                      <span>🗑️</span>
+                      <span>Delete</span>
                     </button>
                   </td>
                 </tr>
@@ -530,90 +535,92 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
         </div>
 
         {/* ADD BOX FORM */}
-        <form onSubmit={handleAddBox} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-          <div style={{ flex: '1 1 180px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Item Label</label>
+        <form onSubmit={handleAddBox} className="ai-load-form">
+          <div className="ai-load-form-field" style={{ flex: '1 1 200px' }}>
+            <label className="ai-load-form-label">Item Label / Consignment Name</label>
             <input
               type="text"
-              placeholder="e.g. Steel Pipe Bundles"
+              placeholder="e.g. Steel Pipe Bundles, Automotive Gears"
               value={newBoxLabel}
               onChange={e => setNewBoxLabel(e.target.value)}
               required
-              style={{ width: '100%', padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="ai-load-form-input"
             />
           </div>
 
-          <div style={{ width: '70px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Length (ft)</label>
+          <div className="ai-load-form-field" style={{ width: '85px' }}>
+            <label className="ai-load-form-label">Length (ft)</label>
             <input
               type="number"
               step="0.1"
               value={newBoxL}
               onChange={e => setNewBoxL(Number(e.target.value))}
-              style={{ width: '100%', padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="ai-load-form-input"
             />
           </div>
 
-          <div style={{ width: '70px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Width (ft)</label>
+          <div className="ai-load-form-field" style={{ width: '85px' }}>
+            <label className="ai-load-form-label">Width (ft)</label>
             <input
               type="number"
               step="0.1"
               value={newBoxW}
               onChange={e => setNewBoxW(Number(e.target.value))}
-              style={{ width: '100%', padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="ai-load-form-input"
             />
           </div>
 
-          <div style={{ width: '70px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Height (ft)</label>
+          <div className="ai-load-form-field" style={{ width: '85px' }}>
+            <label className="ai-load-form-label">Height (ft)</label>
             <input
               type="number"
               step="0.1"
               value={newBoxH}
               onChange={e => setNewBoxH(Number(e.target.value))}
-              style={{ width: '100%', padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="ai-load-form-input"
             />
           </div>
 
-          <div style={{ width: '80px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Weight (kg)</label>
+          <div className="ai-load-form-field" style={{ width: '95px' }}>
+            <label className="ai-load-form-label">Weight (kg)</label>
             <input
               type="number"
               value={newBoxWeight}
               onChange={e => setNewBoxWeight(Number(e.target.value))}
-              style={{ width: '100%', padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="ai-load-form-input"
             />
           </div>
 
-          <div style={{ width: '60px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>Qty</label>
+          <div className="ai-load-form-field" style={{ width: '75px' }}>
+            <label className="ai-load-form-label">Qty</label>
             <input
               type="number"
               min="1"
               max="50"
               value={newBoxQty}
               onChange={e => setNewBoxQty(Number(e.target.value))}
-              style={{ width: '100%', padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              className="ai-load-form-input"
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '8px' }}>
+          <div className="ai-load-checkbox-group">
             <input
               type="checkbox"
               id="newBoxFragile"
               checked={newBoxFragile}
               onChange={e => setNewBoxFragile(e.target.checked)}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
-            <label htmlFor="newBoxFragile" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Fragile</label>
+            <label htmlFor="newBoxFragile" className="ai-load-checkbox-label">⚠️ Fragile</label>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            style={{ padding: '7px 16px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+            className="ai-load-btn-submit"
           >
-            + Add to 3D Container
+            <span>➕</span>
+            <span>Add to 3D Container</span>
           </button>
         </form>
       </div>

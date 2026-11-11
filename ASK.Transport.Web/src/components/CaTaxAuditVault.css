@@ -594,7 +594,8 @@
 
 .tax-data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 12px;
   text-align: left;
 }
@@ -625,11 +626,11 @@
 
 /* STICKY ACTIONS COLUMN ON RIGHT */
 .tax-sticky-actions {
-  position: sticky;
-  right: 0;
-  background: var(--bg-surface, #ffffff);
-  z-index: 3;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.06);
+  position: sticky !important;
+  right: 0 !important;
+  background: var(--bg-surface, #ffffff) !important;
+  z-index: 10 !important;
+  box-shadow: -6px 0 14px rgba(0, 0, 0, 0.15) !important;
 }
 
 .tax-data-table tr:hover .tax-sticky-actions {

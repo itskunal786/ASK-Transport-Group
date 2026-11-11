@@ -169,7 +169,7 @@ export default function LiveGpsRouteMap({ shipment, timeline = [], eta, vehicleD
     ? vehicleData.locationName
     : timeline.length > 0 && timeline[0].location
     ? timeline[0].location
-    : 'National Highway Highway Transit Corridor';
+    : 'National Highway Freight Transit Corridor';
 
   // Current display speed
   const displaySpeed = vehicleData

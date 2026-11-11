@@ -682,7 +682,7 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
-  min-width: 1180px;
+  min-width: 1040px;
 }
 
 /* STICKY THEAD */
@@ -1018,12 +1018,33 @@
   border: 1px solid rgba(56, 189, 248, 0.35);
 }
 
-.lrm-th-actions,
-.lrm-td-actions {
-  min-width: 180px !important;
-  width: 180px !important;
+.lrm-th-actions {
+  position: sticky !important;
+  right: 0 !important;
+  top: 0 !important;
+  z-index: 32 !important;
+  background: #111c38 !important;
+  min-width: 175px !important;
+  width: 175px !important;
   text-align: right;
-  padding-right: 22px !important;
+  padding-right: 18px !important;
+  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.45);
+}
+
+.lrm-td-actions {
+  position: sticky !important;
+  right: 0 !important;
+  z-index: 12 !important;
+  background: #0f172a !important;
+  min-width: 175px !important;
+  width: 175px !important;
+  text-align: right;
+  padding-right: 18px !important;
+  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.45);
+}
+
+.lrm-table tr:hover .lrm-td-actions {
+  background: #172442 !important;
 }
 
 .lrm-action-buttons {
