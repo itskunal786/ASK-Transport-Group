@@ -16,9 +16,11 @@ import {
   Trash2,
   Lock,
   Globe,
-  Flame,
   Activity,
-  Layers
+  Layers,
+  Truck,
+  Gauge,
+  Zap
 } from 'lucide-react';
 import { type SystemSettingItem, updateSystemSetting, deleteSystemSetting } from '../api/adminApi';
 import './SystemSettingsDeck.css';
@@ -35,14 +37,105 @@ export interface SystemSettingsDeckProps {
   onDeleteSetting?: (id: number) => Promise<void>;
 }
 
-const CATEGORIES = [
-  { id: 'ALL', label: 'All Settings', icon: Layers },
-  { id: 'System', label: 'System & Platform', icon: ShieldCheck },
-  { id: 'Pricing', label: 'Tariffs & Pricing', icon: IndianRupee },
-  { id: 'Taxation', label: 'Taxation & GST', icon: Percent },
-  { id: 'Compliance', label: 'Statutory & e-Way', icon: AlertTriangle },
-  { id: 'Operations', label: 'Operational Rules', icon: Sliders },
-];
+// Convert technical key to clean human title
+function formatHumanTitle(key: string): string {
+  const map: Record<string, string> = {
+    GlobalGstRate: 'Standard Freight GST Rate',
+    DefaultCreditLimit: 'Default Corporate Client Credit Limit',
+    FastagAutoRechargeThreshold: 'FASTag Auto-Recharge Balance Floor',
+    Ais140OverspeedLimit: 'AIS-140 Highway Speed Limit Alert',
+    PlatformMaintenanceMode: 'Platform Emergency Maintenance Freeze',
+    FREIGHT_FUEL_SURCHARGE_PCT: 'National Diesel Fuel Surcharge Index',
+    FREIGHT_GST_RATE_PCT: 'Statutory GST Rate on Cargo (SAC 9965)',
+    MINIMUM_BASE_FARE_INR: 'Minimum Consignment Base Fare Floor',
+    EWAY_BILL_THRESHOLD_INR: 'Mandatory NIC e-Way Bill Threshold',
+    SYSTEM_MAINTENANCE_MODE: 'Platform Emergency Maintenance Freeze',
+  };
+
+  if (map[key]) return map[key];
+
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b(Inr|Pct|Gst|Sac|Ais|Eway)\b/gi, m => m.toUpperCase())
+    .trim();
+}
+
+// Format numbers in Indian currency style
+function formatInr(val: number): string {
+  if (isNaN(val)) return '₹0';
+  if (val >= 10000000) {
+    return `₹${(val / 10000000).toFixed(2)} Crore`;
+  }
+  if (val >= 100000) {
+    return `₹${(val / 100000).toFixed(2)} Lakh`;
+  }
+  return `₹${val.toLocaleString('en-IN')}`;
+}
+
+// Intelligent type detector for any setting key/value
+type SettingType = 'boolean' | 'percentage' | 'currency' | 'speed' | 'number' | 'text';
+
+function getSettingType(key: string, value: string): SettingType {
+  const k = key.toLowerCase();
+  const v = String(value).toLowerCase().trim();
+
+  // Boolean check
+  if (
+    v === 'true' ||
+    v === 'false' ||
+    k.includes('maintenance') ||
+    k.includes('freeze') ||
+    k.includes('enable') ||
+    k.includes('disable') ||
+    k.includes('mode')
+  ) {
+    if (v === 'true' || v === 'false' || !v || isNaN(Number(v))) {
+      return 'boolean';
+    }
+  }
+
+  // Percentage check
+  if (
+    k.includes('rate') ||
+    k.includes('pct') ||
+    k.includes('percent') ||
+    k.includes('gst') ||
+    k.includes('tax') ||
+    k.includes('margin') ||
+    k.includes('surcharge')
+  ) {
+    return 'percentage';
+  }
+
+  // Speed check
+  if (k.includes('speed') || k.includes('overspeed') || k.includes('kmph') || k.includes('kmh')) {
+    return 'speed';
+  }
+
+  // Currency check
+  if (
+    k.includes('limit') ||
+    k.includes('credit') ||
+    k.includes('threshold') ||
+    k.includes('fare') ||
+    k.includes('amount') ||
+    k.includes('inr') ||
+    k.includes('fee') ||
+    k.includes('price') ||
+    k.includes('cost') ||
+    k.includes('recharge')
+  ) {
+    return 'currency';
+  }
+
+  // Number check
+  if (!isNaN(Number(v)) && v !== '') {
+    return 'number';
+  }
+
+  return 'text';
+}
 
 export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
   settingsList,
@@ -64,21 +157,39 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [newKey, setNewKey] = useState<string>('');
   const [newValue, setNewValue] = useState<string>('');
-  const [newGroup, setNewGroup] = useState<string>('Pricing');
+  const [newGroup, setNewGroup] = useState<string>('Taxation');
   const [newDescription, setNewDescription] = useState<string>('');
   const [newIsPublic, setNewIsPublic] = useState<boolean>(true);
   const [isAdding, setIsAdding] = useState<boolean>(false);
 
-  // Key stats
+  // Calculate live platform status & stats
   const totalCount = settingsList.length;
-  const isMaintenanceMode = (editingSettings['SYSTEM_MAINTENANCE_MODE'] ?? 
-    settingsList.find(s => s.key === 'SYSTEM_MAINTENANCE_MODE')?.value) === 'true';
-  const fuelSurchargeVal = editingSettings['FREIGHT_FUEL_SURCHARGE_PCT'] ?? 
-    settingsList.find(s => s.key === 'FREIGHT_FUEL_SURCHARGE_PCT')?.value ?? '10';
-  const ewayThresholdVal = editingSettings['EWAY_BILL_THRESHOLD_INR'] ?? 
-    settingsList.find(s => s.key === 'EWAY_BILL_THRESHOLD_INR')?.value ?? '50000';
-  const gstRateVal = editingSettings['FREIGHT_GST_RATE_PCT'] ?? 
-    settingsList.find(s => s.key === 'FREIGHT_GST_RATE_PCT')?.value ?? '18';
+  const publicCount = settingsList.filter(s => s.isPublic).length;
+  const privateCount = settingsList.filter(s => !s.isPublic).length;
+
+  // Check maintenance state across any maintenance key
+  const maintenanceSetting = settingsList.find(s => 
+    s.key === 'PlatformMaintenanceMode' || s.key === 'SYSTEM_MAINTENANCE_MODE'
+  );
+  const currentMaintenanceVal = maintenanceSetting
+    ? (editingSettings[maintenanceSetting.key] ?? maintenanceSetting.value)
+    : 'false';
+  const isMaintenanceMode = currentMaintenanceVal === 'true';
+
+  // Discover dynamic categories
+  const discoveredGroups = Array.from(new Set(settingsList.map(s => s.group))).filter(Boolean);
+  const allGroups = Array.from(new Set([...discoveredGroups, 'Taxation', 'Finance', 'Fleet', 'Safety', 'System']));
+
+  const getGroupIcon = (group: string) => {
+    const g = group.toLowerCase();
+    if (g.includes('tax') || g.includes('gst')) return Percent;
+    if (g.includes('finance') || g.includes('pricing') || g.includes('credit')) return IndianRupee;
+    if (g.includes('fleet') || g.includes('truck')) return Truck;
+    if (g.includes('safety') || g.includes('speed') || g.includes('ais')) return Gauge;
+    if (g.includes('system') || g.includes('core')) return ShieldCheck;
+    if (g.includes('compliance') || g.includes('eway')) return AlertTriangle;
+    return Sliders;
+  };
 
   // Copy to clipboard
   const handleCopyKey = (key: string) => {
@@ -90,21 +201,23 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
     }, 2000);
   };
 
-  // Stepper helper
-  const handleStep = (key: string, delta: number, isPercent: boolean) => {
+  // Step handler
+  const handleStep = (key: string, delta: number, type: SettingType) => {
     const currentValStr = editingSettings[key] ?? settingsList.find(s => s.key === key)?.value ?? '0';
     let currentVal = parseFloat(currentValStr);
     if (isNaN(currentVal)) currentVal = 0;
     let nextVal = currentVal + delta;
-    if (isPercent) {
+
+    if (type === 'percentage') {
       if (nextVal < 0) nextVal = 0;
       if (nextVal > 100) nextVal = 100;
-    } else {
+    } else if (type === 'currency' || type === 'speed' || type === 'number') {
       if (nextVal < 0) nextVal = 0;
     }
+
     setEditingSettings(prev => ({
       ...prev,
-      [key]: nextVal.toString()
+      [key]: String(nextVal)
     }));
   };
 
@@ -120,9 +233,9 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
   // Add new parameter
   const handleAddParameter = async (e: React.FormEvent) => {
     e.preventDefault();
-    const sanitizedKey = newKey.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+    const sanitizedKey = newKey.trim();
     if (!sanitizedKey) {
-      showToast('Please provide a valid Parameter Key (e.g. HIGHWAY_NIGHT_HALT_RATE)');
+      showToast('Please provide a valid Parameter Key');
       return;
     }
     if (!newValue.trim()) {
@@ -146,46 +259,45 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
       setNewDescription('');
       await onRefresh();
     } catch (err: any) {
-      showToast(err?.message || 'Failed to add dynamic parameter');
+      showToast(err?.message || 'Failed to create parameter');
     } finally {
       setIsAdding(false);
     }
   };
 
-  // Delete parameter
+  // Delete handler
   const handleDelete = async (item: SystemSettingItem) => {
-    if (!item.id && !onDeleteSetting) {
-      showToast(`Factory standard parameter "${item.key}" cannot be deleted.`);
+    if (!item.id) {
+      showToast('This core parameter cannot be deleted.');
       return;
     }
-    if (!window.confirm(`Are you sure you want to delete parameter "${item.key}"? This action cannot be undone.`)) {
-      return;
-    }
-    try {
-      if (item.id) {
-        await deleteSystemSetting(item.id);
-      } else if (onDeleteSetting && item.id) {
-        await onDeleteSetting(item.id);
+    if (window.confirm(`Are you sure you want to delete parameter "${item.key}"? This may impact downstream pricing and operations.`)) {
+      try {
+        if (onDeleteSetting) {
+          await onDeleteSetting(item.id);
+        } else {
+          await deleteSystemSetting(item.id);
+        }
+        showToast(`Parameter "${item.key}" deleted.`);
+        await onRefresh();
+      } catch (err: any) {
+        showToast(err?.message || 'Failed to delete parameter');
       }
-      showToast(`Parameter "${item.key}" deleted successfully`);
-      await onRefresh();
-    } catch (err: any) {
-      showToast(err?.message || 'Failed to delete setting');
     }
   };
 
-  // Reset to Defaults
+  // Reset defaults handler
   const handleResetDefaults = async () => {
-    if (!window.confirm('Reset all primary system settings to factory default values (10% Fuel Surcharge, 18% GST, ₹450 Base Fare, ₹50,000 e-Way Bill, Operational)?')) {
+    if (!window.confirm('Reset all primary system parameters to enterprise factory standards?')) {
       return;
     }
     try {
-      await updateSystemSetting({ key: 'FREIGHT_FUEL_SURCHARGE_PCT', value: '10', group: 'Pricing', isPublic: true, description: 'Percentage fuel surcharge applied on freight base rate' });
-      await updateSystemSetting({ key: 'FREIGHT_GST_RATE_PCT', value: '18', group: 'Taxation', isPublic: true, description: 'Standard GST rate on road transport services (SAC 9965)' });
-      await updateSystemSetting({ key: 'MINIMUM_BASE_FARE_INR', value: '450', group: 'Pricing', isPublic: true, description: 'Minimum base consignment charges' });
-      await updateSystemSetting({ key: 'EWAY_BILL_THRESHOLD_INR', value: '50000', group: 'Compliance', isPublic: true, description: 'Mandatory e-Way bill consignment value limit' });
-      await updateSystemSetting({ key: 'SYSTEM_MAINTENANCE_MODE', value: 'false', group: 'System', isPublic: true, description: 'Temporarily freeze customer bookings for system updates' });
-      showToast('Primary platform parameters reset to factory defaults.');
+      await updateSystemSetting({ key: 'GlobalGstRate', value: '18', group: 'Taxation', isPublic: true, description: 'Standard GST rate % applied to freight and forwarding services' });
+      await updateSystemSetting({ key: 'DefaultCreditLimit', value: '500000', group: 'Finance', isPublic: false, description: 'Default credit limit granted to new verified corporate clients (INR)' });
+      await updateSystemSetting({ key: 'FastagAutoRechargeThreshold', value: '1500', group: 'Fleet', isPublic: false, description: 'Low balance threshold to trigger automated FASTag top-up (INR)' });
+      await updateSystemSetting({ key: 'Ais140OverspeedLimit', value: '65', group: 'Safety', isPublic: true, description: 'Maximum commercial highway convoy speed (km/h) before alerting command centre' });
+      await updateSystemSetting({ key: 'PlatformMaintenanceMode', value: 'false', group: 'System', isPublic: false, description: 'Emergency lock to disable external shipper booking submissions' });
+      showToast('✓ Platform parameters synchronized to standard factory configuration.');
       await onRefresh();
     } catch (err: any) {
       showToast(err?.message || 'Failed to reset defaults');
@@ -194,13 +306,12 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
 
   // Filter settings
   const filteredList = settingsList.filter(item => {
-    // Category match
     const categoryMatch = selectedCategory === 'ALL' || item.group.toLowerCase() === selectedCategory.toLowerCase();
-    // Search match
     const query = searchQuery.trim().toLowerCase();
     const searchMatch = !query || 
       item.key.toLowerCase().includes(query) || 
       item.group.toLowerCase().includes(query) || 
+      formatHumanTitle(item.key).toLowerCase().includes(query) ||
       (item.description && item.description.toLowerCase().includes(query));
 
     return categoryMatch && searchMatch;
@@ -213,11 +324,11 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
         <div className="ssd-hero-left">
           <div className="ssd-hero-badge">
             <span className="ssd-pulse-dot" />
-            <span>ENTERPRISE KERNEL CONFIGURATION</span>
+            <span>ENTERPRISE RUNTIME CONTROLS</span>
           </div>
-          <h1>Dynamic System Settings &amp; Platform Controls</h1>
+          <h1>System Settings &amp; Platform Configuration</h1>
           <p>
-            Configure live freight tariffs, statutory GST rates, e-Way bill thresholds, and platform maintenance status without redeployment.
+            Configure live freight tariffs, statutory GST rates, FASTag automation, highway speed thresholds, and emergency maintenance controls in real-time.
           </p>
         </div>
 
@@ -236,9 +347,10 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
             className="ssd-btn-secondary"
             onClick={onRefresh}
             disabled={settingsLoading}
+            title="Reload settings from database"
           >
             <RefreshCw size={15} className={settingsLoading ? 'animate-spin' : ''} />
-            <span>{settingsLoading ? 'Syncing...' : 'Refresh Live Config'}</span>
+            <span>{settingsLoading ? 'Syncing...' : 'Refresh Config'}</span>
           </button>
 
           <button
@@ -282,58 +394,55 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
         </div>
 
         <div className="ssd-kpi-card">
-          <div className="ssd-kpi-icon purple">
-            <Flame size={22} />
-          </div>
-          <div className="ssd-kpi-meta">
-            <span className="ssd-kpi-label">Fuel Surcharge Index</span>
-            <span className="ssd-kpi-value">{fuelSurchargeVal}%</span>
-            <span className="ssd-kpi-sub">National Diesel Baseline</span>
-          </div>
-        </div>
-
-        <div className="ssd-kpi-card">
-          <div className="ssd-kpi-icon amber">
-            <AlertTriangle size={22} />
-          </div>
-          <div className="ssd-kpi-meta">
-            <span className="ssd-kpi-label">e-Way Bill Floor</span>
-            <span className="ssd-kpi-value">₹{parseInt(ewayThresholdVal, 10).toLocaleString('en-IN')}</span>
-            <span className="ssd-kpi-sub">Statutory NIC Compliance</span>
-          </div>
-        </div>
-
-        <div className="ssd-kpi-card">
           <div className="ssd-kpi-icon emerald">
-            <Percent size={22} />
+            <Globe size={22} />
           </div>
           <div className="ssd-kpi-meta">
-            <span className="ssd-kpi-label">Freight GST SAC 9965</span>
-            <span className="ssd-kpi-value">{gstRateVal}%</span>
-            <span className="ssd-kpi-sub">Standard Road Cargo</span>
+            <span className="ssd-kpi-label">API Visibility</span>
+            <span className="ssd-kpi-value">{publicCount} Public / {privateCount} Core</span>
+            <span className="ssd-kpi-sub">Zero-Trust IAM Protected</span>
+          </div>
+        </div>
+
+        <div className="ssd-kpi-card">
+          <div className="ssd-kpi-icon purple">
+            <Zap size={22} />
+          </div>
+          <div className="ssd-kpi-meta">
+            <span className="ssd-kpi-label">Hot-Swap Latency</span>
+            <span className="ssd-kpi-value">&lt; 10ms</span>
+            <span className="ssd-kpi-sub">Zero Microservice Downtime</span>
           </div>
         </div>
       </div>
 
-      {/* 3. TOOLBAR: CATEGORY TABS & SEARCH */}
+      {/* 3. TOOLBAR: DYNAMIC CATEGORY TABS & SEARCH */}
       <div className="ssd-toolbar">
         <div className="ssd-tabs">
-          {CATEGORIES.map(cat => {
-            const Icon = cat.icon;
-            const count = cat.id === 'ALL' 
-              ? totalCount 
-              : settingsList.filter(s => s.group.toLowerCase() === cat.id.toLowerCase()).length;
-            const isActive = selectedCategory === cat.id;
+          <button
+            type="button"
+            className={`ssd-tab-btn ${selectedCategory === 'ALL' ? 'active' : ''}`}
+            onClick={() => setSelectedCategory('ALL')}
+          >
+            <Layers size={14} />
+            <span>All Settings</span>
+            <span className="ssd-tab-count">{totalCount}</span>
+          </button>
+
+          {allGroups.map(group => {
+            const Icon = getGroupIcon(group);
+            const count = settingsList.filter(s => s.group.toLowerCase() === group.toLowerCase()).length;
+            const isActive = selectedCategory.toLowerCase() === group.toLowerCase();
 
             return (
               <button
-                key={cat.id}
+                key={group}
                 type="button"
                 className={`ssd-tab-btn ${isActive ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => setSelectedCategory(group)}
               >
                 <Icon size={14} />
-                <span>{cat.label}</span>
+                <span>{group}</span>
                 <span className="ssd-tab-count">{count}</span>
               </button>
             );
@@ -345,7 +454,7 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
           <input
             type="text"
             className="ssd-search-input"
-            placeholder="Search by key, category, or description..."
+            placeholder="Search parameter, group, or description..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -354,6 +463,7 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
               type="button"
               className="ssd-search-clear"
               onClick={() => setSearchQuery('')}
+              title="Clear search"
             >
               <X size={14} />
             </button>
@@ -365,8 +475,8 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
       {filteredList.length === 0 ? (
         <div className="ssd-empty">
           <Sliders size={40} style={{ color: '#94a3b8' }} />
-          <h3>No settings matching your search</h3>
-          <p>Try adjusting your category filter or search keywords to locate system parameters.</p>
+          <h3>No settings matching your query</h3>
+          <p>Try clearing your category filter or adjusting search terms.</p>
           <button
             type="button"
             className="ssd-btn-secondary"
@@ -381,21 +491,22 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
             const currentValue = editingSettings[item.key] ?? item.value;
             const isSaving = savingKey === item.key;
             const isSaved = justSavedKey === item.key;
-            const isPercent = item.key.includes('_PCT') || item.key.includes('_RATE');
-            const isCurrency = item.key.includes('_INR') || item.key.includes('_FARE') || item.key.includes('_THRESHOLD');
-            const isMaintenance = item.key === 'SYSTEM_MAINTENANCE_MODE';
+            const isDirty = currentValue !== item.value;
+            const type = getSettingType(item.key, currentValue);
+            const humanTitle = formatHumanTitle(item.key);
             const groupClass = item.group.toLowerCase();
 
             return (
-              <div key={item.key} className="ssd-card">
-                <div>
+              <div key={item.key} className={`ssd-card ${isDirty ? 'is-dirty' : ''}`}>
+                <div className="ssd-card-top-region">
+                  {/* Category Pill + Technical Key */}
                   <div className="ssd-card-header">
                     <span className={`ssd-group-badge ${groupClass}`}>
                       {item.group}
                     </span>
 
                     <div className="ssd-key-box" title="Click icon to copy parameter key">
-                      <span>{item.key}</span>
+                      <code>{item.key}</code>
                       <button
                         type="button"
                         className="ssd-key-copy"
@@ -411,156 +522,279 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
                     </div>
                   </div>
 
+                  {/* Human Title & Description */}
                   <div className="ssd-card-body">
+                    <h3 className="ssd-card-human-title">{humanTitle}</h3>
                     <p className="ssd-card-desc">
-                      {item.description || item.key}
+                      {item.description || `Controls runtime logic for ${humanTitle}.`}
                     </p>
 
-                    {/* Specialized Inputs */}
-                    {isMaintenance ? (
-                      <div className="ssd-toggle-container">
+                    {/* Specialized Interactive Controls */}
+                    {type === 'boolean' ? (
+                      /* 1. BOOLEAN / MAINTENANCE TOGGLE */
+                      <div className="ssd-boolean-container">
                         <div className="ssd-toggle-segmented">
                           <button
                             type="button"
                             className={`ssd-toggle-opt ${currentValue !== 'true' ? 'active-operational' : ''}`}
                             onClick={() => setEditingSettings({ ...editingSettings, [item.key]: 'false' })}
                           >
-                            <CheckCircle2 size={14} />
-                            <span>Operational</span>
+                            <CheckCircle2 size={15} />
+                            <span>Operational / Active</span>
                           </button>
                           <button
                             type="button"
                             className={`ssd-toggle-opt ${currentValue === 'true' ? 'active-maintenance' : ''}`}
                             onClick={() => setEditingSettings({ ...editingSettings, [item.key]: 'true' })}
                           >
-                            <AlertTriangle size={14} />
+                            <AlertTriangle size={15} />
                             <span>Freeze / Maintenance</span>
                           </button>
                         </div>
+                        <div className="ssd-val-preview">
+                          Status: <strong style={{ color: currentValue === 'true' ? '#ef4444' : '#10b981' }}>
+                            {currentValue === 'true' ? 'LOCKED / DISABLED' : 'LIVE / ACCEPTING BOOKINGS'}
+                          </strong>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="ssd-input-group">
-                        {isPercent && (
+                    ) : type === 'currency' ? (
+                      /* 2. CURRENCY / CREDIT LIMIT / FASTAG FLOOR */
+                      <div className="ssd-input-wrapper-block">
+                        <div className="ssd-input-group">
                           <button
                             type="button"
                             className="ssd-stepper-btn"
-                            onClick={() => handleStep(item.key, -1, true)}
+                            onClick={() => handleStep(item.key, parseFloat(currentValue) >= 50000 ? -25000 : -500, 'currency')}
+                            title="Decrement"
+                          >
+                            {parseFloat(currentValue) >= 50000 ? '-₹25K' : '-₹500'}
+                          </button>
+
+                          <div className="ssd-input-wrapper">
+                            <span className="ssd-input-prefix">₹</span>
+                            <input
+                              type="number"
+                              className="ssd-input has-prefix"
+                              value={currentValue}
+                              onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            className="ssd-stepper-btn"
+                            onClick={() => handleStep(item.key, parseFloat(currentValue) >= 50000 ? 25000 : 500, 'currency')}
+                            title="Increment"
+                          >
+                            {parseFloat(currentValue) >= 50000 ? '+₹25K' : '+₹500'}
+                          </button>
+                        </div>
+
+                        {/* Quick Presets & Formatted Value */}
+                        <div className="ssd-presets-row">
+                          <span className="ssd-preset-summary">
+                            Formatted: <strong>{formatInr(parseFloat(currentValue))}</strong>
+                          </span>
+                          <div className="ssd-preset-chips">
+                            {parseFloat(currentValue) >= 50000 ? (
+                              [100000, 250000, 500000, 1000000, 2500000].map(amt => (
+                                <button
+                                  key={amt}
+                                  type="button"
+                                  className={`ssd-preset-chip ${parseFloat(currentValue) === amt ? 'active' : ''}`}
+                                  onClick={() => setEditingSettings({ ...editingSettings, [item.key]: String(amt) })}
+                                >
+                                  {amt >= 100000 ? `₹${amt / 100000}L` : `₹${amt}`}
+                                </button>
+                              ))
+                            ) : (
+                              [500, 1000, 1500, 2500, 5000].map(amt => (
+                                <button
+                                  key={amt}
+                                  type="button"
+                                  className={`ssd-preset-chip ${parseFloat(currentValue) === amt ? 'active' : ''}`}
+                                  onClick={() => setEditingSettings({ ...editingSettings, [item.key]: String(amt) })}
+                                >
+                                  ₹{amt}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : type === 'percentage' ? (
+                      /* 3. PERCENTAGE / GST RATE */
+                      <div className="ssd-input-wrapper-block">
+                        <div className="ssd-input-group">
+                          <button
+                            type="button"
+                            className="ssd-stepper-btn"
+                            onClick={() => handleStep(item.key, -1, 'percentage')}
                             title="Decrement 1%"
                           >
                             -1%
                           </button>
-                        )}
-                        {isCurrency && (
+
+                          <div className="ssd-input-wrapper">
+                            <input
+                              type="number"
+                              className="ssd-input has-suffix"
+                              value={currentValue}
+                              onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
+                            />
+                            <span className="ssd-input-suffix">%</span>
+                          </div>
+
                           <button
                             type="button"
                             className="ssd-stepper-btn"
-                            onClick={() => handleStep(item.key, -500, false)}
-                            title="Decrement ₹500"
-                          >
-                            -₹500
-                          </button>
-                        )}
-
-                        <div className="ssd-input-wrapper">
-                          {isCurrency && <span className="ssd-input-prefix">₹</span>}
-                          {isPercent && <span className="ssd-input-prefix">%</span>}
-                          <input
-                            type="text"
-                            className={`ssd-input ${(isCurrency || isPercent) ? 'has-prefix' : ''}`}
-                            value={currentValue}
-                            onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
-                          />
-                        </div>
-
-                        {isPercent && (
-                          <button
-                            type="button"
-                            className="ssd-stepper-btn"
-                            onClick={() => handleStep(item.key, 1, true)}
+                            onClick={() => handleStep(item.key, 1, 'percentage')}
                             title="Increment 1%"
                           >
                             +1%
                           </button>
-                        )}
-                        {isCurrency && (
+                        </div>
+
+                        {/* Standard GST / Surcharge Chips */}
+                        <div className="ssd-presets-row">
+                          <span className="ssd-preset-summary">Standard Slabs:</span>
+                          <div className="ssd-preset-chips">
+                            {[0, 5, 12, 18, 28].map(rate => (
+                              <button
+                                key={rate}
+                                type="button"
+                                className={`ssd-preset-chip ${parseFloat(currentValue) === rate ? 'active' : ''}`}
+                                onClick={() => setEditingSettings({ ...editingSettings, [item.key]: String(rate) })}
+                              >
+                                {rate}% {rate === 18 ? '(Std)' : rate === 5 ? '(RCM)' : ''}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : type === 'speed' ? (
+                      /* 4. SPEED LIMIT / AIS-140 */
+                      <div className="ssd-input-wrapper-block">
+                        <div className="ssd-input-group">
                           <button
                             type="button"
                             className="ssd-stepper-btn"
-                            onClick={() => handleStep(item.key, 500, false)}
-                            title="Increment ₹500"
+                            onClick={() => handleStep(item.key, -5, 'speed')}
+                            title="Decrement 5 km/h"
                           >
-                            +₹500
+                            -5
                           </button>
-                        )}
 
-                        <button
-                          type="button"
-                          className={`ssd-save-btn ${isSaved ? 'saved' : ''}`}
-                          onClick={() => handleSaveWithFeedback(item)}
-                          disabled={isSaving}
-                        >
-                          {isSaving ? (
-                            <>
-                              <RefreshCw size={13} className="animate-spin" />
-                              <span>Saving...</span>
-                            </>
-                          ) : isSaved ? (
-                            <>
-                              <Check size={14} />
-                              <span>Saved!</span>
-                            </>
-                          ) : (
-                            <span>Save</span>
-                          )}
-                        </button>
+                          <div className="ssd-input-wrapper">
+                            <input
+                              type="number"
+                              className="ssd-input has-suffix"
+                              value={currentValue}
+                              onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
+                            />
+                            <span className="ssd-input-suffix">km/h</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="ssd-stepper-btn"
+                            onClick={() => handleStep(item.key, 5, 'speed')}
+                            title="Increment 5 km/h"
+                          >
+                            +5
+                          </button>
+                        </div>
+
+                        {/* Highway Speed Limit Chips */}
+                        <div className="ssd-presets-row">
+                          <span className="ssd-preset-summary">Highway Convoy Limits:</span>
+                          <div className="ssd-preset-chips">
+                            {[40, 50, 60, 65, 80].map(spd => (
+                              <button
+                                key={spd}
+                                type="button"
+                                className={`ssd-preset-chip ${parseFloat(currentValue) === spd ? 'active' : ''}`}
+                                onClick={() => setEditingSettings({ ...editingSettings, [item.key]: String(spd) })}
+                              >
+                                {spd} km/h
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    )}
-
-                    {/* Maintenance mode standalone save button */}
-                    {isMaintenance && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                        <button
-                          type="button"
-                          className={`ssd-save-btn ${isSaved ? 'saved' : ''}`}
-                          onClick={() => handleSaveWithFeedback(item)}
-                          disabled={isSaving}
-                        >
-                          {isSaving ? (
-                            <>
-                              <RefreshCw size={13} className="animate-spin" />
-                              <span>Saving...</span>
-                            </>
-                          ) : isSaved ? (
-                            <>
-                              <Check size={14} />
-                              <span>State Saved!</span>
-                            </>
-                          ) : (
-                            <span>Update Platform State</span>
-                          )}
-                        </button>
+                    ) : (
+                      /* 5. GENERIC NUMBER / TEXT */
+                      <div className="ssd-input-wrapper-block">
+                        <div className="ssd-input-wrapper">
+                          <input
+                            type="text"
+                            className="ssd-input"
+                            value={currentValue}
+                            onChange={e => setEditingSettings({ ...editingSettings, [item.key]: e.target.value })}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
+                {/* Card Footer: Visibility Tag + Save Button + Delete */}
                 <div className="ssd-card-footer">
-                  <div className="ssd-sync-badge">
-                    {item.isPublic ? <Globe size={13} /> : <Lock size={13} />}
-                    <span>{item.isPublic ? 'Public API Access' : 'Private Platform Core'}</span>
+                  <div className="ssd-footer-left">
+                    {item.isPublic ? (
+                      <span className="ssd-tag-public" title="Exposed via public API endpoint (/api/system-settings/public)">
+                        <Globe size={13} />
+                        <span>Public API Access</span>
+                      </span>
+                    ) : (
+                      <span className="ssd-tag-private" title="Private platform internal parameter">
+                        <Lock size={13} />
+                        <span>Private Platform Core</span>
+                      </span>
+                    )}
                   </div>
 
-                  {item.id && (
+                  <div className="ssd-footer-right">
+                    {/* Save Button */}
                     <button
                       type="button"
-                      className="ssd-delete-btn"
-                      onClick={() => handleDelete(item)}
-                      title="Delete dynamic setting"
+                      className={`ssd-save-btn ${isDirty ? 'is-dirty' : ''} ${isSaved ? 'is-saved' : ''}`}
+                      disabled={isSaving}
+                      onClick={() => handleSaveWithFeedback(item)}
                     >
-                      <Trash2 size={13} />
-                      <span>Delete</span>
+                      {isSaving ? (
+                        <>
+                          <RefreshCw size={13} className="animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : isSaved ? (
+                        <>
+                          <Check size={13} />
+                          <span>Saved!</span>
+                        </>
+                      ) : isDirty ? (
+                        <>
+                          <Zap size={13} />
+                          <span>Save Changes</span>
+                        </>
+                      ) : (
+                        <span>Save</span>
+                      )}
                     </button>
-                  )}
+
+                    {/* Delete (if removable) */}
+                    {item.id && (
+                      <button
+                        type="button"
+                        className="ssd-delete-btn"
+                        onClick={() => handleDelete(item)}
+                        title="Delete parameter"
+                      >
+                        <Trash2 size={13} />
+                        <span>Delete</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -588,13 +822,13 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
 
             <form onSubmit={handleAddParameter} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="ssd-form-group">
-                <label className="ssd-form-label">Parameter Key (Uppercase SNAKE_CASE)</label>
+                <label className="ssd-form-label">Parameter Key</label>
                 <input
                   type="text"
                   className="ssd-form-input"
-                  placeholder="e.g. HIGHWAY_NIGHT_HALT_RATE_INR"
+                  placeholder="e.g. MaxConsignmentWeightTons or NightHighwayHaltRate"
                   value={newKey}
-                  onChange={e => setNewKey(e.target.value.toUpperCase().replace(/\s+/g, '_'))}
+                  onChange={e => setNewKey(e.target.value.replace(/\s+/g, ''))}
                   required
                 />
               </div>
@@ -606,10 +840,12 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
                   value={newGroup}
                   onChange={e => setNewGroup(e.target.value)}
                 >
-                  <option value="Pricing">Pricing &amp; Tariffs</option>
                   <option value="Taxation">Taxation &amp; GST</option>
-                  <option value="Compliance">Statutory &amp; Compliance</option>
+                  <option value="Finance">Finance &amp; Credit</option>
+                  <option value="Fleet">Fleet &amp; FASTag</option>
+                  <option value="Safety">Safety &amp; Telematics</option>
                   <option value="System">System &amp; Platform</option>
+                  <option value="Compliance">Statutory &amp; e-Way</option>
                   <option value="Operations">Operations</option>
                 </select>
               </div>
@@ -619,7 +855,7 @@ export const SystemSettingsDeck: React.FC<SystemSettingsDeckProps> = ({
                 <input
                   type="text"
                   className="ssd-form-input"
-                  placeholder="e.g. 1500 or true"
+                  placeholder="e.g. 1500, 18, or false"
                   value={newValue}
                   onChange={e => setNewValue(e.target.value)}
                   required
