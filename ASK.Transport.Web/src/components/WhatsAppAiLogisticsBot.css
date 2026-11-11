@@ -1,0 +1,375 @@
+/* ============================================================================
+   WHATSAPP AI LOGISTICS BOT CSS
+   Theme-Adaptive, Ultra-High Contrast, Executive Modern
+   ============================================================================ */
+
+.bot-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  color: var(--text-primary, #0f172a);
+}
+
+/* Light / Dark text defaults */
+[data-theme="dark"] .bot-container,
+body.dark .bot-container,
+.dark .bot-container {
+  color: #f8fafc !important;
+}
+
+/* ----------------------------------------------------------------------------
+   SUBTAB NAVIGATION BAR
+   ---------------------------------------------------------------------------- */
+.bot-tabs-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+  padding-bottom: 2px;
+  overflow-x: auto;
+}
+
+.bot-tab-btn {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.bot-tab-btn:hover {
+  color: #0f172a;
+}
+
+.bot-tab-btn.active {
+  color: #075e54;
+  border-bottom-color: #25D366;
+}
+
+[data-theme="dark"] .bot-tab-btn,
+body.dark .bot-tab-btn,
+.dark .bot-tab-btn {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .bot-tab-btn:hover,
+body.dark .bot-tab-btn:hover,
+.dark .bot-tab-btn:hover {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .bot-tab-btn.active,
+body.dark .bot-tab-btn.active,
+.dark .bot-tab-btn.active {
+  color: #25D366 !important;
+  border-bottom-color: #25D366 !important;
+}
+
+/* ----------------------------------------------------------------------------
+   TAB 3: NLP TRIGGER & TEMPLATE RULES CARDS
+   ---------------------------------------------------------------------------- */
+.bot-rules-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .bot-rules-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bot-card {
+  background: var(--bg-surface, #ffffff);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="dark"] .bot-card,
+body.dark .bot-card,
+.dark .bot-card {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.bot-card-title {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .bot-card-title,
+body.dark .bot-card-title,
+.dark .bot-card-title {
+  color: #f8fafc !important;
+}
+
+.bot-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bot-rule-item {
+  background: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .bot-rule-item,
+body.dark .bot-rule-item,
+.dark .bot-rule-item {
+  background: #172033 !important;
+  border-color: #334155 !important;
+}
+
+.bot-rule-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  display: block;
+}
+
+.bot-rule-detail {
+  font-size: 12px;
+  color: #334155;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .bot-rule-detail,
+body.dark .bot-rule-detail,
+.dark .bot-rule-detail {
+  color: #cbd5e1 !important;
+}
+
+.bot-code-pill {
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 11.5px;
+}
+
+[data-theme="dark"] .bot-code-pill,
+body.dark .bot-code-pill,
+.dark .bot-code-pill {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  border: 1px solid #334155 !important;
+}
+
+.bot-keywords-text {
+  color: #0f172a;
+  font-weight: 600;
+  font-style: normal;
+}
+
+[data-theme="dark"] .bot-keywords-text,
+body.dark .bot-keywords-text,
+.dark .bot-keywords-text {
+  color: #f1f5f9 !important;
+}
+
+/* ----------------------------------------------------------------------------
+   BROADCAST TRIGGER CHECKBOXES
+   ---------------------------------------------------------------------------- */
+.bot-triggers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bot-trigger-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.bot-trigger-label:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+[data-theme="dark"] .bot-trigger-label,
+body.dark .bot-trigger-label,
+.dark .bot-trigger-label {
+  background: #172033 !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="dark"] .bot-trigger-label:hover,
+body.dark .bot-trigger-label:hover,
+.dark .bot-trigger-label:hover {
+  background: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+.bot-trigger-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #059669;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bot-trigger-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+  flex: 1;
+}
+
+[data-theme="dark"] .bot-trigger-text,
+body.dark .bot-trigger-text,
+.dark .bot-trigger-text {
+  color: #f8fafc !important;
+}
+
+/* ----------------------------------------------------------------------------
+   TAB 4: META CLOUD API GATEWAY
+   ---------------------------------------------------------------------------- */
+.bot-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.bot-telemetry-card {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+}
+
+[data-theme="dark"] .bot-telemetry-card,
+body.dark .bot-telemetry-card,
+.dark .bot-telemetry-card {
+  background: #172033 !important;
+  border-color: #334155 !important;
+}
+
+.bot-telemetry-title {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+[data-theme="dark"] .bot-telemetry-title,
+body.dark .bot-telemetry-title,
+.dark .bot-telemetry-title {
+  color: #94a3b8 !important;
+}
+
+.bot-telemetry-val {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-top: 4px;
+}
+
+[data-theme="dark"] .bot-telemetry-val,
+body.dark .bot-telemetry-val,
+.dark .bot-telemetry-val {
+  color: #f8fafc !important;
+}
+
+/* ----------------------------------------------------------------------------
+   TAB 2: INBOUND CHATS TABLE
+   ---------------------------------------------------------------------------- */
+.bot-table-container {
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .bot-table-container,
+body.dark .bot-table-container,
+.dark .bot-table-container {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+.bot-table-head-strip {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+[data-theme="dark"] .bot-table-head-strip,
+body.dark .bot-table-head-strip,
+.dark .bot-table-head-strip {
+  border-bottom-color: #1e293b !important;
+}
+
+.bot-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.bot-th {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 12px 18px;
+  font-weight: 800;
+}
+
+[data-theme="dark"] .bot-th,
+body.dark .bot-th,
+.dark .bot-th {
+  background: #172033 !important;
+  border-bottom-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+.bot-td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme="dark"] .bot-td,
+body.dark .bot-td,
+.dark .bot-td {
+  border-bottom-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}

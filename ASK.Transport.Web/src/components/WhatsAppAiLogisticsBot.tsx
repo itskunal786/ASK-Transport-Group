@@ -1,3 +1,4 @@
+import './WhatsAppAiLogisticsBot.css';
 import { useState, useRef, useEffect } from 'react';
 
 // ==========================================
@@ -130,6 +131,20 @@ export default function WhatsAppAiLogisticsBot() {
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState<'simulator' | 'live_chats' | 'bot_config' | 'api_telemetry'>('simulator');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [triggers, setTriggers] = useState({
+    departHub: true,
+    otpConsignee: true,
+    podSignature: true,
+    billingAlert: true
+  });
+
+  const toggleTrigger = (key: keyof typeof triggers) => {
+    setTriggers(prev => {
+      const updated = { ...prev, [key]: !prev[key] };
+      showToast('⚡ WhatsApp Broadcast Automation Rule updated and deployed live!');
+      return updated;
+    });
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -363,23 +378,11 @@ export default function WhatsAppAiLogisticsBot() {
       </div>
 
       {/* TOP NAVIGATION TABS */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px' }}>
+      <div className="bot-tabs-bar">
         <button
           type="button"
           onClick={() => setActiveTab('simulator')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeTab === 'simulator' ? '#075e54' : '#64748b',
-            borderBottom: activeTab === 'simulator' ? '3px solid #075e54' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`bot-tab-btn ${activeTab === 'simulator' ? 'active' : ''}`}
         >
           <span>📱</span> WhatsApp Interactive Simulator Preview
         </button>
@@ -387,19 +390,7 @@ export default function WhatsAppAiLogisticsBot() {
         <button
           type="button"
           onClick={() => setActiveTab('live_chats')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeTab === 'live_chats' ? '#075e54' : '#64748b',
-            borderBottom: activeTab === 'live_chats' ? '3px solid #075e54' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`bot-tab-btn ${activeTab === 'live_chats' ? 'active' : ''}`}
         >
           <span>💬</span> Live Inbound WhatsApp Feed ({RECENT_CUSTOMER_SESSIONS.length})
         </button>
@@ -407,19 +398,7 @@ export default function WhatsAppAiLogisticsBot() {
         <button
           type="button"
           onClick={() => setActiveTab('bot_config')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeTab === 'bot_config' ? '#075e54' : '#64748b',
-            borderBottom: activeTab === 'bot_config' ? '3px solid #075e54' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`bot-tab-btn ${activeTab === 'bot_config' ? 'active' : ''}`}
         >
           <span>⚙️</span> NLP Trigger &amp; Template Rules
         </button>
@@ -427,19 +406,7 @@ export default function WhatsAppAiLogisticsBot() {
         <button
           type="button"
           onClick={() => setActiveTab('api_telemetry')}
-          style={{
-            padding: '10px 18px',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            color: activeTab === 'api_telemetry' ? '#075e54' : '#64748b',
-            borderBottom: activeTab === 'api_telemetry' ? '3px solid #075e54' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`bot-tab-btn ${activeTab === 'api_telemetry' ? 'active' : ''}`}
         >
           <span>⚡</span> Meta Cloud API &amp; Webhook Gateway
         </button>
@@ -922,49 +889,97 @@ export default function WhatsAppAiLogisticsBot() {
 
       {/* TAB 3: BOT RULES & CONFIG */}
       {activeTab === 'bot_config' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '16px', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 800 }}>🤖 NLP Intent Matchers &amp; Keywords</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <strong style={{ fontSize: '13px', color: '#0b72e7' }}>1. Live Odometer Tracking</strong>
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                  Regex: <code>LR-\d{4}-\d{4}</code> | Keywords: <em>track, bilty status, gadi kahan hai, live location</em>
+        <div className="bot-rules-grid">
+          {/* LEFT: NLP INTENT MATCHERS */}
+          <div className="bot-card">
+            <h3 className="bot-card-title">
+              <span>🤖</span> NLP Intent Matchers &amp; Keywords
+            </h3>
+            <div className="bot-rules-list">
+              <div className="bot-rule-item">
+                <strong className="bot-rule-name" style={{ color: '#0284c7' }}>
+                  1. Live Odometer Tracking
+                </strong>
+                <div className="bot-rule-detail">
+                  <span style={{ fontWeight: 700 }}>Regex:</span> <code className="bot-code-pill">LR-\d{4}-\d{4}</code>
+                  <div style={{ marginTop: '6px' }}>
+                    <span style={{ fontWeight: 700 }}>Keywords:</span> <span className="bot-keywords-text">track, bilty status, gadi kahan hai, live location</span>
+                  </div>
                 </div>
               </div>
-              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <strong style={{ fontSize: '13px', color: '#f59e0b' }}>2. Multi-Axle Tariff Quotation</strong>
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                  Keywords: <em>rate, bhav, quotation, per ton, 16-wheeler, 20-ton, delhi to pune, freight cost</em>
+
+              <div className="bot-rule-item">
+                <strong className="bot-rule-name" style={{ color: '#d97706' }}>
+                  2. Multi-Axle Tariff Quotation
+                </strong>
+                <div className="bot-rule-detail">
+                  <span style={{ fontWeight: 700 }}>Keywords:</span> <span className="bot-keywords-text">rate, bhav, quotation, per ton, 16-wheeler, 20-ton, delhi to pune, freight cost</span>
                 </div>
               </div>
-              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <strong style={{ fontSize: '13px', color: '#059669' }}>3. Digital Bilty &amp; Tax Invoice Dispenser</strong>
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                  Keywords: <em>bilty copy, stamped bilty, gst invoice, tax invoice, pod, e-invoice irn</em>
+
+              <div className="bot-rule-item">
+                <strong className="bot-rule-name" style={{ color: '#059669' }}>
+                  3. Digital Bilty &amp; Tax Invoice Dispenser
+                </strong>
+                <div className="bot-rule-detail">
+                  <span style={{ fontWeight: 700 }}>Keywords:</span> <span className="bot-keywords-text">bilty copy, stamped bilty, gst invoice, tax invoice, pod, e-invoice irn</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '16px', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 800 }}>⚡ Automated Broadcast Triggers</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked />
-                <span>Auto-dispatch WhatsApp link when Vehicle departs loading hub</span>
+          {/* RIGHT: AUTOMATED BROADCAST TRIGGERS */}
+          <div className="bot-card">
+            <h3 className="bot-card-title">
+              <span>⚡</span> Automated Broadcast Triggers
+            </h3>
+            <div className="bot-triggers-list">
+              <label className="bot-trigger-label" onClick={() => toggleTrigger('departHub')}>
+                <input
+                  type="checkbox"
+                  checked={triggers.departHub}
+                  onChange={() => {}}
+                  className="bot-trigger-checkbox"
+                />
+                <span className="bot-trigger-text">
+                  Auto-dispatch WhatsApp link when Vehicle departs loading hub
+                </span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked />
-                <span>Send 4-digit Delivery OTP to Consignee 1 hour before arrival</span>
+
+              <label className="bot-trigger-label" onClick={() => toggleTrigger('otpConsignee')}>
+                <input
+                  type="checkbox"
+                  checked={triggers.otpConsignee}
+                  onChange={() => {}}
+                  className="bot-trigger-checkbox"
+                />
+                <span className="bot-trigger-text">
+                  Send 4-digit Delivery OTP to Consignee 1 hour before arrival
+                </span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked />
-                <span>Send Stamped POD Bilty PDF once driver uploads delivery signature</span>
+
+              <label className="bot-trigger-label" onClick={() => toggleTrigger('podSignature')}>
+                <input
+                  type="checkbox"
+                  checked={triggers.podSignature}
+                  onChange={() => {}}
+                  className="bot-trigger-checkbox"
+                />
+                <span className="bot-trigger-text">
+                  Send Stamped POD Bilty PDF once driver uploads delivery signature
+                </span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked />
-                <span>Automated 15/30-Day billing statement alert with payment UPI link</span>
+
+              <label className="bot-trigger-label" onClick={() => toggleTrigger('billingAlert')}>
+                <input
+                  type="checkbox"
+                  checked={triggers.billingAlert}
+                  onChange={() => {}}
+                  className="bot-trigger-checkbox"
+                />
+                <span className="bot-trigger-text">
+                  Automated 15/30-Day billing statement alert with payment UPI link
+                </span>
               </label>
             </div>
           </div>
@@ -973,25 +988,35 @@ export default function WhatsAppAiLogisticsBot() {
 
       {/* TAB 4: API TELEMETRY */}
       {activeTab === 'api_telemetry' && (
-        <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '16px', padding: '24px' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 800 }}>⚡ Meta Cloud WhatsApp API Gateway Configuration</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>WhatsApp Business Number</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a', marginTop: '4px' }}>+91 98100 24000</div>
-              <div style={{ fontSize: '11px', color: '#059669', fontWeight: 700, marginTop: '2px' }}>● Verified Green Tick Official Channel</div>
+        <div className="bot-card">
+          <h3 className="bot-card-title">
+            <span>⚡</span> Meta Cloud WhatsApp API Gateway Configuration
+          </h3>
+          <div className="bot-telemetry-grid">
+            <div className="bot-telemetry-card">
+              <div className="bot-telemetry-title">WhatsApp Business Number</div>
+              <div className="bot-telemetry-val">+91 98100 24000</div>
+              <div style={{ fontSize: '11px', color: '#059669', fontWeight: 800, marginTop: '4px' }}>
+                ● Verified Green Tick Official Channel
+              </div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Webhook Callback URL</div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#0b72e7', marginTop: '4px' }}>https://api.asktransport.com/api/webhook/whatsapp</div>
-              <div style={{ fontSize: '11px', color: '#059669', fontWeight: 700, marginTop: '2px' }}>● Status: Listening (200 OK)</div>
+            <div className="bot-telemetry-card">
+              <div className="bot-telemetry-title">Webhook Callback URL</div>
+              <div className="bot-telemetry-val" style={{ fontSize: '13.5px', color: '#0284c7' }}>
+                https://api.asktransport.com/api/webhook/whatsapp
+              </div>
+              <div style={{ fontSize: '11px', color: '#059669', fontWeight: 800, marginTop: '4px' }}>
+                ● Status: Listening (200 OK)
+              </div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>AI NLP Orchestrator</div>
-              <div style={{ fontSize: '15px', fontWeight: 900, color: '#0f172a', marginTop: '4px' }}>Gemini 1.5 Flash Intent Router</div>
-              <div style={{ fontSize: '11px', color: '#059669', fontWeight: 700, marginTop: '2px' }}>● Avg Latency: 840ms</div>
+            <div className="bot-telemetry-card">
+              <div className="bot-telemetry-title">AI NLP Orchestrator</div>
+              <div className="bot-telemetry-val">Gemini 1.5 Flash Intent Router</div>
+              <div style={{ fontSize: '11px', color: '#059669', fontWeight: 800, marginTop: '4px' }}>
+                ● Avg Latency: 840ms
+              </div>
             </div>
           </div>
         </div>
