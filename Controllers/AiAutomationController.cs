@@ -360,48 +360,221 @@ public class AiAutomationController : ControllerBase
             _ => 4.2 // 19ft
         });
 
-        // Known Pan-India Logistics Corridors lookup
-        var key = $"{origin.ToLower()}_{dest.ToLower()}";
-        int distanceKm = 1420;
-        string highwayName = "NH-48 Golden Quadrilateral (via Surat - Vadodara - Jaipur)";
-        int estimatedTollCost = 2850;
-        int tollPlazaCount = 9;
+        // Canonical city key extraction helper
+        string ToCityKey(string raw)
+        {
+            var s = (raw ?? "").ToLowerInvariant();
+            if (s.Contains("mumbai") || s.Contains("bombay") || s.Contains("jnpt")) return "mumbai";
+            if (s.Contains("delhi") || s.Contains("ncr") || s.Contains("gurugram") || s.Contains("noida") || s.Contains("ambala") || s.Contains("haryana")) return "delhi";
+            if (s.Contains("bengaluru") || s.Contains("bangalore") || s.Contains("karnataka")) return "bengaluru";
+            if (s.Contains("chennai") || s.Contains("madras") || s.Contains("tamil nadu")) return "chennai";
+            if (s.Contains("kolkata") || s.Contains("calcutta") || s.Contains("west bengal")) return "kolkata";
+            if (s.Contains("hyderabad") || s.Contains("telangana")) return "hyderabad";
+            if (s.Contains("ahmedabad") || s.Contains("sanand") || s.Contains("kandla") || s.Contains("gujarat")) return "ahmedabad";
+            if (s.Contains("pune") || s.Contains("chakan")) return "pune";
+            if (s.Contains("jaipur") || s.Contains("rajasthan")) return "jaipur";
+            if (s.Contains("surat") || s.Contains("daman")) return "surat";
+            if (s.Contains("indore") || s.Contains("bhopal") || s.Contains("madhya pradesh")) return "indore";
+            if (s.Contains("lucknow") || s.Contains("kanpur") || s.Contains("agra") || s.Contains("varanasi") || s.Contains("uttar pradesh")) return "lucknow";
+            if (s.Contains("ludhiana") || s.Contains("chandigarh") || s.Contains("amritsar") || s.Contains("punjab")) return "ludhiana";
+            if (s.Contains("kochi") || s.Contains("cochin") || s.Contains("kerala")) return "kochi";
+            if (s.Contains("nagpur")) return "nagpur";
+            if (s.Contains("patna") || s.Contains("bihar")) return "patna";
+            if (s.Contains("bhubaneswar") || s.Contains("odisha")) return "bhubaneswar";
+            if (s.Contains("guwahati") || s.Contains("assam")) return "guwahati";
+            if (s.Contains("visakhapatnam") || s.Contains("andhra")) return "visakhapatnam";
+            if (s.Contains("raipur") || s.Contains("chhattisgarh")) return "raipur";
+            if (s.Contains("ranchi") || s.Contains("jharkhand")) return "ranchi";
+            if (s.Contains("goa")) return "goa";
+            return s.Split(new[] { ' ', '-', '(', '/', ')' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? s;
+        }
 
-        if (key.Contains("delhi") && key.Contains("mumbai"))
+        var c1 = ToCityKey(origin);
+        var c2 = ToCityKey(dest);
+
+        int distanceKm = 1420;
+        string highwayName = "NH-48 Golden Quadrilateral via Vadodara - Ahmedabad - Jaipur - Delhi";
+        int estimatedTollCost = 3120;
+        int tollPlazaCount = 11;
+
+        if (c1 == c2)
         {
-            distanceKm = 1420;
-            highwayName = "NH-48 via Vadodara - Ahmedabad - Jaipur - Delhi Expressway";
-            estimatedTollCost = 3120;
-            tollPlazaCount = 11;
-        }
-        else if (key.Contains("pune") && key.Contains("delhi"))
-        {
-            distanceKm = 1490;
-            highwayName = "NH-48 / AH-47 (Pune - Mumbai bypass - Jaipur - Delhi NCR)";
-            estimatedTollCost = 3450;
-            tollPlazaCount = 12;
-        }
-        else if (key.Contains("bengaluru") || key.Contains("bangalore") || key.Contains("chennai"))
-        {
-            distanceKm = 980;
-            highwayName = "NH-44 North-South Highway Corridor (Express Freight Link)";
-            estimatedTollCost = 2240;
-            tollPlazaCount = 8;
-        }
-        else if (key.Contains("kolkata") || key.Contains("calcutta"))
-        {
-            distanceKm = 1530;
-            highwayName = "NH-19 / Grand Trunk Road via Kanpur - Varanasi - Durgapur";
-            estimatedTollCost = 3380;
-            tollPlazaCount = 13;
+            distanceKm = 45;
+            highwayName = $"{origin} Intra-City Freight Ring Road & Terminal Link";
+            estimatedTollCost = 180;
+            tollPlazaCount = 1;
         }
         else
         {
-            // Generic calculation based on random seed for custom cities
-            distanceKm = Math.Max(280, (Math.Abs(origin.GetHashCode() ^ dest.GetHashCode()) % 1300) + 400);
-            highwayName = $"National Freight Corridor (Inter-State Toll Expressway)";
-            estimatedTollCost = (int)(distanceKm * 2.1);
-            tollPlazaCount = Math.Max(2, distanceKm / 120);
+            var routeDb = new Dictionary<string, (int km, string hw, int toll, int plazas)>
+            {
+                // Mumbai
+                ["delhi__mumbai"] = (1420, "NH-48 via Vadodara - Ahmedabad - Jaipur - Delhi Expressway", 3120, 11),
+                ["bengaluru__mumbai"] = (980, "NH-48 / AH-47 Industrial Corridor via Pune - Kolhapur - Belagavi", 2240, 8),
+                ["chennai__mumbai"] = (1340, "NH-48 / NH-65 Southern Spine via Pune - Solapur - Hyderabad Bypass", 2950, 11),
+                ["kolkata__mumbai"] = (1960, "NH-53 East-West Trans-India Freight Spine via Nagpur - Raipur - Kharagpur", 3980, 15),
+                ["hyderabad__mumbai"] = (710, "NH-65 via Mumbai-Pune Expressway - Solapur", 1560, 6),
+                ["ahmedabad__mumbai"] = (530, "NE-1 / NH-48 Coastal Industrial Corridor via Vapi - Surat - Vadodara", 1120, 5),
+                ["mumbai__pune"] = (150, "Yashwantrao Chavan Mumbai-Pune Expressway (Access-Controlled 6-Lane)", 430, 2),
+                ["jaipur__mumbai"] = (1160, "NH-48 via Vadodara - Ahmedabad - Himatnagar - Ajmer", 2680, 10),
+                ["mumbai__surat"] = (290, "NH-48 Golden Quadrilateral Coastal Industrial Route", 640, 3),
+                ["indore__mumbai"] = (590, "NH-52 via Nashik - Dhule - Sendhwa Ghat", 1320, 5),
+                ["lucknow__mumbai"] = (1380, "NH-52 / NH-27 via Nashik - Indore - Jhansi - Kanpur", 3050, 11),
+                ["ludhiana__mumbai"] = (1620, "NH-48 via Ahmedabad - Kishangarh - Rohtak - Ambala", 3620, 13),
+                ["kochi__mumbai"] = (1390, "NH-66 Konkan & Malabar Coastal Freight Highway via Goa - Mangaluru", 2980, 11),
+                ["mumbai__nagpur"] = (810, "Hindu Hrudaysamrat Balasaheb Thackeray Maharashtra Samruddhi Mahamarg", 1820, 6),
+                ["mumbai__patna"] = (1790, "NH-52 / NH-19 via Nashik - Jabalpur - Varanasi", 3920, 14),
+                ["bhubaneswar__mumbai"] = (1650, "NH-53 Central-Eastern Highway Spine via Nagpur - Raipur - Sambalpur", 3640, 13),
+                ["guwahati__mumbai"] = (2580, "NH-53 / NH-27 Trans-National Logistics Corridor", 5520, 20),
+                ["goa__mumbai"] = (580, "NH-66 / NH-48 via Pune - Satara - Kolhapur - Gaganbawda", 1290, 5),
+
+                // Delhi
+                ["bengaluru__delhi"] = (2150, "NH-44 North-South Freight Spine (Delhi - Agra - Nagpur - Hyderabad - Bengaluru)", 4480, 16),
+                ["chennai__delhi"] = (2180, "NH-44 / NH-16 Grand Southern Spine via Jhansi - Nagpur - Hyderabad", 4520, 17),
+                ["delhi__kolkata"] = (1530, "NH-19 Grand Trunk Corridor via Kanpur - Prayagraj - Varanasi - Durgapur", 3380, 13),
+                ["delhi__hyderabad"] = (1570, "NH-44 Central Freight Spine via Gwalior - Nagpur - Adilabad", 3420, 12),
+                ["ahmedabad__delhi"] = (940, "NH-48 / NE-4 Industrial Expressway via Jaipur - Ajmer - Udaipur", 2180, 8),
+                ["delhi__pune"] = (1490, "NH-48 / AH-47 Western Freight Corridor via Jaipur - Vadodara - Mumbai Bypass", 3450, 12),
+                ["delhi__jaipur"] = (280, "Delhi-Mumbai Expressway (NE-4 / NH-48 Express Link)", 680, 3),
+                ["delhi__surat"] = (1180, "NH-48 / Western DFC Spine via Jaipur - Vadodara", 2740, 10),
+                ["delhi__indore"] = (820, "NH-52 Malwa Logistics Spine via Kota - Jhalawar", 1850, 7),
+                ["delhi__lucknow"] = (550, "Yamuna Expressway & Agra-Lucknow Access-Controlled Expressway", 1280, 4),
+                ["delhi__ludhiana"] = (310, "NH-44 Northern Agricultural-Industrial Corridor via Ambala", 620, 3),
+                ["delhi__kochi"] = (2650, "NH-44 / NH-544 Trans-India Southern Spine via Bengaluru - Salem", 5680, 21),
+                ["delhi__nagpur"] = (1080, "NH-44 Central India Tollway via Agra - Gwalior - Jhansi", 2420, 9),
+                ["delhi__patna"] = (1050, "NH-19 / Purvanchal Expressway Corridor via Lucknow - Varanasi", 2350, 9),
+                ["bhubaneswar__delhi"] = (1680, "NH-19 / NH-16 Eastern Coastal Link via Varanasi - Kolkata Bypass", 3780, 14),
+                ["delhi__guwahati"] = (1890, "NH-27 East-West Arterial Corridor via Gorakhpur - Siliguri", 4120, 15),
+
+                // Bengaluru
+                ["bengaluru__chennai"] = (340, "NH-48 Bengaluru-Chennai Expressway Corridor via Hosur - Krishnagiri", 780, 4),
+                ["bengaluru__kolkata"] = (1870, "NH-16 Eastern Coastal Freight Trunk via Tirupati - Nellore - Vijayawada - Vizag", 4120, 15),
+                ["bengaluru__hyderabad"] = (570, "NH-44 North-South Access Corridor via Anantapur - Kurnool", 1260, 5),
+                ["ahmedabad__bengaluru"] = (1490, "NH-48 Golden Quadrilateral via Belagavi - Pune - Mumbai Bypass - Surat", 3420, 12),
+                ["bengaluru__pune"] = (840, "NH-48 Industrial Freight Corridor via Hubballi - Belagavi - Kolhapur", 1920, 7),
+                ["bengaluru__jaipur"] = (2050, "NH-48 / NH-52 via Pune - Nashik - Indore - Kota", 4480, 16),
+                ["bengaluru__surat"] = (1260, "NH-48 via Pune - Mumbai Peripheral Expressway", 2880, 10),
+                ["bengaluru__indore"] = (1390, "NH-44 / NH-52 via Hyderabad - Nanded - Ujjain", 3150, 11),
+                ["bengaluru__lucknow"] = (1920, "NH-44 via Hyderabad - Nagpur - Jhansi - Kanpur", 4250, 15),
+                ["bengaluru__ludhiana"] = (2420, "NH-44 North-South Spine via Nagpur - Delhi NCR - Ambala", 5280, 19),
+                ["bengaluru__kochi"] = (540, "NH-544 / NH-44 via Salem - Coimbatore - Palakkad", 1180, 5),
+                ["bengaluru__nagpur"] = (1090, "NH-44 Central Freight Link via Anantapur - Hyderabad - Adilabad", 2450, 9),
+                ["bengaluru__patna"] = (2080, "NH-44 / NH-19 via Hyderabad - Jabalpur - Varanasi", 4580, 16),
+                ["bengaluru__bhubaneswar"] = (1450, "NH-16 via Vijayawada - Rajahmundry - Visakhapatnam", 3240, 12),
+                ["bengaluru__guwahati"] = (2750, "NH-16 / NH-27 via Kolkata Bypass - Siliguri", 5890, 22),
+
+                // Chennai
+                ["chennai__kolkata"] = (1670, "NH-16 Eastern Coastal Trunk Spine via Nellore - Vijayawada - Vizag - Bhubaneswar", 3680, 13),
+                ["chennai__hyderabad"] = (630, "NH-16 / NH-65 via Ongole - Guntur - Suryapet", 1390, 5),
+                ["ahmedabad__chennai"] = (1820, "NH-48 via Bengaluru - Pune - Mumbai Bypass - Vadodara", 4080, 15),
+                ["chennai__pune"] = (1150, "NH-48 Southern Industrial Corridor via Bengaluru - Belagavi - Kolhapur", 2620, 9),
+                ["chennai__jaipur"] = (2150, "NH-44 / NH-52 via Hyderabad - Nagpur - Kota", 4680, 17),
+                ["chennai__surat"] = (1620, "NH-48 via Bengaluru - Pune - Mumbai Bypass", 3650, 13),
+                ["chennai__indore"] = (1510, "NH-44 / NH-47 via Hyderabad - Nizamabad - Nagpur Bypass", 3380, 12),
+                ["chennai__lucknow"] = (1960, "NH-44 / NH-30 via Hyderabad - Nagpur - Jabalpur - Prayagraj", 4350, 15),
+                ["chennai__ludhiana"] = (2450, "NH-44 via Hyderabad - Nagpur - Delhi NCR - Panipat", 5380, 19),
+                ["chennai__kochi"] = (690, "NH-544 Southern Arterial via Salem - Erode - Coimbatore - Palakkad", 1540, 6),
+                ["chennai__nagpur"] = (1110, "NH-44 via Nellore - Hyderabad - Kamareddy - Adilabad", 2480, 9),
+                ["chennai__patna"] = (1980, "NH-16 / NH-31 via Vijayawada - Vizag - Bhubaneswar - Ranchi", 4380, 16),
+                ["bhubaneswar__chennai"] = (1220, "NH-16 Bay of Bengal Coastal Freight Corridor via Ongole - Vijayawada - Vizag", 2740, 10),
+                ["chennai__guwahati"] = (2620, "NH-16 / NH-27 via Vizag - Bhubaneswar - Kolkata Bypass - Siliguri", 5680, 21),
+
+                // Kolkata
+                ["hyderabad__kolkata"] = (1490, "NH-16 / NH-65 via Kharagpur - Bhubaneswar - Vizag - Vijayawada", 3320, 12),
+                ["ahmedabad__kolkata"] = (1980, "NH-53 / NH-19 East-West Freight Spine via Nagpur - Raipur - Kharagpur", 4450, 16),
+                ["kolkata__pune"] = (1820, "NH-53 / NH-60 via Kharagpur - Raipur - Nagpur - Ahmednagar", 4120, 14),
+                ["jaipur__kolkata"] = (1520, "NH-19 / NH-21 via Varanasi - Prayagraj - Agra - Bharatpur", 3420, 12),
+                ["kolkata__surat"] = (1920, "NH-53 / NH-6 via Raipur - Nagpur - Jalgaon - Dhule", 4280, 15),
+                ["indore__kolkata"] = (1540, "NH-19 / NH-27 via Varanasi - Prayagraj - Jhansi - Bhopal", 3450, 12),
+                ["kolkata__lucknow"] = (980, "NH-19 Grand Trunk Highway via Asansol - Varanasi - Prayagraj", 2240, 8),
+                ["kolkata__ludhiana"] = (1780, "NH-19 / NH-44 via Delhi NCR - Ambala", 3980, 14),
+                ["kochi__kolkata"] = (2360, "NH-16 / NH-544 via Vizag - Chennai Bypass - Coimbatore", 5250, 18),
+                ["kolkata__nagpur"] = (1140, "NH-53 Steel City Freight Trunk via Kharagpur - Sambalpur - Raipur", 2580, 9),
+                ["kolkata__patna"] = (580, "NH-19 / NH-22 via Durgapur - Asansol - Deoghar - Nawada", 1290, 5),
+                ["bhubaneswar__kolkata"] = (440, "NH-16 Golden Quadrilateral via Kharagpur - Baleswar - Cuttack", 980, 4),
+                ["guwahati__kolkata"] = (1010, "NH-27 / NH-12 North-East Gateway Corridor via Malda - Siliguri - Alipurduar", 2280, 8),
+
+                // Hyderabad
+                ["ahmedabad__hyderabad"] = (1210, "NH-65 / NH-48 via Solapur - Pune - Mumbai Bypass - Vadodara", 2740, 10),
+                ["hyderabad__pune"] = (560, "NH-65 Arterial Highway via Omerga - Solapur - Indapur", 1240, 5),
+                ["hyderabad__jaipur"] = (1480, "NH-44 / NH-52 via Adilabad - Nagpur - Bhopal - Kota", 3350, 12),
+                ["hyderabad__surat"] = (970, "NH-65 / NH-48 via Solapur - Pune Bypass - Thane", 2180, 8),
+                ["hyderabad__indore"] = (860, "NH-44 / NH-47 via Nizamabad - Nanded - Khandwa", 1940, 7),
+                ["hyderabad__lucknow"] = (1280, "NH-44 / NH-30 via Nagpur - Seoni - Jabalpur - Rewa", 2880, 10),
+                ["hyderabad__ludhiana"] = (1840, "NH-44 North-South Highway via Nagpur - Agra - Delhi NCR", 4150, 14),
+                ["hyderabad__kochi"] = (1090, "NH-44 / NH-544 via Bengaluru - Salem - Coimbatore", 2450, 9),
+                ["hyderabad__nagpur"] = (500, "NH-44 Four-Lane Highway via Medchal - Kamareddy - Nirmal - Adilabad", 1120, 4),
+                ["hyderabad__patna"] = (1460, "NH-44 / NH-30 via Nagpur - Jabalpur - Mirzapur", 3280, 12),
+                ["bhubaneswar__hyderabad"] = (1030, "NH-65 / NH-16 via Vijayawada - Rajahmundry - Visakhapatnam", 2320, 8),
+                ["guwahati__hyderabad"] = (2280, "NH-16 / NH-27 via Vizag - Bhubaneswar - Siliguri", 5120, 18),
+
+                // Ahmedabad
+                ["ahmedabad__pune"] = (660, "NH-48 Western Industrial Link via Vadodara - Surat - Mumbai Bypass", 1480, 6),
+                ["ahmedabad__jaipur"] = (670, "NH-48 via Himatnagar - Udaipur - Bhilwara - Ajmer", 1490, 6),
+                ["ahmedabad__surat"] = (270, "NE-1 / NH-48 Vadodara-Surat Express Corridor", 580, 2),
+                ["ahmedabad__indore"] = (390, "NH-47 via Godhra - Dahod - Jhabua - Dhar", 860, 3),
+                ["ahmedabad__lucknow"] = (1160, "NH-27 / NH-48 via Udaipur - Kota - Jhansi - Kanpur", 2620, 9),
+                ["ahmedabad__ludhiana"] = (1180, "NH-48 / NH-52 via Ajmer - Jaipur - Rohtak - Ambala", 2650, 9),
+                ["ahmedabad__kochi"] = (1890, "NH-48 / NH-66 via Mumbai - Pune - Bengaluru Bypass", 4220, 15),
+                ["ahmedabad__nagpur"] = (870, "NH-53 via Surat - Dhule - Jalgaon - Akola - Amravati", 1950, 7),
+                ["ahmedabad__patna"] = (1540, "NH-27 / NH-19 via Kota - Jhansi - Prayagraj - Varanasi", 3480, 12),
+                ["ahmedabad__bhubaneswar"] = (1720, "NH-53 via Dhule - Nagpur - Raipur - Sambalpur", 3880, 13),
+                ["ahmedabad__guwahati"] = (2420, "NH-27 East-West Spine via Kota - Kanpur - Siliguri", 5450, 19),
+
+                // Pune
+                ["jaipur__pune"] = (1280, "NH-48 via Mumbai Bypass - Surat - Vadodara - Udaipur", 2880, 10),
+                ["pune__surat"] = (420, "NH-48 via Mumbai Peripheral / Navi Mumbai - Vapi", 940, 4),
+                ["indore__pune"] = (590, "NH-52 via Nashik - Dhule - Sendhwa Ghat", 1320, 5),
+                ["lucknow__pune"] = (1350, "NH-52 / NH-27 via Nashik - Indore - Jhansi - Kanpur", 3020, 11),
+                ["ludhiana__pune"] = (1690, "NH-48 via Vadodara - Jaipur - Ambala", 3780, 13),
+                ["kochi__pune"] = (1260, "NH-48 / NH-544 via Kolhapur - Bengaluru Bypass - Coimbatore", 2820, 10),
+                ["nagpur__pune"] = (720, "Hindu Hrudaysamrat Balasaheb Thackeray Maharashtra Samruddhi Mahamarg Link", 1620, 6),
+                ["patna__pune"] = (1710, "NH-52 / NH-19 via Nashik - Jabalpur - Prayagraj", 3840, 13),
+                ["bhubaneswar__pune"] = (1520, "NH-53 via Samruddhi Mahamarg - Nagpur - Raipur", 3420, 12),
+                ["guwahati__pune"] = (2480, "NH-53 / NH-27 via Nagpur - Raipur - Siliguri", 5580, 20),
+
+                // Other arterial links
+                ["jaipur__surat"] = (920, "NH-48 via Ajmer - Udaipur - Ahmedabad Bypass", 2080, 7),
+                ["indore__jaipur"] = (610, "NH-52 via Tonk - Kota - Jhalawar - Ujjain", 1380, 5),
+                ["jaipur__lucknow"] = (570, "NH-21 / Agra-Lucknow Expressway via Bharatpur - Agra", 1280, 4),
+                ["jaipur__ludhiana"] = (520, "NH-52 / NH-7 via Sikar - Hisar - Bathinda / Ambala", 1180, 4),
+                ["indore__surat"] = (480, "NH-53 / NH-52 via Navsari - Dhule - Sendhwa", 1080, 4),
+                ["lucknow__surat"] = (1320, "NH-48 / NH-27 via Vadodara - Kota - Jhansi", 2980, 10),
+                ["indore__lucknow"] = (790, "NH-27 via Bhopal - Sagar - Jhansi - Kanpur", 1780, 6),
+                ["indore__ludhiana"] = (1060, "NH-52 via Kota - Jaipur - Rohtak - Ambala", 2380, 8),
+                ["indore__nagpur"] = (440, "NH-47 via Kannod - Harda - Betul", 990, 4),
+                ["lucknow__ludhiana"] = (760, "NH-30 / NH-44 via Bareilly - Moradabad - Ambala", 1720, 6),
+                ["lucknow__nagpur"] = (780, "NH-30 / NH-44 via Rae Bareli - Prayagraj - Rewa - Jabalpur", 1750, 6),
+                ["lucknow__patna"] = (530, "Purvanchal Expressway Corridor via Sultanpur - Azamgarh - Ghazipur - Buxar", 1180, 4),
+                ["ludhiana__nagpur"] = (1390, "NH-44 North-South Spine via Panipat - Delhi - Agra - Gwalior", 3120, 11),
+                ["ludhiana__patna"] = (1360, "NH-44 / NH-19 via Ambala - Delhi - Kanpur - Varanasi", 3050, 11),
+                ["kochi__nagpur"] = (1620, "NH-544 / NH-44 via Coimbatore - Salem - Bengaluru - Hyderabad", 3650, 13),
+                ["nagpur__patna"] = (1020, "NH-44 / NH-30 via Seoni - Jabalpur - Mirzapur - Varanasi", 2280, 8),
+                ["bhubaneswar__nagpur"] = (820, "NH-53 via Bhandara - Raipur - Sambalpur - Cuttack", 1850, 7),
+                ["bhubaneswar__patna"] = (840, "NH-22 / NH-16 via Gaya - Hazaribagh - Ranchi - Jamshedpur", 1890, 7),
+                ["guwahati__patna"] = (870, "NH-27 via Purnea - Dalkhola - Siliguri - Bongaigaon", 1950, 7),
+                ["bhubaneswar__guwahati"] = (1450, "NH-16 / NH-27 via Kharagpur - Kolkata Bypass - Siliguri", 3260, 12)
+            };
+
+            var sortedKey = string.CompareOrdinal(c1, c2) < 0 ? $"{c1}__{c2}" : $"{c2}__{c1}";
+
+            if (routeDb.TryGetValue(sortedKey, out var matched))
+            {
+                distanceKm = matched.km;
+                highwayName = matched.hw;
+                estimatedTollCost = matched.toll;
+                tollPlazaCount = matched.plazas;
+            }
+            else
+            {
+                // Deterministic calculation for arbitrary custom routes
+                var h = Math.Abs((origin + "__" + dest).GetHashCode());
+                distanceKm = Math.Max(220, (h % 1550) + 320);
+                var nhNum = (h % 68) + 1;
+                highwayName = $"National Arterial Freight Highway (NH-{nhNum} Toll Expressway)";
+                estimatedTollCost = (int)(distanceKm * 2.18);
+                tollPlazaCount = Math.Max(2, distanceKm / 120);
+            }
         }
 
         // Adjust toll for heavy multi-axle trucks

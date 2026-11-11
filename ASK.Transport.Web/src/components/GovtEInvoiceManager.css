@@ -460,3 +460,182 @@ body.dark .einv-copy-btn:hover,
   background: #0284c7;
   color: #ffffff;
 }
+
+
+/* ============================================================================
+   GOVT E-INVOICE MODALS & ACTIONS THEME ADAPTIVE STYLING (LIGHT & DARK MODE)
+   ============================================================================ */
+
+.einv-modal-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45) !important;
+  box-sizing: border-box !important;
+}
+
+[data-theme='dark'] .einv-modal-card,
+body.dark .einv-modal-card,
+.dark .einv-modal-card {
+  background: #111a2e !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 25px rgba(37, 99, 235, 0.15) !important;
+}
+
+.einv-modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 16px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding-bottom: 12px !important;
+}
+
+[data-theme='dark'] .einv-modal-header,
+body.dark .einv-modal-header,
+.dark .einv-modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.einv-modal-title {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #0f172a !important;
+}
+
+[data-theme='dark'] .einv-modal-title,
+body.dark .einv-modal-title,
+.dark .einv-modal-title {
+  color: #f8fafc !important;
+}
+
+.einv-modal-close {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: #64748b !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
+}
+
+.einv-modal-close:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+[data-theme='dark'] .einv-modal-close,
+body.dark .einv-modal-close,
+.dark .einv-modal-close {
+  color: #94a3b8 !important;
+}
+
+[data-theme='dark'] .einv-modal-close:hover,
+body.dark .einv-modal-close:hover,
+.dark .einv-modal-close:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.einv-form-label {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #475569 !important;
+  display: block !important;
+  margin-bottom: 5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+}
+
+[data-theme='dark'] .einv-form-label,
+body.dark .einv-form-label,
+.dark .einv-form-label {
+  color: #cbd5e1 !important;
+}
+
+.einv-form-input {
+  width: 100% !important;
+  padding: 8px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme='dark'] .einv-form-input,
+body.dark .einv-form-input,
+.dark .einv-form-input {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+.einv-form-input:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
+}
+
+.einv-btn-cancel {
+  padding: 9px 18px !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  transition: all 0.15s ease !important;
+}
+
+.einv-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme='dark'] .einv-btn-cancel,
+body.dark .einv-btn-cancel,
+.dark .einv-btn-cancel {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme='dark'] .einv-btn-cancel:hover,
+body.dark .einv-btn-cancel:hover,
+.dark .einv-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.einv-btn-submit {
+  padding: 9px 22px !important;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+  transition: all 0.15s ease !important;
+}
+
+.einv-btn-submit:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5) !important;
+}

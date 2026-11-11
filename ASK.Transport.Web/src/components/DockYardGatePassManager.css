@@ -1267,3 +1267,621 @@ body.dark .dockyard-btn-add-hub,
     font-size: 16px !important;
   }
 }
+
+
+/* ============================================================================
+   UNIVERSAL DOCKYARD MODAL BUTTONS (CANCEL, SUBMIT, CLOSE)
+   ============================================================================ */
+
+.dockyard-btn-cancel {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 10px 20px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.dockyard-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme='dark'] .dockyard-btn-cancel,
+body.dark .dockyard-btn-cancel,
+.dark .dockyard-btn-cancel {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme='dark'] .dockyard-btn-cancel:hover,
+body.dark .dockyard-btn-cancel:hover,
+.dark .dockyard-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+.dockyard-btn-submit {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border: 1px solid #38bdf8 !important;
+  border-radius: 8px !important;
+  padding: 10px 22px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.dockyard-btn-submit:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5) !important;
+}
+
+.dockyard-btn-close {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 8px !important;
+  color: #64748b !important;
+  font-size: 20px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+}
+
+.dockyard-btn-close:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+[data-theme='dark'] .dockyard-btn-close,
+body.dark .dockyard-btn-close,
+.dark .dockyard-btn-close {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme='dark'] .dockyard-btn-close:hover,
+body.dark .dockyard-btn-close:hover,
+.dark .dockyard-btn-close:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+
+/* ============================================================================
+   OFFICIAL GATE IN/OUT PASS SLIP THEME & PRINT STYLES
+   ============================================================================ */
+
+.dockyard-modal-card.print-card {
+  max-width: 500px !important;
+  width: 100% !important;
+  position: relative !important;
+  padding: 24px !important;
+  border-radius: 16px !important;
+  background: var(--bg-surface, #ffffff) !important;
+  border: 1px solid var(--border-color, #e2e8f0) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
+
+[data-theme="dark"] .dockyard-modal-card.print-card,
+body.dark .dockyard-modal-card.print-card,
+.dark .dockyard-modal-card.print-card {
+  background: linear-gradient(180deg, #101a2e 0%, #0a1120 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  border-top: 3px solid #0284c7 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px rgba(2, 132, 199, 0.15) !important;
+}
+
+.gate-slip-close-btn {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #64748b !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.gate-slip-close-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+[data-theme="dark"] .gate-slip-close-btn,
+body.dark .gate-slip-close-btn,
+.dark .gate-slip-close-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .gate-slip-close-btn:hover,
+body.dark .gate-slip-close-btn:hover,
+.dark .gate-slip-close-btn:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.gate-slip-header {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.gate-slip-brand-row {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.gate-slip-icon {
+  font-size: 18px !important;
+}
+
+.gate-slip-brand {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  color: var(--text-primary, #0f172a) !important;
+}
+
+[data-theme="dark"] .gate-slip-brand,
+body.dark .gate-slip-brand,
+.dark .gate-slip-brand {
+  color: #f8fafc !important;
+}
+
+.gate-slip-hub-tag {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+}
+
+[data-theme="dark"] .gate-slip-hub-tag,
+body.dark .gate-slip-hub-tag,
+.dark .gate-slip-hub-tag {
+  color: #94a3b8 !important;
+}
+
+.gate-slip-title {
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  margin-top: 4px !important;
+  letter-spacing: 0.8px !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="dark"] .gate-slip-title,
+body.dark .gate-slip-title,
+.dark .gate-slip-title {
+  color: #38bdf8 !important;
+}
+
+.gate-slip-pass-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(2, 132, 199, 0.08) !important;
+  border: 1px solid rgba(2, 132, 199, 0.2) !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+  margin-top: 4px !important;
+}
+
+[data-theme="dark"] .gate-slip-pass-badge,
+body.dark .gate-slip-pass-badge,
+.dark .gate-slip-pass-badge {
+  background: rgba(2, 132, 199, 0.18) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.gate-slip-pass-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+}
+
+[data-theme="dark"] .gate-slip-pass-label,
+body.dark .gate-slip-pass-label,
+.dark .gate-slip-pass-label {
+  color: #94a3b8 !important;
+}
+
+.gate-slip-pass-num {
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  font-family: monospace !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="dark"] .gate-slip-pass-num,
+body.dark .gate-slip-pass-num,
+.dark .gate-slip-pass-num {
+  color: #38bdf8 !important;
+}
+
+/* Perforation Divider */
+.gate-slip-perforation {
+  position: relative !important;
+  margin: 14px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.gate-slip-dash {
+  width: 100% !important;
+  height: 0 !important;
+  border-bottom: 2px dashed #cbd5e1 !important;
+}
+
+[data-theme="dark"] .gate-slip-dash,
+body.dark .gate-slip-dash,
+.dark .gate-slip-dash {
+  border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.gate-slip-notch {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: #0f172a !important;
+  border-radius: 50% !important;
+}
+
+.gate-slip-notch.left {
+  left: -31px !important;
+}
+
+.gate-slip-notch.right {
+  right: -31px !important;
+}
+
+/* Details Grid */
+.gate-slip-details-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px 14px !important;
+  font-size: 12px !important;
+}
+
+@media (max-width: 480px) {
+  .gate-slip-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+.gate-slip-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.gate-slip-row.full-width {
+  grid-column: 1 / -1 !important;
+}
+
+.gate-slip-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+}
+
+[data-theme="dark"] .gate-slip-label,
+body.dark .gate-slip-label,
+.dark .gate-slip-label {
+  color: #94a3b8 !important;
+}
+
+.gate-slip-value {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--text-primary, #0f172a) !important;
+  word-break: break-word !important;
+}
+
+[data-theme="dark"] .gate-slip-value,
+body.dark .gate-slip-value,
+.dark .gate-slip-value {
+  color: #f1f5f9 !important;
+}
+
+.gate-slip-plate {
+  font-family: monospace !important;
+  font-weight: 900 !important;
+  font-size: 12px !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 2px 7px !important;
+  border-radius: 4px !important;
+  display: inline-block !important;
+  width: fit-content !important;
+  color: #0f172a !important;
+  letter-spacing: 0.5px !important;
+}
+
+[data-theme="dark"] .gate-slip-plate,
+body.dark .gate-slip-plate,
+.dark .gate-slip-plate {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #f8fafc !important;
+}
+
+.gate-slip-mono {
+  font-family: monospace !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px !important;
+}
+
+.gate-slip-sub {
+  font-size: 11px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="dark"] .gate-slip-sub,
+body.dark .gate-slip-sub,
+.dark .gate-slip-sub {
+  color: #94a3b8 !important;
+}
+
+.gate-slip-weight-pill {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  background: rgba(2, 132, 199, 0.1) !important;
+  color: #0284c7 !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  margin-left: 4px !important;
+}
+
+[data-theme="dark"] .gate-slip-weight-pill,
+body.dark .gate-slip-weight-pill,
+.dark .gate-slip-weight-pill {
+  background: rgba(2, 132, 199, 0.22) !important;
+  color: #38bdf8 !important;
+}
+
+.gate-slip-bay {
+  font-family: monospace !important;
+  font-weight: 900 !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #d97706 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  padding: 1px 7px !important;
+  border-radius: 4px !important;
+  display: inline-block !important;
+  width: fit-content !important;
+}
+
+[data-theme="dark"] .gate-slip-bay,
+body.dark .gate-slip-bay,
+.dark .gate-slip-bay {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+.gate-slip-seal-badge {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #059669 !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  margin-left: 5px !important;
+}
+
+[data-theme="dark"] .gate-slip-seal-badge,
+body.dark .gate-slip-seal-badge,
+.dark .gate-slip-seal-badge {
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+.gate-slip-time {
+  font-weight: 700 !important;
+  color: #059669 !important;
+}
+
+[data-theme="dark"] .gate-slip-time,
+body.dark .gate-slip-time,
+.dark .gate-slip-time {
+  color: #34d399 !important;
+}
+
+.gate-slip-time-out {
+  font-weight: 700 !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="dark"] .gate-slip-time-out,
+body.dark .gate-slip-time-out,
+.dark .gate-slip-time-out {
+  color: #38bdf8 !important;
+}
+
+.gate-slip-status-active {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #d97706 !important;
+  padding: 2px 7px !important;
+  border-radius: 4px !important;
+  display: inline-block !important;
+  width: fit-content !important;
+}
+
+[data-theme="dark"] .gate-slip-status-active,
+body.dark .gate-slip-status-active,
+.dark .gate-slip-status-active {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fbbf24 !important;
+}
+
+/* Barcode Area */
+.gate-slip-barcode-area {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.gate-slip-barcode-svg {
+  width: 100% !important;
+  max-width: 280px !important;
+  height: 44px !important;
+  color: #0f172a !important;
+}
+
+[data-theme="dark"] .gate-slip-barcode-svg,
+body.dark .gate-slip-barcode-svg,
+.dark .gate-slip-barcode-svg {
+  color: #38bdf8 !important;
+}
+
+.gate-slip-barcode-text {
+  font-size: 11px !important;
+  font-family: monospace !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  color: var(--text-primary, #0f172a) !important;
+}
+
+[data-theme="dark"] .gate-slip-barcode-text,
+body.dark .gate-slip-barcode-text,
+.dark .gate-slip-barcode-text {
+  color: #f1f5f9 !important;
+}
+
+.gate-slip-security-notice {
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  color: #059669 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+}
+
+[data-theme="dark"] .gate-slip-security-notice,
+body.dark .gate-slip-security-notice,
+.dark .gate-slip-security-notice {
+  color: #34d399 !important;
+}
+
+/* Actions */
+.gate-slip-actions {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 18px !important;
+}
+
+/* Print Styles */
+@media print {
+  body:has(.dockyard-modal-card.print-card) * {
+    visibility: hidden !important;
+  }
+  
+  body:has(.dockyard-modal-card.print-card) .dockyard-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  
+  body:has(.dockyard-modal-card.print-card) .dockyard-modal-card.print-card,
+  body:has(.dockyard-modal-card.print-card) .dockyard-modal-card.print-card * {
+    visibility: visible !important;
+  }
+  
+  .dockyard-modal-card.print-card {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: 0 auto !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px dashed #000000 !important;
+    box-shadow: none !important;
+    padding: 16px !important;
+  }
+
+  .gate-slip-actions,
+  .gate-slip-close-btn {
+    display: none !important;
+  }
+
+  .gate-slip-dash {
+    border-bottom: 2px dashed #000000 !important;
+  }
+
+  .gate-slip-notch {
+    display: none !important;
+  }
+
+  .gate-slip-plate {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+  }
+
+  .gate-slip-seal-badge,
+  .gate-slip-bay,
+  .gate-slip-pass-badge,
+  .gate-slip-weight-pill,
+  .gate-slip-status-active {
+    background: transparent !important;
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+  }
+
+  .gate-slip-barcode-svg {
+    color: #000000 !important;
+  }
+}

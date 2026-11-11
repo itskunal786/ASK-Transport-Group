@@ -1,5 +1,5 @@
-﻿import { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
 import LanguageToggle from '../../components/LanguageToggle';
@@ -56,6 +56,7 @@ import DynamicTariffEngine from '../../components/DynamicTariffEngine';
 import FinancialPnlAnalyticsDeck from '../../components/FinancialPnlAnalyticsDeck';
 import SystemSettingsDeck from '../../components/SystemSettingsDeck';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import DashboardAnalyticsCharts from '../../components/DashboardAnalyticsCharts';
 
 interface BookingRow {
   bookingNo: string;
@@ -456,17 +457,281 @@ const INITIAL_TELEMATICS_FLEET: TelematicsVehicle[] = [
 
 type AdminTab = 'dashboard' | 'bookings' | 'customers' | 'shipments' | 'drivers' | 'vehicles' | 'hubs' | 'tariff' | 'telematics' | 'ewaybill' | 'support' | 'audit' | 'settings' | 'reports' | 'access' | 'ai_automation' | 'fleet_mgmt' | 'enterprise_b2b' | 'finance_accounting' | 'dock_yard' | 'weighbridge' | 'rto_vault' | 'driver_settlement' | 'ais140_safety' | 'cargo_claims' | 'executive_pnl' | 'tax_audit' | 'pod_inward';
 
+export interface TabHeaderInfo {
+  groupTitle: string;
+  groupIcon: string;
+  tabTitle: string;
+  tabIcon: string;
+  subTabTitle?: string;
+  code: string;
+}
+
+export function getTabHeaderInfo(
+  tab: AdminTab,
+  fleetSub?: string,
+  financeSub?: string,
+  aiSub?: string
+): TabHeaderInfo {
+  switch (tab) {
+    case 'dashboard':
+      return { groupTitle: 'Overview', groupIcon: '📊', tabTitle: 'Executive Logistics Deck', tabIcon: '⚡', code: 'HQ-OPS' };
+    case 'bookings':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Bookings & Bilty', tabIcon: '📝', code: 'BKG-OPS' };
+    case 'shipments':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Shipments & Dispatch', tabIcon: '🚚', code: 'DISPATCH-LIVE' };
+    case 'ewaybill':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'NIC E-Way Bill & Part-B', tabIcon: '🏛️', code: 'EWB-01' };
+    case 'hubs':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Hubs & Terminals', tabIcon: '🏢', code: 'HUB-DEPOT' };
+    case 'dock_yard':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Gate Pass & Dock Yard', tabIcon: '🚪', code: 'DOCK-YARD' };
+    case 'weighbridge':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Dharam Kanta & Weighbridge', tabIcon: '⚖️', code: 'WB-AXLE' };
+    case 'rto_vault':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'RTO Check-Post Vault', tabIcon: '🛑', code: 'RTO-VAULT' };
+    case 'pod_inward':
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Physical POD & SOS Rescue', tabIcon: '📑', code: 'POD-INWARD' };
+    case 'fleet_mgmt': {
+      let subTitle = 'Trip Petty Cash & P&L';
+      let code = 'FLEET-CASH';
+      if (fleetSub === 'fuel_theft') { subTitle = 'Fuel & Diesel Theft Radar'; code = 'DIESEL-RADAR'; }
+      else if (fleetSub === 'cold_chain') { subTitle = 'Cold-Chain Temp Radar'; code = 'TEMP-REEFER'; }
+      else if (fleetSub === 'maintenance') { subTitle = 'Fitness & Renewal Alerts'; code = 'FITNESS-ALERT'; }
+      else if (fleetSub === 'tyre_radar') { subTitle = 'Tyre & TPMS Radar'; code = 'TPMS-RADAR'; }
+      else if (fleetSub === 'mobile_driver') { subTitle = 'Driver Mobile Mode'; code = 'DRIVER-APP'; }
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Fleet & Trip Operations', tabIcon: '⛽', subTabTitle: subTitle, code };
+    }
+    case 'vehicles':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Fleet & Vehicles', tabIcon: '🚛', code: 'VEH-REG' };
+    case 'drivers':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Sarathi Drivers', tabIcon: '👤', code: 'SARATHI-DL' };
+    case 'telematics':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'GPS Telematics Radar', tabIcon: '🛰️', code: 'GPS-TELE' };
+    case 'driver_settlement':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'Trip Settlement & Hisaab', tabIcon: '🧾', code: 'TRIP-HISAAB' };
+    case 'ais140_safety':
+      return { groupTitle: 'Fleet & Drivers', groupIcon: '🚛', tabTitle: 'AIS-140 Highway Safety', tabIcon: '🚨', code: 'AIS-140' };
+    case 'enterprise_b2b':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'B2B Bulk, Auction & RTO', tabIcon: '📦', code: 'B2B-BULK' };
+    case 'finance_accounting': {
+      let subTitle = 'Hired Fleet & 194C TDS';
+      let code = 'FIN-TDS';
+      if (financeSub === 'einv') { subTitle = 'GST E-Invoice & ERP Ledgers'; code = 'GST-EINV'; }
+      else if (financeSub === 'erp') { subTitle = 'Tally & Zoho ERP Sync'; code = 'ERP-SYNC'; }
+      else if (financeSub === 'credit') { subTitle = 'Customer Credit Ledgers'; code = 'CREDIT-LEDGER'; }
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Enterprise Finance & ERP', tabIcon: '🏦', subTabTitle: subTitle, code };
+    }
+    case 'cargo_claims':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Cargo Claims & SLA Shield', tabIcon: '🛡️', code: 'CARGO-CLAIMS' };
+    case 'executive_pnl':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Executive P&L Margins Radar', tabIcon: '📈', code: 'EXEC-PNL' };
+    case 'tax_audit':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'CA 1-Click Tax & Audit Vault', tabIcon: '💼', code: 'TAX-AUDIT' };
+    case 'tariff':
+      return { groupTitle: 'Enterprise & Finance', groupIcon: '💼', tabTitle: 'Tariff & Rate Matrix', tabIcon: '💲', code: 'TARIFF-ENGINE' };
+    case 'ai_automation': {
+      let subTitle = '3D Cargo Load Planner';
+      let code = 'AI-3D-LOAD';
+      if (aiSub === 'ocr_scanner') { subTitle = 'AI Bilty Scanner (OCR)'; code = 'AI-OCR'; }
+      else if (aiSub === 'route_predictor') { subTitle = 'Highway Route Predictor'; code = 'AI-ROUTE'; }
+      else if (aiSub === 'spot_rate_ai') { subTitle = 'Spot Freight Rate AI'; code = 'AI-SPOT'; }
+      else if (aiSub === 'whatsapp_bot') { subTitle = 'WhatsApp AI Logistics Bot'; code = 'AI-WHATSAPP'; }
+      return { groupTitle: 'AI & Automation', groupIcon: '🤖', tabTitle: 'AI & Automation Deck', tabIcon: '🤖', subTabTitle: subTitle, code };
+    }
+    case 'customers':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'User Directory', tabIcon: '👥', code: 'USERS-MGMT' };
+    case 'access':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'Access Control & Rights', tabIcon: '👑', code: 'ACCESS-RIGHTS' };
+    case 'audit':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'System Audit Logs', tabIcon: '🛡️', code: 'AUDIT-LOGS' };
+    case 'support':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'Help Desk & Support', tabIcon: '🎧', code: 'SUPPORT-DESK' };
+    case 'reports':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'Executive Reports', tabIcon: '📊', code: 'MIS-REPORTS' };
+    case 'settings':
+      return { groupTitle: 'Governance & Admin', groupIcon: '⚙️', tabTitle: 'System Settings', tabIcon: '⚙️', code: 'SETTINGS-CONF' };
+    default:
+      return { groupTitle: 'Operations', groupIcon: '📦', tabTitle: 'Operations Deck', tabIcon: '⚡', code: 'OPS-DECK' };
+  }
+}
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
-  // Active view in Admin Panel
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [fleetDeckSubTab, setFleetDeckSubTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>('expenses');
-  const [aiDeckSubTab, setAiDeckSubTab] = useState<'3d_load' | 'ocr_scanner' | 'route_predictor' | 'whatsapp_bot' | 'spot_rate_ai'>('3d_load');
-  const [financeDeckSubTab, setFinanceDeckSubTab] = useState<'einv' | 'erp' | 'credit' | 'settlement'>('settlement');
+  // Active view in Admin Panel (Preserved on Page Refresh / F5 via URL & LocalStorage)
+  const validAdminTabs: AdminTab[] = [
+    'dashboard', 'bookings', 'customers', 'shipments', 'drivers', 'vehicles', 
+    'hubs', 'tariff', 'telematics', 'ewaybill', 'support', 'audit', 'settings', 
+    'reports', 'access', 'ai_automation', 'fleet_mgmt', 'enterprise_b2b', 
+    'finance_accounting', 'dock_yard', 'weighbridge', 'rto_vault', 
+    'driver_settlement', 'ais140_safety', 'cargo_claims', 'executive_pnl', 
+    'tax_audit', 'pod_inward'
+  ];
+
+  const validFleetSubTabs = ['expenses', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar'] as const;
+  type FleetSubTab = typeof validFleetSubTabs[number];
+
+  const validAiSubTabs = ['3d_load', 'ocr_scanner', 'route_predictor', 'spot_rate_ai', 'whatsapp_bot'] as const;
+  type AiSubTab = typeof validAiSubTabs[number];
+
+  const validFinanceSubTabs = ['einv', 'erp', 'credit', 'settlement'] as const;
+  type FinanceSubTab = typeof validFinanceSubTabs[number];
+
+  const getInitialAdminTab = (): AdminTab => {
+    try {
+      const urlTab = searchParams.get('tab') as AdminTab;
+      if (urlTab && validAdminTabs.includes(urlTab)) {
+        return urlTab;
+      }
+      const savedTab = localStorage.getItem('ask_admin_active_tab') as AdminTab;
+      if (savedTab && validAdminTabs.includes(savedTab)) {
+        return savedTab;
+      }
+    } catch {
+      // ignore
+    }
+    return 'dashboard';
+  };
+
+  const getInitialFleetSubTab = (): FleetSubTab => {
+    try {
+      const urlSub = searchParams.get('subtab') as FleetSubTab;
+      if (urlSub && validFleetSubTabs.includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_fleet_subtab') as FleetSubTab;
+      if (saved && validFleetSubTabs.includes(saved)) return saved;
+    } catch {}
+    return 'expenses';
+  };
+
+  const getInitialAiSubTab = (): AiSubTab => {
+    try {
+      const urlSub = searchParams.get('subtab') as AiSubTab;
+      if (urlSub && validAiSubTabs.includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_ai_subtab') as AiSubTab;
+      if (saved && validAiSubTabs.includes(saved)) return saved;
+    } catch {}
+    return '3d_load';
+  };
+
+  const getInitialFinanceSubTab = (): FinanceSubTab => {
+    try {
+      const urlSub = searchParams.get('subtab') as FinanceSubTab;
+      if (urlSub && validFinanceSubTabs.includes(urlSub)) return urlSub;
+      const saved = localStorage.getItem('ask_admin_finance_subtab') as FinanceSubTab;
+      if (saved && validFinanceSubTabs.includes(saved)) return saved;
+    } catch {}
+    return 'einv';
+  };
+
+  const [activeTab, setActiveTabState] = useState<AdminTab>(getInitialAdminTab);
+  const [fleetDeckSubTab, setFleetDeckSubTabState] = useState<FleetSubTab>(getInitialFleetSubTab);
+  const [aiDeckSubTab, setAiDeckSubTabState] = useState<AiSubTab>(getInitialAiSubTab);
+  const [financeDeckSubTab, setFinanceDeckSubTabState] = useState<FinanceSubTab>(getInitialFinanceSubTab);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  const currentTabInfo = getTabHeaderInfo(activeTab, fleetDeckSubTab, financeDeckSubTab, aiDeckSubTab);
+
+  // Synchronize document title so the browser header / window tab reflects active page
+  useEffect(() => {
+    document.title = `${currentTabInfo.tabTitle} | ASK Transport Enterprise Admin`;
+  }, [currentTabInfo.tabTitle]);
+
+  // Synchronize React Router search parameters, address bar URL, and local persistence
+  useEffect(() => {
+    const urlTab = searchParams.get('tab') as AdminTab;
+    const urlSub = searchParams.get('subtab');
+
+    if (urlTab && validAdminTabs.includes(urlTab)) {
+      if (urlTab !== activeTab) {
+        setActiveTabState(urlTab);
+        localStorage.setItem('ask_admin_active_tab', urlTab);
+      }
+    } else {
+      // Visiting /admin directly lands on 'dashboard'
+      const targetTab = 'dashboard';
+      if (activeTab !== targetTab) {
+        setActiveTabState(targetTab);
+      }
+      localStorage.setItem('ask_admin_active_tab', targetTab);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', targetTab);
+      setSearchParams(newParams, { replace: true });
+    }
+
+    if (urlSub) {
+      if (validFleetSubTabs.includes(urlSub as any) && urlSub !== fleetDeckSubTab) {
+        setFleetDeckSubTabState(urlSub as any);
+        localStorage.setItem('ask_admin_fleet_subtab', urlSub);
+      }
+      if (validAiSubTabs.includes(urlSub as any) && urlSub !== aiDeckSubTab) {
+        setAiDeckSubTabState(urlSub as any);
+        localStorage.setItem('ask_admin_ai_subtab', urlSub);
+      }
+      if (validFinanceSubTabs.includes(urlSub as any) && urlSub !== financeDeckSubTab) {
+        setFinanceDeckSubTabState(urlSub as any);
+        localStorage.setItem('ask_admin_finance_subtab', urlSub);
+      }
+    }
+  }, [searchParams]);
+
+  const setActiveTab = (tab: AdminTab, optionalSubTab?: string) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('ask_admin_active_tab', tab);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', tab);
+      if (optionalSubTab) {
+        newParams.set('subtab', optionalSubTab);
+        if (tab === 'fleet_mgmt') localStorage.setItem('ask_admin_fleet_subtab', optionalSubTab);
+        if (tab === 'ai_automation') localStorage.setItem('ask_admin_ai_subtab', optionalSubTab);
+        if (tab === 'finance_accounting') localStorage.setItem('ask_admin_finance_subtab', optionalSubTab);
+      } else {
+        newParams.delete('subtab');
+      }
+      setSearchParams(newParams, { replace: true });
+    } catch (err) {
+      console.error('Error persisting active tab:', err);
+    }
+  };
+
+  const setFleetDeckSubTab = (subTab: FleetSubTab) => {
+    setFleetDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_fleet_subtab', subTab);
+      localStorage.setItem('ask_admin_active_tab', 'fleet_mgmt');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'fleet_mgmt');
+      newParams.set('subtab', subTab);
+      setSearchParams(newParams, { replace: true });
+    } catch {}
+  };
+
+  const setAiDeckSubTab = (subTab: AiSubTab) => {
+    setAiDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_ai_subtab', subTab);
+      localStorage.setItem('ask_admin_active_tab', 'ai_automation');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'ai_automation');
+      newParams.set('subtab', subTab);
+      setSearchParams(newParams, { replace: true });
+    } catch {}
+  };
+
+  const setFinanceDeckSubTab = (subTab: FinanceSubTab) => {
+    setFinanceDeckSubTabState(subTab);
+    try {
+      localStorage.setItem('ask_admin_finance_subtab', subTab);
+      localStorage.setItem('ask_admin_active_tab', 'finance_accounting');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'finance_accounting');
+      newParams.set('subtab', subTab);
+      setSearchParams(newParams, { replace: true });
+    } catch {}
+  };
 
   // Auto-scroll main window to top on tab switch and close mobile drawer
   useEffect(() => {
@@ -474,23 +739,41 @@ export default function Dashboard() {
     setIsMobileNavOpen(false);
   }, [activeTab, aiDeckSubTab, fleetDeckSubTab, financeDeckSubTab]);
 
-  // Hierarchical Navigation Accordion State
-  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
-    operations: true,
-    fleet: true,
-    enterprise: true,
-    ai: true,
-    governance: false,
-  });
-
-  const toggleNavGroup = (groupKey: string) => {
-    setOpenNavGroups(prev => ({
-      ...prev,
-      [groupKey]: !prev[groupKey]
-    }));
+  // Hierarchical Navigation Accordion State (Single-Open Accordion: Only one group expands at a time)
+  const getInitialNavGroups = (tab: AdminTab): Record<string, boolean> => {
+    if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(tab)) {
+      return { operations: true, fleet: false, enterprise: false, ai: false, governance: false };
+    }
+    if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(tab)) {
+      return { operations: false, fleet: true, enterprise: false, ai: false, governance: false };
+    }
+    if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims', 'executive_pnl', 'tax_audit'].includes(tab)) {
+      return { operations: false, fleet: false, enterprise: true, ai: false, governance: false };
+    }
+    if (tab === 'ai_automation') {
+      return { operations: false, fleet: false, enterprise: false, ai: true, governance: false };
+    }
+    if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(tab)) {
+      return { operations: false, fleet: false, enterprise: false, ai: false, governance: true };
+    }
+    return { operations: true, fleet: false, enterprise: false, ai: false, governance: false };
   };
 
-  // Simple Dropdown Navigation State
+  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>(() => getInitialNavGroups(activeTab));
+
+  const toggleNavGroup = (groupKey: string) => {
+    setOpenNavGroups(prev => {
+      const isCurrentlyOpen = !!prev[groupKey];
+      // Accordion mode: Clicking a category opens ONLY that category and closes all others!
+      return {
+        operations: groupKey === 'operations' ? !isCurrentlyOpen : false,
+        fleet: groupKey === 'fleet' ? !isCurrentlyOpen : false,
+        enterprise: groupKey === 'enterprise' ? !isCurrentlyOpen : false,
+        ai: groupKey === 'ai' ? !isCurrentlyOpen : false,
+        governance: groupKey === 'governance' ? !isCurrentlyOpen : false
+      };
+    });
+  };
 
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
     switch (group) {
@@ -509,17 +792,18 @@ export default function Dashboard() {
     }
   };
 
+  // When activeTab changes, auto-expand ONLY the active tab's parent category and collapse all others
   useEffect(() => {
     if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.operations ? prev : { ...prev, operations: true }));
+      setOpenNavGroups({ operations: true, fleet: false, enterprise: false, ai: false, governance: false });
     } else if (['fleet_mgmt', 'vehicles', 'drivers', 'telematics', 'driver_settlement', 'ais140_safety'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.fleet ? prev : { ...prev, fleet: true }));
+      setOpenNavGroups({ operations: false, fleet: true, enterprise: false, ai: false, governance: false });
     } else if (['enterprise_b2b', 'finance_accounting', 'tariff', 'cargo_claims', 'executive_pnl', 'tax_audit'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.enterprise ? prev : { ...prev, enterprise: true }));
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: true, ai: false, governance: false });
     } else if (activeTab === 'ai_automation') {
-      setOpenNavGroups(prev => (prev.ai ? prev : { ...prev, ai: true }));
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: true, governance: false });
     } else if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(activeTab)) {
-      setOpenNavGroups(prev => (prev.governance ? prev : { ...prev, governance: true }));
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: false, governance: true });
     }
   }, [activeTab]);
 
@@ -2326,6 +2610,14 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             <strong>ASK TRANSPORT</strong>
             <small>LOGISTICS &amp; SUPPLY CHAIN</small>
           </div>
+          <button
+            type="button"
+            className="admin-sidebar-close-btn"
+            onClick={() => setIsMobileNavOpen(false)}
+            aria-label="Close navigation"
+          >
+            ✕
+          </button>
         </div>
 
         {/* NAVIGATION ACCORDION / DROPDOWN MENU */}
@@ -2472,7 +2764,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Trip Petty Cash & P&L', 'ट्रिप खर्च और लाभ-हानि')}</span>
@@ -2481,7 +2773,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fuel_theft' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt', 'fuel_theft'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Fuel & Diesel Theft Radar', 'ईंधन और डीजल रडार')}</span>
@@ -2490,7 +2782,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'cold_chain' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt', 'cold_chain'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Cold-Chain Temp Radar', 'कोल्ड-चेन तापमान रडार')}</span>
@@ -2499,7 +2791,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Fitness & Renewal Alerts', 'फिटनेस और नवीनीकरण अलर्ट')}</span>
@@ -2508,20 +2800,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'tyre_radar' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt', 'tyre_radar'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Tyre & TPMS Radar', 'टायर और टीपीएमएस रडार')}</span>
                 </button>
 
-                <button
-                  type="button"
-                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'mobile_driver' ? 'active' : ''}`}
-                  onClick={() => { setFleetDeckSubTab('mobile_driver'); setActiveTab('fleet_mgmt'); }}
-                >
-                  <span className="nav-sub-bullet">•</span>
-                  <span>{t('Driver Mobile Mode', 'ड्राइवर मोबाइल मोड')}</span>
-                </button>
+
 
                 <button
                   type="button"
@@ -2600,7 +2885,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'settlement' ? 'active' : ''}`}
-                  onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting'); }}
+                  onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting', 'settlement'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Hired Fleet & 194C TDS', 'किराए का बेड़ा और 194C टीडीएस')}</span>
@@ -2609,7 +2894,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab !== 'settlement' ? 'active' : ''}`}
-                  onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting'); }}
+                  onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting', 'einv'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('GST E-Invoice & ERP Ledgers', 'जीएसटी ई-चालान और ईआरपी लेजर')}</span>
@@ -2690,7 +2975,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === '3d_load' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('3d_load'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('3d_load'); setActiveTab('ai_automation', '3d_load'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>3D Cargo Load Planner</span>
@@ -2699,7 +2984,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'ocr_scanner' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('ocr_scanner'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('ocr_scanner'); setActiveTab('ai_automation', 'ocr_scanner'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('AI Bilty Scanner (OCR)', 'एआई बिल्टी स्कैनर (ओसीआर)')}</span>
@@ -2708,7 +2993,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'route_predictor' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation', 'route_predictor'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Highway Route Predictor', 'हाईवे मार्ग अनुमान')}</span>
@@ -2717,7 +3002,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'spot_rate_ai' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation', 'spot_rate_ai'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('Spot Freight Rate AI', 'स्पॉट भाड़ा दर एआई')}</span>
@@ -2726,7 +3011,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <button
                   type="button"
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'whatsapp_bot' ? 'active' : ''}`}
-                  onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation'); }}
+                  onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation', 'whatsapp_bot'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('WhatsApp AI Logistics Bot', 'व्हाट्सएप एआई लॉजिस्टिक्स बॉट')}</span>
@@ -2864,6 +3149,28 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             </div>
           </div>
 
+          {/* LIVE ACTIVE PAGE BREADCRUMB & MODULE TITLE IN TOPBAR HEADER */}
+          <div className="admin-header-breadcrumb">
+            <div className="breadcrumb-category">
+              <span className="breadcrumb-category-icon">{currentTabInfo.groupIcon}</span>
+              <span className="breadcrumb-category-name">{currentTabInfo.groupTitle}</span>
+            </div>
+            <span className="breadcrumb-separator">›</span>
+            <div className="breadcrumb-active-item">
+              <span className="breadcrumb-active-title">{currentTabInfo.tabTitle}</span>
+              {currentTabInfo.subTabTitle && (
+                <>
+                  <span className="breadcrumb-separator">›</span>
+                  <span className="breadcrumb-subpage-badge">{currentTabInfo.subTabTitle}</span>
+                </>
+              )}
+              <span className="breadcrumb-live-badge" title="Active Module Indicator">
+                <span className="live-pulse-dot"></span>
+                {currentTabInfo.code}
+              </span>
+            </div>
+          </div>
+
           <div className="admin-top-search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
@@ -2871,7 +3178,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             </svg>
             <input
               type="text"
-              placeholder={t(`Search ${activeTab}...`, 'डैशबोर्ड में खोजें...')}
+              placeholder={t(`Search in ${currentTabInfo.tabTitle}...`, `${currentTabInfo.tabTitle} में खोजें...`)}
               value={
                 activeTab === 'bookings'
                   ? bookingSearch
@@ -2902,7 +3209,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
           <div className="admin-topbar-quick-actions">
             <button
               type="button"
-              onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+              onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -2920,30 +3227,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               <span>🚛</span> Petty Cash (P&amp;L)
             </button>
 
-            <a
-              href="/driver"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                background: 'rgba(37, 99, 235, 0.12)',
-                color: '#2563eb',
-                border: '1px solid rgba(37, 99, 235, 0.3)',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 700,
-                textDecoration: 'none'
-              }}
-            >
-              <span>📱</span> {t('Driver App (/driver) ↗', 'ड्राइवर ऐप (/driver) ↗')}
-            </a>
+
 
             <button
               type="button"
-              onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+              onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -3065,8 +3353,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
         <div className={`admin-maintenance-bar ${isMaintenanceActive ? 'alert' : 'normal'}`}>
           <div className="maintenance-info">
             <span className="pulse-dot" />
-            <strong>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : t('🟢 PLATFORM LIVE & FULLY OPERATIONAL', '🟢 प्लेटफ़ॉर्म लाइव और पूर्णतः संचालित')}</strong>
-            <span>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public rate calculators, online bookings, and vehicle dispatches running normally', 'सभी सार्वजनिक दर कैलकुलेटर, ऑनलाइन बुकिंग और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
+            <strong style={{ color: isMaintenanceActive ? '#fca5a5' : '#34d399', fontWeight: 800, letterSpacing: '0.3px' }}>{isMaintenanceActive ? '⚠️ EMERGENCY MAINTENANCE ACTIVE: PUBLIC BOOKINGS PAUSED' : t('🟢 PLATFORM LIVE & FULLY OPERATIONAL', '🟢 प्लेटफ़ॉर्म लाइव और पूर्णतः संचालित')}</strong>
+            <span style={{ color: isMaintenanceActive ? '#fecaca' : '#a7f3d0', opacity: 1, fontWeight: 500 }}>{isMaintenanceActive ? 'Online consignment bookings are frozen across web & mobile portals' : t('All public booking engines, tracking portals, and vehicle dispatches running normally', 'सभी सार्वजनिक बुकिंग इंजन, ट्रैकिंग पोर्टल और वाहन डिस्पैच सामान्य रूप से सक्रिय हैं')}</span>
           </div>
           {user?.role === 'SuperAdmin' && (
             <button
@@ -3179,8 +3467,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               </div>
             </div>
 
+            {/* RICH INTERACTIVE ANALYTICS & PIE CHARTS SUITE */}
+            <DashboardAnalyticsCharts />
+
             {/* 2026 FLEET, DRIVER & EXPENSE COMMAND SUITE */}
-            <div style={{
+            <div className="admin-suite-banner" style={{
               marginTop: '20px',
               marginBottom: '24px',
               padding: '22px 24px',
@@ -3196,7 +3487,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     <span>⚡</span> {t('2026 Fleet & Driver Operations Live Hub', '2026 फ्लीट एवं चालक संचालन लाइव हब')}
                   </div>
                   <h2 style={{ margin: '8px 0 4px', fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-                    {t('Driver Petty Cash, Mobile Driver Mode & Fleet Compliance Suite', 'चालक खर्च, मोबाइल चालक मोड और वाहन अनुपालन सूट')}
+                    {t('Fleet Petty Cash, Telematics & Vehicle Compliance Suite', 'चालक खर्च, मोबाइल चालक मोड और वाहन अनुपालन सूट')}
                   </h2>
                   <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
                     {t('Manage diesel expense slips, launch regional driver mobile app, and monitor RTO fitness & insurance expiry alerts.', 'डीजल पर्ची प्रबंधित करें, क्षेत्रीय ड्राइवर मोबाइल ऐप खोलें, और आरटीओ फिटनेस व बीमा समाप्ति अलर्ट देखें।')}
@@ -3204,26 +3495,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <a
-                    href="/driver"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: '#ffffff',
-                      textDecoration: 'none',
-                      padding: '10px 18px',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 800,
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                    }}
-                  >
-                    <span>📱</span> {t('Launch Driver Mobile Mode (/driver) ↗', 'ड्राइवर मोबाइल मोड शुरू करें (/driver) ↗')}
-                  </a>
+
                 </div>
               </div>
 
@@ -3257,7 +3529,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
                     <button
                       type="button"
-                      onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                      onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                       style={{
                         flex: 1,
                         padding: '9px 14px',
@@ -3279,7 +3551,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   </div>
                 </div>
 
-                {/* CARD 2: DEDICATED MOBILE DRIVER APP */}
+                {/* CARD 2: GPS TELEMATICS & HIGHWAY RADAR */}
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.04)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -3292,57 +3564,39 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
-                      📱
+                      📡
                     </div>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {t('2. Mobile Driver Mode', '2. मोबाइल चालक मोड')}
-                        <span style={{ background: '#3b82f6', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>HINDI/ENG</span>
+                        {t('2. GPS Telematics & Radar', '2. जीपीएस टेलीमैटिक्स और रडार')}
+                        <span style={{ background: '#3b82f6', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>LIVE GPS</span>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                        {t('Highway smartphone interface at /driver: Odometer start, 1-tap Google Maps GPS, Camera slip upload, Consignee OTP & POD signature.', '/driver पर मोबाइल इंटरफेस: ओडोमीटर रीडिंग, 1-टैप गूगल मैप्स जीपीएस, कैमरा रसीद अपलोड, ओटीपी और डिजिटल हस्ताक्षर।')}
+                        {t('Real-time AIS-140 GPS tracking, live highway speed monitor, ignition status, geo-fencing alerts and corridor arrival estimates.', 'रीयल-टाइम एआईएस-140 जीपीएस ट्रैकिंग, हाईवे स्पीड मॉनिटर, इग्निशन स्टेटस, जियो-फेंसिंग अलर्ट और कॉरिडोर आगमन अनुमान।')}
                       </p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-                    <a
-                      href="/driver"
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('telematics')}
                       style={{
                         flex: 1,
                         padding: '9px 14px',
                         background: '#2563eb',
                         color: '#ffffff',
-                        textDecoration: 'none',
+                        border: 'none',
                         borderRadius: '6px',
                         fontSize: '12px',
                         fontWeight: 700,
-                        textAlign: 'center',
+                        cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px'
                       }}
                     >
-                      {t('Open Mobile App (/driver) ↗', 'मोबाइल ऐप खोलें (/driver) ↗')}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => { setFleetDeckSubTab('mobile_driver'); setActiveTab('fleet_mgmt'); }}
-                      style={{
-                        padding: '9px 12px',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: '#e2e8f0',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                      title="Preview Driver Console inside Admin"
-                    >
-                      Admin Preview
+                      {t('Open GPS Telematics Radar →', 'जीपीएस रडार खोलें →')}
                     </button>
                   </div>
                 </div>
@@ -3375,7 +3629,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
                     <button
                       type="button"
-                      onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                      onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                       style={{
                         flex: 1,
                         padding: '9px 14px',
@@ -3548,7 +3802,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
         {activeTab === 'finance_accounting' && (
           <div className="admin-content-pad">
             <ErrorBoundary fallbackTitle="Finance & Accounting Suite Error">
-              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} />
+              <FinanceAccountingDeck initialSubTab={financeDeckSubTab} onSubTabChange={setFinanceDeckSubTab} />
             </ErrorBoundary>
           </div>
         )}
@@ -3558,6 +3812,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
         {/* ============================================================== */}
         {activeTab === 'ai_automation' && (
           <div className="admin-content-pad">
+            <ErrorBoundary fallbackTitle="AI Operations Deck Unavailable">
             <AiOperationsDeck
               initialDeckTab={aiDeckSubTab}
               onApplyOcrData={(type, extracted) => {
@@ -3578,6 +3833,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 }
               }}
             />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -4877,7 +5133,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
         {/* ============================================================== */}
         {activeTab === 'drivers' && (
           <div className="admin-content-pad">
-            {/* MOBILE DRIVER MODE & PETTY CASH BANNER */}
+            {/* SARATHI COMPLIANCE & PETTY CASH BANNER */}
             <div style={{
               background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
               borderRadius: '12px',
@@ -4893,34 +5149,17 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             }}>
               <div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.2)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>
-                  <span>📱</span> HIGHWAY DRIVER APP READY
+                  <span>🛡️</span> GOVT SARATHI &amp; MORTH COMPLIANCE HUB
                 </div>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Dedicated Mobile Driver Mode (Bilingual Hindi / English)</h3>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Verified Heavy Commercial Vehicle (HCV) Drivers Registry</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#bfdbfe' }}>
-                  Drivers can access <strong>http://localhost:5173/driver</strong> from any smartphone to start trips, navigate via Google Maps, capture diesel slips, and collect consignee delivery OTP &amp; POD.
+                  National Parivahan Sarathi verified commercial driver profiles with digital license, Aadhaar e-KYC, hazard endorsement &amp; safety scores.
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <a
-                  href="/driver"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    background: '#ffffff',
-                    color: '#1d4ed8',
-                    textDecoration: 'none',
-                    padding: '9px 16px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  🚀 Open Driver Console (/driver) ↗
-                </a>
                 <button
                   type="button"
-                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                   style={{
                     background: '#10b981',
                     color: '#ffffff',
@@ -4936,6 +5175,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </button>
               </div>
             </div>
+
             <div className="admin-page-title-row">
               <div>
                 <h1>Drivers &amp; Operators Directory</h1>
@@ -5046,7 +5286,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                   style={{
                     background: '#ffffff',
                     color: '#b91c1c',
@@ -5063,7 +5303,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt'); }}
+                  onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                   style={{
                     background: '#059669',
                     color: '#ffffff',
@@ -7038,7 +7278,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     <span className="shipment-modal-badge">#{selectedShipment.shipmentNo}</span>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Waybill: {selectedShipment.bookingNo}</span>
                   </div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 900, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                  <h2 className="shipment-modal-title" style={{ fontSize: '18px', fontWeight: 900, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
                     Update Highway Dispatch Status &amp; Milestones
                   </h2>
                   <div className="shipment-route-pill">
@@ -7422,7 +7662,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     <span className="shipment-modal-badge">NEW DISPATCH</span>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>AIS-140 Fleet Gateway</span>
                   </div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0 0', color: 'var(--text-primary, #0f172a)' }}>
+                  <h2 className="shipment-modal-title">
                     Create &amp; Dispatch New Highway Shipment
                   </h2>
                   <div className="shipment-route-pill">
@@ -7442,16 +7682,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               </div>
 
               {/* 1-CLICK INDUSTRY PRESETS BAR */}
-              <div style={{
-                background: 'var(--bg-input, #f8fafc)',
-                borderBottom: '1px solid var(--border, #e2e8f0)',
-                padding: '10px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap'
-              }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase' }}>
+              <div className="shipment-preset-bar">
+                <span className="shipment-preset-bar-title">
                   ⚡ 1-Click Fast Fill:
                 </span>
                 <button
@@ -7794,7 +8026,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               </div>
 
               <form onSubmit={handleAddVehicle}>
-                <div style={{ margin: '14px 24px 0', padding: '10px 14px', background: '#ecfdf5', border: '1px dashed #34d399', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="st-ai-scan-banner">
                   <div>
                     <strong style={{ fontSize: '12px', color: '#065f46' }}>🤖 AI Auto-Scan Vehicle RC Book</strong>
                     <p style={{ margin: 0, fontSize: '11px', color: '#059669' }}>Upload RC photo to auto-fill plate no, model &amp; Vahan payload</p>
@@ -8659,6 +8891,21 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
           <button
             type="button"
+            className={`mobile-dock-btn ${activeTab === 'bookings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bookings')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Bookings</span>
+          </button>
+
+          <button
+            type="button"
             className={`mobile-dock-btn ${activeTab === 'shipments' ? 'active' : ''}`}
             onClick={() => setActiveTab('shipments')}
           >
@@ -8685,26 +8932,15 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
           <button
             type="button"
-            className={`mobile-dock-btn ${activeTab === 'ai_automation' ? 'active' : ''}`}
-            onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation'); }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-            </svg>
-            <span>AI Lab</span>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-dock-btn"
-            onClick={() => setIsMobileNavOpen(true)}
+            className={`mobile-dock-btn ${isMobileNavOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileNavOpen(prev => !prev)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
-            <span>Menu</span>
+            <span>More</span>
           </button>
         </nav>
       </main>

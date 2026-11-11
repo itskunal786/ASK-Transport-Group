@@ -15,6 +15,7 @@ export default function Login() {
   });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('expired=1')) {
       return 'Your session has expired. Please sign in again to continue.';
@@ -64,18 +65,23 @@ export default function Login() {
 
     try {
       const user = await login(email, password);
+      // Immediately clear sensitive password from component memory
+      setPassword('');
 
       // Smart role-based portal routing:
       if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-        navigate('/admin');
+        localStorage.setItem('ask_admin_active_tab', 'dashboard');
+        navigate('/admin?tab=dashboard');
       } else {
         navigate('/dashboard');
       }
     } catch (err) {
+      // Purge password on failed attempt
+      setPassword('');
       setError(
         err instanceof Error
           ? err.message
-          : 'Unable to sign in. Please try again.'
+          : 'Unable to sign in. Please verify your credentials.'
       );
     } finally {
       setLoading(false);
@@ -201,6 +207,8 @@ export default function Login() {
         <form
           className="transport-form"
           onSubmit={handleSubmit}
+          method="post"
+          action="#"
           autoComplete="off"
         >
 
@@ -287,7 +295,7 @@ export default function Login() {
                 id="email"
                 name="ask_no_autofill_email"
                 type="email"
-                placeholder={loginRole === 'admin' ? 'admin@askgroup.com' : 'you@company.com'}
+                placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={() => handleEmailChange(email)}
@@ -314,22 +322,45 @@ export default function Login() {
 
             </div>
 
-            <div className="field-control">
+            <div className="field-control" style={{ position: 'relative' }}>
 
               <span className="lock-icon"></span>
 
               <input
                 id="password"
                 name="ask_no_autofill_pwd"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) =>
                   setPassword(e.target.value)
                 }
-                autoComplete="new-password"
+                autoComplete="current-password"
                 required
+                style={{ paddingRight: '42px' }}
               />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(p => !p)}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  color: '#94a3b8',
+                  padding: '4px',
+                  lineHeight: 1
+                }}
+              >
+                {showPassword ? '👁️' : '🔒'}
+              </button>
 
             </div>
 
@@ -351,12 +382,6 @@ export default function Login() {
             <Link to="/register">
               Create an account
             </Link>
-          </div>
-
-
-          <div className="secure-login">
-            <span className="secure-dot"></span>
-            Secure login powered by ASK Transport
           </div>
 
         </form>

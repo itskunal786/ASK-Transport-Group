@@ -246,9 +246,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 Admin Center ↗
               </Link>
             )}
-            <a href='/driver' target='_blank' rel='noreferrer' className='topbar-admin-badge' style={{ background: 'rgba(5, 150, 105, 0.15)', color: '#059669', border: '1px solid rgba(5, 150, 105, 0.3)' }} title='Open Mobile Driver App'>
-              📱 Driver App ↗
-            </a>
+            
 
             <Link to="/notifications" className="topbar-icon-btn notification" title="Notifications">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

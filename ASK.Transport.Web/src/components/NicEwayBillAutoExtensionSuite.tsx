@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useLanguage } from '../context/LanguageContext';
 import './NicEwayBillAutoExtensionSuite.css';
 
@@ -320,30 +321,30 @@ export default function NicEwayBillAutoExtensionSuite() {
   const [newDocType, setNewDocType] = useState<'Tax Invoice' | 'Bill of Supply' | 'Delivery Challan'>('Tax Invoice');
   
   // Consignor / Part-A
-  const [newSupplierName, setNewSupplierName] = useState('');
-  const [newSupplierGstin, setNewSupplierGstin] = useState('');
-  const [newSupplierPlace, setNewSupplierPlace] = useState('');
-  const [newSupplierPincode, setNewSupplierPincode] = useState('');
+  const [newSupplierName, setNewSupplierName] = useState('ASK Central Logistics Hub');
+  const [newSupplierGstin, setNewSupplierGstin] = useState('27AABCA1234F1Z8');
+  const [newSupplierPlace, setNewSupplierPlace] = useState('Bhiwandi SuperHub, Mumbai, Maharashtra');
+  const [newSupplierPincode, setNewSupplierPincode] = useState('421302');
   
   // Consignee / Part-A
-  const [newRecipientName, setNewRecipientName] = useState('');
-  const [newRecipientGstin, setNewRecipientGstin] = useState('');
-  const [newRecipientPlace, setNewRecipientPlace] = useState('');
-  const [newRecipientPincode, setNewRecipientPincode] = useState('');
+  const [newRecipientName, setNewRecipientName] = useState('Reliance Retail Mega DC');
+  const [newRecipientGstin, setNewRecipientGstin] = useState('24AABCR2424P1Z3');
+  const [newRecipientPlace, setNewRecipientPlace] = useState('Sanand Industrial Estate, Ahmedabad, Gujarat');
+  const [newRecipientPincode, setNewRecipientPincode] = useState('382110');
   
   // Item / Goods
-  const [newCargoDescription, setNewCargoDescription] = useState('');
-  const [newHsnCode, setNewHsnCode] = useState('');
+  const [newCargoDescription, setNewCargoDescription] = useState('Precision Auto Transmission Gearboxes & Sub-Assemblies');
+  const [newHsnCode, setNewHsnCode] = useState('8708.29.00');
   const [newCargoValue, setNewCargoValue] = useState<number>(1850000);
   const [newGstRate, setNewGstRate] = useState<number>(18);
   
   // Part-B Vehicle & Driver
-  const [newVehiclePlateInput, setNewVehiclePlateInput] = useState('');
-  const [newDriverNameInput, setNewDriverNameInput] = useState('');
-  const [newDriverPhoneInput, setNewDriverPhoneInput] = useState('+91 98');
+  const [newVehiclePlateInput, setNewVehiclePlateInput] = useState('MH-12-PQ-9081');
+  const [newDriverNameInput, setNewDriverNameInput] = useState('Ramesh Yadav');
+  const [newDriverPhoneInput, setNewDriverPhoneInput] = useState('+91 98112 23344');
   const [newTotalDistanceInput, setNewTotalDistanceInput] = useState<number>(650);
-  const [newTransporterDocInput, setNewTransporterDocInput] = useState('');
-  const [newHighwayCorridor, setNewHighwayCorridor] = useState('Mumbai-Ahmedabad Corridor (NH-48)');
+  const [newTransporterDocInput, setNewTransporterDocInput] = useState('ASK-LR-98012');
+  const [newHighwayCorridor, setNewHighwayCorridor] = useState('Mumbai-Ahmedabad Golden Quadrilateral (NH-48)');
 
   const handleOpenAddModal = () => {
     const randPart = Math.floor(10000000 + Math.random() * 90000000);
@@ -355,13 +356,13 @@ export default function NicEwayBillAutoExtensionSuite() {
     setNewDocType('Tax Invoice');
     setNewSupplierName('ASK Central Logistics Hub');
     setNewSupplierGstin('27AABCA1234F1Z8');
-    setNewSupplierPlace('Bhiwandi SuperHub, Mumbai');
+    setNewSupplierPlace('Bhiwandi SuperHub, Mumbai, Maharashtra');
     setNewSupplierPincode('421302');
-    setNewRecipientName('');
-    setNewRecipientGstin('');
-    setNewRecipientPlace('');
-    setNewRecipientPincode('');
-    setNewCargoDescription('');
+    setNewRecipientName('Reliance Retail Mega DC');
+    setNewRecipientGstin('24AABCR2424P1Z3');
+    setNewRecipientPlace('Sanand Industrial Estate, Ahmedabad, Gujarat');
+    setNewRecipientPincode('382110');
+    setNewCargoDescription('Precision Auto Transmission Gearboxes & Sub-Assemblies');
     setNewHsnCode('8708.29.00');
     setNewCargoValue(1850000);
     setNewGstRate(18);
@@ -370,7 +371,7 @@ export default function NicEwayBillAutoExtensionSuite() {
     setNewDriverPhoneInput('+91 98112 23344');
     setNewTotalDistanceInput(650);
     setNewTransporterDocInput(`ASK-LR-${Math.floor(10000 + Math.random() * 90000)}`);
-    setNewHighwayCorridor('Mumbai-Ahmedabad Corridor (NH-48)');
+    setNewHighwayCorridor('Mumbai-Ahmedabad Golden Quadrilateral (NH-48)');
     setShowAddEwbModal(true);
   };
 
@@ -541,7 +542,9 @@ export default function NicEwayBillAutoExtensionSuite() {
 
     setEwayBills(prev => [createdRecord, ...prev]);
     setShowAddEwbModal(false);
-    setSearchQuery(createdRecord.ewbNo);
+    setFilterTab('ALL');
+    setSearchQuery('');
+    setSelectedForPrint(createdRecord);
     showToast(`✓ E-Way Bill ${createdRecord.ewbNo} successfully registered & synced with Part-A & Part-B!`);
   };
   
@@ -2200,8 +2203,8 @@ export default function NicEwayBillAutoExtensionSuite() {
       {/* ===================================================================== */}
       {/* MODAL 5: OFFICIAL PRINTABLE FORM GST EWB-01 DOCUMENT */}
       {/* ===================================================================== */}
-      {selectedForPrint && (
-        <div style={{
+      {selectedForPrint && typeof document !== 'undefined' && createPortal(
+        <div className="ewb-print-modal-overlay" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -2412,13 +2415,14 @@ export default function NicEwayBillAutoExtensionSuite() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ===================================================================== */}
       {/* MODAL 6: GENERATE & REGISTER NEW GOVT E-WAY BILL (PART-A + PART-B) */}
       {/* ===================================================================== */}
-      {showAddEwbModal && (
+      {showAddEwbModal && typeof document !== 'undefined' && createPortal(
         <div className="ewb-modal-overlay" onClick={() => setShowAddEwbModal(false)}>
           <div className="ewb-modal-box" onClick={e => e.stopPropagation()}>
             
@@ -2468,7 +2472,7 @@ export default function NicEwayBillAutoExtensionSuite() {
 
             {/* QUICK 1-CLICK DEMO TEMPLATES BAR */}
             <div className="ewb-templates-bar">
-              <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+              <span className="ewb-templates-bar-title">
                 ⚡ 1-Click Fast Fill Templates:
               </span>
               <button
@@ -2503,27 +2507,18 @@ export default function NicEwayBillAutoExtensionSuite() {
 
             {/* FORM BODY (SCROLLABLE) */}
             <form onSubmit={handleCreateNewEwayBill} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-              <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+              <div className="ewb-modal-body" style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
                 
                 {/* SECTION 1: EWB & DOCUMENT PROFILE */}
                 <div className="ewb-modal-section">
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="ewb-section-title">
                     <span>📄 1. E-Way Bill Number &amp; Invoice Profile</span>
                     <button
                       type="button"
+                      className="ewb-autogen-btn"
                       onClick={() => {
                         const rand = Math.floor(10000000 + Math.random() * 90000000);
                         setNewEwbNo(`2410-${String(rand).slice(0, 4)}-${String(rand).slice(4, 8)}`);
-                      }}
-                      style={{
-                        background: '#e0f2fe',
-                        border: '1px solid #bae6fd',
-                        color: '#0284c7',
-                        borderRadius: '6px',
-                        padding: '3px 8px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
                       }}
                     >
                       ⚡ Auto-Generate 12-Digit EWB No
@@ -2532,7 +2527,7 @@ export default function NicEwayBillAutoExtensionSuite() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         E-Way Bill Number *
                       </label>
                       <input
@@ -2541,12 +2536,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newEwbNo}
                         onChange={e => setNewEwbNo(e.target.value)}
                         placeholder="e.g. 2410-8921-7711"
-                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, boxSizing: 'border-box' }}
+                        className="ewb-form-input" style={{ fontFamily: 'monospace', fontWeight: 700 }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Doc / Invoice Number *
                       </label>
                       <input
@@ -2555,12 +2550,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newDocNo}
                         onChange={e => setNewDocNo(e.target.value)}
                         placeholder="e.g. INV-2026-9021"
-                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Invoice Date
                       </label>
                       <input
@@ -2568,18 +2563,18 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newDocDate}
                         onChange={e => setNewDocDate(e.target.value)}
                         placeholder="e.g. 28-Oct-2026"
-                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Document Type
                       </label>
                       <select
                         value={newDocType}
                         onChange={e => setNewDocType(e.target.value as any)}
-                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-select"
                       >
                         <option value="Tax Invoice">Tax Invoice</option>
                         <option value="Bill of Supply">Bill of Supply</option>
@@ -2588,13 +2583,13 @@ export default function NicEwayBillAutoExtensionSuite() {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Sub-Type
                       </label>
                       <select
                         value={newSubType}
                         onChange={e => setNewSubType(e.target.value as any)}
-                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-select"
                       >
                         <option value="Supply">Supply</option>
                         <option value="Job Work">Job Work</option>
@@ -2612,12 +2607,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                   
                   {/* CONSIGNOR (FROM) */}
                   <div className="ewb-modal-section">
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                    <div className="ewb-section-title">
                       🏭 2. Consignor / Supplier (Dispatched From)
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        <label className="ewb-field-label">
                           Supplier Company Name *
                         </label>
                         <input
@@ -2626,11 +2621,11 @@ export default function NicEwayBillAutoExtensionSuite() {
                           value={newSupplierName}
                           onChange={e => setNewSupplierName(e.target.value)}
                           placeholder="e.g. Tata Motors Commercial Hub"
-                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                          className="ewb-form-input"
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        <label className="ewb-field-label">
                           Supplier GSTIN *
                         </label>
                         <input
@@ -2639,12 +2634,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                           value={newSupplierGstin}
                           onChange={e => setNewSupplierGstin(e.target.value)}
                           placeholder="e.g. 27AAACT2727Q1ZT"
-                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }}
+                          className="ewb-form-input" style={{ fontFamily: 'monospace', fontWeight: 600 }}
                         />
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px' }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          <label className="ewb-field-label">
                             Dispatch Place / Hub *
                           </label>
                           <input
@@ -2653,11 +2648,11 @@ export default function NicEwayBillAutoExtensionSuite() {
                             value={newSupplierPlace}
                             onChange={e => setNewSupplierPlace(e.target.value)}
                             placeholder="e.g. Pune MIDC, Maharashtra"
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                            className="ewb-form-input"
                           />
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          <label className="ewb-field-label">
                             PIN Code *
                           </label>
                           <input
@@ -2666,7 +2661,7 @@ export default function NicEwayBillAutoExtensionSuite() {
                             value={newSupplierPincode}
                             onChange={e => setNewSupplierPincode(e.target.value)}
                             placeholder="411018"
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                            className="ewb-form-input" style={{ fontFamily: 'monospace' }}
                           />
                         </div>
                       </div>
@@ -2675,12 +2670,12 @@ export default function NicEwayBillAutoExtensionSuite() {
 
                   {/* CONSIGNEE (TO) */}
                   <div className="ewb-modal-section">
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                    <div className="ewb-section-title">
                       🏢 3. Consignee / Recipient (Delivery Destination)
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        <label className="ewb-field-label">
                           Recipient / Customer Name *
                         </label>
                         <input
@@ -2689,11 +2684,11 @@ export default function NicEwayBillAutoExtensionSuite() {
                           value={newRecipientName}
                           onChange={e => setNewRecipientName(e.target.value)}
                           placeholder="e.g. Reliance Retail Mega DC"
-                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                          className="ewb-form-input"
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                        <label className="ewb-field-label">
                           Recipient GSTIN *
                         </label>
                         <input
@@ -2702,12 +2697,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                           value={newRecipientGstin}
                           onChange={e => setNewRecipientGstin(e.target.value)}
                           placeholder="e.g. 24AABCR2424P1Z3"
-                          style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }}
+                          className="ewb-form-input" style={{ fontFamily: 'monospace', fontWeight: 600 }}
                         />
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px' }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          <label className="ewb-field-label">
                             Destination City / Plant *
                           </label>
                           <input
@@ -2716,11 +2711,11 @@ export default function NicEwayBillAutoExtensionSuite() {
                             value={newRecipientPlace}
                             onChange={e => setNewRecipientPlace(e.target.value)}
                             placeholder="e.g. Sanand Industrial Estate, Ahmedabad"
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                            className="ewb-form-input"
                           />
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                          <label className="ewb-field-label">
                             PIN Code *
                           </label>
                           <input
@@ -2729,7 +2724,7 @@ export default function NicEwayBillAutoExtensionSuite() {
                             value={newRecipientPincode}
                             onChange={e => setNewRecipientPincode(e.target.value)}
                             placeholder="382110"
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                            className="ewb-form-input" style={{ fontFamily: 'monospace' }}
                           />
                         </div>
                       </div>
@@ -2739,12 +2734,12 @@ export default function NicEwayBillAutoExtensionSuite() {
 
                 {/* SECTION 4: CARGO & VALUATION */}
                 <div className="ewb-modal-section">
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                  <div className="ewb-section-title">
                     📦 4. Cargo Specifications, HSN Code &amp; Tax Valuation
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                     <div style={{ gridColumn: 'span 2' }}>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Product / Cargo Description *
                       </label>
                       <input
@@ -2753,12 +2748,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newCargoDescription}
                         onChange={e => setNewCargoDescription(e.target.value)}
                         placeholder="e.g. Precision Chassis Sub-Assemblies & Transmission Gear Units"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         HSN Code *
                       </label>
                       <input
@@ -2767,12 +2762,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newHsnCode}
                         onChange={e => setNewHsnCode(e.target.value)}
                         placeholder="8708.29.00"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                        className="ewb-form-input" style={{ fontFamily: 'monospace' }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Total Consignment Value (₹) *
                       </label>
                       <input
@@ -2780,18 +2775,18 @@ export default function NicEwayBillAutoExtensionSuite() {
                         required
                         value={newCargoValue}
                         onChange={e => setNewCargoValue(Number(e.target.value))}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontWeight: 800, boxSizing: 'border-box' }}
+                        className="ewb-form-input" style={{ fontWeight: 800 }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         GST Rate (%)
                       </label>
                       <select
                         value={newGstRate}
                         onChange={e => setNewGstRate(Number(e.target.value))}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-select"
                       >
                         <option value={5}>5% GST</option>
                         <option value={12}>12% GST</option>
@@ -2801,10 +2796,10 @@ export default function NicEwayBillAutoExtensionSuite() {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Computed Tax Amount (₹)
                       </label>
-                      <div style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+                      <div className="ewb-tax-computed">
                         ₹{Math.round((newCargoValue * (newGstRate / 100))).toLocaleString('en-IN')}
                       </div>
                     </div>
@@ -2812,15 +2807,15 @@ export default function NicEwayBillAutoExtensionSuite() {
                 </div>
 
                 {/* SECTION 5: PART-B TRANSPORT & VEHICLE ASSIGNMENT */}
-                <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#166534', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="ewb-part-b-section">
+                  <div className="ewb-section-title">
                     <span>🚛 5. Part-B Transport, Vehicle &amp; Pilot Assignment</span>
                     <span style={{ fontSize: '11px', color: '#15803d', fontWeight: 600 }}>Rule 138 CGST Vehicle Tagged</span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Vehicle Registration Number *
                       </label>
                       <input
@@ -2829,12 +2824,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newVehiclePlateInput}
                         onChange={e => setNewVehiclePlateInput(e.target.value.toUpperCase())}
                         placeholder="e.g. MH-12-PQ-9081"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 800, background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-input" style={{ fontFamily: 'monospace', fontWeight: 800 }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Pilot / Driver Name *
                       </label>
                       <input
@@ -2843,12 +2838,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newDriverNameInput}
                         onChange={e => setNewDriverNameInput(e.target.value)}
                         placeholder="e.g. Suresh Rawat"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Driver Phone (WhatsApp Link) *
                       </label>
                       <input
@@ -2857,12 +2852,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newDriverPhoneInput}
                         onChange={e => setNewDriverPhoneInput(e.target.value)}
                         placeholder="+91 98230 45678"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Total Transit Distance (KM) *
                       </label>
                       <input
@@ -2870,12 +2865,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         required
                         value={newTotalDistanceInput}
                         onChange={e => setNewTotalDistanceInput(Number(e.target.value))}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', fontWeight: 800, background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-input" style={{ fontWeight: 800 }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Transporter LR / Doc No
                       </label>
                       <input
@@ -2883,12 +2878,12 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newTransporterDocInput}
                         onChange={e => setNewTransporterDocInput(e.target.value)}
                         placeholder="ASK-LR-90812"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#14532d', marginBottom: '4px' }}>
+                      <label className="ewb-field-label">
                         Highway Corridor
                       </label>
                       <input
@@ -2896,13 +2891,13 @@ export default function NicEwayBillAutoExtensionSuite() {
                         value={newHighwayCorridor}
                         onChange={e => setNewHighwayCorridor(e.target.value)}
                         placeholder="Mumbai-Ahmedabad Corridor (NH-48)"
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac', borderRadius: '8px', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }}
+                        className="ewb-form-input"
                       />
                     </div>
                   </div>
 
                   {/* COMPUTED VALIDITY NOTICE */}
-                  <div style={{ marginTop: '12px', background: 'rgba(255, 255, 255, 0.8)', border: '1px dashed #86efac', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', color: '#166534' }}>
+                  <div className="ewb-validity-notice">
                     ⚡ <strong>Govt Rule 138 Automatic Validity Calculation:</strong> Based on <strong>{newTotalDistanceInput} KM</strong>, validity granted is <strong>{Math.max(1, Math.ceil(newTotalDistanceInput / 200))} Days ({Math.max(1, Math.ceil(newTotalDistanceInput / 200)) * 24} Hours)</strong> at standard 200 KM/day norm.
                   </div>
                 </div>
@@ -2913,37 +2908,15 @@ export default function NicEwayBillAutoExtensionSuite() {
               <div className="ewb-modal-footer">
                 <button
                   type="button"
+                  className="ewb-btn-cancel"
                   onClick={() => setShowAddEwbModal(false)}
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '10px 18px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#475569',
-                    cursor: 'pointer'
-                  }}
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  style={{
-                    background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 24px',
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
+                  className="ewb-btn-submit"
                 >
                   <span>🚀</span>
                   <span>Register &amp; Generate E-Way Bill</span>
@@ -2952,7 +2925,8 @@ export default function NicEwayBillAutoExtensionSuite() {
             </form>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

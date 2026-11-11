@@ -106,39 +106,56 @@
 .landing-nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   flex-shrink: 1;
   min-width: 0;
+  margin: 0 auto;
 }
 
 .landing-nav-link {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-text-secondary, #475569) !important;
-  padding: 6px 10px;
-  border-radius: 8px;
+  color: var(--color-text-secondary, #334155) !important;
+  padding: 8px 16px;
+  border-radius: 10px;
   text-decoration: none !important;
   cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   white-space: nowrap !important;
   flex-shrink: 0;
   background: transparent !important;
-  border: none !important;
+  border: 1px solid transparent !important;
   outline: none !important;
+  letter-spacing: -0.01em;
 }
 
 .landing-nav-link:hover {
   color: #0284c7 !important;
   background: rgba(2, 132, 199, 0.08) !important;
+  border-color: rgba(2, 132, 199, 0.2) !important;
+  transform: translateY(-1px);
 }
 
 .landing-nav-link.active {
   color: #0284c7 !important;
   background: rgba(2, 132, 199, 0.12) !important;
+  border-color: rgba(2, 132, 199, 0.28) !important;
   font-weight: 700;
+}
+
+.landing-nav-icon {
+  color: inherit;
+  opacity: 0.85;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.landing-nav-link:hover .landing-nav-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 /* DRIVER APP PILL */
@@ -518,6 +535,9 @@
     border-radius: 8px;
     color: var(--color-text-primary, #0f172a);
     text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .mobile-drawer-link:hover,
@@ -1864,22 +1884,27 @@ body.dark .landing-brand-sub,
 [data-theme="dark"] .landing-nav-link,
 body.dark .landing-nav-link,
 .dark .landing-nav-link {
-  color: #94a3b8 !important;
+  color: #cbd5e1 !important;
   background: transparent !important;
+  border-color: transparent !important;
 }
 
 [data-theme="dark"] .landing-nav-link:hover,
 body.dark .landing-nav-link:hover,
 .dark .landing-nav-link:hover {
-  color: #f8fafc !important;
+  color: #ffffff !important;
   background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  transform: translateY(-1px);
 }
 
 [data-theme="dark"] .landing-nav-link.active,
 body.dark .landing-nav-link.active,
 .dark .landing-nav-link.active {
   color: #38bdf8 !important;
-  background: rgba(56, 189, 248, 0.15) !important;
+  background: rgba(56, 189, 248, 0.16) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  font-weight: 700;
 }
 
 [data-theme="dark"] .landing-nav-driver-pill,

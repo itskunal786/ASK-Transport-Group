@@ -17,6 +17,12 @@ export default function AiOcrScannerModal({
   const [result, setResult] = useState<OcrScanResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
+  const getDocTypeShort = () => {
+    if (docType === 'driving_license') return 'DL';
+    if (docType === 'vehicle_rc') return 'RC';
+    return 'Bilty';
+  };
+
   async function handleScan(samplePreset?: string) {
     try {
       setScanning(true);
@@ -41,12 +47,22 @@ export default function AiOcrScannerModal({
     handleScan('uploaded_file');
   }
 
+  function handleUseSample() {
+    const sampleName = docType === 'driving_license'
+      ? 'MoRTH_Sarathi_DL_Sample.pdf'
+      : docType === 'vehicle_rc'
+        ? 'MoRTH_Vahan_RC_Book_Sample.pdf'
+        : 'ASK_Physical_Bilty_LR_Sample.pdf';
+    setSelectedFile(sampleName);
+    handleScan('sample_demo');
+  }
+
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(15, 23, 42, 0.75)',
+        background: 'rgba(15, 23, 42, 0.78)',
         backdropFilter: 'blur(5px)',
         zIndex: 10000,
         display: 'flex',
@@ -56,23 +72,29 @@ export default function AiOcrScannerModal({
       }}
       onClick={onClose}
     >
+      <style>{`
+        @keyframes ocrSpin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <div
         style={{
-          background: 'var(--bg-surface, #ffffff)',
+          background: '#ffffff',
+          color: '#0f172a',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '680px',
-          maxHeight: '88vh',
+          maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
           overflow: 'hidden',
-          border: '1px solid var(--border-color, #e2e8f0)'
+          border: '1px solid #e2e8f0'
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* HEADER */}
-        <div style={{ padding: '16px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '16px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff' }}>
           <div>
             <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#4338ca', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>🤖</span> AI OCR Document &amp; RC/DL Scanner
@@ -84,14 +106,14 @@ export default function AiOcrScannerModal({
           <button
             type="button"
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#94a3b8' }}
+            style={{ background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#94a3b8', lineHeight: 1 }}
           >
             &times;
           </button>
         </div>
 
         {/* BODY */}
-        <div style={{ padding: '20px 22px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '20px 22px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', background: '#ffffff' }}>
           {/* DOCUMENT SELECTOR TABS */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
             {[
@@ -141,7 +163,8 @@ export default function AiOcrScannerModal({
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'rgba(79, 70, 229, 0.15)',
+                  background: 'rgba(79, 70, 229, 0.18)',
+                  backdropFilter: 'blur(2px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -150,8 +173,8 @@ export default function AiOcrScannerModal({
                   zIndex: 2
                 }}
               >
-                <div style={{ width: '48px', height: '48px', border: '4px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                <strong style={{ color: '#4338ca', fontSize: '13px' }}>AI Neural OCR Analyzing Document...</strong>
+                <div style={{ width: '46px', height: '46px', border: '4px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'ocrSpin 0.8s linear infinite' }} />
+                <strong style={{ color: '#4338ca', fontSize: '13.5px' }}>AI Neural OCR Analyzing Document...</strong>
                 <span style={{ fontSize: '11px', color: '#6366f1' }}>Extracting text, barcodes, dates &amp; Govt registry ID</span>
               </div>
             )}
@@ -182,7 +205,7 @@ export default function AiOcrScannerModal({
 
               <button
                 type="button"
-                onClick={() => handleScan('sample_demo')}
+                onClick={handleUseSample}
                 style={{
                   padding: '7px 16px',
                   background: '#ffffff',
@@ -194,13 +217,20 @@ export default function AiOcrScannerModal({
                   cursor: 'pointer'
                 }}
               >
-                ⚡ Use Sample {docType === 'driving_license' ? 'DL' : docType === 'vehicle_rc' ? 'RC' : 'Bilty'}
+                ⚡ Use Sample {getDocTypeShort()}
               </button>
             </div>
 
             {selectedFile && (
-              <div style={{ marginTop: '10px', fontSize: '12px', color: '#059669', fontWeight: 600 }}>
-                ✓ Selected file: {selectedFile}
+              <div style={{ marginTop: '12px', padding: '6px 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#059669', fontWeight: 600 }}>✓ Ready: {selectedFile}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFile(null)}
+                  style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '11px', fontWeight: 700, padding: '0 4px' }}
+                >
+                  Clear
+                </button>
               </div>
             )}
           </div>
@@ -214,7 +244,7 @@ export default function AiOcrScannerModal({
                   <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Processed in {result.processingTimeMs}ms • Accuracy: {result.confidenceScore}%</span>
                 </div>
                 <span style={{ padding: '4px 10px', background: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 800, borderRadius: '6px' }}>
-                  ✓ AI CONFIRMED
+                  ✓ AI CONFIRMED &amp; VERIFIED
                 </span>
               </div>
 
@@ -234,7 +264,7 @@ export default function AiOcrScannerModal({
         </div>
 
         {/* FOOTER */}
-        <div style={{ padding: '14px 22px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: '#f8fafc' }}>
+        <div style={{ padding: '14px 22px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', background: '#f8fafc' }}>
           <button
             type="button"
             onClick={onClose}
@@ -243,7 +273,64 @@ export default function AiOcrScannerModal({
             Cancel
           </button>
 
+          {/* RE-SCAN BUTTON (WHEN RESULT EXISTS) */}
           {result && (
+            <button
+              type="button"
+              onClick={() => {
+                setResult(null);
+                setSelectedFile(null);
+              }}
+              style={{
+                padding: '8px 14px',
+                background: '#ffffff',
+                border: '1px solid #c7d2fe',
+                borderRadius: '6px',
+                fontSize: '12.5px',
+                fontWeight: 600,
+                color: '#4f46e5',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 Re-Scan
+            </button>
+          )}
+
+          {/* SUBMIT BUTTON */}
+          {!result ? (
+            <button
+              type="button"
+              onClick={() => handleScan(selectedFile ? 'uploaded_file' : 'sample_demo')}
+              disabled={scanning}
+              style={{
+                padding: '8px 20px',
+                background: scanning ? '#94a3b8' : 'linear-gradient(135deg, #4f46e5, #4338ca)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                cursor: scanning ? 'not-allowed' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 8px rgba(79, 70, 229, 0.35)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {scanning ? (
+                <>
+                  <span style={{ display: 'inline-block', width: '13px', height: '13px', border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'ocrSpin 0.8s linear infinite' }} />
+                  <span>Scanning Document...</span>
+                </>
+              ) : (
+                <>
+                  <span>🚀</span>
+                  <span>Submit &amp; Scan {getDocTypeShort()}</span>
+                </>
+              )}
+            </button>
+          ) : (
             <button
               type="button"
               onClick={() => {
@@ -252,9 +339,23 @@ export default function AiOcrScannerModal({
                 }
                 onClose();
               }}
-              style={{ padding: '8px 18px', background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer' }}
+              style={{
+                padding: '8px 18px',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)'
+              }}
             >
-              ✓ Auto-Fill Form with Extracted Data
+              <span>✓</span>
+              <span>Submit &amp; Auto-Fill Form</span>
             </button>
           )}
         </div>

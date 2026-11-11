@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   predictRouteAndCosts,
   calculateLocalRoutePrediction,
@@ -10,7 +11,9 @@ import {
   CheckCircle2,
   Printer,
   Sparkles,
-  Navigation
+  Navigation,
+  FileText,
+  X
 } from 'lucide-react';
 import './AiRouteCostPredictor.css';
 
@@ -96,6 +99,7 @@ export default function AiRouteCostPredictor() {
   const [loading, setLoading] = useState(false);
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [showSlipModal, setShowSlipModal] = useState(false);
 
   // Initialize immediately with full calculation so data is NEVER blank!
   const [data, setData] = useState<RouteCostPredictionResult>(() =>
@@ -147,6 +151,22 @@ export default function AiRouteCostPredictor() {
     setOrigin(destination);
     setDestination(prevOrigin);
   }
+
+  const handleOpenPrintSlip = () => {
+    setShowSlipModal(true);
+  };
+
+  const handlePrintSlipAction = () => {
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('ai-route-slip-printing');
+    }
+    window.print();
+    setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('ai-route-slip-printing');
+      }
+    }, 1000);
+  };
 
   const handleCopySummary = () => {
     if (!data) return;
@@ -219,7 +239,7 @@ PROJECTED NET PROFIT:    ₹${data.profitability.netOperatingProfit.toLocaleStri
             </button>
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={handleOpenPrintSlip}
               className="ai-predictor-secondary-btn"
               title="Print Route Dispatch Itinerary"
             >
@@ -496,6 +516,183 @@ PROJECTED NET PROFIT:    ₹${data.profitability.netOperatingProfit.toLocaleStri
             </div>
           </div>
         </>
+      )}
+      {/* OFFICIAL PRINTABLE HIGHWAY ROUTE & COST ITINERARY SLIP MODAL */}
+      {showSlipModal && typeof document !== 'undefined' && createPortal(
+        <div className="ai-route-slip-overlay" onClick={() => setShowSlipModal(false)}>
+          <div className="ai-route-slip-modal-container" onClick={e => e.stopPropagation()}>
+            {/* SCREEN TOOLBAR (Hidden in Print) */}
+            <div className="ai-route-slip-toolbar ai-predictor-no-print">
+              <div className="ai-route-slip-toolbar-left">
+                <FileText size={18} style={{ color: '#0284c7' }} />
+                <span>{t('Official Highway Route & Freight Dispatch Itinerary Slip', 'आधिकारिक हाईवे रूट एवं भाड़ा प्रेषण पर्ची')}</span>
+              </div>
+              <div className="ai-route-slip-toolbar-actions">
+                <button
+                  type="button"
+                  onClick={handlePrintSlipAction}
+                  className="ai-route-slip-btn-print"
+                >
+                  <Printer size={15} />
+                  <span>{t('Print Slip / Save PDF', 'पर्ची प्रिंट / PDF सेव करें')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSlipModal(false)}
+                  className="ai-route-slip-btn-close"
+                >
+                  <X size={16} />
+                  <span>{t('Close', 'बंद करें')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* PRINTABLE SLIP SHEET */}
+            <div className="ai-route-slip-sheet">
+              {/* SLIP HEADER */}
+              <div className="ai-slip-header">
+                <div className="ai-slip-header-brand">
+                  <div className="ai-slip-logo-badge">ASK</div>
+                  <div>
+                    <h2 className="ai-slip-company-name">ASK TRANSPORT GROUP</h2>
+                    <p className="ai-slip-company-sub">
+                      National Heavy Commercial Freight, Containerized Fleet &amp; Supply Chain Logistics
+                    </p>
+                    <p className="ai-slip-company-meta">
+                      MoRTH &amp; GST Council Registered Highway Fleet • CIN: U60200MH2018PTC310204 • GSTIN: 27AABCA1234F1Z8
+                    </p>
+                  </div>
+                </div>
+                <div className="ai-slip-header-meta">
+                  <div className="ai-slip-ref-pill">OFFICIAL ROUTE SLIP</div>
+                  <div className="ai-slip-ref-id">REF: ASK-RT-{Date.now().toString().slice(-6)}</div>
+                  <div className="ai-slip-date">Date: {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                </div>
+              </div>
+
+              {/* CORRIDOR DISPATCH ROUTE STRIP */}
+              <div className="ai-slip-corridor-box">
+                <div className="ai-slip-corridor-row">
+                  <div>
+                    <span className="ai-slip-label">ORIGIN HUB / CITY</span>
+                    <strong className="ai-slip-value-lg">{data.corridor.originCity}</strong>
+                  </div>
+                  <div className="ai-slip-arrow">➔</div>
+                  <div>
+                    <span className="ai-slip-label">DESTINATION HUB / CITY</span>
+                    <strong className="ai-slip-value-lg">{data.corridor.destinationCity}</strong>
+                  </div>
+                  <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                    <span className="ai-slip-label">HIGHWAY DISTANCE</span>
+                    <strong className="ai-slip-value-lg" style={{ color: '#0284c7' }}>{data.corridor.distanceKm} KM</strong>
+                    <div className="ai-slip-sub-text">~{data.corridor.transitTimeHours} Hours Convoy Transit</div>
+                  </div>
+                </div>
+                <div className="ai-slip-highway-bar">
+                  <span>🛣️ Highway Corridor: <strong>{data.corridor.highwayName}</strong></span>
+                  <span>🚛 Fleet Vehicle: <strong>{truckType.replace(/_/g, ' ').toUpperCase()} ({data.costBreakdown.mileageKmPerLiter} km/L)</strong></span>
+                  <span>⛽ Diesel Index: <strong>₹{data.costBreakdown.dieselPricePerLiter}/Liter</strong></span>
+                </div>
+              </div>
+
+              {/* COST BREAKDOWN TABLE */}
+              <table className="ai-slip-table">
+                <thead>
+                  <tr>
+                    <th>Operating Expense Component</th>
+                    <th>Specification / Basis</th>
+                    <th>Sub-Total</th>
+                    <th style={{ textAlign: 'right' }}>Amount (INR)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Diesel Fuel Expenditure</strong></td>
+                    <td>{data.costBreakdown.dieselRequiredLiters} Liters @ ₹{data.costBreakdown.dieselPricePerLiter} / Liter</td>
+                    <td>Est. Consumption</td>
+                    <td style={{ textAlign: 'right' }}>₹{data.costBreakdown.dieselCost.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>NHAI Fastag Toll Charges</strong></td>
+                    <td>Across {data.costBreakdown.tollPlazaCount} Electronic NHAI Toll Plazas</td>
+                    <td>RFID Auto-Debit</td>
+                    <td style={{ textAlign: 'right' }}>₹{data.costBreakdown.fastagTollCost.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Driver Trip Allowance &amp; Bhatta</strong></td>
+                    <td>Highway Food, Halt Allowance &amp; Safety Compliance</td>
+                    <td>Fixed Corridor Rate</td>
+                    <td style={{ textAlign: 'right' }}>₹{data.costBreakdown.driverAllowanceBhatta.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Incidental &amp; Tyre Reserve</strong></td>
+                    <td>Highway Puncture, Mechanical Wear &amp; RTO Escort Reserve</td>
+                    <td>Amortized / KM</td>
+                    <td style={{ textAlign: 'right' }}>₹{data.costBreakdown.incidentalMaintenance.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr className="ai-slip-total-row">
+                    <td colSpan={3}><strong>TOTAL ESTIMATED OPERATING COST (TCO)</strong></td>
+                    <td style={{ textAlign: 'right', fontWeight: 800 }}>₹{data.costBreakdown.totalOperatingCost.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr className="ai-slip-highlight-row">
+                    <td colSpan={3}>
+                      <strong>RECOMMENDED COMMERCIAL FREIGHT QUOTE</strong>
+                      <div style={{ fontSize: '10.5px', color: '#047857' }}>Net Projected Profit: ₹{data.profitability.netOperatingProfit.toLocaleString('en-IN')} ({data.profitability.marginPercentage}% margin)</div>
+                    </td>
+                    <td style={{ textAlign: 'right', fontWeight: 900, fontSize: '15px', color: '#047857' }}>
+                      ₹{data.profitability.recommendedFreightQuote.toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* TOLL PLAZAS & RESTRICTIONS MINI-SUMMARY */}
+              <div className="ai-slip-mini-grid">
+                <div>
+                  <h4 className="ai-slip-mini-title">Key NHAI Fastag Toll Plazas:</h4>
+                  <ul className="ai-slip-mini-list">
+                    {data.tollPlazas.slice(0, 4).map((p, idx) => (
+                      <li key={idx}>
+                        <span>{p.name} ({p.location})</span>
+                        <strong>₹{p.fastagCost}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="ai-slip-mini-title">City Commercial No-Entry Windows:</h4>
+                  <ul className="ai-slip-mini-list">
+                    {data.cityNoEntryRestrictions.map((c, idx) => (
+                      <li key={idx}>
+                        <span><strong>{c.city}:</strong> {c.timing}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* SLIP FOOTER & SIGNATURE */}
+              <div className="ai-slip-footer">
+                <div className="ai-slip-legal-notice">
+                  <strong>CONDITIONS OF CARRIAGE &amp; TARIFF NOTICE:</strong>
+                  <p>
+                    This is an electronically generated route dispatch itinerary and cost quote issued by ASK Transport Central Logistics Control Room. Fuel charges are linked to national IOCL/BPCL daily pricing. Route adheres strictly to MoRTH axle-load limits and AIS-140 GPS telematics monitoring.
+                  </p>
+                </div>
+                <div className="ai-slip-signature-box">
+                  <div className="ai-slip-seal">
+                    <span>ASK TRANSPORT</span>
+                    <small>★ VERIFIED ★</small>
+                  </div>
+                  <div className="ai-slip-sig-line"></div>
+                  <div className="ai-slip-sig-name">Authorized Route Dispatcher</div>
+                  <div className="ai-slip-sig-title">Central Highway Operations Control</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

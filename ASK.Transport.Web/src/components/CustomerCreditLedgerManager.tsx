@@ -135,6 +135,7 @@ function loadInitialClients(): CustomerCreditLedger[] {
 export default function CustomerCreditLedgerManager() {
   const [clients, setClients] = useState<CustomerCreditLedger[]>(loadInitialClients);
   const [loading, setLoading] = useState(false);
+  const [justRefreshed, setJustRefreshed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
@@ -187,7 +188,11 @@ export default function CustomerCreditLedgerManager() {
     }
   };
 
-  async function loadData() {
+  async function loadData(isManualClick = false) {
+    if (isManualClick) {
+      setJustRefreshed(true);
+      setTimeout(() => setJustRefreshed(false), 3000);
+    }
     try {
       setLoading(true);
       const res = await getCreditLedgers();
@@ -573,12 +578,29 @@ export default function CustomerCreditLedgerManager() {
 
           <button
             type="button"
-            onClick={loadData}
+            onClick={() => loadData(true)}
             disabled={loading}
             className="ccl-btn-secondary"
+            style={{
+              borderColor: justRefreshed ? '#10b981' : undefined,
+              color: justRefreshed ? '#10b981' : undefined,
+              background: justRefreshed ? 'rgba(16, 185, 129, 0.15)' : undefined,
+              boxShadow: justRefreshed ? '0 0 12px rgba(16, 185, 129, 0.25)' : undefined,
+              transition: 'all 0.25s ease'
+            }}
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span>{loading ? 'Syncing...' : 'Refresh Ledgers'}</span>
+            {justRefreshed ? (
+              <CheckCircle2 size={14} style={{ color: '#10b981' }} />
+            ) : (
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            )}
+            <span>
+              {loading 
+                ? 'Syncing...' 
+                : justRefreshed 
+                ? 'Refreshed! ✓' 
+                : 'Refresh Ledgers'}
+            </span>
           </button>
         </div>
       </div>

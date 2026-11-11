@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Truck, 
-  Smartphone, 
   Shield, 
   User, 
   UserPlus, 
@@ -12,18 +11,17 @@ import {
   LogOut, 
   Menu, 
   X,
-  ExternalLink
+  Layers,
+  Globe,
+  Search,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 
-interface PublicNavbarProps {
-  onSwitchHeroTab?: (tab: 'track' | 'quote') => void;
-}
-
-export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
+export default function PublicNavbar() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -49,23 +47,14 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
     setShowPortalMenu(false);
   }, [location.pathname]);
 
-  function handleRateCalcClick() {
-    setMobileMenuOpen(false);
-    if (location.pathname === '/' || location.pathname === '/landing') {
-      if (onSwitchHeroTab) onSwitchHeroTab('quote');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate('/?tab=quote');
-    }
-  }
-
   function handleTrackClick() {
     setMobileMenuOpen(false);
     if (location.pathname === '/' || location.pathname === '/landing') {
-      if (onSwitchHeroTab) onSwitchHeroTab('track');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const el = document.getElementById('tracking');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate('/?tab=track');
+      navigate('/#tracking');
     }
   }
 
@@ -107,19 +96,9 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
             to="/services"
             className={`landing-nav-link ${location.pathname === '/services' ? 'active' : ''}`}
           >
-            {t('Services', 'सेवाएं')}
+            <Layers size={16} className="landing-nav-icon" />
+            <span>{t('Services', 'सेवाएं')}</span>
           </Link>
-
-          <a
-            href="#calculator"
-            className="landing-nav-link"
-            onClick={(e) => {
-              e.preventDefault();
-              handleRateCalcClick();
-            }}
-          >
-            {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
-          </a>
 
           <a
             href="#network"
@@ -129,7 +108,8 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               handleNetworkClick();
             }}
           >
-            {t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}
+            <Globe size={16} className="landing-nav-icon" />
+            <span>{t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}</span>
           </a>
 
           <a
@@ -140,24 +120,16 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               handleTrackClick();
             }}
           >
-            {t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}
+            <Search size={16} className="landing-nav-icon" />
+            <span>{t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}</span>
           </a>
 
           <Link
             to="/about"
             className={`landing-nav-link ${location.pathname === '/about' ? 'active' : ''}`}
           >
-            {t('About Us', 'हमारे बारे में')}
-          </Link>
-
-          <Link
-            to="/driver"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="landing-nav-driver-pill"
-          >
-            <Smartphone size={13} />
-            <span>{t('Driver App', 'ड्राइवर ऐप')}</span>
+            <Building2 size={16} className="landing-nav-icon" />
+            <span>{t('About Us', 'हमारे बारे में')}</span>
           </Link>
         </nav>
 
@@ -235,26 +207,6 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                         </div>
                       </Link>
 
-                      {/* Driver Console */}
-                      <Link
-                        to="/driver"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setShowPortalMenu(false)}
-                        className="portal-dropdown-card"
-                      >
-                        <div className="portal-card-icon emerald">
-                          <Smartphone size={18} />
-                        </div>
-                        <div className="portal-card-body">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <strong>{t('Mobile Driver Console', 'मोबाइल ड्राइवर कंसोल')}</strong>
-                            <ExternalLink size={12} style={{ opacity: 0.6 }} />
-                          </div>
-                          <small>{t('Digital trip sheet, diesel advance & live e-POD', 'डिजिटल ट्रिप शीट, डीज़ल एडवांस और e-POD')}</small>
-                        </div>
-                      </Link>
-
                       {/* Admin Portal */}
                       <Link
                         to="/login?portal=admin"
@@ -308,19 +260,9 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
               to="/services"
               className={`mobile-drawer-link ${location.pathname === '/services' ? 'active' : ''}`}
             >
-              {t('Services', 'सेवाएं')}
+              <Layers size={18} />
+              <span>{t('Services', 'सेवाएं')}</span>
             </Link>
-
-            <a
-              href="#calculator"
-              className="mobile-drawer-link"
-              onClick={(e) => {
-                e.preventDefault();
-                handleRateCalcClick();
-              }}
-            >
-              {t('Rate Calculator', 'भाड़ा कैलकुलेटर')}
-            </a>
 
             <a
               href="#network"
@@ -330,7 +272,8 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 handleNetworkClick();
               }}
             >
-              {t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}
+              <Globe size={18} />
+              <span>{t('Pan-India Network', 'अखिल भारतीय नेटवर्क')}</span>
             </a>
 
             <a
@@ -341,24 +284,16 @@ export default function PublicNavbar({ onSwitchHeroTab }: PublicNavbarProps) {
                 handleTrackClick();
               }}
             >
-              {t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}
+              <Search size={18} />
+              <span>{t('Track Consignment', 'कंसाइनमेंट ट्रैक करें')}</span>
             </a>
 
             <Link
               to="/about"
               className={`mobile-drawer-link ${location.pathname === '/about' ? 'active' : ''}`}
             >
-              {t('About Us', 'हमारे बारे में')}
-            </Link>
-
-            <Link
-              to="/driver"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mobile-drawer-link driver-highlight"
-            >
-              <Smartphone size={15} />
-              <span>{t('Driver App', 'ड्राइवर ऐप')}</span>
+              <Building2 size={18} />
+              <span>{t('About Us', 'हमारे बारे में')}</span>
             </Link>
           </div>
 

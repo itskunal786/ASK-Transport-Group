@@ -1348,3 +1348,310 @@ body.dark .ewb-modal-footer {
     font-size: 16px !important;
   }
 }
+
+
+/* ============================================================================
+   NIC E-WAY BILL GENERATION MODAL THEME OVERHAUL (LIGHT & DARK MODE)
+   ============================================================================ */
+
+.ewb-templates-bar-title {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #475569 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+}
+
+[data-theme='dark'] .ewb-templates-bar-title,
+body.dark .ewb-templates-bar-title,
+.dark .ewb-templates-bar-title {
+  color: #94a3b8 !important;
+}
+
+[data-theme='dark'] .ewb-template-btn,
+body.dark .ewb-template-btn,
+.dark .ewb-template-btn {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme='dark'] .ewb-template-btn:hover,
+body.dark .ewb-template-btn:hover,
+.dark .ewb-template-btn:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
+}
+
+.ewb-section-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin-bottom: 12px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+[data-theme='dark'] .ewb-section-title,
+body.dark .ewb-section-title,
+.dark .ewb-section-title {
+  color: #f8fafc !important;
+}
+
+.ewb-field-label {
+  display: block !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  margin-bottom: 5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
+}
+
+[data-theme='dark'] .ewb-field-label,
+body.dark .ewb-field-label,
+.dark .ewb-field-label {
+  color: #94a3b8 !important;
+}
+
+.ewb-form-input,
+.ewb-form-select {
+  width: 100% !important;
+  padding: 9px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme='dark'] .ewb-form-input,
+[data-theme='dark'] .ewb-form-select,
+body.dark .ewb-form-input,
+body.dark .ewb-form-select,
+.dark .ewb-form-input,
+.dark .ewb-form-select {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+.ewb-form-input:focus,
+.ewb-form-select:focus,
+[data-theme='dark'] .ewb-form-input:focus,
+[data-theme='dark'] .ewb-form-select:focus,
+body.dark .ewb-form-input:focus,
+body.dark .ewb-form-select:focus,
+.dark .ewb-form-input:focus,
+.dark .ewb-form-select:focus {
+  outline: none !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+}
+
+.ewb-autogen-btn {
+  background: #e0f2fe !important;
+  border: 1px solid #bae6fd !important;
+  color: #0284c7 !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme='dark'] .ewb-autogen-btn,
+body.dark .ewb-autogen-btn,
+.dark .ewb-autogen-btn {
+  background: rgba(2, 132, 199, 0.2) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #38bdf8 !important;
+}
+
+.ewb-autogen-btn:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.ewb-part-b-section {
+  background: #f0fdf4 !important;
+  padding: 16px !important;
+  border-radius: 10px !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+[data-theme='dark'] .ewb-part-b-section,
+body.dark .ewb-part-b-section,
+.dark .ewb-part-b-section {
+  background: rgba(6, 78, 59, 0.25) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+[data-theme='dark'] .ewb-part-b-section .ewb-section-title,
+body.dark .ewb-part-b-section .ewb-section-title,
+.dark .ewb-part-b-section .ewb-section-title {
+  color: #6ee7b7 !important;
+}
+
+[data-theme='dark'] .ewb-part-b-section .ewb-field-label,
+body.dark .ewb-part-b-section .ewb-field-label,
+.dark .ewb-part-b-section .ewb-field-label {
+  color: #a7f3d0 !important;
+}
+
+.ewb-tax-computed {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+[data-theme='dark'] .ewb-tax-computed,
+body.dark .ewb-tax-computed,
+.dark .ewb-tax-computed {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #10b981 !important;
+}
+
+.ewb-validity-notice {
+  margin-top: 12px !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px dashed #86efac !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  color: #166534 !important;
+}
+
+[data-theme='dark'] .ewb-validity-notice,
+body.dark .ewb-validity-notice,
+.dark .ewb-validity-notice {
+  background: rgba(6, 78, 59, 0.3) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #a7f3d0 !important;
+}
+
+.ewb-btn-cancel {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 10px 20px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.ewb-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme='dark'] .ewb-btn-cancel,
+body.dark .ewb-btn-cancel,
+.dark .ewb-btn-cancel {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme='dark'] .ewb-btn-cancel:hover,
+body.dark .ewb-btn-cancel:hover,
+.dark .ewb-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.ewb-btn-submit {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.15s ease !important;
+}
+
+.ewb-btn-submit:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5) !important;
+}
+
+.ewb-modal-body {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent !important;
+}
+
+.ewb-modal-body::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.ewb-modal-body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.ewb-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3) !important;
+  border-radius: 999px !important;
+}
+
+.ewb-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6) !important;
+}
+
+/* ============================================================================
+   @MEDIA PRINT RULES FOR GOVT E-WAY BILL FORM GST EWB-01
+   ============================================================================ */
+
+@media print {
+  body:has(.ewb-print-modal-overlay) #root {
+    display: none !important;
+  }
+  
+  body:has(.ewb-print-modal-overlay) {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ewb-print-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .ewb-print-modal-overlay > div {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+  }
+
+  .ewb-print-modal-overlay div[style*="background: rgb(15, 23, 42)"],
+  .ewb-print-modal-overlay div[style*="background: #0f172a"] {
+    display: none !important;
+  }
+}

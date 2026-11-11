@@ -41,7 +41,11 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
     try {
       setLoading(true);
       const res = await optimize3dLoad({ truckType: tType, boxes: bList });
-      setData(res);
+      if (res && res.truckSpecs && Array.isArray(res.packedBoxes)) {
+        setData(res);
+      } else {
+        setData(generateFallbackOptimization(tType, bList));
+      }
       if (onSelectTruck) onSelectTruck(tType);
     } catch (err) {
       console.warn('3D Load API unreachable, using client-side 3D simulation:', err);
@@ -82,7 +86,7 @@ export default function AiTruckLoadVisualizer({ onSelectTruck }: { onSelectTruck
   // Draw 3D Scene onto Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !data) return;
+    if (!canvas || !data || !data.truckSpecs) return;
     const context = canvas.getContext('2d');
     if (!context) return;
     const ctx = context;
