@@ -756,7 +756,7 @@ export default function WhatsAppAiLogisticsBot() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* VALUE PROPOSITION CARD */}
             <div className="bot-card">
-              <h3 className="bot-card-title">
+              <h3 className="bot-card-title" style={{ color: "var(--text-primary, #0f172a)" }}>
                 <span>🚀</span> Why Shippers &amp; Consignees Love This AI Bot
               </h3>
 
@@ -900,7 +900,7 @@ export default function WhatsAppAiLogisticsBot() {
         <div className="bot-rules-grid">
           {/* LEFT: NLP INTENT MATCHERS */}
           <div className="bot-card">
-            <h3 className="bot-card-title">
+            <h3 className="bot-card-title" style={{ color: "var(--text-primary, #0f172a)" }}>
               <span>🤖</span> NLP Intent Matchers &amp; Keywords
             </h3>
             <div className="bot-rules-list">
@@ -938,7 +938,7 @@ export default function WhatsAppAiLogisticsBot() {
 
           {/* RIGHT: AUTOMATED BROADCAST TRIGGERS */}
           <div className="bot-card">
-            <h3 className="bot-card-title">
+            <h3 className="bot-card-title" style={{ color: "var(--text-primary, #0f172a)" }}>
               <span>⚡</span> Automated Broadcast Triggers
             </h3>
             <div className="bot-triggers-list">
@@ -997,7 +997,7 @@ export default function WhatsAppAiLogisticsBot() {
       {/* TAB 4: API TELEMETRY */}
       {activeTab === 'api_telemetry' && (
         <div className="bot-card">
-          <h3 className="bot-card-title">
+          <h3 className="bot-card-title" style={{ color: "var(--text-primary, #0f172a)" }}>
             <span>⚡</span> Meta Cloud WhatsApp API Gateway Configuration
           </h3>
           <div className="bot-telemetry-grid">
