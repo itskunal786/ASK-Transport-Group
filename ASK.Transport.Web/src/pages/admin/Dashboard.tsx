@@ -35,6 +35,7 @@ import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
 import type { Shipment } from '../../api/trackingApi';
 import { isUserApproved, setUserApproved, getApprovalRequests, approveUserRequest, rejectUserRequest, isApprovalPending, type ApprovalRequest } from '../../utils/accessControl';
 import './AdminDashboard.css';
+import '../../components/UserDirectoryManagement.css';
 import AiOperationsDeck from '../../components/AiOperationsDeck';
 import AiOcrScannerModal from '../../components/AiOcrScannerModal';
 import FleetOperationsDeck from '../../components/FleetOperationsDeck';
@@ -640,6 +641,25 @@ export default function Dashboard() {
   const [adminUsers, setAdminUsers] = useState<AdminUserData[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'SuperAdmin' | 'Admin' | 'User' | 'Active' | 'Pending'>('All');
+
+  function getUserAvatar(name: string, role: string) {
+    const initials = name
+      .trim()
+      .split(/\s+/)
+      .map(n => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'U';
+
+    if (role === 'SuperAdmin') {
+      return { initials, bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' };
+    }
+    if (role === 'Admin') {
+      return { initials, bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' };
+    }
+    return { initials, bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' };
+  }
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [newCustName, setNewCustName] = useState('');
   const [newCustEmail, setNewCustEmail] = useState('');
@@ -3699,278 +3719,421 @@ export default function Dashboard() {
         {/* ============================================================== */}
         {/* VIEW 3: USER MANAGEMENT & UPDATION TAB */}
         {/* ============================================================== */}
-        {activeTab === 'customers' && (
-          <div className="admin-content-pad">
-            <div className="admin-page-title-row">
-              <div>
-                <h1>User Directory &amp; Data Management</h1>
-                <p>Manage user profiles, edit contact information, toggle account status, and delegate administrative roles</p>
+        {activeTab === 'customers' && (() => {
+          // Calculations for KPIs
+          const totalUsersCount = adminUsers.length;
+          const superAdminsCount = adminUsers.filter(u => u.role === 'SuperAdmin').length;
+          const adminsCount = adminUsers.filter(u => u.role === 'Admin').length;
+          const usersCount = adminUsers.filter(u => u.role === 'User').length;
+          const activeUsersCount = adminUsers.filter(u => u.isActive).length;
+          const pendingApprovalCount = adminUsers.filter(u => isApprovalPending(u.id, u.email)).length;
+
+          // Filtered list
+          const filteredUsers = adminUsers.filter(u => {
+            if (customerSearch.trim()) {
+              const q = customerSearch.toLowerCase();
+              const matches =
+                u.name.toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q) ||
+                (u.phone && u.phone.includes(q)) ||
+                u.role.toLowerCase().includes(q) ||
+                String(u.id).includes(q);
+              if (!matches) return false;
+            }
+            if (userRoleFilter === 'SuperAdmin') return u.role === 'SuperAdmin';
+            if (userRoleFilter === 'Admin') return u.role === 'Admin';
+            if (userRoleFilter === 'User') return u.role === 'User';
+            if (userRoleFilter === 'Active') return u.isActive;
+            if (userRoleFilter === 'Pending') return isApprovalPending(u.id, u.email);
+            return true;
+          });
+
+          return (
+            <div className="admin-content-pad user-dir-container">
+              {/* 1. TOP HEADER & TITLE ROW */}
+              <div className="admin-page-title-row" style={{ marginBottom: 0 }}>
+                <div>
+                  <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span>👥</span>
+                    <span>{t('User Directory & Access Management', 'उपयोगकर्ता निर्देशिका एवं अधिकार प्रबंधन')}</span>
+                  </h1>
+                  <p>
+                    {t(
+                      'Manage enterprise identities, delegate roles, approve portal clearances, and audit administrative permissions.',
+                      'एंटरप्राइज प्रोफाइल प्रबंधित करें, भूमिकाएं सौंपें, पोर्टल एक्सेस स्वीकृत करें और अधिकारों का ऑडिट करें।'
+                    )}
+                  </p>
+                </div>
+
+                <div className="admin-title-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-export"
+                    onClick={loadUsers}
+                    disabled={usersLoading}
+                    title="Reload users from database"
+                  >
+                    {usersLoading ? 'Refreshing...' : '🔄 ' + t('Refresh', 'रीफ्रेश')}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-btn-export"
+                    onClick={() => {
+                      const headers = 'ID,Name,Email,Phone,Role,Status,Clearance\n';
+                      const rows = adminUsers.map(u => 
+                        `"${u.id}","${u.name}","${u.email}","${u.phone || ''}","${u.role}","${u.isActive ? 'Active' : 'Suspended'}","${isUserApproved(u) ? 'Approved' : 'Restricted'}"`
+                      ).join('\n');
+                      const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `ask_users_directory_${new Date().toISOString().slice(0, 10)}.csv`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      showToast('✓ User directory exported to CSV successfully!');
+                    }}
+                    title="Download directory as CSV"
+                  >
+                    📥 {t('Export CSV', 'सीएसवी निर्यात')}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    onClick={() => setShowAddCustomerModal(true)}
+                  >
+                    + {t('Add New User', 'नया उपयोगकर्ता जोड़ें')}
+                  </button>
+                </div>
               </div>
 
-              <div className="admin-title-actions">
-                <button
-                  type="button"
-                  className="admin-btn-export"
-                  onClick={loadUsers}
-                  disabled={usersLoading}
-                >
-                  {usersLoading ? 'Refreshing...' : '🔄 Refresh Users'}
-                </button>
-                <button
-                  type="button"
-                  className="admin-btn-primary"
-                  onClick={() => setShowAddCustomerModal(true)}
-                >
-                  + Add User
-                </button>
+              {/* 2. STATS KPI STRIP */}
+              <div className="user-dir-kpis">
+                <div className="user-dir-kpi-card">
+                  <div className="user-dir-kpi-icon" style={{ background: 'rgba(2, 132, 199, 0.12)', color: '#0284c7' }}>
+                    👥
+                  </div>
+                  <div className="user-dir-kpi-info">
+                    <div className="user-dir-kpi-val">{totalUsersCount}</div>
+                    <div className="user-dir-kpi-label">{t('Total Directory Users', 'कुल पंजीकृत उपयोगकर्ता')}</div>
+                  </div>
+                </div>
+
+                <div className="user-dir-kpi-card">
+                  <div className="user-dir-kpi-icon" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#d97706' }}>
+                    👑
+                  </div>
+                  <div className="user-dir-kpi-info">
+                    <div className="user-dir-kpi-val">{superAdminsCount + adminsCount}</div>
+                    <div className="user-dir-kpi-label">{t('Privileged Staff (Admins)', 'प्रशासक एवं स्टाफ')}</div>
+                  </div>
+                </div>
+
+                <div className="user-dir-kpi-card">
+                  <div className="user-dir-kpi-icon" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#059669' }}>
+                    🟢
+                  </div>
+                  <div className="user-dir-kpi-info">
+                    <div className="user-dir-kpi-val">{activeUsersCount}</div>
+                    <div className="user-dir-kpi-label">{t('Active Accounts (Cleared)', 'सक्रिय खाते')}</div>
+                  </div>
+                </div>
+
+                <div className="user-dir-kpi-card">
+                  <div className="user-dir-kpi-icon" style={{ background: pendingApprovalCount > 0 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(100, 116, 139, 0.12)', color: pendingApprovalCount > 0 ? '#dc2626' : '#64748b' }}>
+                    🔔
+                  </div>
+                  <div className="user-dir-kpi-info">
+                    <div className="user-dir-kpi-val" style={{ color: pendingApprovalCount > 0 ? '#dc2626' : undefined }}>
+                      {pendingApprovalCount}
+                    </div>
+                    <div className="user-dir-kpi-label">{t('Pending Clearances', 'लंबित स्वीकृति अनुरोध')}</div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="admin-table-card">
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '15%', minWidth: '110px' }}>{t('User & ID', 'उपयोगकर्ता व आईडी')}</th>
-                    <th style={{ width: '18%', minWidth: '140px' }}>{t('Email Address', 'ईमेल पता')}</th>
-                    <th style={{ width: '11%', minWidth: '95px' }}>{t('Mobile Phone', 'मोबाइल नंबर')}</th>
-                    <th style={{ width: '12%', minWidth: '100px' }}>{t('Assigned Role', 'सौंपी गई भूमिका')}</th>
-                    <th style={{ width: '14%', minWidth: '115px' }}>{t('Access Clearance', 'एक्सेस क्लीयरेंस')}</th>
-                    <th style={{ width: '8%', minWidth: '70px', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
-                    <th style={{ width: '22%', minWidth: '150px', textAlign: 'right' }}>{t('Actions & Delegation', 'क्रियाएं व अधिकार')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminUsers.length > 0 ? (
-                    adminUsers.map(u => {
-                      const userApproved = isUserApproved(u);
-                      return (
-                        <tr key={u.id}>
-                          <td style={{ verticalAlign: 'middle' }}>
-                            <div style={{ fontWeight: 700, fontSize: '13px' }}>{u.name}</div>
-                            <small style={{ color: '#94a3b8', fontSize: '11px' }}>ID: #{u.id}</small>
-                          </td>
-                          <td style={{ verticalAlign: 'middle', color: '#0b72e7', fontWeight: 500 }}>{u.email}</td>
-                          <td style={{ verticalAlign: 'middle', color: 'var(--text-secondary, #94a3b8)' }}>{u.phone || '—'}</td>
-                          <td style={{ verticalAlign: 'middle' }}>
-                            <span
-                              className={`admin-badge-status ${
-                                u.role === 'SuperAdmin'
-                                  ? 'admin-role-superadmin'
-                                  : u.role === 'Admin'
-                                  ? 'admin-role-admin'
-                                  : 'admin-role-user'
-                              }`}
-                              data-role={u.role}
-                              style={{
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '11.5px',
-                                fontWeight: 700,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Admin' : '👤 User'}
-                            </span>
-                          </td>
-                          <td style={{ verticalAlign: 'middle' }}>
-                            {u.role === 'SuperAdmin' ? (
-                              <span
-                                className="admin-badge-status admin-clearance-master"
-                                data-clearance="master"
-                                style={{
-                                  padding: '4px 12px',
-                                  borderRadius: '12px',
-                                  fontSize: '11.5px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                              >
-                                👑 Full Master
-                              </span>
-                            ) : u.role === 'Admin' ? (
-                              <span
-                                className="admin-badge-status admin-clearance-admin"
-                                data-clearance="admin"
-                                style={{
-                                  padding: '4px 12px',
-                                  borderRadius: '12px',
-                                  fontSize: '11.5px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                              >
-                                ⚡ Admin Cleared
-                              </span>
-                            ) : userApproved ? (
-                              <span
-                                className="admin-badge-status admin-clearance-approved"
-                                data-clearance="approved"
-                                style={{
-                                  padding: '4px 12px',
-                                  borderRadius: '12px',
-                                  fontSize: '11.5px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                                title="Payments, Invoices & Documents Unlocked"
-                              >
-                                🟢 Full Access (Approved)
-                              </span>
-                            ) : isApprovalPending(u.id, u.email) ? (
-                              <span
-                                className="admin-badge-status admin-clearance-pending"
-                                data-clearance="pending"
-                                style={{
-                                  padding: '4px 12px',
-                                  borderRadius: '12px',
-                                  fontSize: '11.5px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  animation: 'notifPulse 2s infinite ease-in-out'
-                                }}
-                                title="User requested account clearance"
-                              >
-                                🔔 Approval Requested
-                              </span>
-                            ) : (
-                              <span
-                                className="admin-badge-status admin-clearance-restricted"
-                                data-clearance="restricted"
-                                style={{
-                                  padding: '4px 12px',
-                                  borderRadius: '12px',
-                                  fontSize: '11.5px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                                title="New User Restricted to Book & Track only"
-                              >
-                                🟡 Book & Track Only
-                              </span>
-                            )}
-                          </td>
-                          <td style={{ verticalAlign: 'middle' }}>
-                            <span
-                              className={`admin-badge-status ${u.isActive ? 'admin-badge-available' : 'admin-badge-maintenance'}`}
-                              data-status={u.isActive ? 'Active' : 'Suspended'}
-                              style={{
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '11.5px',
-                                fontWeight: 700,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                background: u.isActive ? '#edfdf4' : '#fee2e2',
-                                color: u.isActive ? '#10b981' : '#dc2626'
-                              }}
-                            >
-                              {u.isActive ? 'Active' : 'Suspended'}
-                            </span>
-                          </td>
-                          <td style={{ verticalAlign: 'middle', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <div className="admin-table-action-row" style={{ justifyContent: 'flex-end' }}>
-                              {/* Quick Approval / Restriction Action for Regular Users */}
-                              {u.role === 'User' && (
-                                !userApproved ? (
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-approve"
-                                    onClick={() => handleToggleUserApproval(u, true)}
-                                    title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
-                                    style={isApprovalPending(u.id, u.email) ? {
-                                      background: '#10b981',
-                                      color: '#ffffff',
-                                      borderColor: '#059669',
-                                      boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)',
-                                      fontWeight: 800
-                                    } : {}}
-                                  >
-                                    {isApprovalPending(u.id, u.email) ? '✓ ' + t('Approve Request', 'स्वीकृति दें') : '🔓 ' + t('Grant Access', 'एक्सेस दें')}
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-restrict"
-                                    onClick={() => handleToggleUserApproval(u, false)}
-                                    title="Restrict user back to Book &amp; Track only"
-                                  >
-                                    🔒 {t('Restrict', 'सीमित करें')}
-                                  </button>
-                                )
-                              )}
-
-                              <button
-                                type="button"
-                                className="admin-btn-action-edit"
-                                onClick={() => handleOpenEditUser(u)}
-                                title="Edit user details"
-                              >
-                                ✏️ Edit
-                              </button>
-
-                              <button
-                                type="button"
-                                className={`admin-btn-action-status ${u.isActive ? 'suspend' : 'activate'}`}
-                                onClick={() => handleToggleUserStatus(u)}
-                                title={u.isActive ? 'Suspend User' : 'Activate User'}
-                              >
-                                {u.isActive ? 'Suspend' : 'Activate'}
-                              </button>
-
-                              {user?.role === 'SuperAdmin' && (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-role"
-                                    onClick={() => handleOpenRoleModal(u)}
-                                    title="Change User Role (SuperAdmin Only)"
-                                  >
-                                    👑 Role
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-rights"
-                                    onClick={() => handleOpenRightsModal(u)}
-                                    title="Delegate or Revoke Specific Rights (SuperAdmin Only)"
-                                  >
-                                    🛡️ Rights
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
-                        {usersLoading ? 'Loading users...' : 'No users found matching your query.'}
-                      </td>
-                    </tr>
+              {/* 3. SEARCH & ROLE FILTER TOOLBAR */}
+              <div className="user-dir-toolbar">
+                <div className="user-dir-search-wrap">
+                  <span className="user-dir-search-icon">🔍</span>
+                  <input
+                    type="text"
+                    value={customerSearch}
+                    onChange={e => setCustomerSearch(e.target.value)}
+                    placeholder={t('Search users by name, email, phone, role or ID...', 'नाम, ईमेल, फोन या भूमिका से खोजें...')}
+                    className="user-dir-search-input"
+                  />
+                  {customerSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomerSearch('')}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      ✕
+                    </button>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                </div>
 
-        {/* ============================================================== */}
+                <div className="user-dir-filter-chips">
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('All')}
+                    className={`user-dir-chip ${userRoleFilter === 'All' ? 'active' : ''}`}
+                  >
+                    {t('All', 'सभी')} ({totalUsersCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('SuperAdmin')}
+                    className={`user-dir-chip ${userRoleFilter === 'SuperAdmin' ? 'active' : ''}`}
+                  >
+                    👑 Super Admins ({superAdminsCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('Admin')}
+                    className={`user-dir-chip ${userRoleFilter === 'Admin' ? 'active' : ''}`}
+                  >
+                    ⚡ Admins ({adminsCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('User')}
+                    className={`user-dir-chip ${userRoleFilter === 'User' ? 'active' : ''}`}
+                  >
+                    👤 Users / Shippers ({usersCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('Active')}
+                    className={`user-dir-chip ${userRoleFilter === 'Active' ? 'active' : ''}`}
+                  >
+                    🟢 Active ({activeUsersCount})
+                  </button>
+
+                  {pendingApprovalCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setUserRoleFilter('Pending')}
+                      className={`user-dir-chip ${userRoleFilter === 'Pending' ? 'active' : ''}`}
+                      style={{ color: '#d97706', borderColor: '#f59e0b' }}
+                    >
+                      🔔 Needs Action ({pendingApprovalCount})
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* 4. HIGH-DENSITY USER DIRECTORY TABLE (NEVER CLIPPED) */}
+              <div className="user-dir-table-wrapper">
+                <table className="user-dir-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '38%' }}>{t('User Profile & Contact', 'उपयोगकर्ता विवरण व संपर्क')}</th>
+                      <th style={{ width: '16%' }}>{t('Assigned Role', 'सौंपी गई भूमिका')}</th>
+                      <th style={{ width: '18%' }}>{t('Access Clearance', 'एक्सेस क्लीयरेंस')}</th>
+                      <th style={{ width: '10%', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
+                      <th className="user-dir-th-actions" style={{ width: '18%' }}>
+                        {t('Actions & Delegation', 'क्रियाएं व अधिकार')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map(u => {
+                        const userApproved = isUserApproved(u);
+                        const isPending = isApprovalPending(u.id, u.email);
+                        const avatar = getUserAvatar(u.name, u.role);
+
+                        return (
+                          <tr key={u.id}>
+                            {/* 1. USER PROFILE & CONTACT (COMBINED, PREVENTS OVERFLOW) */}
+                            <td>
+                              <div className="user-dir-profile-cell">
+                                <div className="user-dir-avatar" style={{ background: avatar.bg }}>
+                                  {avatar.initials}
+                                </div>
+                                <div className="user-dir-name-col">
+                                  <div className="user-dir-name-row">
+                                    <span className="user-dir-name">{u.name}</span>
+                                    <span className="user-dir-id-badge">#{u.id}</span>
+                                  </div>
+                                  <div className="user-dir-contact-sub">
+                                    <a
+                                      href={`mailto:${u.email}`}
+                                      className="user-dir-email-link"
+                                      title={t('Send Email', 'ईमेल भेजें')}
+                                    >
+                                      📧 {u.email}
+                                    </a>
+                                    {u.phone && (
+                                      <span>
+                                        • 📞 {u.phone}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* 2. ASSIGNED ROLE */}
+                            <td>
+                              <span
+                                className={`user-dir-role-pill ${
+                                  u.role === 'SuperAdmin'
+                                    ? 'superadmin'
+                                    : u.role === 'Admin'
+                                    ? 'admin'
+                                    : 'user'
+                                }`}
+                              >
+                                {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Operations Admin' : '👤 Portal User'}
+                              </span>
+                            </td>
+
+                            {/* 3. ACCESS CLEARANCE */}
+                            <td>
+                              {u.role === 'SuperAdmin' ? (
+                                <span className="user-dir-clearance-pill master">
+                                  👑 Full Master
+                                </span>
+                              ) : u.role === 'Admin' ? (
+                                <span className="user-dir-clearance-pill cleared">
+                                  ⚡ Admin Cleared
+                                </span>
+                              ) : userApproved ? (
+                                <span className="user-dir-clearance-pill approved" title="Payments, Invoices & Documents Unlocked">
+                                  🟢 Full Access (Approved)
+                                </span>
+                              ) : isPending ? (
+                                <span className="user-dir-clearance-pill pending" title="User requested account clearance">
+                                  🔔 Approval Requested
+                                </span>
+                              ) : (
+                                <span className="user-dir-clearance-pill restricted" title="New User Restricted to Book & Track only">
+                                  🟡 Book &amp; Track Only
+                                </span>
+                              )}
+                            </td>
+
+                            {/* 4. ACCOUNT STATUS */}
+                            <td style={{ textAlign: 'center' }}>
+                              <span className={`user-dir-status-pill ${u.isActive ? 'active' : 'suspended'}`}>
+                                <span className={`user-dir-status-dot ${u.isActive ? 'active' : 'suspended'}`} />
+                                {u.isActive ? t('Active', 'सक्रिय') : t('Suspended', 'निलंबित')}
+                              </span>
+                            </td>
+
+                            {/* 5. STICKY ACTIONS COLUMN (PREVENTS SCROLL CUTOFF) */}
+                            <td className="user-dir-td-actions">
+                              <div className="user-dir-actions-group">
+                                {/* Quick Approval / Restriction Action for Regular Users */}
+                                {u.role === 'User' && (
+                                  !userApproved ? (
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action approve"
+                                      onClick={() => handleToggleUserApproval(u, true)}
+                                      title={t('Grant Full Role Access', 'पूर्ण एक्सेस दें')}
+                                    >
+                                      {isPending ? '✓ ' + t('Approve', 'स्वीकारें') : '🔓 ' + t('Grant', 'अनुमति दें')}
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action restrict"
+                                      onClick={() => handleToggleUserApproval(u, false)}
+                                      title={t('Restrict user back to Book & Track only', 'सीमित करें')}
+                                    >
+                                      🔒 {t('Restrict', 'सीमित')}
+                                    </button>
+                                  )
+                                )}
+
+                                <button
+                                  type="button"
+                                  className="user-dir-btn-action edit"
+                                  onClick={() => handleOpenEditUser(u)}
+                                  title={t('Edit user details', 'विवरण संपादित करें')}
+                                >
+                                  ✏️ {t('Edit', 'बदलें')}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className={`user-dir-btn-action ${u.isActive ? 'suspend' : 'activate'}`}
+                                  onClick={() => handleToggleUserStatus(u)}
+                                  title={u.isActive ? t('Suspend User Account', 'खाता निलंबित करें') : t('Activate User Account', 'सक्रिय करें')}
+                                >
+                                  {u.isActive ? t('Suspend', 'रोकें') : t('Activate', 'चालू करें')}
+                                </button>
+
+                                {user?.role === 'SuperAdmin' && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action role"
+                                      onClick={() => handleOpenRoleModal(u)}
+                                      title="Change User Role (SuperAdmin Only)"
+                                    >
+                                      👑 {t('Role', 'भूमिका')}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action rights"
+                                      onClick={() => handleOpenRightsModal(u)}
+                                      title="Delegate Specific Rights (SuperAdmin Only)"
+                                    >
+                                      🛡️ {t('Rights', 'अधिकार')}
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-secondary, #64748b)' }}>
+                          <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
+                          <strong style={{ fontSize: '15px' }}>{t('No users found matching your search', 'कोई उपयोगकर्ता नहीं मिला')}</strong>
+                          <p style={{ margin: '6px 0 14px', fontSize: '12px' }}>
+                            {t('Try adjusting your search query or switching the role filter chip.', 'खोज शब्द बदलकर या फ़िल्टर रीसेट करके पुनः प्रयास करें।')}
+                          </p>
+                          <button
+                            type="button"
+                            className="admin-btn-export"
+                            onClick={() => { setCustomerSearch(''); setUserRoleFilter('All'); }}
+                          >
+                            🔄 {t('Reset Search & Filters', 'फ़िल्टर रीसेट करें')}
+                          </button>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* VIEW 4: SHIPMENTS & DISPATCH (EXECUTIVE RADAR CONSOLE) */}
         {/* ============================================================== */}
         {activeTab === 'shipments' && (
