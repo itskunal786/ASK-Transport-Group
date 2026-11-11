@@ -4,14 +4,15 @@ import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
 import FleetFuelAntiTheftRadar from './FleetFuelAntiTheftRadar';
 import ColdChainTemperatureRadar from './ColdChainTemperatureRadar';
 import TyreLifecycleTpmsRadar from './TyreLifecycleTpmsRadar';
+import FastagTollReconciliationDeck from './FastagTollReconciliationDeck';
 import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
-  initialTab?: 'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar';
+  initialTab?: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar';
 }
 
 export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOperationsDeckProps) {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>(initialTab);
 
   useEffect(() => {
     if (initialTab) {
@@ -36,26 +37,21 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
           boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.4)'
         }}
       >
-        <div style={{ maxWidth: '620px' }}>
+        <div style={{ maxWidth: '680px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '8px' }}>
             <span>🚛</span> FLEET, EXPENSE &amp; DRIVER AUTOMATION
           </div>
           <h1 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 900, letterSpacing: '-0.5px' }}>
-            Fleet Petty Cash &amp; Trip P&amp;L Operations Deck
+            Fleet Petty Cash, FASTag &amp; Dual-Control Operations Deck
           </h1>
           <p style={{ margin: 0, fontSize: '13px', color: '#a7f3d0', lineHeight: 1.5 }}>
-            Audit diesel pump receipts, Fastag tolls, driver food bhatta, and inspect real-time Trip Gross Margin vs Net Profit. Monitor fleet insurance, fitness, PUC and national permit expiration alerts.
+            Audit diesel pump receipts, Fastag tolls, driver bhatta, and execute Dual-Control SuperAdmin approvals. Monitor fleet Parivahan RC, fitness, insurance, and traffic e-challans in real-time.
           </p>
-        </div>
-
-        {/* DRIVER CONSOLE SHORTCUT */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          
         </div>
       </div>
 
       {/* SUB-TABS */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px' }}>
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px', overflowX: 'auto' }}>
         <button
           type="button"
           onClick={() => setActiveTab('expenses')}
@@ -70,10 +66,32 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
             borderBottom: activeTab === 'expenses' ? '3px solid #059669' : '3px solid transparent',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            whiteSpace: 'nowrap'
           }}
         >
-          <span>⛽</span> Trip Petty Cash, Diesel &amp; Real-time P&amp;L
+          <span>⛽</span> Trip Petty Cash &amp; Dual-Control P&amp;L
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('fastag_reconcile')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeTab === 'fastag_reconcile' ? '#38bdf8' : 'var(--text-secondary, #94a3b8)',
+            borderBottom: activeTab === 'fastag_reconcile' ? '3px solid #0284c7' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <span>🏷️</span> FASTag NETC Toll Reconciliation
         </button>
 
         <button
@@ -90,10 +108,11 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
             borderBottom: activeTab === 'fuel_theft' ? '3px solid #dc2626' : '3px solid transparent',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            whiteSpace: 'nowrap'
           }}
         >
-          <span>🚨</span> Fuel Sensor &amp; Diesel Anti-Theft Radar
+          <span>🚨</span> Fuel Sensor &amp; Diesel Anti-Theft
         </button>
 
         <button
@@ -110,10 +129,11 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
             borderBottom: activeTab === 'cold_chain' ? '3px solid #0284c7' : '3px solid transparent',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            whiteSpace: 'nowrap'
           }}
         >
-          <span>❄️</span> IoT Cold-Chain &amp; Temp Radar
+          <span>❄️</span> IoT Cold-Chain Temp Radar
         </button>
 
         <button
@@ -130,10 +150,11 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
             borderBottom: activeTab === 'maintenance' ? '3px solid #059669' : '3px solid transparent',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            whiteSpace: 'nowrap'
           }}
         >
-          <span>🛡️</span> Vehicle Fitness, Insurance &amp; Permit Renewal Radar
+          <span>🛡️</span> Parivahan RC, Fitness &amp; Challan Radar
         </button>
 
         <button
@@ -150,12 +171,12 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
             borderBottom: activeTab === 'tyre_radar' ? '3px solid #ea580c' : '3px solid transparent',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            whiteSpace: 'nowrap'
           }}
         >
           <span>🛞</span> Tyre &amp; TPMS Radar
         </button>
-
       </div>
 
       {/* VIEWPORT */}
@@ -163,6 +184,12 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
         {activeTab === 'expenses' && (
           <ErrorBoundary fallbackTitle="Driver Trip Expenses Error">
             <FleetTripExpenseManager />
+          </ErrorBoundary>
+        )}
+
+        {activeTab === 'fastag_reconcile' && (
+          <ErrorBoundary fallbackTitle="FASTag Toll Reconciliation Error">
+            <FastagTollReconciliationDeck />
           </ErrorBoundary>
         )}
 
@@ -189,8 +216,6 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
             <TyreLifecycleTpmsRadar />
           </ErrorBoundary>
         )}
-
-        
       </div>
     </div>
   );

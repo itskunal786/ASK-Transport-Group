@@ -128,7 +128,11 @@ public class FleetTripExpenseController : ControllerBase
         public string? FuelStationName { get; set; }
         public string? ReceiptPhotoUrl { get; set; }
         public int? OdometerReading { get; set; }
-        public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
+        public string Status { get; set; } = "Pending"; // Pending, PendingSuperAdmin, Approved, Rejected
+        public string? AdminPreApprovedBy { get; set; }
+        public DateTime? AdminPreApprovedAt { get; set; }
+        public string? SuperAdminVerifiedBy { get; set; }
+        public DateTime? SuperAdminVerifiedAt { get; set; }
         public string? RejectionReason { get; set; }
         public string? AdminNotes { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -153,7 +157,9 @@ public class FleetTripExpenseController : ControllerBase
 
     public class ReviewExpenseRequest
     {
-        public string Status { get; set; } = "Approved"; // "Approved" | "Rejected"
+        public string Status { get; set; } = "Approved"; // "Approved" | "PendingSuperAdmin" | "Rejected"
+        public string? AdminPreApprovedBy { get; set; }
+        public string? SuperAdminVerifiedBy { get; set; }
         public string? AdminNotes { get; set; }
         public string? RejectionReason { get; set; }
     }
@@ -233,14 +239,68 @@ public class FleetTripExpenseController : ControllerBase
             return NotFound(new { message = "Expense record not found." });
         }
 
+        if (req.Status.Equals("PendingSuperAdmin", StringComparison.OrdinalIgnoreCase))
+        {
+            record.Status = "PendingSuperAdmin";
+            record.AdminPreApprovedBy = req.AdminPreApprovedBy ?? "Operations Admin";
+            record.AdminPreApprovedAt = DateTime.UtcNow;
+            record.AdminNotes = req.AdminNotes;
+            return Ok(new { message = $"Expense #{id} pre-approved by Operations Admin and forwarded for SuperAdmin re-verification.", expense = record });
+        }
+
         var isApprove = req.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase);
         record.Status = isApprove ? "Approved" : "Rejected";
         record.AdminNotes = req.AdminNotes;
         record.RejectionReason = isApprove ? null : (req.RejectionReason ?? "Invalid or duplicate receipt");
-        record.ApprovedAt = DateTime.UtcNow;
-        record.ApprovedBy = "Admin / Fleet Manager";
+        
+        if (isApprove)
+        {
+            record.ApprovedAt = DateTime.UtcNow;
+            record.ApprovedBy = req.SuperAdminVerifiedBy ?? "Admin / Fleet Manager";
+            if (!string.IsNullOrEmpty(req.SuperAdminVerifiedBy))
+            {
+                record.SuperAdminVerifiedBy = req.SuperAdminVerifiedBy;
+                record.SuperAdminVerifiedAt = DateTime.UtcNow;
+            }
+        }
 
         return Ok(new { message = $"Expense #{id} {record.Status} successfully!", expense = record });
+    }
+
+    [HttpPost("trip-expenses/{id}/pre-approve")]
+    public IActionResult PreApproveExpense(int id, [FromBody] ReviewExpenseRequest req)
+    {
+        var record = _expenses.FirstOrDefault(x => x.Id == id);
+        if (record == null)
+        {
+            return NotFound(new { message = "Expense record not found." });
+        }
+
+        record.Status = "PendingSuperAdmin";
+        record.AdminPreApprovedBy = req.AdminPreApprovedBy ?? "Operations Admin";
+        record.AdminPreApprovedAt = DateTime.UtcNow;
+        record.AdminNotes = req.AdminNotes ?? "Pre-approved by Operations Admin (>₹15,000 policy threshold)";
+
+        return Ok(new { message = $"Expense #{id} pre-approved by Operations Admin. Awaiting SuperAdmin Re-Verification PIN pass.", expense = record });
+    }
+
+    [HttpPost("trip-expenses/{id}/reverify-pass")]
+    public IActionResult ReverifyPassExpense(int id, [FromBody] ReviewExpenseRequest req)
+    {
+        var record = _expenses.FirstOrDefault(x => x.Id == id);
+        if (record == null)
+        {
+            return NotFound(new { message = "Expense record not found." });
+        }
+
+        record.Status = "Approved";
+        record.SuperAdminVerifiedBy = req.SuperAdminVerifiedBy ?? "SuperAdmin";
+        record.SuperAdminVerifiedAt = DateTime.UtcNow;
+        record.ApprovedBy = record.SuperAdminVerifiedBy;
+        record.ApprovedAt = DateTime.UtcNow;
+        record.AdminNotes = req.AdminNotes ?? "Passed dual-control re-verification by SuperAdmin";
+
+        return Ok(new { message = $"Expense #{id} successfully re-verified and passed by SuperAdmin! Payout released.", expense = record });
     }
 
     [HttpGet("trips/{tripId}/pnl")]

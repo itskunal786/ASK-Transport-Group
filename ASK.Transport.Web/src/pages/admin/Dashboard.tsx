@@ -582,7 +582,7 @@ export default function Dashboard() {
     'tax_audit', 'pod_inward'
   ];
 
-  const validFleetSubTabs = ['expenses', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar'] as const;
+  const validFleetSubTabs = ['expenses', 'fastag_reconcile', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar'] as const;
   type FleetSubTab = typeof validFleetSubTabs[number];
 
   const validAiSubTabs = ['3d_load', 'ocr_scanner', 'route_predictor', 'spot_rate_ai', 'whatsapp_bot'] as const;

@@ -1,5 +1,6 @@
 import './FleetTripExpenseManager.css';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   getTripExpenses,
   reviewTripExpense,
@@ -60,6 +61,25 @@ const DEFAULT_EXPENSES: TripExpense[] = [
     createdAt: new Date().toISOString()
   },
   {
+    id: 105,
+    tripId: 101,
+    tripNumber: 'TRIP-2026-98102',
+    driverId: 1,
+    driverName: 'Ramesh Singh Rawat',
+    driverPhone: '+91 98230 45812',
+    vehicleNumber: 'MH-12-RN-7845',
+    expenseType: 'Diesel',
+    amount: 24500,
+    liters: 270.5,
+    fuelStationName: 'Bharat Petroleum Highway MegaHub, Jaipur NH-48',
+    receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400',
+    odometerReading: 144120,
+    status: 'PendingSuperAdmin',
+    adminPreApprovedBy: 'Kunal Kumar (Operations Admin)',
+    adminPreApprovedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString()
+  },
+  {
     id: 4,
     tripId: 102,
     tripNumber: 'TRIP-2026-98105',
@@ -112,6 +132,13 @@ const DEFAULT_PNL: TripPnLResult = {
 };
 
 export default function FleetTripExpenseManager() {
+  const { user } = useAuth();
+  const DUAL_CONTROL_LIMIT = 15000;
+
+  // PIN Re-Verification Modal state for SuperAdmin
+  const [pinModalExpense, setPinModalExpense] = useState<TripExpense | null>(null);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
   const [expenses, setExpenses] = useState<TripExpense[]>(DEFAULT_EXPENSES);
   const [metrics, setMetrics] = useState<ExpenseMetrics | null>(DEFAULT_METRICS);
   const [pnl, setPnl] = useState<TripPnLResult | null>(DEFAULT_PNL);
@@ -166,12 +193,76 @@ export default function FleetTripExpenseManager() {
     loadData();
   }, [statusFilter, typeFilter]);
 
-  async function handleApprove(id: number) {
+  async function handleAdminPreApprove(exp: TripExpense) {
     try {
-      await reviewTripExpense(id, { status: 'Approved', adminNotes: 'Verified with fuel card POS slip' });
-      loadData();
+      const adminName = user?.name || 'Operations Admin';
+      await reviewTripExpense(exp.id, {
+        status: 'PendingSuperAdmin',
+        adminNotes: 'Pre-approved by Operations Admin (>₹15K). Forwarded for SuperAdmin pass.',
+        adminPreApprovedBy: adminName
+      });
+      setExpenses(prev => prev.map(x => x.id === exp.id ? {
+        ...x,
+        status: 'PendingSuperAdmin',
+        adminPreApprovedBy: adminName,
+        adminPreApprovedAt: new Date().toISOString()
+      } : x));
+      alert(`🛡️ Pre-Approved by ${adminName}! Forwarded to SuperAdmin for dual-control Re-Verification.`);
+    } catch (err: any) {
+      alert('Failed to pre-approve: ' + err?.message);
+    }
+  }
+
+  async function handleDirectApprove(id: number) {
+    try {
+      const approverName = user?.name || 'Operations Admin';
+      await reviewTripExpense(id, {
+        status: 'Approved',
+        adminNotes: `Verified and passed by ${approverName}`
+      });
+      setExpenses(prev => prev.map(x => x.id === id ? {
+        ...x,
+        status: 'Approved',
+        approvedBy: approverName,
+        approvedAt: new Date().toISOString()
+      } : x));
     } catch (err: any) {
       alert('Failed to approve expense: ' + err?.message);
+    }
+  }
+
+  function handleOpenSuperAdminPin(exp: TripExpense) {
+    setPinModalExpense(exp);
+    setPinInput('');
+    setPinError(null);
+  }
+
+  async function handleConfirmSuperAdminPin() {
+    if (!pinModalExpense) return;
+    if (pinInput !== '0000' && pinInput.length < 4) {
+      setPinError('Invalid PIN! Enter statutory security PIN (Default: 0000)');
+      return;
+    }
+
+    try {
+      const superAdminName = user?.name || 'ASK GROUP Admin (Super Admin)';
+      await reviewTripExpense(pinModalExpense.id, {
+        status: 'Approved',
+        adminNotes: `Dual-control passed by SuperAdmin ${superAdminName}`,
+        superAdminVerifiedBy: superAdminName
+      });
+
+      setExpenses(prev => prev.map(x => x.id === pinModalExpense.id ? {
+        ...x,
+        status: 'Approved',
+        superAdminVerifiedBy: superAdminName,
+        superAdminVerifiedAt: new Date().toISOString()
+      } : x));
+
+      setPinModalExpense(null);
+      alert(`👑 Dual-Control Verified! Payout of ₹${pinModalExpense.amount.toLocaleString('en-IN')} approved by SuperAdmin.`);
+    } catch (err: any) {
+      alert('Failed to verify payout: ' + err?.message);
     }
   }
 
@@ -335,118 +426,253 @@ export default function FleetTripExpenseManager() {
         </button>
       </div>
 
-      {/* EXPENSE RECORDS TABLE */}
-      <div className="fleet-expense-table-card">
-        <div style={{ overflowX: 'auto' }}>
-          <table className="fleet-expense-table">
-            <thead>
-              <tr>
-                <th>Trip #</th>
-                <th>Driver &amp; Truck</th>
-                <th>Type</th>
-                <th>Details / Station</th>
-                <th>Amount</th>
-                <th>Slip / Receipt</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {safeExpenses.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    No trip expenses found for the selected filters.
-                  </td>
-                </tr>
-              ) : (
-                safeExpenses.map(exp => (
-                  <tr key={exp.id}>
-                    <td>
+      {/* EXPENSE RECORDS CARDS GRID (100% CARDS - ZERO TABLES!) */}
+      <div className="fleet-expense-cards-grid">
+        {safeExpenses.length === 0 ? (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 20px', background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+            <strong style={{ fontSize: '15px' }}>No trip expenses found for the selected filters.</strong>
+            <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+              Try selecting 'All Statuses' or 'All Expense Types'.
+            </p>
+          </div>
+        ) : (
+          safeExpenses.map(exp => {
+            const isHighValue = (exp.amount ?? 0) > DUAL_CONTROL_LIMIT;
+            const isAwaitingSuperAdmin = exp.status === 'PendingSuperAdmin';
+            const isApproved = exp.status === 'Approved';
+            const isPending = exp.status === 'Pending';
+
+            return (
+              <div key={exp.id} className="fleet-expense-card" style={{ borderLeft: isAwaitingSuperAdmin ? '4px solid #f59e0b' : isApproved ? '4px solid #10b981' : '4px solid #0284c7' }}>
+                {/* Top Row: Trip Number, Date, and Expense Type */}
+                <div className="fleet-exp-card-header">
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <strong className="fleet-expense-trip-no">{exp.tripNumber}</strong>
-                      <div className="fleet-expense-date">
-                        {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : '—'}
-                      </div>
-                    </td>
-                    <td>
-                      <strong className="fleet-expense-driver-name">{exp.driverName}</strong>
-                      <div className="fleet-expense-truck-no">{exp.vehicleNumber}</div>
-                    </td>
-                    <td>
-                      <span className={`fleet-expense-badge ${
-                        exp.expenseType === 'Diesel' ? 'diesel' :
-                        exp.expenseType === 'Toll' ? 'toll' :
-                        exp.expenseType === 'DriverBhatta' ? 'driver-bhatta' :
-                        exp.expenseType === 'TyrePuncture' ? 'tyre' :
-                        exp.expenseType === 'BorderEntry' ? 'border' : 'default'
-                      }`}>
-                        {exp.expenseType}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="fleet-expense-station-title">{exp.fuelStationName || 'Direct Highway Expense'}</div>
-                      <div className="fleet-expense-station-meta">
-                        {exp.liters && <span>{exp.liters} Liters</span>}
-                        {exp.odometerReading && <span>{exp.liters ? ' • ' : ''}Odo: {exp.odometerReading} km</span>}
-                      </div>
-                    </td>
-                    <td>
-                      <strong className="fleet-expense-amount">₹{(exp.amount ?? 0).toLocaleString('en-IN')}</strong>
-                    </td>
-                    <td>
-                      {exp.receiptPhotoUrl ? (
-                        <button
-                          type="button"
-                          onClick={() => setPreviewReceiptUrl(exp.receiptPhotoUrl!)}
-                          className="fleet-expense-btn-slip"
-                        >
-                          👁️ View Slip
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No Slip</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={`fleet-expense-status-badge ${
-                        exp.status === 'Approved' ? 'approved' :
-                        exp.status === 'Rejected' ? 'rejected' : 'pending'
-                      }`}>
-                        {exp.status === 'Approved' ? '✓ Approved' : exp.status === 'Rejected' ? '✕ Rejected' : '⏳ Pending'}
-                      </span>
-                      {exp.rejectionReason && (
-                        <div style={{ fontSize: '10.5px', color: '#f87171', marginTop: '3px' }}>{exp.rejectionReason}</div>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      {exp.status === 'Pending' ? (
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                      <span className="fleet-exp-id-tag">Claim #{exp.id}</span>
+                    </div>
+                    <span className="fleet-expense-date">
+                      {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : '—'}
+                    </span>
+                  </div>
+
+                  <span className={`fleet-expense-badge ${
+                    exp.expenseType === 'Diesel' ? 'diesel' :
+                    exp.expenseType === 'Toll' ? 'toll' :
+                    exp.expenseType === 'DriverBhatta' ? 'driver-bhatta' :
+                    exp.expenseType === 'TyrePuncture' ? 'tyre' :
+                    exp.expenseType === 'BorderEntry' ? 'border' : 'default'
+                  }`}>
+                    {exp.expenseType}
+                  </span>
+                </div>
+
+                {/* Amount Row with Dual-Control Flag */}
+                <div className="fleet-exp-amount-row">
+                  <div>
+                    <span className="fleet-exp-amount-label">Claimed Amount</span>
+                    <strong className="fleet-expense-amount">₹{(exp.amount ?? 0).toLocaleString('en-IN')}</strong>
+                  </div>
+
+                  {isHighValue && (
+                    <span className="fleet-exp-dual-flag" title="Claims above ₹15,000 require SuperAdmin Re-Verification">
+                      🛡️ Dual-Control (&gt;₹15K)
+                    </span>
+                  )}
+                </div>
+
+                {/* Details / Fuel Station / Odometer */}
+                <div className="fleet-exp-details-box">
+                  <div className="fleet-exp-station-name">
+                    📍 {exp.fuelStationName || 'Highway Commercial Terminal'}
+                  </div>
+                  <div className="fleet-exp-meta-row">
+                    {exp.liters && <span className="fleet-exp-chip">⛽ {exp.liters} Liters</span>}
+                    {exp.odometerReading && <span className="fleet-exp-chip">🧭 Odo: {exp.odometerReading} km</span>}
+                    {exp.receiptPhotoUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewReceiptUrl(exp.receiptPhotoUrl!)}
+                        className="fleet-expense-btn-slip"
+                      >
+                        👁️ Slip Proof
+                      </button>
+                    ) : (
+                      <span className="fleet-exp-no-slip">No Slip</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Driver & Vehicle Strip */}
+                <div className="fleet-exp-driver-strip">
+                  <div className="fleet-exp-driver-avatar">
+                    {exp.driverName ? exp.driverName.charAt(0).toUpperCase() : 'D'}
+                  </div>
+                  <div className="fleet-exp-driver-info">
+                    <strong>{exp.driverName}</strong>
+                    <small>{exp.vehicleNumber} {exp.driverPhone ? `• ${exp.driverPhone}` : ''}</small>
+                  </div>
+                </div>
+
+                {/* Dual-Control Transparency Audit Trail */}
+                {(exp.adminPreApprovedBy || exp.superAdminVerifiedBy || isAwaitingSuperAdmin) && (
+                  <div className="fleet-exp-trail-strip">
+                    <span>🛡️ Admin: <strong>{exp.adminPreApprovedBy || 'Operations Verified'}</strong></span>
+                    <span>➔</span>
+                    <span>👑 SuperAdmin: <strong style={{ color: isApproved ? '#10b981' : '#f59e0b' }}>{isApproved ? (exp.superAdminVerifiedBy || 'Super Admin Passed') : 'Pending Re-Verification'}</strong></span>
+                  </div>
+                )}
+
+                {/* Card Footer: Status & Actions */}
+                <div className="fleet-exp-footer">
+                  <div>
+                    <span className={`fleet-expense-status-badge ${
+                      isApproved ? 'approved' :
+                      exp.status === 'Rejected' ? 'rejected' :
+                      isAwaitingSuperAdmin ? 'reverify' : 'pending'
+                    }`}>
+                      {isApproved ? '✓ Cleared & Released' :
+                       exp.status === 'Rejected' ? '✕ Rejected' :
+                       isAwaitingSuperAdmin ? '👑 Needs SuperAdmin Pass' : '⏳ Pending Review'}
+                    </span>
+                    {exp.rejectionReason && (
+                      <div style={{ fontSize: '10.5px', color: '#f87171', marginTop: '3px' }}>{exp.rejectionReason}</div>
+                    )}
+                  </div>
+
+                  <div className="fleet-exp-actions-group">
+                    {isPending && (
+                      <>
+                        {isHighValue ? (
+                          user?.role === 'SuperAdmin' ? (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenSuperAdminPin(exp)}
+                              className="fleet-exp-btn-pass"
+                            >
+                              👑 Master Pass
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleAdminPreApprove(exp)}
+                              className="fleet-exp-btn-preapprove"
+                            >
+                              🛡️ Pre-Approve (&gt;15K)
+                            </button>
+                          )
+                        ) : (
                           <button
                             type="button"
-                            onClick={() => handleApprove(exp.id)}
+                            onClick={() => handleDirectApprove(exp.id)}
                             className="fleet-expense-btn-approve"
                           >
                             ✓ Approve
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setRejectId(exp.id)}
-                            className="fleet-expense-btn-reject"
-                          >
-                            ✕ Reject
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="fleet-expense-verified-tag">
-                          {exp.status === 'Approved' ? 'Verified by Admin' : 'Closed'}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setRejectId(exp.id)}
+                          className="fleet-expense-btn-reject"
+                        >
+                          ✕ Reject
+                        </button>
+                      </>
+                    )}
+
+                    {isAwaitingSuperAdmin && (
+                      <>
+                        {user?.role === 'SuperAdmin' ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenSuperAdminPin(exp)}
+                              className="fleet-exp-btn-pass"
+                            >
+                              👑 Re-Verify &amp; Release
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRejectId(exp.id)}
+                              className="fleet-expense-btn-reject"
+                            >
+                              ✕ Reject
+                            </button>
+                          </>
+                        ) : (
+                          <span className="fleet-exp-awaiting-badge">
+                            ⏳ In SuperAdmin Queue
+                          </span>
+                        )}
+                      </>
+                    )}
+
+                    {isApproved && (
+                      <span className="fleet-expense-verified-tag">
+                        ✓ Payout Released
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
+
+            {/* SUPERADMIN DUAL-CONTROL PIN VERIFICATION MODAL */}
+      {pinModalExpense && (
+        <div className="fleet-expense-modal-overlay" onClick={() => setPinModalExpense(null)}>
+          <div className="fleet-expense-modal-card" style={{ maxWidth: '420px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '36px', marginBottom: '8px' }}>👑</div>
+            <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: 'var(--text-primary)' }}>SuperAdmin Payout Authorization</h3>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+              Dual-Control Re-Verification required to release <strong>₹{pinModalExpense.amount.toLocaleString('en-IN')}</strong> for Trip <strong>{pinModalExpense.tripNumber}</strong>.
+            </p>
+
+            <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: '10px', marginBottom: '16px', textAlign: 'left', fontSize: '12px' }}>
+              <div>👨‍✈️ Driver: <strong>{pinModalExpense.driverName}</strong> ({pinModalExpense.vehicleNumber})</div>
+              <div>⛽ Expense: <strong>{pinModalExpense.expenseType}</strong> ({pinModalExpense.fuelStationName || 'Highway'})</div>
+              <div>🛡️ Admin Recommendation: <strong>{pinModalExpense.adminPreApprovedBy || 'Operations Admin'}</strong></div>
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase' }}>
+                Enter SuperAdmin Security PIN
+              </label>
+              <input
+                type="password"
+                maxLength={6}
+                placeholder="Enter PIN (Default: 0000)"
+                value={pinInput}
+                onChange={e => { setPinInput(e.target.value); setPinError(null); }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '16px', letterSpacing: '4px', textAlign: 'center', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
+                autoFocus
+              />
+              {pinError && <div style={{ fontSize: '11.5px', color: '#ef4444', marginTop: '6px' }}>{pinError}</div>}
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={handleConfirmSuperAdminPin}
+                className="fleet-exp-btn-pass"
+                style={{ padding: '9px 18px', fontSize: '13px' }}
+              >
+                👑 Verify &amp; Pass Payout
+              </button>
+              <button
+                type="button"
+                onClick={() => setPinModalExpense(null)}
+                className="fleet-expense-btn-cancel"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* RECEIPT PREVIEW MODAL */}
       {previewReceiptUrl && (

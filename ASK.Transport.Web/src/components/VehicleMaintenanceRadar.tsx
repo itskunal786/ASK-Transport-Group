@@ -10,9 +10,13 @@ import {
 import {
   getFleetMaintenanceAlerts,
   sendVehicleRenewalAlert,
+  getParivahanFleetRadar,
+  settleParivahanChallan,
   type VehicleMaintenanceAlert,
-  type FleetMaintenanceSummary
+  type FleetMaintenanceSummary,
+  type ParivahanVehicleRecord
 } from '../api/fleetApi';
+import DriverDutySlipModal from './DriverDutySlipModal';
 import './VehicleMaintenanceRadar.css';
 
 const DEFAULT_FLEET_ALERTS: VehicleMaintenanceAlert[] = [
@@ -198,6 +202,9 @@ const DEFAULT_FLEET_MAINTENANCE: FleetMaintenanceSummary = {
 
 export default function VehicleMaintenanceRadar() {
   const [data, setData] = useState<FleetMaintenanceSummary>(DEFAULT_FLEET_MAINTENANCE);
+  const [parivahanFleet, setParivahanFleet] = useState<ParivahanVehicleRecord[]>([]);
+  const [selectedDutySlipVehicle, setSelectedDutySlipVehicle] = useState<VehicleMaintenanceAlert | null>(null);
+  const [settlingChallan, setSettlingChallan] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [filterHealth, setFilterHealth] = useState<'All' | 'Critical' | 'Warning' | 'Healthy'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -223,6 +230,14 @@ export default function VehicleMaintenanceRadar() {
       } else {
         setData(DEFAULT_FLEET_MAINTENANCE);
       }
+      try {
+        const pRes = await getParivahanFleetRadar();
+        if (pRes && Array.isArray(pRes.fleet)) {
+          setParivahanFleet(pRes.fleet);
+        }
+      } catch (err) {
+        console.warn('Parivahan fleet API offline:', err);
+      }
     } catch (err) {
       console.warn('Backend maintenance API offline or returned error; loaded active fleet registry fallback:', err);
       setData(DEFAULT_FLEET_MAINTENANCE);
@@ -234,6 +249,25 @@ export default function VehicleMaintenanceRadar() {
   useEffect(() => {
     loadData();
   }, []);
+
+  async function handleSettleChallan(challanNumber: string) {
+    try {
+      setSettlingChallan(challanNumber);
+      await settleParivahanChallan(challanNumber);
+      setParivahanFleet(prev => prev.map(veh => ({
+        ...veh,
+        challans: veh.challans.map(c => c.challanNumber === challanNumber ? { ...c, status: 'Paid' } : c),
+        pendingChallansCount: Math.max(0, veh.pendingChallansCount - 1),
+        totalChallanAmount: Math.max(0, veh.totalChallanAmount - (veh.challans.find(c => c.challanNumber === challanNumber)?.amount || 0))
+      })));
+      setAlertSuccessMsg(`✓ MoRTH Parivahan Challan ${challanNumber} settled and cleared!`);
+      setTimeout(() => setAlertSuccessMsg(''), 6000);
+    } catch (err: any) {
+      alert('Failed to settle challan: ' + err?.message);
+    } finally {
+      setSettlingChallan(null);
+    }
+  }
 
   async function handleSendAlert(vehicle: VehicleMaintenanceAlert) {
     try {
@@ -580,17 +614,76 @@ export default function VehicleMaintenanceRadar() {
                     </div>
                   )}
 
+                  {/* PARIVAHAN LIVE E-CHALLAN ALERT STRIP (IF ANY PENDING CHALLANS) */}
+                  {(() => {
+                    const cleanPlate = v.vehicleNumber.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                    const pMatch = parivahanFleet.find(p => p.vehicleNumber.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() === cleanPlate);
+                    if (!pMatch || !pMatch.challans || pMatch.challans.length === 0) return null;
+                    const pendingChallans = pMatch.challans.filter(c => c.status === 'Pending');
+                    if (pendingChallans.length === 0) return null;
+
+                    return (
+                      <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '10px', padding: '10px 12px', marginTop: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: '#f87171', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>⚠️</span> MoRTH E-CHALLAN ALERT ({pendingChallans.length} Pending)
+                          </span>
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: '#ef4444' }}>
+                            ₹{pMatch.totalChallanAmount.toLocaleString('en-IN')} Fine
+                          </span>
+                        </div>
+                        {pendingChallans.map((ch, idx) => (
+                          <div key={idx} style={{ marginTop: '6px', fontSize: '11px', color: '#fecaca', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                            <div>
+                              <strong>{ch.challanNumber}:</strong> {ch.violation} ({ch.location})
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleSettleChallan(ch.challanNumber)}
+                              disabled={settlingChallan === ch.challanNumber}
+                              style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
+                            >
+                              {settlingChallan === ch.challanNumber ? 'Settling...' : '💳 Pay Challan'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
                   {/* ACTION FOOTER */}
-                  <div className="m-card-footer">
+                  <div className="m-card-footer" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button
                       type="button"
                       disabled={sendingId === v.vehicleId}
                       onClick={() => handleSendAlert(v)}
                       className={`maintenance-btn-alert ${alertedTime ? 'alerted' : ''}`}
                       title={`Send WhatsApp renewal alert to ${v.driverName}`}
+                      style={{ flex: 1 }}
                     >
                       <Send size={13} />
-                      <span>{sendingId === v.vehicleId ? 'Sending...' : alertedTime ? `Alert Dispatched (${alertedTime})` : 'Dispatch WhatsApp Alert'}</span>
+                      <span>{sendingId === v.vehicleId ? 'Sending...' : alertedTime ? `Alert Dispatched (${alertedTime})` : 'Dispatch Renewal Alert'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDutySlipVehicle(v)}
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                      }}
+                      title="Generate & Dispatch Driver Highway WhatsApp Duty Slip"
+                    >
+                      <span>📲</span> Duty Slip
                     </button>
                   </div>
                 </div>
@@ -598,6 +691,21 @@ export default function VehicleMaintenanceRadar() {
             })
           )}
         </div>
+
+      {selectedDutySlipVehicle && (
+        <DriverDutySlipModal
+          initialData={{
+            driverName: selectedDutySlipVehicle.driverName,
+            driverPhone: selectedDutySlipVehicle.driverPhone,
+            vehicleNumber: selectedDutySlipVehicle.vehicleNumber,
+            truckModel: selectedDutySlipVehicle.model,
+            originHub: selectedDutySlipVehicle.hubName,
+            destinationHub: 'Mumbai Port (Nhava Sheva)'
+          }}
+          onClose={() => setSelectedDutySlipVehicle(null)}
+        />
+      )}
+
     </div>
   );
 }
