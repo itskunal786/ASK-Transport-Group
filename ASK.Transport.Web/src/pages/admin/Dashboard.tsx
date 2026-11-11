@@ -1036,6 +1036,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditSearch, setAuditSearch] = useState('');
   const [forceLoggingOutId, setForceLoggingOutId] = useState<number | null>(null);
+  const [auditViewMode, setAuditViewMode] = useState<'cards' | 'table'>('cards');
 
   // Dynamic System Settings State
   const [settingsList, setSettingsList] = useState<SystemSettingItem[]>([]);
@@ -7159,6 +7160,26 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   >
                     Filter Logs
                   </button>
+
+                  {/* Dual View Mode Switcher: Cards vs Table */}
+                  <div className="audit-view-mode-toggle">
+                    <button
+                      type="button"
+                      className={`audit-view-btn ${auditViewMode === 'cards' ? 'active' : ''}`}
+                      onClick={() => setAuditViewMode('cards')}
+                      title="Modern Audit Cards View"
+                    >
+                      🗂️ Cards
+                    </button>
+                    <button
+                      type="button"
+                      className={`audit-view-btn ${auditViewMode === 'table' ? 'active' : ''}`}
+                      onClick={() => setAuditViewMode('table')}
+                      title="Clean Data Table View"
+                    >
+                      📑 Table
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -7200,137 +7221,235 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               </div>
             </div>
 
-            {/* 5. AUDIT DATA TABLE (WITH STICKY RIGHT EMERGENCY ACTION) */}
-            <div className="audit-table-card">
-              <div className="audit-table-responsive">
-                <table className="audit-data-table">
-                  <thead>
-                    <tr>
-                      <th>LOG ID</th>
-                      <th>TIME STAMP</th>
-                      <th>ACTION EVENT</th>
-                      <th>ACTOR / USER</th>
-                      <th>IP / ORIGIN</th>
-                      <th>DETAILS / METADATA</th>
-                      <th className="audit-th-sticky-action">EMERGENCY KILL-SWITCH</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredAuditLogs.length === 0 ? (
+            {/* 5. AUDIT DATA (DUAL CARDS GRID & RESPONSIVE TABLE) */}
+            {auditViewMode === 'cards' ? (
+              /* 5A. MODERN AUDIT LEDGER CARDS */
+              <div className="audit-cards-grid">
+                {filteredAuditLogs.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 20px', background: 'var(--bg-surface, #ffffff)', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                    <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
+                    <strong style={{ fontSize: '15px' }}>No audit events found matching current query.</strong>
+                    <p style={{ margin: '6px 0 14px', fontSize: '12px', color: '#64748b' }}>
+                      Try resetting search filters or selecting 'All Events'.
+                    </p>
+                    <button
+                      type="button"
+                      className="admin-btn-export"
+                      onClick={() => { setAuditSearch(''); setAuditActionFilter('All'); setAuditCategoryChip('ALL'); }}
+                    >
+                      🔄 Reset Search & Filters
+                    </button>
+                  </div>
+                ) : (
+                  filteredAuditLogs.map(log => {
+                    const timeInfo = formatAuditTimestamp(log.createdAt || (log as any).CreatedAt || (log as any).timestamp);
+                    const isDanger = log.action.includes('FAILED') || log.action.includes('Delete') || log.action.includes('Force') || log.action.includes('SUSPENDED') || log.action.includes('KILL');
+                    const isWarning = log.action.includes('Role') || log.action.includes('ROLE') || log.action.includes('Rights') || log.action.includes('WARN') || log.action.includes('CREDIT') || log.action.includes('TARIFF');
+                    const isSuccess = log.action.includes('SUCCESS') || log.action.includes('ACTIVATED') || log.action.includes('GRANTED') || log.action.includes('APPROVED') || log.action.includes('REGISTERED');
+
+                    const actorEmail = log.userEmail || `User #${log.userId || '-'}`;
+                    const initials = actorEmail.slice(0, 2).toUpperCase();
+
+                    return (
+                      <div key={log.id} className="audit-card">
+                        <div className="audit-card-header">
+                          <div className="audit-card-badges-left">
+                            <span className="audit-id-badge">#{log.id}</span>
+                            <span className={`audit-action-pill ${
+                              isDanger ? 'audit-pill-danger' :
+                              isWarning ? 'audit-pill-warning' :
+                              isSuccess ? 'audit-pill-success' :
+                              'audit-pill-info'
+                            }`}>
+                              {isDanger ? '⚡' : isWarning ? '⚠️' : isSuccess ? '✓' : 'ℹ️'} {log.action}
+                            </span>
+                          </div>
+
+                          <div className="audit-card-meta-right">
+                            <span className="audit-card-time" title={timeInfo.formatted}>
+                              🕒 {timeInfo.relative}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="audit-card-body">
+                          {log.details || 'No event metadata details logged.'}
+                        </div>
+
+                        <div className="audit-card-footer">
+                          <div className="audit-card-actor">
+                            <div className="audit-actor-avatar" title={actorEmail}>
+                              {initials}
+                            </div>
+                            <div className="audit-actor-details">
+                              <div className="audit-actor-email" title={actorEmail}>
+                                {actorEmail}
+                              </div>
+                              <div className="audit-actor-role">
+                                {log.userId === 1 ? 'Super Admin' : log.userEmail?.includes('security') ? 'Security Officer' : 'System Admin'}
+                              </div>
+                            </div>
+                            <span className="audit-ip-badge">
+                              🇮🇳 {log.ipAddress || '103.21.58.12'}
+                            </span>
+                          </div>
+
+                          <div className="audit-card-actions">
+                            {log.userId ? (
+                              <button
+                                type="button"
+                                onClick={() => handleForceLogout(log.userId!, log.userEmail)}
+                                disabled={forceLoggingOutId === log.userId}
+                                className="audit-btn-killswitch"
+                                title="Instantly revoke all active bearer tokens and sessions"
+                              >
+                                {forceLoggingOutId === log.userId ? 'Revoking...' : '⚡ Revoke Session'}
+                              </button>
+                            ) : (
+                              <span className="audit-system-event-badge">
+                                🔒 System Event
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            ) : (
+              /* 5B. CLEAN RESPONSIVE AUDIT TABLE (NO OVERLAPPING COLUMNS) */
+              <div className="audit-table-card">
+                <div className="audit-table-responsive">
+                  <table className="audit-data-table">
+                    <thead>
                       <tr>
-                        <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8' }}>
-                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
-                          <div style={{ fontWeight: 600 }}>No audit events found matching current query.</div>
-                          <div style={{ fontSize: '12px', marginTop: '4px' }}>Try resetting search filters or selecting 'All Events'.</div>
-                        </td>
+                        <th style={{ width: '8%' }}>LOG ID</th>
+                        <th style={{ width: '16%' }}>TIME STAMP</th>
+                        <th style={{ width: '17%' }}>ACTION EVENT</th>
+                        <th style={{ width: '18%' }}>ACTOR / USER</th>
+                        <th style={{ width: '13%' }}>IP / ORIGIN</th>
+                        <th style={{ width: '16%' }}>DETAILS / METADATA</th>
+                        <th style={{ width: '12%', textAlign: 'right' }}>ACTION</th>
                       </tr>
-                    ) : (
-                      filteredAuditLogs.map(log => {
-                        const timeInfo = formatAuditTimestamp(log.createdAt || (log as any).CreatedAt || (log as any).timestamp);
-                        const isDanger = log.action.includes('FAILED') || log.action.includes('Delete') || log.action.includes('Force') || log.action.includes('SUSPENDED') || log.action.includes('KILL');
-                        const isWarning = log.action.includes('Role') || log.action.includes('ROLE') || log.action.includes('Rights') || log.action.includes('WARN') || log.action.includes('CREDIT') || log.action.includes('TARIFF');
-                        const isSuccess = log.action.includes('SUCCESS') || log.action.includes('ACTIVATED') || log.action.includes('GRANTED') || log.action.includes('APPROVED') || log.action.includes('REGISTERED');
+                    </thead>
+                    <tbody>
+                      {filteredAuditLogs.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                            <div style={{ fontWeight: 600 }}>No audit events found matching current query.</div>
+                            <div style={{ fontSize: '12px', marginTop: '4px' }}>Try resetting search filters or selecting 'All Events'.</div>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredAuditLogs.map(log => {
+                          const timeInfo = formatAuditTimestamp(log.createdAt || (log as any).CreatedAt || (log as any).timestamp);
+                          const isDanger = log.action.includes('FAILED') || log.action.includes('Delete') || log.action.includes('Force') || log.action.includes('SUSPENDED') || log.action.includes('KILL');
+                          const isWarning = log.action.includes('Role') || log.action.includes('ROLE') || log.action.includes('Rights') || log.action.includes('WARN') || log.action.includes('CREDIT') || log.action.includes('TARIFF');
+                          const isSuccess = log.action.includes('SUCCESS') || log.action.includes('ACTIVATED') || log.action.includes('GRANTED') || log.action.includes('APPROVED') || log.action.includes('REGISTERED');
 
-                        const actorEmail = log.userEmail || `User #${log.userId || '-'}`;
-                        const initials = actorEmail.slice(0, 2).toUpperCase();
+                          const actorEmail = log.userEmail || `User #${log.userId || '-'}`;
+                          const initials = actorEmail.slice(0, 2).toUpperCase();
 
-                        return (
-                          <tr key={log.id}>
-                            {/* 1. Log ID */}
-                            <td>
-                              <span className="audit-id-badge">#{log.id}</span>
-                            </td>
+                          return (
+                            <tr key={log.id}>
+                              {/* 1. Log ID */}
+                              <td>
+                                <span className="audit-id-badge">#{log.id}</span>
+                              </td>
 
-                            {/* 2. Timestamp (Fixed "Invalid Date" bug) */}
-                            <td>
-                              <div className="audit-time-box">
-                                <div className="audit-time-main">
-                                  <span>📅</span>
-                                  <span>{timeInfo.formatted}</span>
-                                </div>
-                                <span className="audit-time-rel">{timeInfo.relative}</span>
-                              </div>
-                            </td>
-
-                            {/* 3. Action Event Pill */}
-                            <td>
-                              <span className={`audit-action-pill ${
-                                isDanger ? 'audit-pill-danger' :
-                                isWarning ? 'audit-pill-warning' :
-                                isSuccess ? 'audit-pill-success' :
-                                'audit-pill-info'
-                              }`}>
-                                {isDanger ? '⚡' : isWarning ? '⚠️' : isSuccess ? '✓' : 'ℹ️'} {log.action}
-                              </span>
-                            </td>
-
-                            {/* 4. Actor / User */}
-                            <td>
-                              <div className="audit-actor-box">
-                                <div className="audit-actor-avatar" title={actorEmail}>
-                                  {initials}
-                                </div>
-                                <div className="audit-actor-details">
-                                  <div className="audit-actor-email" title={actorEmail}>
-                                    {actorEmail}
+                              {/* 2. Timestamp */}
+                              <td>
+                                <div className="audit-time-box">
+                                  <div className="audit-time-main">
+                                    <span>📅</span>
+                                    <span>{timeInfo.formatted}</span>
                                   </div>
-                                  <div className="audit-actor-role">
-                                    {log.userId === 1 ? 'Super Admin' : log.userEmail?.includes('security') ? 'Security Officer' : 'System Admin'}
-                                  </div>
+                                  <span className="audit-time-rel">{timeInfo.relative}</span>
                                 </div>
-                              </div>
-                            </td>
+                              </td>
 
-                            {/* 5. IP / Origin */}
-                            <td>
-                              <span className="audit-ip-badge">
-                                🇮🇳 {log.ipAddress || '103.21.58.12'}
-                              </span>
-                            </td>
-
-                            {/* 6. Details / Metadata */}
-                            <td>
-                              <div className="audit-details-cell">
-                                {log.details || '-'}
-                              </div>
-                            </td>
-
-                            {/* 7. Emergency Kill-Switch (Sticky Right Column) */}
-                            <td className="audit-td-sticky-action">
-                              {log.userId ? (
-                                <button
-                                  type="button"
-                                  onClick={() => handleForceLogout(log.userId!, log.userEmail)}
-                                  disabled={forceLoggingOutId === log.userId}
-                                  className="audit-btn-killswitch"
-                                  title="Instantly revoke all active bearer tokens and sessions"
-                                >
-                                  {forceLoggingOutId === log.userId ? 'Revoking...' : '⚡ Revoke Session'}
-                                </button>
-                              ) : (
-                                <span className="audit-system-event-badge">
-                                  🔒 System Event
+                              {/* 3. Action Event Pill */}
+                              <td>
+                                <span className={`audit-action-pill ${
+                                  isDanger ? 'audit-pill-danger' :
+                                  isWarning ? 'audit-pill-warning' :
+                                  isSuccess ? 'audit-pill-success' :
+                                  'audit-pill-info'
+                                }`}>
+                                  {isDanger ? '⚡' : isWarning ? '⚠️' : isSuccess ? '✓' : 'ℹ️'} {log.action}
                                 </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                              </td>
 
-              {/* Table Footer */}
-              <div className="audit-table-footer">
-                <div>
-                  Showing <strong>{filteredAuditLogs.length}</strong> of <strong>{auditLogs.length}</strong> immutable audit entries
+                              {/* 4. Actor / User */}
+                              <td>
+                                <div className="audit-actor-box">
+                                  <div className="audit-actor-avatar" title={actorEmail}>
+                                    {initials}
+                                  </div>
+                                  <div className="audit-actor-details">
+                                    <div className="audit-actor-email" title={actorEmail}>
+                                      {actorEmail}
+                                    </div>
+                                    <div className="audit-actor-role">
+                                      {log.userId === 1 ? 'Super Admin' : log.userEmail?.includes('security') ? 'Security Officer' : 'System Admin'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* 5. IP / Origin */}
+                              <td>
+                                <span className="audit-ip-badge">
+                                  🇮🇳 {log.ipAddress || '103.21.58.12'}
+                                </span>
+                              </td>
+
+                              {/* 6. Details / Metadata */}
+                              <td>
+                                <div className="audit-details-cell">
+                                  {log.details || '-'}
+                                </div>
+                              </td>
+
+                              {/* 7. Action Button (Clean Non-Overlapping) */}
+                              <td style={{ textAlign: 'right' }}>
+                                {log.userId ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleForceLogout(log.userId!, log.userEmail)}
+                                    disabled={forceLoggingOutId === log.userId}
+                                    className="audit-btn-killswitch"
+                                    title="Instantly revoke all active bearer tokens and sessions"
+                                  >
+                                    {forceLoggingOutId === log.userId ? 'Revoking...' : '⚡ Revoke'}
+                                  </button>
+                                ) : (
+                                  <span className="audit-system-event-badge">
+                                    🔒 System Event
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-                <div>
-                  All logs append-only &bull; Retained for 7 years under statutory compliance
+
+                {/* Table Footer */}
+                <div className="audit-table-footer">
+                  <div>
+                    Showing <strong>{filteredAuditLogs.length}</strong> of <strong>{auditLogs.length}</strong> immutable audit entries
+                  </div>
+                  <div>
+                    All logs append-only &bull; Retained for 7 years under statutory compliance
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
