@@ -2472,7 +2472,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('tariff')}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>{t('Tariff & Rate Matrix', 'भाड़ा दर सूची और मैट्रिक्स')}</span>
+                  <span>{t('Rate Calculator & Tariff Master', 'रेट कैलकुलेटर एवं भाड़ा मास्टर')}</span>
                   {isTabRevoked('tariff').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
               </div>

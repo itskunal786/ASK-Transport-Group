@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import LaneRateCalculatorMaster from './LaneRateCalculatorMaster';
+import { createPortal } from 'react-dom';
 import {
   Zap,
   Truck,
@@ -12,7 +14,9 @@ import {
   MapPin,
   CheckCircle2,
   Fuel,
-  Info
+  Info,
+  X,
+  FileText
 } from 'lucide-react';
 import './DynamicTariffEngine.css';
 
@@ -64,6 +68,10 @@ export const DynamicTariffEngine: React.FC<DynamicTariffEngineProps> = ({
   const [simWeightKg, setSimWeightKg] = useState<number>(16000);
   const [simService, setSimService] = useState<'PTL' | 'FTL' | 'Express'>('FTL');
   const [copiedQuote, setCopiedQuote] = useState(false);
+  const [showRateSlipModal, setShowRateSlipModal] = useState(false);
+  const [quoteRefId] = useState<string>(() => `ASK-QTN-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`);
+  const [selectedCorridorName, setSelectedCorridorName] = useState<string>('Delhi ➔ Mumbai (NH-48 Golden Quadrilateral)');
+  const [tariffModuleView, setTariffModuleView] = useState<'lane_rates' | 'formula'>('lane_rates');
 
   // Stepper Helper Functions
   const stepFtlRate = (delta: number) => {
@@ -160,6 +168,96 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
     setTimeout(() => setCopiedQuote(false), 3000);
   };
 
+  // Indian Rupees Amount to Words
+  const numberToWordsINR = (amount: number): string => {
+    if (!amount || isNaN(amount)) return 'Zero Rupees Only';
+    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const convertChunk = (n: number): string => {
+      let str = '';
+      if (n >= 100) {
+        str += units[Math.floor(n / 100)] + ' Hundred ';
+        n %= 100;
+      }
+      if (n >= 20) {
+        str += tens[Math.floor(n / 10)] + (n % 10 > 0 ? ' ' + units[n % 10] : '') + ' ';
+      } else if (n > 0) {
+        str += units[n] + ' ';
+      }
+      return str.trim();
+    };
+
+    let num = Math.round(amount);
+    const crore = Math.floor(num / 10000000);
+    num %= 10000000;
+    const lakh = Math.floor(num / 100000);
+    num %= 100000;
+    const thousand = Math.floor(num / 1000);
+    num %= 1000;
+    const remainder = num;
+
+    let words = '';
+    if (crore > 0) words += convertChunk(crore) + ' Crore ';
+    if (lakh > 0) words += convertChunk(lakh) + ' Lakh ';
+    if (thousand > 0) words += convertChunk(thousand) + ' Thousand ';
+    if (remainder > 0) words += convertChunk(remainder) + ' ';
+
+    return 'Rupees ' + words.trim() + ' Only';
+  };
+
+  const getVehicleType = (weightKg: number): string => {
+    if (weightKg <= 1000) return '1.0T LCV (Tata Ace / Mahindra Bolero Pickup)';
+    if (weightKg <= 3500) return '3.5T LCV (14 Ft Eicher Pro / Tata 407)';
+    if (weightKg <= 9000) return '9.0T ICV (19-22 Ft 6-Wheeler Intermediate)';
+    if (weightKg <= 16000) return '16.0T Heavy (32 Ft MXL Multi-Axle Container)';
+    return '25.0 - 40.0T Multi-Axle Trailer (Heavy Haulage Freight Spine)';
+  };
+
+  const getTransitEstimate = (km: number): string => {
+    const minHrs = Math.max(8, Math.round(km / 45));
+    const maxHrs = Math.max(12, Math.round(km / 35));
+    return `${minHrs} - ${maxHrs} Hours (Direct Highway Linehaul)`;
+  };
+
+  const todayStr = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+  const validUntilStr = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
+  const handlePrintRateSlip = () => {
+    setShowRateSlipModal(true);
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('dte-rate-slip-printing');
+    }
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        if (typeof document !== 'undefined') {
+          document.body.classList.remove('dte-rate-slip-printing');
+        }
+      }, 1000);
+    }, 280);
+  };
+
+  const handleModalPrint = () => {
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('dte-rate-slip-printing');
+    }
+    window.print();
+    setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('dte-rate-slip-printing');
+      }
+    }, 1000);
+  };
+
   // High-Volume Freight Corridors
   const CORRIDORS = [
     {
@@ -198,6 +296,31 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
 
   return (
     <div className="dte-container">
+      {/* 0. MODULE NAVIGATION TABS */}
+      <div className="dte-module-nav-tabs">
+        <button
+          type="button"
+          onClick={() => setTariffModuleView('lane_rates')}
+          className={`dte-module-nav-btn ${tariffModuleView === 'lane_rates' ? 'active' : ''}`}
+        >
+          <MapPin size={17} />
+          <span>🛣️ Pan-India Lane Rates &amp; Route Calculator (कहाँ का कितना भाड़ा)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTariffModuleView('formula')}
+          className={`dte-module-nav-btn ${tariffModuleView === 'formula' ? 'active' : ''}`}
+        >
+          <Zap size={17} />
+          <span>⚡ Global MoRTH Formula, Surcharges &amp; SAC 9965 Taxes</span>
+        </button>
+      </div>
+
+      {tariffModuleView === 'lane_rates' ? (
+        <LaneRateCalculatorMaster />
+      ) : (
+        <>
       {/* 1. HERO HEADER BANNER */}
       <div className="dte-hero">
         <div className="dte-hero-left">
@@ -530,6 +653,7 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
                 onClick={() => {
                   setSimDistanceKm(corridor.km);
                   setSimWeightKg(corridor.defaultWeight);
+                  setSelectedCorridorName(`${corridor.name} (${corridor.highway})`);
                   showToast(`Loaded ${corridor.name} (${corridor.km} KM) into Simulator!`);
                 }}
                 title={`Click to load ${corridor.name} into simulator`}
@@ -705,7 +829,7 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={handlePrintRateSlip}
             className="dte-btn-reset"
             style={{ padding: '8px 16px', fontSize: '12px' }}
           >
@@ -714,6 +838,220 @@ TOTAL FREIGHT:       ₹${simTotal.toLocaleString('en-IN')}
           </button>
         </div>
       </div>
+
+        </>
+      )}
+
+      {/* OFFICIAL FREIGHT TARIFF & RATE QUOTATION SLIP MODAL */}
+      {showRateSlipModal && typeof document !== 'undefined' && createPortal(
+        <div className="dte-rate-slip-overlay" onClick={() => setShowRateSlipModal(false)}>
+          <div className="dte-rate-slip-modal-container" onClick={e => e.stopPropagation()}>
+            {/* TOOLBAR (Screen Only) */}
+            <div className="dte-slip-toolbar dte-no-print">
+              <div className="dte-slip-toolbar-left">
+                <FileText size={18} style={{ color: '#38bdf8' }} />
+                <span>Official Commercial Freight Tariff &amp; Rate Quotation Slip</span>
+              </div>
+              <div className="dte-slip-toolbar-actions">
+                <button
+                  type="button"
+                  onClick={handleModalPrint}
+                  className="dte-slip-btn-print"
+                >
+                  <Printer size={15} />
+                  <span>Print Slip / Save PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyQuotation}
+                  className="dte-slip-btn-copy"
+                >
+                  <Copy size={15} />
+                  <span>Copy Text Quote</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRateSlipModal(false)}
+                  className="dte-slip-btn-close"
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* PRINTABLE SLIP SHEET (Visible on Screen & Strictly Formatted for Print) */}
+            <div className="dte-rate-slip-sheet">
+              {/* HEADER */}
+              <div className="dte-slip-header">
+                <div className="dte-slip-brand">
+                  <div className="dte-slip-logo-badge">ASK</div>
+                  <div>
+                    <h2 className="dte-slip-company-name">ASK TRANSPORT GROUP</h2>
+                    <div className="dte-slip-tagline">NATIONAL LOGISTICS &amp; HEAVY COMMERCIAL FLEET SUPPLY CHAIN</div>
+                    <div className="dte-slip-subtext">Certified ISO 9001:2015 &bull; IBA Approved National Carrier &bull; AIS-140 GPS Telematics</div>
+                  </div>
+                </div>
+                <div className="dte-slip-header-meta">
+                  <div className="dte-slip-doc-badge">COMMERCIAL RATE QUOTATION</div>
+                  <div className="dte-slip-meta-line"><strong>QUOTATION REF:</strong> {quoteRefId}</div>
+                  <div className="dte-slip-meta-line"><strong>DATE:</strong> {todayStr}</div>
+                  <div className="dte-slip-meta-line"><strong>VALID UNTIL:</strong> {validUntilStr}</div>
+                </div>
+              </div>
+
+              <div className="dte-slip-divider" />
+
+              {/* STATUTORY REGISTRATION ROW */}
+              <div className="dte-slip-statutory-row">
+                <div><strong>GSTIN:</strong> 27AABCA1234D1Z5</div>
+                <div><strong>PAN:</strong> AABCA1234D</div>
+                <div><strong>SAC CODE:</strong> 9965 (Goods Transport Agency)</div>
+                <div><strong>IBA REG:</strong> ASK-IBA-2026-992</div>
+                <div><strong>TOLL FREE:</strong> 1800-210-9999</div>
+              </div>
+
+              {/* CONSIGNMENT & ROUTE SPECIFICATIONS */}
+              <div className="dte-slip-section-title">CONSIGNMENT &amp; ROUTE SPECIFICATIONS</div>
+              <div className="dte-slip-specs-grid">
+                <div className="dte-slip-spec-item">
+                  <span className="dte-slip-spec-label">Freight Corridor / Route:</span>
+                  <span className="dte-slip-spec-val">{selectedCorridorName || 'National Arterial Freight Corridor'}</span>
+                </div>
+                <div className="dte-slip-spec-item">
+                  <span className="dte-slip-spec-label">Linehaul Highway Distance:</span>
+                  <span className="dte-slip-spec-val">{simDistanceKm.toLocaleString('en-IN')} KM (Direct Highway Route)</span>
+                </div>
+                <div className="dte-slip-spec-item">
+                  <span className="dte-slip-spec-label">Consignment Gross Weight:</span>
+                  <span className="dte-slip-spec-val">{simWeightKg.toLocaleString('en-IN')} KG ({(simWeightKg / 1000).toFixed(2)} Metric Tons)</span>
+                </div>
+                <div className="dte-slip-spec-item">
+                  <span className="dte-slip-spec-label">Freight Service Tier:</span>
+                  <span className="dte-slip-spec-val">
+                    {simService === 'FTL' ? 'Full Truckload (FTL Dedicated)' : simService === 'Express' ? 'Express Priority (Time-Critical)' : 'Part Truckload (PTL Parcel)'}
+                  </span>
+                </div>
+                <div className="dte-slip-spec-item">
+                  <span className="dte-slip-spec-label">Recommended Fleet Vehicle:</span>
+                  <span className="dte-slip-spec-val">{getVehicleType(simWeightKg)}</span>
+                </div>
+                <div className="dte-slip-spec-item">
+                  <span className="dte-slip-spec-label">Estimated Transit Turnaround:</span>
+                  <span className="dte-slip-spec-val">{getTransitEstimate(simDistanceKm)}</span>
+                </div>
+              </div>
+
+              {/* ITEMIZED COMMERCIAL FREIGHT TARIFF SCHEDULE */}
+              <div className="dte-slip-section-title">ITEMIZED COMMERCIAL FREIGHT TARIFF SCHEDULE</div>
+              <table className="dte-slip-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '36px', textAlign: 'center' }}>#</th>
+                    <th>Tariff Component &amp; Description</th>
+                    <th>Basis / Applied Matrix Formula</th>
+                    <th style={{ textAlign: 'right', width: '130px' }}>Amount (INR)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ textAlign: 'center' }}>1</td>
+                    <td>
+                      <strong>Base Linehaul Freight Haulage</strong>
+                      <div className="dte-slip-table-sub">Direct highway linehaul haulage across arterial toll corridors</div>
+                    </td>
+                    <td>
+                      {simService === 'FTL'
+                        ? `${simDistanceKm} KM @ ₹${ftlPerKm}/KM (Floor: ₹${ftlMinFloor.toLocaleString('en-IN')})`
+                        : `${simDistanceKm} KM × ${simWeightKg} KG @ ₹${ptlPerKgKm}/KG-KM (Floor: ₹${ptlMinFloor})`}
+                    </td>
+                    <td style={{ textAlign: 'right', fontWeight: 600 }}>₹{simBaseFreight.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ textAlign: 'center' }}>2</td>
+                    <td>
+                      <strong>Dynamic Fuel Adjustment Index (Diesel Surcharge)</strong>
+                      <div className="dte-slip-table-sub">Index linked fuel surcharge aligned with national diesel benchmark</div>
+                    </td>
+                    <td>{fuelPct}% on Base Linehaul Freight</td>
+                    <td style={{ textAlign: 'right', fontWeight: 600 }}>₹{simFuelCharge.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ textAlign: 'center' }}>3</td>
+                    <td>
+                      <strong>Terminal Cargo Handling &amp; RFID Electronic Seal</strong>
+                      <div className="dte-slip-table-sub">Dock handover, RFID tamper seal &amp; digital weighbridge slip</div>
+                    </td>
+                    <td>Standard Flat Terminal &amp; Gate Fee</td>
+                    <td style={{ textAlign: 'right', fontWeight: 600 }}>₹{simHandling.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr className="dte-slip-subtotal-row">
+                    <td colSpan={3} style={{ textAlign: 'right' }}><strong>Taxable Base Freight Value (Subtotal):</strong></td>
+                    <td style={{ textAlign: 'right' }}><strong>₹{simSubtotal.toLocaleString('en-IN')}</strong></td>
+                  </tr>
+                  <tr>
+                    <td style={{ textAlign: 'center' }}>4</td>
+                    <td>
+                      <strong>Road Transport Goods &amp; Services Tax (SAC 9965)</strong>
+                      <div className="dte-slip-table-sub">Statutory forward charge mechanism on freight transport services</div>
+                    </td>
+                    <td>GST @ {gstPct}% on Taxable Freight</td>
+                    <td style={{ textAlign: 'right', fontWeight: 600 }}>₹{simGst.toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr className="dte-slip-total-row">
+                    <td colSpan={3} style={{ textAlign: 'right' }}>
+                      <span className="dte-slip-total-title">TOTAL ALL-INCLUSIVE FREIGHT TARIFF (NET PAYABLE):</span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span className="dte-slip-total-amount">₹{simTotal.toLocaleString('en-IN')}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* AMOUNT IN WORDS */}
+              <div className="dte-slip-words-box">
+                <span className="dte-slip-words-label">AMOUNT IN WORDS:</span>
+                <span className="dte-slip-words-val">{numberToWordsINR(simTotal)}</span>
+              </div>
+
+              {/* TERMS & CONDITIONS */}
+              <div className="dte-slip-terms-block">
+                <div className="dte-slip-terms-title">COMMERCIAL TERMS &amp; OPERATIONAL SLA:</div>
+                <ol className="dte-slip-terms-list">
+                  <li><strong>Transit Tolls &amp; E-Way:</strong> Quoted tariff is inclusive of all National Highway arterial FASTag tolls and digital E-Way Bill documentation.</li>
+                  <li><strong>Free Detention Allowance:</strong> 24 hours complimentary loading at origin and 24 hours unloading at destination bay. Post 24 hrs, standard detention fee of ₹1,500/day applies.</li>
+                  <li><strong>Transit Protection:</strong> Consignments covered under standard carrier liability per Indian Carriage by Road Act 2007. Declared value transit cargo insurance optional.</li>
+                  <li><strong>Telematics &amp; Live Tracking:</strong> 100% AIS-140 certified GPS telematics telemetry with automated milestone alerts via WhatsApp/SMS to consignor and consignee.</li>
+                  <li><strong>Tariff Validity:</strong> Valid for 7 calendar days from issuance. Subject to dynamic diesel benchmark revisions exceeding &plusmn;5% within quotation window.</li>
+                </ol>
+              </div>
+
+              {/* FOOTER: BARCODE & SIGNATURE */}
+              <div className="dte-slip-footer">
+                <div className="dte-slip-barcode-area">
+                  <div className="dte-barcode-lines">
+                    <div className="dte-bar-mock" />
+                  </div>
+                  <div className="dte-barcode-text">*{quoteRefId.replace(/[^A-Z0-9]/g, '')}*</div>
+                  <div className="dte-barcode-sub">AUTHENTICATED DIGITAL RATE QUOTE &bull; ASK CENTRAL FREIGHT REGISTRY</div>
+                </div>
+
+                <div className="dte-slip-sign-area">
+                  <div className="dte-seal-stamp">
+                    <span className="dte-seal-inner">ASK TRANSPORT</span>
+                    <span className="dte-seal-star">&starf; VERIFIED &starf;</span>
+                  </div>
+                  <div className="dte-sign-line" />
+                  <div className="dte-sign-name">Authorized Commercial Signatory</div>
+                  <div className="dte-sign-title">ASK Transport Group (India) &bull; Tariff Operations</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
