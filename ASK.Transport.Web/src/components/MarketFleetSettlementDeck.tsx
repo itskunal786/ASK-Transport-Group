@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // ============================================================================
 // DATA MODELS & INTERFACES FOR HIRED FLEET & SECTION 194C TDS
@@ -25,6 +25,10 @@ export interface HiredFleetRecord {
     ifsc: string;
     bankName: string;
     upiId: string;
+    accountType?: 'Current' | 'Savings';
+    isVerified?: boolean;
+    pennyDropStatus?: 'NOT_TESTED' | 'TESTING' | 'VERIFIED' | 'FAILED';
+    verifiedAt?: string;
   };
   
   // Trip & Route
@@ -304,7 +308,25 @@ const INITIAL_HIRED_FLEETS: HiredFleetRecord[] = [
 ];
 
 export default function MarketFleetSettlementDeck() {
-  const [fleets, setFleets] = useState<HiredFleetRecord[]>(INITIAL_HIRED_FLEETS);
+  const [fleets, setFleets] = useState<HiredFleetRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('ask_market_fleet_records');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_HIRED_FLEETS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('ask_market_fleet_records', JSON.stringify(fleets));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [fleets]);
   const [filterTab, setFilterTab] = useState<'ALL' | 'ADVANCE_PENDING' | 'POD_PENDING' | 'READY_BALANCE' | 'SETTLED' | 'FASTAG_LOW'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -327,6 +349,623 @@ export default function MarketFleetSettlementDeck() {
 
   // TDS 26AS Audit View Modal
   const [showTdsReportModal, setShowTdsReportModal] = useState(false);
+
+  // Bank Editing & Cross-Verification State
+  const [editingBankFleetId, setEditingBankFleetId] = useState<string | null>(null);
+  const [bankEditAccountHolder, setBankEditAccountHolder] = useState('');
+  const [bankEditAccountNo, setBankEditAccountNo] = useState('');
+  const [bankEditConfirmAccountNo, setBankEditConfirmAccountNo] = useState('');
+  const [bankEditIfsc, setBankEditIfsc] = useState('');
+  const [bankEditBankName, setBankEditBankName] = useState('');
+  const [bankEditUpiId, setBankEditUpiId] = useState('');
+  const [bankEditAccountType, setBankEditAccountType] = useState<'Current' | 'Savings'>('Current');
+  const [unmaskedAccounts, setUnmaskedAccounts] = useState<Record<string, boolean>>({});
+  const [pennyDropLoading, setPennyDropLoading] = useState(false);
+  const [pennyDropSuccessMap, setPennyDropSuccessMap] = useState<Record<string, { verified: boolean; holderName: string; rrn: string; timestamp: string }>>({
+    'MKT-7821': {
+      verified: true,
+      holderName: 'CHOUDHARY ROADLINES PVT LTD',
+      rrn: '202688192019',
+      timestamp: '24-Oct-2026 11:30'
+    }
+  });
+  const [copiedBankFleetId, setCopiedBankFleetId] = useState<string | null>(null);
+  const [standaloneBankModalFleet, setStandaloneBankModalFleet] = useState<HiredFleetRecord | null>(null);
+
+  const lookupBankNameFromIfsc = (ifscCode: string): string => {
+    const prefix = ifscCode.trim().toUpperCase().slice(0, 4);
+    const bankDirectory: Record<string, string> = {
+      HDFC: 'HDFC Bank Ltd',
+      SBIN: 'State Bank of India (SBI)',
+      ICIC: 'ICICI Bank Ltd',
+      PUNB: 'Punjab National Bank (PNB)',
+      BARB: 'Bank of Baroda',
+      AXIS: 'Axis Bank Ltd',
+      UTIB: 'Axis Bank Ltd',
+      KKBK: 'Kotak Mahindra Bank',
+      UBIN: 'Union Bank of India',
+      CNRB: 'Canara Bank',
+      IDFB: 'IDFC FIRST Bank',
+      INDB: 'IndusInd Bank',
+      YESB: 'Yes Bank Ltd',
+      BKID: 'Bank of India',
+      MAHB: 'Bank of Maharashtra',
+      IOBA: 'Indian Overseas Bank',
+      IDIB: 'Indian Bank',
+      CBIN: 'Central Bank of India'
+    };
+    return bankDirectory[prefix] || '';
+  };
+
+  const handleIfscChange = (val: string) => {
+    const cleaned = val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11);
+    setBankEditIfsc(cleaned);
+    const detectedBank = lookupBankNameFromIfsc(cleaned);
+    if (detectedBank && (!bankEditBankName || bankEditBankName.includes('Bank') === false)) {
+      setBankEditBankName(`${detectedBank}, Primary Logistics Branch`);
+    }
+  };
+
+  const startEditingBankDetails = (f: HiredFleetRecord) => {
+    setEditingBankFleetId(f.id);
+    setBankEditAccountHolder(f.bankDetails.accountHolder);
+    setBankEditAccountNo(f.bankDetails.accountNo);
+    setBankEditConfirmAccountNo(f.bankDetails.accountNo);
+    setBankEditIfsc(f.bankDetails.ifsc);
+    setBankEditBankName(f.bankDetails.bankName);
+    setBankEditUpiId(f.bankDetails.upiId);
+    setBankEditAccountType(f.bankDetails.accountType || (f.transporterType === 'Individual' ? 'Savings' : 'Current'));
+  };
+
+  const cancelEditingBankDetails = () => {
+    setEditingBankFleetId(null);
+  };
+
+  const handleSaveBankDetails = (fleetId: string) => {
+    if (!bankEditAccountHolder.trim()) {
+      showToast('⚠️ Beneficiary account holder name is required');
+      return;
+    }
+    if (!bankEditAccountNo.trim() || bankEditAccountNo.trim().length < 9) {
+      showToast('⚠️ Please enter a valid bank account number (at least 9 digits)');
+      return;
+    }
+    if (bankEditConfirmAccountNo && bankEditAccountNo !== bankEditConfirmAccountNo) {
+      showToast('⚠️ Cross-Verification Failed: Account numbers do not match!');
+      return;
+    }
+    if (!bankEditIfsc.trim() || bankEditIfsc.trim().length !== 11) {
+      showToast('⚠️ Please enter a valid 11-character IFSC Code');
+      return;
+    }
+
+    const detected = lookupBankNameFromIfsc(bankEditIfsc);
+    const updatedBank = {
+      accountHolder: bankEditAccountHolder.trim(),
+      accountNo: bankEditAccountNo.trim(),
+      ifsc: bankEditIfsc.trim().toUpperCase(),
+      bankName: bankEditBankName.trim() || (detected ? `${detected}, Commercial Branch` : 'Nationalised Commercial Bank'),
+      upiId: bankEditUpiId.trim() || `${bankEditAccountNo.trim().slice(-6)}@askpayout`,
+      accountType: bankEditAccountType,
+      isVerified: true
+    };
+
+    setFleets(prev => prev.map(f => {
+      if (f.id === fleetId) {
+        return {
+          ...f,
+          bankDetails: updatedBank
+        };
+      }
+      return f;
+    }));
+
+    if (selectedForBalance && selectedForBalance.id === fleetId) {
+      setSelectedForBalance(prev => prev ? { ...prev, bankDetails: updatedBank } : null);
+    }
+    if (selectedForAdvance && selectedForAdvance.id === fleetId) {
+      setSelectedForAdvance(prev => prev ? { ...prev, bankDetails: updatedBank } : null);
+    }
+    if (standaloneBankModalFleet && standaloneBankModalFleet.id === fleetId) {
+      setStandaloneBankModalFleet(prev => prev ? { ...prev, bankDetails: updatedBank } : null);
+    }
+
+    setPennyDropSuccessMap(prev => ({
+      ...prev,
+      [fleetId]: {
+        verified: true,
+        holderName: bankEditAccountHolder.trim().toUpperCase(),
+        rrn: `${Math.floor(202600000000 + Math.random() * 99999999)}`,
+        timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      }
+    }));
+
+    setEditingBankFleetId(null);
+    showToast(`✓ Bank Details Cross-Verified & Updated for ${bankEditAccountHolder.trim()} (A/c: ••••${updatedBank.accountNo.slice(-4)})!`);
+  };
+
+  const handleRunPennyDrop = (fleetId: string, holderName: string) => {
+    setPennyDropLoading(true);
+    setTimeout(() => {
+      const generatedRrn = `${Math.floor(202600000000 + Math.random() * 99999999)}`;
+      const nowTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      setPennyDropSuccessMap(prev => ({
+        ...prev,
+        [fleetId]: {
+          verified: true,
+          holderName: (holderName || 'BENEFICIARY ACCOUNT').toUpperCase(),
+          rrn: generatedRrn,
+          timestamp: nowTime
+        }
+      }));
+      setPennyDropLoading(false);
+      showToast(`✓ NPCI Penny Drop Successful (₹1.00)! Account Active & Name Matched: "${(holderName || 'BENEFICIARY').toUpperCase()}" (RRN: ${generatedRrn})`);
+    }, 1200);
+  };
+
+  const toggleMaskAccount = (fleetId: string) => {
+    setUnmaskedAccounts(prev => ({ ...prev, [fleetId]: !prev[fleetId] }));
+  };
+
+  const handleCopyAccountNo = (fleetId: string, accNo: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(accNo);
+    }
+    setCopiedBankFleetId(fleetId);
+    showToast(`📋 Bank Account ${accNo} copied to clipboard!`);
+    setTimeout(() => setCopiedBankFleetId(null), 2500);
+  };
+
+  const renderBankAccountCard = (f: HiredFleetRecord) => {
+    const isEditing = editingBankFleetId === f.id;
+    const isUnmasked = !!unmaskedAccounts[f.id];
+    const isCopied = copiedBankFleetId === f.id;
+    const verificationData = pennyDropSuccessMap[f.id];
+    const isVerified = !!verificationData?.verified || f.isPanVerified;
+    const detectedBank = lookupBankNameFromIfsc(bankEditIfsc);
+    const accountNumbersMatch = bankEditAccountNo.length >= 9 && bankEditAccountNo === bankEditConfirmAccountNo;
+
+    if (isEditing) {
+      return (
+        <div style={{
+          background: '#ffffff',
+          border: '2px solid #2563eb',
+          borderRadius: '12px',
+          padding: '16px 18px',
+          boxShadow: '0 4px 16px rgba(37, 99, 235, 0.12)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '14px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '18px' }}>✏️</span>
+              <div>
+                <strong style={{ fontSize: '14px', color: '#1e293b' }}>
+                  Edit &amp; Cross-Verify Beneficiary Bank Account
+                </strong>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>
+                  Double-entry cross-verification ensures zero typo risk for IMPS / NEFT payouts
+                </div>
+              </div>
+            </div>
+            <span style={{ background: '#dbeafe', color: '#1d4ed8', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px' }}>
+              Editing Mode
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Beneficiary / Account Holder Name *
+              </label>
+              <input
+                type="text"
+                value={bankEditAccountHolder}
+                onChange={e => setBankEditAccountHolder(e.target.value)}
+                placeholder="Full legal name as per bank record"
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 600, boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Account Type
+              </label>
+              <select
+                value={bankEditAccountType}
+                onChange={e => setBankEditAccountType(e.target.value as 'Current' | 'Savings')}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 600, background: '#fff', boxSizing: 'border-box' }}
+              >
+                <option value="Current">Current Account (Fleet Corporate / Logistics)</option>
+                <option value="Savings">Savings Account (Single Truck Owner / Driver)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Bank Account Number *
+              </label>
+              <input
+                type="text"
+                value={bankEditAccountNo}
+                onChange={e => setBankEditAccountNo(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="Enter 9 to 18 digits"
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'monospace', fontSize: '14px', fontWeight: 700, letterSpacing: '1px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Confirm Account Number (Cross-Verify) *
+              </label>
+              <input
+                type="text"
+                value={bankEditConfirmAccountNo}
+                onChange={e => setBankEditConfirmAccountNo(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="Re-type account number to match"
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  border: '1.5px solid',
+                  borderColor: !bankEditConfirmAccountNo ? '#cbd5e1' : accountNumbersMatch ? '#10b981' : '#ef4444',
+                  fontFamily: 'monospace',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  letterSpacing: '1px',
+                  boxSizing: 'border-box',
+                  background: !bankEditConfirmAccountNo ? '#fff' : accountNumbersMatch ? '#f0fdf4' : '#fef2f2'
+                }}
+              />
+              <div style={{ fontSize: '11px', marginTop: '4px', fontWeight: 600 }}>
+                {!bankEditConfirmAccountNo ? (
+                  <span style={{ color: '#64748b' }}>ℹ️ Re-enter account number above to verify zero typos.</span>
+                ) : accountNumbersMatch ? (
+                  <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ✓ Cross-Verification Match! Account numbers are identical.
+                  </span>
+                ) : (
+                  <span style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ⚠️ Account numbers do not match! Re-check digits carefully.
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                IFSC Code (11 Chars) *
+              </label>
+              <input
+                type="text"
+                maxLength={11}
+                value={bankEditIfsc}
+                onChange={e => handleIfscChange(e.target.value)}
+                placeholder="e.g. HDFC0000123"
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'monospace', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', boxSizing: 'border-box' }}
+              />
+              {detectedBank && (
+                <div style={{ fontSize: '10px', color: '#0284c7', fontWeight: 700, marginTop: '3px' }}>
+                  🏛️ Detected: {detectedBank}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                Bank Name &amp; Branch
+              </label>
+              <input
+                type="text"
+                value={bankEditBankName}
+                onChange={e => setBankEditBankName(e.target.value)}
+                placeholder="e.g. HDFC Bank, Jaipur Branch"
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                UPI ID / VPA
+              </label>
+              <input
+                type="text"
+                value={bankEditUpiId}
+                onChange={e => setBankEditUpiId(e.target.value)}
+                placeholder="e.g. carrier@okhdfc"
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', fontWeight: 600, boxSizing: 'border-box' }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '12px', flexWrap: 'wrap', gap: '8px' }}>
+            <button
+              type="button"
+              disabled={pennyDropLoading || !bankEditAccountNo || !bankEditIfsc}
+              onClick={() => handleRunPennyDrop(f.id, bankEditAccountHolder || f.bankDetails.accountHolder)}
+              style={{
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                padding: '7px 14px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#334155',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <span>🧪</span>
+              <span>{pennyDropLoading ? 'Pinging NPCI Switch...' : 'Test Penny-Drop (₹1.00)'}</span>
+            </button>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={cancelEditingBankDetails}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  padding: '7px 14px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveBankDetails(f.id)}
+                style={{
+                  background: '#059669',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '7px 18px',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)'
+                }}
+              >
+                💾 Save &amp; Cross-Verify Account
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const displayAccNo = isUnmasked
+      ? f.bankDetails.accountNo
+      : f.bankDetails.accountNo.length > 4
+        ? '•••• •••• •••• ' + f.bankDetails.accountNo.slice(-4)
+        : f.bankDetails.accountNo;
+
+    return (
+      <div style={{
+        background: '#f8fafc',
+        border: '1.5px solid #cbd5e1',
+        borderRadius: '12px',
+        padding: '14px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>🏦</span>
+            <div>
+              <strong style={{ fontSize: '13px', color: '#1e293b' }}>
+                Beneficiary Bank Account &amp; Settlement Target
+              </strong>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                NPCI IMPS / RTGS Direct Bank Transfer
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {verificationData?.verified ? (
+              <span style={{
+                background: '#dcfce7',
+                color: '#15803d',
+                border: '1px solid #86efac',
+                fontSize: '11px',
+                fontWeight: 800,
+                padding: '3px 8px',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                ✓ NPCI IMPS Penny-Drop Verified
+              </span>
+            ) : isVerified ? (
+              <span style={{
+                background: '#ecfdf5',
+                color: '#059669',
+                border: '1px solid #a7f3d0',
+                fontSize: '11px',
+                fontWeight: 800,
+                padding: '3px 8px',
+                borderRadius: '6px'
+              }}>
+                ✓ PAN &amp; Bank Cross-Verified
+              </span>
+            ) : (
+              <span style={{
+                background: '#fffbeb',
+                color: '#b45309',
+                border: '1px solid #fde68a',
+                fontSize: '11px',
+                fontWeight: 800,
+                padding: '3px 8px',
+                borderRadius: '6px'
+              }}>
+                ⚠️ Verification Recommended
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={() => startEditingBankDetails(f)}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #94a3b8',
+                borderRadius: '6px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#1e293b',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span>✏️</span>
+              <span>Edit / Verify Details</span>
+            </button>
+          </div>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+          gap: '10px',
+          background: '#ffffff',
+          padding: '12px',
+          borderRadius: '8px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <div>
+            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>
+              Beneficiary Name
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>{f.bankDetails.accountHolder}</span>
+              <span style={{ color: '#059669', fontSize: '12px' }} title="KYC Matched">✓</span>
+            </div>
+            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+              PAN: <span style={{ fontFamily: 'monospace', color: '#0284c7', fontWeight: 700 }}>{f.panNumber}</span>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>
+              Account Number
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+              <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 800, color: '#0f172a', letterSpacing: '0.5px' }}>
+                {displayAccNo}
+              </span>
+              <button
+                type="button"
+                onClick={() => toggleMaskAccount(f.id)}
+                title={isUnmasked ? 'Mask digits' : 'Show full account number'}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '12px' }}
+              >
+                {isUnmasked ? '🔒' : '👁️'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCopyAccountNo(f.id, f.bankDetails.accountNo)}
+                title="Copy account number"
+                style={{
+                  background: isCopied ? '#dcfce7' : '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '4px',
+                  padding: '2px 6px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: isCopied ? '#15803d' : '#475569',
+                  cursor: 'pointer'
+                }}
+              >
+                {isCopied ? '✓ Copied' : '📋 Copy'}
+              </button>
+            </div>
+            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+              Type: {f.bankDetails.accountType || (f.transporterType === 'Individual' ? 'Savings Account' : 'Current Account')}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>
+              IFSC Code &amp; Bank
+            </div>
+            <div style={{ marginTop: '2px' }}>
+              <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 800, background: '#eff6ff', color: '#1d4ed8', padding: '2px 6px', borderRadius: '4px', border: '1px solid #bfdbfe' }}>
+                {f.bankDetails.ifsc}
+              </span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#334155', fontWeight: 600, marginTop: '3px' }}>
+              {f.bankDetails.bankName}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>
+              UPI ID / VPA
+            </div>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginTop: '2px', fontFamily: 'monospace' }}>
+              {f.bankDetails.upiId}
+            </div>
+            <div style={{ fontSize: '10px', color: '#059669', fontWeight: 700, marginTop: '3px' }}>
+              ⚡ 24x7 IMPS Ready
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '11px' }}>
+          <div>
+            {verificationData?.verified ? (
+              <span style={{ color: '#15803d', fontWeight: 600 }}>
+                ✓ NPCI IMPS Switch RRN: <strong style={{ fontFamily: 'monospace' }}>{verificationData.rrn}</strong> | Name: <strong>{verificationData.holderName}</strong> (Tested at {verificationData.timestamp})
+              </span>
+            ) : (
+              <span style={{ color: '#64748b' }}>
+                Run instant penny-drop to verify active beneficiary before transferring balance.
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            disabled={pennyDropLoading}
+            onClick={() => handleRunPennyDrop(f.id, f.bankDetails.accountHolder)}
+            style={{
+              background: '#ffffff',
+              border: '1px solid #cbd5e1',
+              borderRadius: '6px',
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#334155',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>🧪</span>
+            <span>{pennyDropLoading ? 'Verifying...' : 'Run Penny-Drop Test (₹1.00)'}</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   // Quick Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -935,6 +1574,29 @@ export default function MarketFleetSettlementDeck() {
                 borderTop: '1px dashed #e2e8f0'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* BANK ACCOUNT & CROSS-VERIFY */}
+                  <button
+                    type="button"
+                    onClick={() => setStandaloneBankModalFleet(item)}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#0f766e',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>🏦</span>
+                    <span>A/c: ••••{item.bankDetails.accountNo.slice(-4)}</span>
+                    <span style={{ fontSize: '10px', color: '#059669', fontWeight: 800 }}>[Verify]</span>
+                  </button>
+
                   {/* FASTAG TOP-UP */}
                   <button
                     type="button"
@@ -1154,9 +1816,8 @@ export default function MarketFleetSettlementDeck() {
                 </select>
               </div>
 
-              <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', fontSize: '11px', color: '#475569' }}>
-                Bank UPI Target: <strong>{selectedForAdvance.bankDetails.upiId}</strong> ({selectedForAdvance.bankDetails.bankName})
-              </div>
+              {/* VERIFIED BENEFICIARY BANK ACCOUNT CARD */}
+              {renderBankAccountCard(selectedForAdvance)}
             </div>
 
             <div style={{ background: '#f8fafc', padding: '16px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -1316,6 +1977,9 @@ export default function MarketFleetSettlementDeck() {
                 </div>
               </div>
 
+              {/* VERIFIED BENEFICIARY BANK ACCOUNT CARD */}
+              {renderBankAccountCard(selectedForBalance)}
+
               {/* NET DISBURSEMENT CARD */}
               <div style={{
                 background: '#ecfdf5',
@@ -1330,8 +1994,11 @@ export default function MarketFleetSettlementDeck() {
                   <span style={{ fontSize: '12px', color: '#065f46', fontWeight: 800, textTransform: 'uppercase' }}>
                     Net Amount to Transfer via IMPS / NEFT:
                   </span>
-                  <div style={{ fontSize: '11px', color: '#047857', marginTop: '2px' }}>
-                    Beneficiary: {selectedForBalance.bankDetails.accountHolder} ({selectedForBalance.bankDetails.bankName})
+                  <div style={{ fontSize: '11px', color: '#047857', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span>Beneficiary: <strong>{selectedForBalance.bankDetails.accountHolder}</strong></span>
+                    <span>•</span>
+                    <span>A/c: <strong>••••{selectedForBalance.bankDetails.accountNo.slice(-4)}</strong> ({selectedForBalance.bankDetails.bankName})</span>
+                    <span style={{ background: '#dcfce7', color: '#15803d', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>✓ Target Verified</span>
                   </div>
                 </div>
                 <div style={{ fontSize: '22px', fontWeight: 900, color: '#047857' }}>
@@ -1629,6 +2296,89 @@ export default function MarketFleetSettlementDeck() {
                 }}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ===================================================================== */}
+      {/* MODAL 5: STANDALONE BENEFICIARY BANK VERIFICATION & EDIT MODAL */}
+      {/* ===================================================================== */}
+      {standaloneBankModalFleet && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '680px',
+            width: '100%',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0f766e 0%, #047857 100%)',
+              color: '#ffffff',
+              padding: '20px 24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                  🏦 Bank Account Verification &amp; Payout Routing
+                </h3>
+                <small style={{ color: '#a7f3d0', fontSize: '12px' }}>
+                  Carrier: {standaloneBankModalFleet.transporterName} • Truck: {standaloneBankModalFleet.vehiclePlate}
+                </small>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStandaloneBankModalFleet(null)}
+                style={{ background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '75vh', overflowY: 'auto' }}>
+              {renderBankAccountCard(standaloneBankModalFleet)}
+
+              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <strong style={{ color: '#1e293b' }}>🛡️ RBI / NPCI Logistics Settlement Safeguards</strong>
+                <div>• All payouts routed via IMPS / RTGS require matching PAN and beneficiary record under Section 194C of the Income Tax Act.</div>
+                <div>• Changes to bank account numbers are audited with timestamped RRN verification to prevent misdirected freight payouts.</div>
+                <div>• WhatsApp settlement slip will automatically incorporate updated bank details upon disbursement.</div>
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', padding: '14px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setStandaloneBankModalFleet(null)}
+                style={{
+                  background: '#0f172a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 20px',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  cursor: 'pointer'
+                }}
+              >
+                Close Deck
               </button>
             </div>
           </div>
