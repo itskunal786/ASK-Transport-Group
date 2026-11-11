@@ -1250,13 +1250,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   });
   const [shipmentSearch, setShipmentSearch] = useState('');
   const [shipmentFilterStatus, setShipmentFilterStatus] = useState('All');
-  const [shipmentViewMode, setShipmentViewMode] = useState<'table' | 'cards'>(() => {
-    try {
-      const saved = localStorage.getItem('ask_admin_shipment_view');
-      if (saved === 'cards' || saved === 'table') return saved;
-    } catch {}
-    return 'cards';
-  });
+
   const [showAddShipmentModal, setShowAddShipmentModal] = useState(false);
   const [newShipmentNo, setNewShipmentNo] = useState('');
   const [newShipmentBookingNo, setNewShipmentBookingNo] = useState('');
@@ -4982,33 +4976,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       <span>Export CSV</span>
                     </button>
 
-                    {/* VIEW MODE TOGGLE */}
-                    <div className="shipments-view-toggle">
-                      <button
-                        type="button"
-                        className={`shipments-view-btn ${shipmentViewMode === 'cards' ? 'active' : ''}`}
-                        onClick={() => {
-                          setShipmentViewMode('cards');
-                          try { localStorage.setItem('ask_admin_shipment_view', 'cards'); } catch {}
-                        }}
-                        title="Switch to visual Cards view"
-                      >
-                        <span>🗂️</span>
-                        <span>Cards</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={`shipments-view-btn ${shipmentViewMode === 'table' ? 'active' : ''}`}
-                        onClick={() => {
-                          setShipmentViewMode('table');
-                          try { localStorage.setItem('ask_admin_shipment_view', 'table'); } catch {}
-                        }}
-                        title="Switch to detailed Table view"
-                      >
-                        <span>📋</span>
-                        <span>Table</span>
-                      </button>
-                    </div>
+
                   </div>
                 </div>
 
@@ -5058,200 +5026,33 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
               </div>
 
-              {/* TABLE VIEW */}
-              {shipmentViewMode === 'table' ? (
-                <div className="shipment-table-wrapper">
-                  <table className="admin-data-table shipments-data-table">
-                    <thead>
-                      <tr>
-                        <th style={{ minWidth: '120px' }}>Shipment ID</th>
-                        <th style={{ minWidth: '160px' }}>Booking / Client</th>
-                        <th style={{ minWidth: '190px' }}>Corridor Route</th>
-                        <th style={{ minWidth: '180px' }}>Driver &amp; Vehicle Plate</th>
-                        <th style={{ minWidth: '180px' }}>Live Checkpoint</th>
-                        <th style={{ minWidth: '140px' }}>{t('Status', 'स्थिति')}</th>
-                        <th style={{ minWidth: '180px' }}>Custom Milestone / Note</th>
-                        <th className="shipments-sticky-actions" style={{ minWidth: '150px', textAlign: 'center' }}>Dispatch Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredShipments.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-secondary, #64748b)' }}>
-                            <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
-                            <strong style={{ fontSize: '15px' }}>No shipments found matching filters</strong>
-                            <p style={{ margin: '6px 0 12px', fontSize: '12px' }}>
-                              Try clearing your search query or selecting the "All Dispatches" filter pill.
-                            </p>
-                            <button
-                              type="button"
-                              className="shipments-btn-export"
-                              onClick={() => { setShipmentSearch(''); setShipmentFilterStatus('All'); }}
-                            >
-                              Reset All Filters
-                            </button>
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredShipments.map((s, idx) => {
-                          const statusInfo = getShipmentStatusBadge(s.status);
-                          const clientAvatar = getClientAvatar(s.customer);
-
-                          return (
-                            <tr 
-                              key={idx} 
-                              className="shipment-table-row"
-                              onClick={() => openUpdateShipmentModal(s)}
-                              title="Click row to update milestone & dispatch status"
-                            >
-                              {/* 1. SHIPMENT ID */}
-                              <td>
-                                <span className="shipment-id-badge">#{s.shipmentNo}</span>
-                                <span className="shipment-time-tag">⏱️ {s.updatedAt}</span>
-                              </td>
-
-                              {/* 2. BOOKING / CLIENT WITH AVATAR */}
-                              <td>
-                                <div className="shipment-client-cell">
-                                  <div className="shipment-client-avatar" style={{ background: clientAvatar.bg }}>
-                                    {clientAvatar.initials}
-                                  </div>
-                                  <div className="shipment-client-info">
-                                    <span className="shipment-client-name" title={s.customer}>{s.customer}</span>
-                                    <span className="shipment-waybill-pill">Waybill: {s.bookingNo}</span>
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* 3. HIGHWAY CORRIDOR */}
-                              <td>
-                                <div className="shipment-corridor-cell">
-                                  <div className="corridor-flow">
-                                    <span className="corridor-hub">
-                                      <span className="corridor-hub-dot origin" />
-                                      <span>{s.origin}</span>
-                                    </span>
-                                    <div className="corridor-transit-track">
-                                      <span className="transit-truck-icon">🚚</span>
-                                      <span>➔</span>
-                                    </div>
-                                    <span className="corridor-hub">
-                                      <span className="corridor-hub-dot dest" />
-                                      <span>{s.destination}</span>
-                                    </span>
-                                  </div>
-                                  <span className="corridor-tag">Pan-India Freight Corridor</span>
-                                </div>
-                              </td>
-
-                              {/* 4. DRIVER & AUTHENTIC HSRP VEHICLE PLATE */}
-                              <td>
-                                <div className="shipment-driver-cell">
-                                  <div className="driver-name-row">
-                                    <span>👤 {s.driver}</span>
-                                  </div>
-                                  {renderVehicleHsrpPlate(s.vehicle)}
-                                </div>
-                              </td>
-
-                              {/* 5. LIVE CHECKPOINT & RADAR BEACON */}
-                              <td>
-                                <div className="shipment-checkpoint-cell">
-                                  <div className="checkpoint-radar-wrapper">
-                                    <span className="checkpoint-pulse-core" />
-                                    <span className="checkpoint-sonar-ring" />
-                                    <span className="checkpoint-sonar-ring ring-2" />
-                                  </div>
-                                  <div className="checkpoint-text-col">
-                                    <span className="checkpoint-name">{s.currentLocation}</span>
-                                    <span className="checkpoint-telemetry-tag">
-                                      <span className="live-gps-dot" /> AIS-140 GPS Synced
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* 6. GLOWING DISPATCH STATUS BADGE */}
-                              <td>
-                                <span className={`shipment-status-badge ${statusInfo.cls}`}>
-                                  <span 
-                                    className="status-badge-dot" 
-                                    style={{ background: statusInfo.dotColor, boxShadow: `0 0 8px ${statusInfo.dotColor}` }} 
-                                  />
-                                  <span>{statusInfo.icon}</span>
-                                  <span>{statusInfo.label}</span>
-                                </span>
-                              </td>
-
-                              {/* 7. CUSTOM MILESTONE & NOTE */}
-                              <td>
-                                <div className="shipment-milestone-cell">
-                                  {s.customStatus && (
-                                    <span className="milestone-badge-pill" title={`Milestone Stage: ${s.customStatus}`}>
-                                      <span>🏷️</span>
-                                      <span>{s.customStatus}</span>
-                                    </span>
-                                  )}
-                                  {s.customNote ? (
-                                    <div className="milestone-note-snippet" title={s.customNote}>
-                                      <span>📝</span>
-                                      <span>{s.customNote}</span>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      className="btn-add-milestone-note"
-                                      onClick={e => {
-                                        e.stopPropagation();
-                                        openUpdateShipmentModal(s);
-                                      }}
-                                    >
-                                      + Add Milestone Note
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-
-                              {/* 8. STICKY DISPATCH ACTIONS */}
-                              <td className="shipments-sticky-actions" style={{ textAlign: 'center' }}>
-                                <div className="shipment-actions-cell">
-                                  <button
-                                    type="button"
-                                    className="shipment-btn-action-primary"
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      openUpdateShipmentModal(s);
-                                    }}
-                                    title="Update Status, Milestone, and Checkpoint"
-                                  >
-                                    <span>✏️</span>
-                                    <span>Update</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="shipment-btn-action-telemetry"
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      setSelectedTelemetryShipment(s);
-                                    }}
-                                    title="Open AIS-140 GPS Satellite Telemetry HUD"
-                                  >
-                                    <span>🛰️</span>
-                                    <span>Radar</span>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                /* CARDS VIEW */
-                <div className="shipments-cards-grid">
-                  {filteredShipments.map((s, idx) => {
+              {/* MODERN DISPATCH CORRIDOR CARDS GRID (PERMANENT CARDS VIEW) */}
+              <div className="shipments-cards-grid">
+                {filteredShipments.length === 0 ? (
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '48px 20px',
+                    background: 'var(--bg-card, #ffffff)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border, #e2e8f0)',
+                    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)'
+                  }}>
+                    <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
+                    <strong style={{ fontSize: '15px' }}>No shipments found matching filters</strong>
+                    <p style={{ margin: '6px 0 12px', fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
+                      Try clearing your search query or selecting the "All Dispatches" filter pill.
+                    </p>
+                    <button
+                      type="button"
+                      className="shipments-btn-export"
+                      onClick={() => { setShipmentSearch(''); setShipmentFilterStatus('All'); }}
+                    >
+                      Reset All Filters
+                    </button>
+                  </div>
+                ) : (
+                  filteredShipments.map((s, idx) => {
                     const statusInfo = getShipmentStatusBadge(s.status);
                     const clientAvatar = getClientAvatar(s.customer);
 
@@ -5345,9 +5146,9 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                         </div>
                       </div>
                     );
-                  })}
-                </div>
-              )}
+                  })
+                )}
+              </div>
             </div>
           </div>
         )}
