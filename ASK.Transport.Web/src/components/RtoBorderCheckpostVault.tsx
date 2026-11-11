@@ -1,5 +1,7 @@
+import DriverDutySlipModal from './DriverDutySlipModal';
 import { useState, useEffect } from 'react';
 import { 
+  MessageSquare,
   ShieldCheck, 
   CheckCircle2, 
   AlertTriangle, 
@@ -91,6 +93,7 @@ export const RtoBorderCheckpostVault: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [recentlyVerifiedId, setRecentlyVerifiedId] = useState<string | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showDutySlipModal, setShowDutySlipModal] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   useEffect(() => {
@@ -302,6 +305,27 @@ export const RtoBorderCheckpostVault: React.FC = () => {
             <QrCode className="w-4 h-4" />
             <span>{t('Show Check-Post QR Token', 'चेक-पोस्ट QR टोकन दिखाएं')}</span>
           </button>
+              <button
+                type="button"
+                onClick={() => setShowDutySlipModal(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '7px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)'
+                }}
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>💬 {t('WhatsApp Duty Slip', 'व्हाट्सएप ड्यूटी स्लिप')}</span>
+              </button>
         </div>
       </div>
 
@@ -691,6 +715,21 @@ export const RtoBorderCheckpostVault: React.FC = () => {
           </div>
         );
       })()}
+          {showDutySlipModal && selectedDossier && (
+        <DriverDutySlipModal
+          initialData={{
+            driverName: selectedDossier.driverName,
+            vehicleNumber: selectedDossier.vehicleNumber,
+            ewayBillNumber: selectedDossier.activeEwbNo.split(' ')[0],
+            originHub: 'Delhi SuperHub (Okhla)',
+            destinationHub: 'Mumbai Port (Nhava Sheva Terminal)',
+            cargoDescription: 'Heavy Commercial Interstate Consignment',
+            dieselAdvance: 15000,
+            bhattaAmount: 2500
+          }}
+          onClose={() => setShowDutySlipModal(false)}
+        />
+      )}
     </div>
   );
 };

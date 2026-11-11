@@ -1,3 +1,4 @@
+import DriverDutySlipModal from '../../components/DriverDutySlipModal';
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -506,6 +507,7 @@ export function getTabHeaderInfo(
       let subTitle = 'Trip Petty Cash & P&L';
       let code = 'FLEET-CASH';
       if (fleetSub === 'fastag_reconcile') { subTitle = 'FASTag NETC Toll Reconciliation'; code = 'FASTAG-NETC'; }
+      else if (fleetSub === 'duty_slip') { subTitle = 'Driver WhatsApp Duty Slip'; code = 'DUTY-SLIP'; }
       else if (fleetSub === 'fuel_theft') { subTitle = 'Fuel & Diesel Theft Radar'; code = 'DIESEL-RADAR'; }
       else if (fleetSub === 'cold_chain') { subTitle = 'Cold-Chain Temp Radar'; code = 'TEMP-REEFER'; }
       else if (fleetSub === 'maintenance') { subTitle = 'Fitness & Renewal Alerts'; code = 'FITNESS-ALERT'; }
@@ -583,7 +585,7 @@ export default function Dashboard() {
     'tax_audit', 'pod_inward'
   ];
 
-  const validFleetSubTabs = ['expenses', 'fastag_reconcile', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar', 'mobile_driver'] as const;
+  const validFleetSubTabs = ['expenses', 'fastag_reconcile', 'duty_slip', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar', 'mobile_driver'] as const;
   type FleetSubTab = typeof validFleetSubTabs[number];
 
   const validAiSubTabs = ['3d_load', 'ocr_scanner', 'route_predictor', 'spot_rate_ai', 'whatsapp_bot'] as const;
@@ -1306,6 +1308,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [driversList, setDriversList] = useState<DriverRow[]>(INITIAL_DRIVERS);
   const [driverSearch, setDriverSearch] = useState('');
   const [showAddDriverModal, setShowAddDriverModal] = useState(false);
+  const [selectedDriverDutySlip, setSelectedDriverDutySlip] = useState<any>(null);
   const [showAiScannerModal, setShowAiScannerModal] = useState(false);
   const [aiScannerDocType, setAiScannerDocType] = useState<'driving_license' | 'vehicle_rc' | 'physical_bilty'>('driving_license');
   const [newDriverName, setNewDriverName] = useState('');
@@ -2821,6 +2824,15 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                 <button
                   type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'duty_slip' ? 'active' : ''}`}
+                  onClick={() => { setFleetDeckSubTab('duty_slip'); setActiveTab('fleet_mgmt', 'duty_slip'); }}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>💬 {t('Driver WhatsApp Duty Slip', 'ड्राइवर व्हाट्सएप ड्यूटी स्लिप')}</span>
+                </button>
+
+                <button
+                  type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fuel_theft' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt', 'fuel_theft'); }}
                 >
@@ -2843,7 +2855,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>{t('Fitness & Renewal Alerts', 'फिटनेस और नवीनीकरण अलर्ट')}</span>
+                  <span>🚗 {t('Parivahan RC & Challan Radar', 'परिवहन RC और चालान रडार')}</span>
                 </button>
 
                 <button
@@ -5262,7 +5274,28 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--border, #f1f5f9)', fontSize: '11.5px' }}>
                       <span style={{ color: 'var(--text-secondary, #64748b)' }}>🛣️ Completed Trips</span>
-                      <strong style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', padding: '3px 8px', borderRadius: '6px' }}>{d.tripsCompleted} trips</strong>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <strong style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', padding: '3px 8px', borderRadius: '6px' }}>{d.tripsCompleted} trips</strong>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDriverDutySlip(d)}
+                          style={{
+                            background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          💬 Duty Slip
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -8920,6 +8953,23 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
           </button>
         </nav>
       </main>
+          {selectedDriverDutySlip && (
+        <DriverDutySlipModal
+          initialData={{
+            driverName: selectedDriverDutySlip.name,
+            driverPhone: selectedDriverDutySlip.phone,
+            vehicleNumber: selectedDriverDutySlip.assignedVehicle || 'RJ-14-GH-4921',
+            truckModel: 'Ashok Leyland 2820 (32ft MXL)',
+            originHub: selectedDriverDutySlip.hub || 'Delhi SuperHub (Okhla)',
+            destinationHub: 'Mumbai Port (Nhava Sheva)',
+            cargoDescription: 'Commercial HCV Consignment',
+            dieselAdvance: 15000,
+            bhattaAmount: 2500,
+            ewayBillNumber: '2410-9921-8841'
+          }}
+          onClose={() => setSelectedDriverDutySlip(null)}
+        />
+      )}
     </div>
   );
 }

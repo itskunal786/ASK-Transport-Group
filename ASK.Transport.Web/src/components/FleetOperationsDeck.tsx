@@ -1,3 +1,4 @@
+import DriverWhatsAppDutySlipDeck from './DriverWhatsAppDutySlipDeck';
 import { useState, useEffect } from 'react';
 import FleetTripExpenseManager from './FleetTripExpenseManager';
 import VehicleMaintenanceRadar from './VehicleMaintenanceRadar';
@@ -8,12 +9,12 @@ import FastagTollReconciliationDeck from './FastagTollReconciliationDeck';
 import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
-  initialTab?: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar';
-  onTabChange?: (tab: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar') => void;
+  initialTab?: 'expenses' | 'fastag_reconcile' | 'duty_slip' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar';
+  onTabChange?: (tab: 'expenses' | 'fastag_reconcile' | 'duty_slip' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar') => void;
 }
 
 export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChange }: FleetOperationsDeckProps) {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'expenses' | 'fastag_reconcile' | 'duty_slip' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>(initialTab);
 
   useEffect(() => {
     if (initialTab) {
@@ -21,7 +22,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
     }
   }, [initialTab]);
 
-  const handleTabClick = (tab: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar') => {
+  const handleTabClick = (tab: 'expenses' | 'fastag_reconcile' | 'duty_slip' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar') => {
     setActiveTab(tab);
     onTabChange?.(tab);
   };
@@ -98,6 +99,27 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
           }}
         >
           <span>🏷️</span> FASTag NETC Toll Reconciliation
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabClick('duty_slip')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '13px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            color: activeTab === 'duty_slip' ? '#10b981' : 'var(--text-secondary, #94a3b8)',
+            borderBottom: activeTab === 'duty_slip' ? '3px solid #059669' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <span>💬</span> Driver WhatsApp Duty Slip
         </button>
 
         <button
@@ -190,6 +212,12 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
         {activeTab === 'expenses' && (
           <ErrorBoundary fallbackTitle="Driver Trip Expenses Error">
             <FleetTripExpenseManager />
+          </ErrorBoundary>
+        )}
+
+                {activeTab === 'duty_slip' && (
+          <ErrorBoundary fallbackTitle="Driver WhatsApp Duty Slip Error">
+            <DriverWhatsAppDutySlipDeck />
           </ErrorBoundary>
         )}
 

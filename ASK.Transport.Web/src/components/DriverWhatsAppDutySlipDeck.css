@@ -1,0 +1,644 @@
+/* ============================================================================
+   DRIVER WHATSAPP HIGHWAY DUTY SLIP DECK STYLESHEET
+   100% Pure Cards Architecture with WhatsApp Dark Simulation
+   ============================================================================ */
+
+.duty-slip-deck-container {
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-card-inner: #f1f5f9;
+  --border-color: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+[data-theme="dark"] .duty-slip-deck-container,
+body.dark .duty-slip-deck-container,
+.dark .duty-slip-deck-container {
+  --bg-surface: #111a2e;
+  --bg-subtle: #090f1d;
+  --bg-card-inner: rgba(15, 23, 42, 0.7);
+  --border-color: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+/* 1. HERO BANNER */
+.duty-slip-hero-banner {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+  color: #ffffff;
+  padding: 24px 28px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
+}
+
+.duty-slip-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.duty-slip-hero-banner h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.duty-slip-hero-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #a7f3d0;
+  line-height: 1.5;
+  max-width: 760px;
+}
+
+/* 2. KPI METRICS */
+.duty-slip-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.duty-slip-kpi-card {
+  background: var(--bg-surface);
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.duty-slip-kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.duty-slip-kpi-val {
+  font-size: 24px;
+  font-weight: 900;
+  display: block;
+  margin: 6px 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.duty-slip-kpi-sub {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.duty-slip-kpi-sub.green { color: #10b981; }
+.duty-slip-kpi-sub.blue { color: #38bdf8; }
+.duty-slip-kpi-sub.amber { color: #f59e0b; }
+.duty-slip-kpi-sub.purple { color: #c084fc; }
+
+/* 3. MAIN ARENA 2-COLUMN GRID */
+.duty-slip-arena-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.duty-slip-compose-card,
+.duty-slip-preview-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.duty-slip-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 14px;
+}
+
+.duty-slip-card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duty-slip-card-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Quick Select Driver Chips */
+.duty-slip-driver-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px;
+}
+
+.duty-slip-driver-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.duty-slip-driver-chip:hover {
+  border-color: #10b981;
+}
+
+.duty-slip-driver-chip.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+}
+
+.chip-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.chip-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.chip-info strong {
+  font-size: 12px;
+}
+
+.chip-info small {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* Form Fields */
+.duty-slip-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.duty-slip-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.duty-slip-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.duty-slip-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.duty-slip-input {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.duty-slip-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.duty-slip-input.monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.text-emerald { color: #10b981 !important; }
+.text-amber { color: #f59e0b !important; }
+
+/* SIMULATED WHATSAPP DEVICE FRAME */
+.whatsapp-device-frame {
+  background: #0b141a;
+  border: 1px solid #202c33;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.whatsapp-chat-header {
+  background: #202c33;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.whatsapp-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #00a884;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.whatsapp-header-text strong {
+  display: block;
+  font-size: 13px;
+  color: #e9edef;
+}
+
+.whatsapp-header-text small {
+  font-size: 11px;
+  color: #8696a0;
+}
+
+.whatsapp-chat-body {
+  padding: 16px;
+  background: #0b141a;
+  background-image: radial-gradient(#182229 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.whatsapp-bubble {
+  background: #005c4b;
+  color: #e9edef;
+  border-radius: 10px 10px 2px 10px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.whatsapp-bubble-title {
+  font-weight: 800;
+  color: #25d366;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+}
+
+.whatsapp-salutation {
+  margin-bottom: 4px;
+}
+
+.whatsapp-spec-box {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  border-left: 3px solid #25d366;
+}
+
+.whatsapp-links-box {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+}
+
+.whatsapp-links-box span {
+  color: #53bdeb;
+  text-decoration: underline;
+}
+
+.whatsapp-footer-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11.5px;
+}
+
+.whatsapp-time {
+  font-size: 10.5px;
+  color: #8696a0;
+}
+
+/* Action Buttons */
+.duty-slip-action-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.duty-slip-btn-dispatch {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  transition: all 0.2s ease;
+}
+
+.duty-slip-btn-dispatch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+}
+
+.duty-slip-btn-web {
+  background: rgba(37, 211, 102, 0.15);
+  color: #25d366;
+  border: 1px solid #25d366;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.duty-slip-btn-web:hover {
+  background: #25d366;
+  color: #070d1e;
+}
+
+.duty-slip-btn-copy {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.duty-slip-success-banner {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.duty-slip-success-banner strong {
+  display: block;
+  font-size: 13.5px;
+  color: #10b981;
+}
+
+.duty-slip-success-banner p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 4. BOTTOM DRIVER LOAD REGISTRY CARDS (100% CARDS) */
+.duty-slip-recent-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.duty-slip-section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duty-slip-section-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.duty-slip-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.duty-slip-driver-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.duty-slip-driver-card:hover {
+  transform: translateY(-2px);
+  border-color: #10b981;
+}
+
+.duty-slip-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.driver-card-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.driver-card-name {
+  display: block;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+.driver-card-phone {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.duty-slip-status-pill {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.duty-slip-status-pill.en-route {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.duty-slip-status-pill.dispatched {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.duty-slip-status-pill.delivered {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.duty-slip-card-route {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-card-inner);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+}
+
+.route-arrow {
+  color: #10b981;
+}
+
+.duty-slip-card-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--bg-subtle);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.duty-slip-card-details small {
+  font-size: 9.5px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  display: block;
+}
+
+.duty-slip-card-details strong {
+  font-size: 12px;
+  display: block;
+  margin-top: 2px;
+}
+
+.duty-slip-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.duty-slip-sent-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.duty-slip-btn-reassign {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.duty-slip-btn-reassign:hover {
+  transform: translateY(-1px);
+}
+
+/* 5. RESPONSIVE BREAKPOINTS */
+@media (max-width: 900px) {
+  .duty-slip-arena-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .duty-slip-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .duty-slip-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
