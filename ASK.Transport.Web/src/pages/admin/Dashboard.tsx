@@ -1036,7 +1036,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditSearch, setAuditSearch] = useState('');
   const [forceLoggingOutId, setForceLoggingOutId] = useState<number | null>(null);
-  const [auditViewMode, setAuditViewMode] = useState<'cards' | 'table'>('cards');
 
   // Dynamic System Settings State
   const [settingsList, setSettingsList] = useState<SystemSettingItem[]>([]);
@@ -1069,7 +1068,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [usersLoading, setUsersLoading] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'SuperAdmin' | 'Admin' | 'User' | 'Active' | 'Pending'>('All');
-  const [userDirViewMode, setUserDirViewMode] = useState<'grid' | 'table'>('grid');
 
   function getUserAvatar(name: string, role: string) {
     const initials = name
@@ -4364,32 +4362,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     )}
                   </div>
 
-                  {/* Dual View Mode Switcher: Modern Cards vs Dense Table */}
-                  <div className="user-dir-view-mode-toggle">
-                    <button
-                      type="button"
-                      className={`user-dir-view-btn ${userDirViewMode === 'grid' ? 'active' : ''}`}
-                      onClick={() => setUserDirViewMode('grid')}
-                      title={t('Modern Directory Cards Grid', 'निर्देशिका कार्ड ग्रिड')}
-                    >
-                      🗂️ {t('Cards', 'कार्ड्स')}
-                    </button>
-                    <button
-                      type="button"
-                      className={`user-dir-view-btn ${userDirViewMode === 'table' ? 'active' : ''}`}
-                      onClick={() => setUserDirViewMode('table')}
-                      title={t('Responsive Data Table View', 'तालिका दृश्य')}
-                    >
-                      📑 {t('Table', 'तालिका')}
-                    </button>
-                  </div>
                 </div>
               </div>
 
-              {/* 4. USER DIRECTORY VIEW: GRID CARDS (PRIMARY) OR RESPONSIVE TABLE */}
-              {userDirViewMode === 'grid' ? (
-                /* 4A. MODERN DIRECTORY GRID CARDS */
-                <div className="user-dir-cards-grid">
+              {/* 4. USER DIRECTORY VIEW: MODERN GRID CARDS ONLY */}
+              <div className="user-dir-cards-grid">
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map(u => {
                       const userApproved = isUserApproved(u);
@@ -4571,199 +4548,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     </div>
                   )}
                 </div>
-              ) : (
-                /* 4B. RESPONSIVE TABLE VIEW (NON-OVERLAPPING ACTIONS) */
-                <div className="user-dir-table-wrapper">
-                  <table className="user-dir-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '38%' }}>{t('User Profile & Contact', 'उपयोगकर्ता विवरण व संपर्क')}</th>
-                        <th style={{ width: '16%' }}>{t('Assigned Role', 'सौंपी गई भूमिका')}</th>
-                        <th style={{ width: '18%' }}>{t('Access Clearance', 'एक्सेस क्लीयरेंस')}</th>
-                        <th style={{ width: '10%', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
-                        <th className="user-dir-th-actions" style={{ width: '18%' }}>
-                          {t('Actions & Delegation', 'क्रियाएं व अधिकार')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUsers.length > 0 ? (
-                        filteredUsers.map(u => {
-                          const userApproved = isUserApproved(u);
-                          const isPending = isApprovalPending(u.id, u.email);
-                          const avatar = getUserAvatar(u.name, u.role);
-
-                          return (
-                            <tr key={u.id}>
-                              {/* 1. USER PROFILE & CONTACT (STACKED VERTICALLY TO PREVENT OVERFLOW) */}
-                              <td>
-                                <div className="user-dir-profile-cell">
-                                  <div className="user-dir-avatar" style={{ background: avatar.bg }}>
-                                    {avatar.initials}
-                                  </div>
-                                  <div className="user-dir-name-col">
-                                    <div className="user-dir-name-row">
-                                      <span className="user-dir-name">{u.name}</span>
-                                      <span className="user-dir-id-badge">#{u.id}</span>
-                                    </div>
-                                    <div className="user-dir-contact-sub">
-                                      <a
-                                        href={`mailto:${u.email}`}
-                                        className="user-dir-email-link"
-                                        title={t('Send Email', 'ईमेल भेजें')}
-                                      >
-                                        📧 {u.email}
-                                      </a>
-                                      {u.phone && (
-                                        <span style={{ fontSize: '11px', color: '#64748b' }}>
-                                          📞 {u.phone}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* 2. ASSIGNED ROLE */}
-                              <td>
-                                <span
-                                  className={`user-dir-role-pill ${
-                                    u.role === 'SuperAdmin'
-                                      ? 'superadmin'
-                                      : u.role === 'Admin'
-                                      ? 'admin'
-                                      : 'user'
-                                  }`}
-                                >
-                                  {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Operations Admin' : '👤 Portal User'}
-                                </span>
-                              </td>
-
-                              {/* 3. ACCESS CLEARANCE */}
-                              <td>
-                                {u.role === 'SuperAdmin' ? (
-                                  <span className="user-dir-clearance-pill master">
-                                    👑 Full Master
-                                  </span>
-                                ) : u.role === 'Admin' ? (
-                                  <span className="user-dir-clearance-pill cleared">
-                                    ⚡ Admin Cleared
-                                  </span>
-                                ) : userApproved ? (
-                                  <span className="user-dir-clearance-pill approved" title="Payments, Invoices & Documents Unlocked">
-                                    🟢 Full Access (Approved)
-                                  </span>
-                                ) : isPending ? (
-                                  <span className="user-dir-clearance-pill pending" title="User requested account clearance">
-                                    🔔 Approval Requested
-                                  </span>
-                                ) : (
-                                  <span className="user-dir-clearance-pill restricted" title="New User Restricted to Book & Track only">
-                                    🟡 Book &amp; Track Only
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* 4. ACCOUNT STATUS */}
-                              <td style={{ textAlign: 'center' }}>
-                                <span className={`user-dir-status-pill ${u.isActive ? 'active' : 'suspended'}`}>
-                                  <span className={`user-dir-status-dot ${u.isActive ? 'active' : 'suspended'}`} />
-                                  {u.isActive ? t('Active', 'सक्रिय') : t('Suspended', 'निलंबित')}
-                                </span>
-                              </td>
-
-                              {/* 5. ACTIONS COLUMN (CLEAN FLOW, NEVER OVERLAPS STATUS) */}
-                              <td className="user-dir-td-actions">
-                                <div className="user-dir-actions-group">
-                                  {/* Quick Approval / Restriction Action for Regular Users */}
-                                  {u.role === 'User' && (
-                                    !userApproved ? (
-                                      <button
-                                        type="button"
-                                        className="user-dir-btn-action approve"
-                                        onClick={() => handleToggleUserApproval(u, true)}
-                                        title={t('Grant Full Role Access', 'पूर्ण एक्सेस दें')}
-                                      >
-                                        {isPending ? '✓ ' + t('Approve', 'स्वीकारें') : '🔓 ' + t('Grant', 'अनुमति दें')}
-                                      </button>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        className="user-dir-btn-action restrict"
-                                        onClick={() => handleToggleUserApproval(u, false)}
-                                        title={t('Restrict user back to Book & Track only', 'सीमित करें')}
-                                      >
-                                        🔒 {t('Restrict', 'सीमित')}
-                                      </button>
-                                    )
-                                  )}
-
-                                  <button
-                                    type="button"
-                                    className="user-dir-btn-action edit"
-                                    onClick={() => handleOpenEditUser(u)}
-                                    title={t('Edit user details', 'विवरण संपादित करें')}
-                                  >
-                                    ✏️ {t('Edit', 'बदलें')}
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    className={`user-dir-btn-action ${u.isActive ? 'suspend' : 'activate'}`}
-                                    onClick={() => handleToggleUserStatus(u)}
-                                    title={u.isActive ? t('Suspend User Account', 'खाता निलंबित करें') : t('Activate User Account', 'सक्रिय करें')}
-                                  >
-                                    {u.isActive ? t('Suspend', 'रोकें') : t('Activate', 'चालू करें')}
-                                  </button>
-
-                                  {user?.role === 'SuperAdmin' && (
-                                    <>
-                                      <button
-                                        type="button"
-                                        className="user-dir-btn-action role"
-                                        onClick={() => handleOpenRoleModal(u)}
-                                        title="Change User Role (SuperAdmin Only)"
-                                      >
-                                        👑 {t('Role', 'भूमिका')}
-                                      </button>
-
-                                      <button
-                                        type="button"
-                                        className="user-dir-btn-action rights"
-                                        onClick={() => handleOpenRightsModal(u)}
-                                        title="Delegate Specific Rights (SuperAdmin Only)"
-                                      >
-                                        🛡️ {t('Rights', 'अधिकार')}
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ) : (
-                        <tr>
-                          <td colSpan={5} style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-secondary, #64748b)' }}>
-                            <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
-                            <strong style={{ fontSize: '15px' }}>{t('No users found matching your search', 'कोई उपयोगकर्ता नहीं मिला')}</strong>
-                            <p style={{ margin: '6px 0 14px', fontSize: '12px' }}>
-                              {t('Try adjusting your search query or switching the role filter chip.', 'खोज शब्द बदलकर या फ़िल्टर रीसेट करके पुनः प्रयास करें।')}
-                            </p>
-                            <button
-                              type="button"
-                              className="admin-btn-export"
-                              onClick={() => { setCustomerSearch(''); setUserRoleFilter('All'); }}
-                            >
-                              🔄 {t('Reset Search & Filters', 'फ़िल्टर रीसेट करें')}
-                            </button>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           );
         })()}
@@ -6974,25 +6758,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     Filter Logs
                   </button>
 
-                  {/* Dual View Mode Switcher: Cards vs Table */}
-                  <div className="audit-view-mode-toggle">
-                    <button
-                      type="button"
-                      className={`audit-view-btn ${auditViewMode === 'cards' ? 'active' : ''}`}
-                      onClick={() => setAuditViewMode('cards')}
-                      title="Modern Audit Cards View"
-                    >
-                      🗂️ Cards
-                    </button>
-                    <button
-                      type="button"
-                      className={`audit-view-btn ${auditViewMode === 'table' ? 'active' : ''}`}
-                      onClick={() => setAuditViewMode('table')}
-                      title="Clean Data Table View"
-                    >
-                      📑 Table
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -7034,10 +6799,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               </div>
             </div>
 
-            {/* 5. AUDIT DATA (DUAL CARDS GRID & RESPONSIVE TABLE) */}
-            {auditViewMode === 'cards' ? (
-              /* 5A. MODERN AUDIT LEDGER CARDS */
-              <div className="audit-cards-grid">
+            {/* 5. AUDIT DATA (MODERN AUDIT LEDGER CARDS ONLY) */}
+            <div className="audit-cards-grid">
                 {filteredAuditLogs.length === 0 ? (
                   <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 20px', background: 'var(--bg-surface, #ffffff)', borderRadius: '16px', border: '1px solid var(--border-color, #e2e8f0)' }}>
                     <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
@@ -7130,139 +6893,15 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   })
                 )}
               </div>
-            ) : (
-              /* 5B. CLEAN RESPONSIVE AUDIT TABLE (NO OVERLAPPING COLUMNS) */
-              <div className="audit-table-card">
-                <div className="audit-table-responsive">
-                  <table className="audit-data-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '8%' }}>LOG ID</th>
-                        <th style={{ width: '16%' }}>TIME STAMP</th>
-                        <th style={{ width: '17%' }}>ACTION EVENT</th>
-                        <th style={{ width: '18%' }}>ACTOR / USER</th>
-                        <th style={{ width: '13%' }}>IP / ORIGIN</th>
-                        <th style={{ width: '16%' }}>DETAILS / METADATA</th>
-                        <th style={{ width: '12%', textAlign: 'right' }}>ACTION</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAuditLogs.length === 0 ? (
-                        <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8' }}>
-                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
-                            <div style={{ fontWeight: 600 }}>No audit events found matching current query.</div>
-                            <div style={{ fontSize: '12px', marginTop: '4px' }}>Try resetting search filters or selecting 'All Events'.</div>
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredAuditLogs.map(log => {
-                          const timeInfo = formatAuditTimestamp(log.createdAt || (log as any).CreatedAt || (log as any).timestamp);
-                          const isDanger = log.action.includes('FAILED') || log.action.includes('Delete') || log.action.includes('Force') || log.action.includes('SUSPENDED') || log.action.includes('KILL');
-                          const isWarning = log.action.includes('Role') || log.action.includes('ROLE') || log.action.includes('Rights') || log.action.includes('WARN') || log.action.includes('CREDIT') || log.action.includes('TARIFF');
-                          const isSuccess = log.action.includes('SUCCESS') || log.action.includes('ACTIVATED') || log.action.includes('GRANTED') || log.action.includes('APPROVED') || log.action.includes('REGISTERED');
-
-                          const actorEmail = log.userEmail || `User #${log.userId || '-'}`;
-                          const initials = actorEmail.slice(0, 2).toUpperCase();
-
-                          return (
-                            <tr key={log.id}>
-                              {/* 1. Log ID */}
-                              <td>
-                                <span className="audit-id-badge">#{log.id}</span>
-                              </td>
-
-                              {/* 2. Timestamp */}
-                              <td>
-                                <div className="audit-time-box">
-                                  <div className="audit-time-main">
-                                    <span>📅</span>
-                                    <span>{timeInfo.formatted}</span>
-                                  </div>
-                                  <span className="audit-time-rel">{timeInfo.relative}</span>
-                                </div>
-                              </td>
-
-                              {/* 3. Action Event Pill */}
-                              <td>
-                                <span className={`audit-action-pill ${
-                                  isDanger ? 'audit-pill-danger' :
-                                  isWarning ? 'audit-pill-warning' :
-                                  isSuccess ? 'audit-pill-success' :
-                                  'audit-pill-info'
-                                }`}>
-                                  {isDanger ? '⚡' : isWarning ? '⚠️' : isSuccess ? '✓' : 'ℹ️'} {log.action}
-                                </span>
-                              </td>
-
-                              {/* 4. Actor / User */}
-                              <td>
-                                <div className="audit-actor-box">
-                                  <div className="audit-actor-avatar" title={actorEmail}>
-                                    {initials}
-                                  </div>
-                                  <div className="audit-actor-details">
-                                    <div className="audit-actor-email" title={actorEmail}>
-                                      {actorEmail}
-                                    </div>
-                                    <div className="audit-actor-role">
-                                      {log.userId === 1 ? 'Super Admin' : log.userEmail?.includes('security') ? 'Security Officer' : 'System Admin'}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* 5. IP / Origin */}
-                              <td>
-                                <span className="audit-ip-badge">
-                                  🇮🇳 {log.ipAddress || '103.21.58.12'}
-                                </span>
-                              </td>
-
-                              {/* 6. Details / Metadata */}
-                              <td>
-                                <div className="audit-details-cell">
-                                  {log.details || '-'}
-                                </div>
-                              </td>
-
-                              {/* 7. Action Button (Clean Non-Overlapping) */}
-                              <td style={{ textAlign: 'right' }}>
-                                {log.userId ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleForceLogout(log.userId!, log.userEmail)}
-                                    disabled={forceLoggingOutId === log.userId}
-                                    className="audit-btn-killswitch"
-                                    title="Instantly revoke all active bearer tokens and sessions"
-                                  >
-                                    {forceLoggingOutId === log.userId ? 'Revoking...' : '⚡ Revoke'}
-                                  </button>
-                                ) : (
-                                  <span className="audit-system-event-badge">
-                                    🔒 System Event
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
+              {/* Immutable Compliance Audit Footer */}
+              <div className="audit-table-footer" style={{ marginTop: '16px' }}>
+                <div>
+                  Showing <strong>{filteredAuditLogs.length}</strong> of <strong>{auditLogs.length}</strong> immutable audit entries
                 </div>
-
-                {/* Table Footer */}
-                <div className="audit-table-footer">
-                  <div>
-                    Showing <strong>{filteredAuditLogs.length}</strong> of <strong>{auditLogs.length}</strong> immutable audit entries
-                  </div>
-                  <div>
-                    All logs append-only &bull; Retained for 7 years under statutory compliance
-                  </div>
+                <div>
+                  All logs append-only &bull; Retained for 7 years under statutory compliance
                 </div>
               </div>
-            )}
           </div>
         )}
 

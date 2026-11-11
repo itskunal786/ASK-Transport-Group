@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   X,
   PhoneCall,
-  MapPin,
   Wrench,
   FileCheck2,
   Copy,
@@ -131,21 +130,7 @@ export default function PhysicalPodInwardDeck() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PendingInward' | 'ScannedVerified' | 'PaymentReleased'>('ALL');
 
-  // Dual View Mode: Modern Cards (Default) vs Clean Responsive Table
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>(() => {
-    try {
-      const saved = localStorage.getItem('ask_admin_pod_view');
-      if (saved === 'cards' || saved === 'table') return saved;
-    } catch {}
-    return 'cards';
-  });
 
-  const handleSetViewMode = (mode: 'cards' | 'table') => {
-    setViewMode(mode);
-    try {
-      localStorage.setItem('ask_admin_pod_view', mode);
-    } catch {}
-  };
 
   // Scanner Input State
   const [barcodeInput, setBarcodeInput] = useState<string>('');
@@ -633,32 +618,12 @@ export default function PhysicalPodInwardDeck() {
                 )}
               </div>
 
-              {/* Dual View Mode Switcher */}
-              <div className="pod-view-toggle">
-                <button
-                  type="button"
-                  className={`pod-view-btn ${viewMode === 'cards' ? 'active' : ''}`}
-                  onClick={() => handleSetViewMode('cards')}
-                  title={t('Switch to Corridor Cards View', 'कार्ड्स दृश्य पर स्विच करें')}
-                >
-                  <span>🗂️</span>
-                  <span>{t('Cards', 'कार्ड्स')}</span>
-                </button>
-                <button
-                  type="button"
-                  className={`pod-view-btn ${viewMode === 'table' ? 'active' : ''}`}
-                  onClick={() => handleSetViewMode('table')}
-                  title={t('Switch to Clean Table View', 'तालिका दृश्य पर स्विच करें')}
-                >
-                  <span>📑</span>
-                  <span>{t('Table', 'तालिका')}</span>
-                </button>
-              </div>
+
             </div>
           </div>
 
-          {/* VIEW 1: MODERN HIGHWAY CORRIDOR BILTY / POD CARDS (PRIMARY) */}
-          {viewMode === 'cards' ? (
+          {/* MODERN HIGHWAY CORRIDOR BILTY / POD CARDS */}
+
             <div className="pod-cards-grid">
               {filteredPods.length === 0 ? (
                 <div className="pod-empty-state">
@@ -880,157 +845,6 @@ export default function PhysicalPodInwardDeck() {
                 })
               )}
             </div>
-          ) : (
-            /* VIEW 2: CLEAN RESPONSIVE DATA TABLE VIEW (NON-OVERLAPPING ACTIONS) */
-            <div className="pod-table-card">
-              <div className="pod-table-wrap">
-                <table className="pod-data-table">
-                  <thead>
-                    <tr>
-                      <th style={{ minWidth: '170px' }}>{t('Bilty / LR & Barcode', 'बिल्टी / LR व बारकोड')}</th>
-                      <th style={{ minWidth: '220px' }}>{t('Consignor & Consignee', 'प्रेषक एवं प्राप्तकर्ता')}</th>
-                      <th style={{ minWidth: '180px' }}>{t('Transporter & Vehicle', 'ट्रांसपोर्टर व वाहन')}</th>
-                      <th style={{ minWidth: '130px', textAlign: 'right' }}>{t('Total Freight', 'कुल भाड़ा')}</th>
-                      <th style={{ minWidth: '130px', textAlign: 'right' }}>{t('Bal 30% Due', 'शेष 30% देय')}</th>
-                      <th style={{ minWidth: '160px', textAlign: 'center' }}>{t('Physical POD Stamp', 'फिजिकल POD मुहर')}</th>
-                      <th style={{ minWidth: '130px', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
-                      <th style={{ minWidth: '160px', textAlign: 'right' }}>{t('Action', 'कार्रवाई')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPods.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
-                          No POD records found matching query.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredPods.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            <div className="pod-bilty-text">
-                              <FileCheck2 style={{ width: '15px', height: '15px', color: '#10b981' }} />
-                              <span>{item.biltyLrNumber}</span>
-                            </div>
-                            <div className="pod-barcode-token">
-                              {item.barcodeToken}
-                            </div>
-                            <div className="pod-cn-text">
-                              CN: {item.consignmentNo}
-                            </div>
-                          </td>
-
-                          <td>
-                            <div className="pod-party-name">{item.consignorName}</div>
-                            <div className="pod-party-dest">
-                              <MapPin style={{ width: '13px', height: '13px', color: '#94a3b8', flexShrink: 0 }} />
-                              <span>To: {item.consigneeName} ({item.destinationCity})</span>
-                            </div>
-                          </td>
-
-                          <td>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{item.transporterBrokerName}</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
-                              <span className="pod-vehicle-pill">{item.vehicleNumber}</span>
-                            </div>
-                            <div className="pod-driver-text">{item.driverName}</div>
-                          </td>
-
-                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <div style={{ fontWeight: 800, fontSize: '13px' }}>₹{item.totalFreightInr.toLocaleString('en-IN')}</div>
-                            <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
-                              70% Adv: ₹{item.advance70PercentPaidInr.toLocaleString('en-IN')}
-                            </div>
-                          </td>
-
-                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <div style={{ fontWeight: 900, color: '#10b981', fontSize: '13.5px' }}>
-                              ₹{item.balance30PercentDueInr.toLocaleString('en-IN')}
-                            </div>
-                            {item.payoutReleaseTransactionRef && (
-                              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                                Ref: {item.payoutReleaseTransactionRef}
-                              </div>
-                            )}
-                          </td>
-
-                          <td style={{ textAlign: 'center' }}>
-                            {item.consigneeStampVerified ? (
-                              <span className="pod-badge verified">
-                                <ShieldCheck style={{ width: '14px', height: '14px' }} />
-                                <span>{t('Signed & Stamped', 'हस्ताक्षरित व मुहरबंद')}</span>
-                              </span>
-                            ) : (
-                              <span className="pod-badge pending">
-                                <Clock style={{ width: '14px', height: '14px' }} />
-                                <span>{t('Stamp Pending', 'मुहर प्रतीक्षारत')}</span>
-                              </span>
-                            )}
-                            {item.opticalBarcodeScannedAt && (
-                              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '3px' }}>
-                                Scanned: {item.opticalBarcodeScannedAt}
-                              </div>
-                            )}
-                          </td>
-
-                          <td style={{ textAlign: 'center' }}>
-                            {item.verificationStatus === 'PaymentReleased' && (
-                              <span className="pod-badge released">
-                                <CheckCircle2 style={{ width: '14px', height: '14px' }} />
-                                <span>{t('30% Released', '30% भुगतान जारी')}</span>
-                              </span>
-                            )}
-                            {item.verificationStatus === 'ScannedVerified' && (
-                              <span className="pod-badge verified">
-                                <CheckCircle2 style={{ width: '14px', height: '14px' }} />
-                                <span>{t('Verified', 'सत्यापित')}</span>
-                              </span>
-                            )}
-                            {item.verificationStatus === 'PendingInward' && (
-                              <span className="pod-badge pending">
-                                <Clock style={{ width: '14px', height: '14px' }} />
-                                <span>{t('Pending Inward', 'इनवर्ड प्रतीक्षारत')}</span>
-                              </span>
-                            )}
-                          </td>
-
-                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            {item.verificationStatus === 'ScannedVerified' && (
-                              <button
-                                onClick={() => {
-                                  setPayoutTarget(item);
-                                  setUtrInput(`UTR-HDFC-${Math.floor(10000000 + Math.random() * 90000000)}`);
-                                }}
-                                className="pod-btn-payout"
-                                type="button"
-                              >
-                                <IndianRupee style={{ width: '13px', height: '13px' }} />
-                                <span>{t('Release 30% Pay', '30% भुगतान जारी')}</span>
-                              </button>
-                            )}
-                            {item.verificationStatus === 'PendingInward' && (
-                              <button
-                                onClick={() => handleQuickInward(item)}
-                                className="pod-btn-scan-now"
-                                type="button"
-                              >
-                                {t('Scan Now', 'स्कैन करें')}
-                              </button>
-                            )}
-                            {item.verificationStatus === 'PaymentReleased' && (
-                              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700 }}>
-                                ✓ {t('Settled', 'निपटारा संपन्न')}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
         </div>
       )}
 

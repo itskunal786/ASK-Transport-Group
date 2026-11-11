@@ -212,21 +212,7 @@ export default function VehicleMaintenanceRadar() {
     }
   });
 
-  // Dual View Mode: 'cards' (Corridor/Vehicle Cards Grid) vs 'table' (Clean Responsive Table)
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>(() => {
-    try {
-      const saved = localStorage.getItem('ask_fleet_maintenance_view');
-      if (saved === 'cards' || saved === 'table') return saved;
-    } catch {}
-    return 'cards'; // Cards view as modern default
-  });
 
-  const handleSetViewMode = (mode: 'cards' | 'table') => {
-    setViewMode(mode);
-    try {
-      localStorage.setItem('ask_fleet_maintenance_view', mode);
-    } catch {}
-  };
 
   async function loadData() {
     try {
@@ -417,25 +403,7 @@ export default function VehicleMaintenanceRadar() {
         </div>
 
         <div className="maintenance-actions-group">
-          {/* VIEW MODE TOGGLE (CARDS vs CLEAN TABLE) */}
-          <div className="maintenance-view-mode-toggle">
-            <button
-              type="button"
-              className={`maintenance-view-btn ${viewMode === 'cards' ? 'active' : ''}`}
-              onClick={() => handleSetViewMode('cards')}
-              title="Vehicle Cards Grid View"
-            >
-              🗂️ Cards
-            </button>
-            <button
-              type="button"
-              className={`maintenance-view-btn ${viewMode === 'table' ? 'active' : ''}`}
-              onClick={() => handleSetViewMode('table')}
-              title="Clean Table View"
-            >
-              📑 Table
-            </button>
-          </div>
+
 
           <div className="maintenance-search-box">
             <Search size={14} style={{ color: '#94a3b8' }} />
@@ -460,8 +428,8 @@ export default function VehicleMaintenanceRadar() {
         </div>
       </div>
 
-      {/* 3. DUAL VIEW: VEHICLE CARDS GRID vs CLEAN TABLE */}
-      {viewMode === 'cards' ? (
+      {/* 3. VEHICLE CARDS GRID */}
+
         /* ======================================================== */
         /* 3A. MODERN TMS VEHICLE COMPLIANCE CARDS GRID            */
         /* ======================================================== */
@@ -630,121 +598,6 @@ export default function VehicleMaintenanceRadar() {
             })
           )}
         </div>
-      ) : (
-        /* ======================================================== */
-        /* 3B. CLEAN RESPONSIVE TABLE VIEW                         */
-        /* ======================================================== */
-        <div className="maintenance-table-card">
-          <div style={{ overflowX: 'auto' }}>
-            <table className="maintenance-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '28%' }}>Truck &amp; Driver</th>
-                  <th style={{ width: '12%' }}>Fitness Certificate</th>
-                  <th style={{ width: '12%' }}>Commercial Insurance</th>
-                  <th style={{ width: '12%' }}>PUC Certificate</th>
-                  <th style={{ width: '11%' }}>National Permit</th>
-                  <th style={{ width: '11%' }}>Next Oil Service</th>
-                  <th style={{ width: '14%', textAlign: 'right' }}>Compliance Alert</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredList.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                      No fleet vehicles found matching the "{filterHealth}" filter{searchQuery ? ` and search "${searchQuery}"` : ''}.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredList.map(v => {
-                    const status = v.overallHealthStatus;
-                    const fitDays = v.fitnessDaysLeft;
-                    const insDays = v.insuranceDaysLeft;
-                    const pucDays = v.pucDaysLeft;
-                    const permitDays = v.permitDaysLeft;
-                    const kmLeft = v.kmUntilNextService;
-                    const alertedTime = alertedVehicles[v.vehicleId];
-
-                    return (
-                      <tr key={v.vehicleId}>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '18px' }}>{status === 'Critical' ? '🔴' : status === 'Warning' ? '🟡' : '🟢'}</span>
-                            <div>
-                              <strong className="maintenance-truck-plate">{v.vehicleNumber}</strong>
-                              <div className="maintenance-truck-model">{v.model} • <span style={{ color: 'var(--text-muted)' }}>{v.hubName}</span></div>
-                              <div className="maintenance-driver-info">{v.driverName} ({v.driverPhone})</div>
-                              {v.criticalIssues && v.criticalIssues.length > 0 && (
-                                <div className="maintenance-issue-tag">
-                                  ⚠ {v.criticalIssues[0]}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-
-                        <td>
-                          <strong style={{ color: fitDays <= 0 ? '#ef4444' : fitDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                            {fitDays <= 0 ? `EXPIRED (${Math.abs(fitDays)}d ago)` : `${fitDays} days left`}
-                          </strong>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            {v.fitnessExpiryDate ? new Date(v.fitnessExpiryDate).toLocaleDateString() : 'N/A'}
-                          </div>
-                        </td>
-
-                        <td>
-                          <strong style={{ color: insDays <= 0 ? '#ef4444' : insDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                            {insDays <= 0 ? `EXPIRED (${Math.abs(insDays)}d ago)` : `${insDays} days left`}
-                          </strong>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            {v.insuranceExpiryDate ? new Date(v.insuranceExpiryDate).toLocaleDateString() : 'N/A'}
-                          </div>
-                        </td>
-
-                        <td>
-                          <strong style={{ color: pucDays <= 0 ? '#ef4444' : pucDays <= 15 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                            {pucDays <= 0 ? `EXPIRED (${Math.abs(pucDays)}d ago)` : `${pucDays} days left`}
-                          </strong>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            {v.pucExpiryDate ? new Date(v.pucExpiryDate).toLocaleDateString() : 'Valid'}
-                          </div>
-                        </td>
-
-                        <td>
-                          <strong style={{ color: permitDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                            {permitDays} days
-                          </strong>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>All-India Form 48</div>
-                        </td>
-
-                        <td>
-                          <strong style={{ color: kmLeft <= 1000 ? '#f59e0b' : 'var(--text-primary)', display: 'block', fontSize: '13px' }}>
-                            {kmLeft} KM Left
-                          </strong>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>Due @ {v.nextEngineOilServiceKm.toLocaleString('en-IN')} KM</div>
-                        </td>
-
-                        <td style={{ textAlign: 'right' }}>
-                          <button
-                            type="button"
-                            disabled={sendingId === v.vehicleId}
-                            onClick={() => handleSendAlert(v)}
-                            className={`maintenance-btn-alert ${alertedTime ? 'alerted' : ''}`}
-                            title={`Send WhatsApp renewal alert to ${v.driverName}`}
-                          >
-                            <span>{alertedTime ? '✓' : '📲'}</span>
-                            <span>{sendingId === v.vehicleId ? 'Sending...' : alertedTime ? `Alerted (${alertedTime})` : 'WhatsApp Alert'}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

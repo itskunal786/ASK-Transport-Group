@@ -364,21 +364,7 @@ export default function LaneRateCalculatorMaster() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'active' | 'paused' | 'gq' | 'express' | 'longhaul' | 'shorthaul'>('all');
 
-  // Dual View Mode: 'cards' (Corridor Cards Grid) vs 'table' (Clean Responsive Table)
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>(() => {
-    try {
-      const saved = localStorage.getItem('ask_admin_lane_rates_view');
-      if (saved === 'cards' || saved === 'table') return saved;
-    } catch {}
-    return 'cards'; // Cards view as default
-  });
 
-  const handleSetViewMode = (mode: 'cards' | 'table') => {
-    setViewMode(mode);
-    try {
-      localStorage.setItem('ask_admin_lane_rates_view', mode);
-    } catch {}
-  };
 
   // Modal State for Add / Edit
   const [showModal, setShowModal] = useState(false);
@@ -973,25 +959,7 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
               )}
             </div>
 
-            {/* VIEW MODE TOGGLE (CARDS vs CLEAN TABLE) */}
-            <div className="lrm-view-mode-toggle">
-              <button
-                type="button"
-                className={`lrm-view-btn ${viewMode === 'cards' ? 'active' : ''}`}
-                onClick={() => handleSetViewMode('cards')}
-                title="Corridor Cards View"
-              >
-                🗂️ {t('Cards', 'कार्ड्स')}
-              </button>
-              <button
-                type="button"
-                className={`lrm-view-btn ${viewMode === 'table' ? 'active' : ''}`}
-                onClick={() => handleSetViewMode('table')}
-                title="Table View"
-              >
-                📑 {t('Table', 'टेबल')}
-              </button>
-            </div>
+
 
             <button
               type="button"
@@ -1070,8 +1038,8 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
           </div>
         </div>
 
-        {/* 4.2 DUAL VIEW: CORRIDOR CARDS GRID vs CLEAN NON-OVERLAPPING TABLE */}
-        {viewMode === 'cards' ? (
+        {/* 4.2 TMS CORRIDOR CARDS GRID */}
+
           /* ======================================================== */
           /* 4.2A MODERN TMS CORRIDOR CARDS GRID                      */
           /* ======================================================== */
@@ -1220,165 +1188,6 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
               ))
             )}
           </div>
-        ) : (
-          /* ======================================================== */
-          /* 4.2B CLEAN RESPONSIVE TABLE (NO OVERLAPPING COLUMNS)    */
-          /* ======================================================== */
-          <div className="lrm-table-wrapper">
-            <table className="lrm-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '22%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <MapPin size={13} style={{ color: '#38bdf8' }} />
-                      <span>{t('Route Corridor (Origin ➔ Dest)', 'रूट कॉरिडोर (कहाँ से कहाँ)')}</span>
-                    </div>
-                  </th>
-                  <th style={{ width: '10%' }}>{t('Distance', 'दूरी')}</th>
-                  <th style={{ width: '12%' }}>{t('PTL Rate (₹/KG)', 'पीटीएल दर (₹/किलो)')}</th>
-                  <th style={{ width: '11%' }}>{t('Min Floor (₹)', 'न्यूनतम बिल्टी')}</th>
-                  <th style={{ width: '13%' }}>{t('FTL Truck (₹)', 'पूर्ण ट्रक (FTL)')}</th>
-                  <th style={{ width: '11%' }}>{t('Express (₹/KG)', 'एक्सप्रेस दर')}</th>
-                  <th style={{ width: '10%' }}>{t('Est. Transit', 'समय सीमा')}</th>
-                  <th style={{ width: '9%' }}>{t('Status', 'स्थिति')}</th>
-                  <th style={{ width: '12%', textAlign: 'right' }}>{t('Actions', 'कार्रवाई')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRates.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
-                      <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
-                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#f1f5f9', marginBottom: '4px' }}>
-                        {t('No matching routes found', 'कोई मेल खाता रूट नहीं मिला')}
-                      </div>
-                      <div style={{ fontSize: '13px', color: '#64748b' }}>
-                        {t('Try adjusting your search or click "+ Add New Route Rate" to configure a new corridor.', 'सर्च शब्द बदलें या नया रूट जोड़ने के लिए "+ नया रूट भाड़ा जोड़ें" पर क्लिक करें।')}
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRates.map(r => (
-                    <tr key={r.id}>
-                      {/* ROUTE CORRIDOR */}
-                      <td>
-                        <div className="lrm-route-cell">
-                          <div className="lrm-route-id-row">
-                            <span className="lrm-lane-id-tag">#{r.id}</span>
-                            <span className="lrm-state-tag">{r.originState} ➔ {r.destState}</span>
-                          </div>
-                          <div className="lrm-route-name-row">
-                            <strong className="lrm-city-text origin">{r.originCity}</strong>
-                            <span className="lrm-arrow-icon">➔</span>
-                            <strong className="lrm-city-text dest">{r.destCity}</strong>
-                          </div>
-                          <div className="lrm-highway-row">
-                            <span className="lrm-highway-pill">🛣️ {r.corridorHighway}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleLoadInSimulator(r)}
-                              className="lrm-btn-quick-calc"
-                              title="Test this route in rate calculator above"
-                            >
-                              ⚡ Test Rate
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* DISTANCE */}
-                      <td>
-                        <span className="lrm-km-badge-cell">
-                          <span>📏</span>
-                          <strong>{r.distanceKm}</strong>
-                          <small>KM</small>
-                        </span>
-                      </td>
-
-                      {/* PTL PARCEL RATE */}
-                      <td>
-                        <div className="lrm-rate-container ptl">
-                          <strong className="lrm-rate-val">₹{r.ptlRatePerKg.toFixed(2)}</strong>
-                          <span className="lrm-rate-unit">/ KG</span>
-                        </div>
-                      </td>
-
-                      {/* MINIMUM FLOOR */}
-                      <td>
-                        <span className="lrm-min-floor-badge">
-                          <span>🛡️</span>
-                          <span>₹{r.minBiltyCharge.toLocaleString('en-IN')}</span>
-                        </span>
-                      </td>
-
-                      {/* FTL FULL TRUCK RATE */}
-                      <td>
-                        <div className="lrm-rate-container ftl">
-                          <strong className="lrm-ftl-val">₹{r.ftlFullTruckRate.toLocaleString('en-IN')}</strong>
-                          <span className="lrm-ftl-unit">32ft MXL</span>
-                        </div>
-                      </td>
-
-                      {/* EXPRESS RATE */}
-                      <td>
-                        <div className="lrm-rate-container express">
-                          <strong className="lrm-express-val">₹{r.expressRatePerKg.toFixed(2)}</strong>
-                          <span className="lrm-express-unit">/ KG</span>
-                        </div>
-                      </td>
-
-                      {/* TRANSIT HOURS */}
-                      <td>
-                        <span className="lrm-transit-pill">
-                          <Clock size={12} style={{ color: '#38bdf8' }} />
-                          <span>{r.transitHours}</span>
-                        </span>
-                      </td>
-
-                      {/* ACTIVE STATUS TOGGLE */}
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStatus(r.id)}
-                          className={`lrm-status-toggle-pill ${r.isActive ? 'active' : 'paused'}`}
-                          title="Click to toggle status (Active / Paused)"
-                        >
-                          <span className={`lrm-toggle-dot ${r.isActive ? 'active' : 'paused'}`} />
-                          <span>{r.isActive ? t('Active ✓', 'सक्रिय ✓') : t('Paused ⏸', 'रोका गया ⏸')}</span>
-                        </button>
-                      </td>
-
-                      {/* ACTIONS (CLEAN, NO OVERLAPPING STICKY OVERLAY) */}
-                      <td style={{ textAlign: 'right' }}>
-                        <div className="lrm-action-buttons">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditModal(r)}
-                            className="lrm-action-btn edit"
-                            title="Edit lane rates"
-                          >
-                            <Edit2 size={13} />
-                            <span>{t('Edit', 'बदलें')}</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRate(r.id, `${r.originCity} ➔ ${r.destCity}`)}
-                            className="lrm-action-btn delete"
-                            title="Delete route rate"
-                          >
-                            <Trash2 size={13} />
-                            <span>{t('Delete', 'हटाएं')}</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       {/* 5. ADD / EDIT RATE MODAL */}
