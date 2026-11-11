@@ -228,7 +228,7 @@ export const CaTaxAuditVault: React.FC = () => {
   const [activeFilingTab, setActiveFilingTab] = useState<'ALL' | GstTaxFilingType>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'READY_FOR_PORTAL' | 'FILED_ACKNOWLEDGED' | 'UNDER_RECONCILIATION'>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'TABLE' | 'CARDS'>('TABLE');
+  const [viewMode, setViewMode] = useState<'TABLE' | 'CARDS'>('CARDS');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Modals
@@ -882,14 +882,14 @@ export const CaTaxAuditVault: React.FC = () => {
             <table className="tax-data-table">
               <thead>
                 <tr>
-                  <th>{t('Doc / Invoice Ref', 'दस्तावेज़ / इनवॉइस सं.')}</th>
-                  <th>{t('Party Name & GSTIN', 'पार्टी का नाम व GSTIN')}</th>
-                  <th>{t('Filing Type', 'फाइलिंग प्रकार')}</th>
-                  <th style={{ textAlign: 'right' }}>{t('Taxable Value', 'कर योग्य मूल्य')}</th>
-                  <th style={{ textAlign: 'right' }}>{t('GST Output', 'GST आउटपुट')}</th>
-                  <th style={{ textAlign: 'right' }}>{t('194C TDS', '194C TDS')}</th>
-                  <th style={{ textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
-                  <th className="tax-sticky-actions" style={{ textAlign: 'center' }}>{t('Actions', 'कार्रवाई')}</th>
+                  <th style={{ width: '16%' }}>{t('Doc / Invoice Ref', 'दस्तावेज़ / इनवॉइस सं.')}</th>
+                  <th style={{ width: '22%' }}>{t('Party Name & GSTIN', 'पार्टी का नाम व GSTIN')}</th>
+                  <th style={{ width: '13%' }}>{t('Filing Type', 'फाइलिंग प्रकार')}</th>
+                  <th style={{ width: '12%', textAlign: 'right' }}>{t('Taxable Value', 'कर योग्य मूल्य')}</th>
+                  <th style={{ width: '12%', textAlign: 'right' }}>{t('GST Output', 'GST आउटपुट')}</th>
+                  <th style={{ width: '11%', textAlign: 'right' }}>{t('194C TDS', '194C TDS')}</th>
+                  <th style={{ width: '9%', textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
+                  <th className="tax-actions-cell" style={{ width: '5%', textAlign: 'right' }}>{t('Actions', 'कार्रवाई')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1038,7 +1038,7 @@ export const CaTaxAuditVault: React.FC = () => {
                         </td>
 
                         {/* 8. Actions (Sticky Right Column) */}
-                        <td className="tax-sticky-actions" style={{ textAlign: 'center' }}>
+                        <td className="tax-actions-cell" style={{ textAlign: 'right' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                             <button
                               type="button"
@@ -1079,7 +1079,7 @@ export const CaTaxAuditVault: React.FC = () => {
           /* VIEW 2: RESPONSIVE CARDS VIEW (NO HORIZONTAL SCROLLBAR) */
           <div className="tax-cards-grid">
             {filteredEntries.map((item) => (
-              <div key={item.id} className="tax-card-item">
+              <div key={item.id} className={`tax-card-item type-${item.taxFilingType}`}>
                 <div className="tax-card-header">
                   <div>
                     <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>

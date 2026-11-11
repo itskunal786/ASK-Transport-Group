@@ -625,16 +625,20 @@
 }
 
 /* STICKY ACTIONS COLUMN ON RIGHT */
+.tax-actions-cell,
 .tax-sticky-actions {
-  position: sticky !important;
-  right: 0 !important;
-  background: var(--bg-surface, #ffffff) !important;
-  z-index: 10 !important;
-  box-shadow: -6px 0 14px rgba(0, 0, 0, 0.15) !important;
+  position: static !important;
+  right: auto !important;
+  background: transparent !important;
+  z-index: 1 !important;
+  box-shadow: none !important;
+  text-align: right;
+  white-space: nowrap;
 }
 
+.tax-data-table tr:hover .tax-actions-cell,
 .tax-data-table tr:hover .tax-sticky-actions {
-  background: var(--bg-hover, #f8faff);
+  background: transparent !important;
 }
 
 .tax-gstin-chip {
@@ -1483,17 +1487,23 @@ body.dark .tax-data-table tr:hover td,
   background: rgba(99, 102, 241, 0.08) !important;
 }
 
+[data-theme="dark"] .tax-actions-cell,
+body.dark .tax-actions-cell,
+.dark .tax-actions-cell,
 [data-theme="dark"] .tax-sticky-actions,
 body.dark .tax-sticky-actions,
 .dark .tax-sticky-actions {
-  background: #0f172a !important;
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.5) !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
+[data-theme="dark"] .tax-data-table tr:hover .tax-actions-cell,
+body.dark .tax-data-table tr:hover .tax-actions-cell,
+.dark .tax-data-table tr:hover .tax-actions-cell,
 [data-theme="dark"] .tax-data-table tr:hover .tax-sticky-actions,
 body.dark .tax-data-table tr:hover .tax-sticky-actions,
 .dark .tax-data-table tr:hover .tax-sticky-actions {
-  background: #131d33 !important;
+  background: transparent !important;
 }
 
 [data-theme="dark"] .tax-table-wrap::-webkit-scrollbar-track,
@@ -1644,4 +1654,21 @@ body.dark .tax-btn-helper,
 body.dark .tax-rcm-desc,
 .dark .tax-rcm-desc {
   color: #cbd5e1 !important;
+}
+
+/* Card type accents */
+.tax-card-item.type-Gstr1B2B {
+  border-left: 4px solid #0284c7 !important;
+}
+
+.tax-card-item.type-Gstr3BMonthlySummary {
+  border-left: 4px solid #9333ea !important;
+}
+
+.tax-card-item.type-RcmFivePercent {
+  border-left: 4px solid #f59e0b !important;
+}
+
+.tax-card-item.type-Tds194C26As {
+  border-left: 4px solid #10b981 !important;
 }
