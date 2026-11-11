@@ -9,9 +9,10 @@ import ErrorBoundary from './ErrorBoundary';
 
 interface FleetOperationsDeckProps {
   initialTab?: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar';
+  onTabChange?: (tab: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar') => void;
 }
 
-export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOperationsDeckProps) {
+export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChange }: FleetOperationsDeckProps) {
   const [activeTab, setActiveTab] = useState<'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar'>(initialTab);
 
   useEffect(() => {
@@ -19,6 +20,11 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
+  const handleTabClick = (tab: 'expenses' | 'fastag_reconcile' | 'fuel_theft' | 'cold_chain' | 'maintenance' | 'mobile_driver' | 'tyre_radar') => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -54,7 +60,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
       <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px', overflowX: 'auto' }}>
         <button
           type="button"
-          onClick={() => setActiveTab('expenses')}
+          onClick={() => handleTabClick('expenses')}
           style={{
             padding: '10px 18px',
             fontSize: '13px',
@@ -75,7 +81,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
-          onClick={() => setActiveTab('fastag_reconcile')}
+          onClick={() => handleTabClick('fastag_reconcile')}
           style={{
             padding: '10px 18px',
             fontSize: '13px',
@@ -96,7 +102,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
-          onClick={() => setActiveTab('fuel_theft')}
+          onClick={() => handleTabClick('fuel_theft')}
           style={{
             padding: '10px 18px',
             fontSize: '13px',
@@ -117,7 +123,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
-          onClick={() => setActiveTab('cold_chain')}
+          onClick={() => handleTabClick('cold_chain')}
           style={{
             padding: '10px 18px',
             fontSize: '13px',
@@ -138,7 +144,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
-          onClick={() => setActiveTab('maintenance')}
+          onClick={() => handleTabClick('maintenance')}
           style={{
             padding: '10px 18px',
             fontSize: '13px',
@@ -159,7 +165,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses' }: FleetOp
 
         <button
           type="button"
-          onClick={() => setActiveTab('tyre_radar')}
+          onClick={() => handleTabClick('tyre_radar')}
           style={{
             padding: '10px 18px',
             fontSize: '13px',

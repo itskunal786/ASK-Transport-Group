@@ -505,7 +505,8 @@ export function getTabHeaderInfo(
     case 'fleet_mgmt': {
       let subTitle = 'Trip Petty Cash & P&L';
       let code = 'FLEET-CASH';
-      if (fleetSub === 'fuel_theft') { subTitle = 'Fuel & Diesel Theft Radar'; code = 'DIESEL-RADAR'; }
+      if (fleetSub === 'fastag_reconcile') { subTitle = 'FASTag NETC Toll Reconciliation'; code = 'FASTAG-NETC'; }
+      else if (fleetSub === 'fuel_theft') { subTitle = 'Fuel & Diesel Theft Radar'; code = 'DIESEL-RADAR'; }
       else if (fleetSub === 'cold_chain') { subTitle = 'Cold-Chain Temp Radar'; code = 'TEMP-REEFER'; }
       else if (fleetSub === 'maintenance') { subTitle = 'Fitness & Renewal Alerts'; code = 'FITNESS-ALERT'; }
       else if (fleetSub === 'tyre_radar') { subTitle = 'Tyre & TPMS Radar'; code = 'TPMS-RADAR'; }
@@ -582,7 +583,7 @@ export default function Dashboard() {
     'tax_audit', 'pod_inward'
   ];
 
-  const validFleetSubTabs = ['expenses', 'fastag_reconcile', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar'] as const;
+  const validFleetSubTabs = ['expenses', 'fastag_reconcile', 'fuel_theft', 'cold_chain', 'maintenance', 'tyre_radar', 'mobile_driver'] as const;
   type FleetSubTab = typeof validFleetSubTabs[number];
 
   const validAiSubTabs = ['3d_load', 'ocr_scanner', 'route_predictor', 'spot_rate_ai', 'whatsapp_bot'] as const;
@@ -2811,6 +2812,15 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                 <button
                   type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fastag_reconcile' ? 'active' : ''}`}
+                  onClick={() => { setFleetDeckSubTab('fastag_reconcile'); setActiveTab('fleet_mgmt', 'fastag_reconcile'); }}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>{t('FASTag NETC Toll Reconciliation', 'फास्टैग टोल समाधान')}</span>
+                </button>
+
+                <button
+                  type="button"
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fuel_theft' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt', 'fuel_theft'); }}
                 >
@@ -2932,11 +2942,20 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                 <button
                   type="button"
-                  className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab !== 'settlement' ? 'active' : ''}`}
+                  className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && (financeDeckSubTab === 'einv' || financeDeckSubTab === 'erp') ? 'active' : ''}`}
                   onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting', 'einv'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
                   <span>{t('GST E-Invoice & ERP Ledgers', 'जीएसटी ई-चालान और ईआरपी लेजर')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'credit' ? 'active' : ''}`}
+                  onClick={() => { setFinanceDeckSubTab('credit'); setActiveTab('finance_accounting', 'credit'); }}
+                >
+                  <span className="nav-sub-bullet">•</span>
+                  <span>{t('Shipper Credit & Auto-Lock', 'कस्टमर क्रेडिट और ऑटो-लॉक')}</span>
                 </button>
 
                 <button
@@ -3856,7 +3875,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
         {activeTab === 'fleet_mgmt' && (
           <div className="admin-content-pad">
             <ErrorBoundary fallbackTitle="Fleet Petty Cash & Operations Error">
-              <FleetOperationsDeck initialTab={fleetDeckSubTab} />
+              <FleetOperationsDeck
+                initialTab={fleetDeckSubTab}
+                onTabChange={(tab) => {
+                  setFleetDeckSubTab(tab);
+                  setActiveTab('fleet_mgmt', tab);
+                }}
+              />
             </ErrorBoundary>
           </div>
         )}
