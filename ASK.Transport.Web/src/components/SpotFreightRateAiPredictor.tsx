@@ -13,165 +13,48 @@ import {
   Star,
   ShieldCheck,
   Sparkles,
-  Activity
+  Activity,
+  CheckCircle,
+  FileText,
+  Printer,
+  X,
+  RotateCcw,
 } from 'lucide-react';
 import {
   getFreightCorridors,
   getBrokerBids,
   acceptBrokerBid,
-  broadcastLoadRequirement
+  broadcastLoadRequirement,
+  resetBrokerBidsToDefault,
+  saveLocalBids,
+  DEFAULT_CORRIDORS,
+  DEFAULT_BIDS
 } from '../api/spotFreightApi';
+import type { FreightCorridorIndex, SpotBrokerBid } from '../types/transportOperations';
 import { useLanguage } from '../context/LanguageContext';
 import './SpotFreightRateAiPredictor.css';
 
-// ============================================================================
-// SPOT FREIGHT RATE & BROKER EXCHANGE MODELS
-// ============================================================================
-
-export interface FreightCorridorIndex {
-  id: string;
-  lane: string;
-  originHub: string;
-  destinationHub: string;
-  distanceKm: number;
-  bodyType: 'Container 32ft' | '16-Wheeler Open' | '22-Wheeler Trailer' | 'Reefer Cold';
-  recommendedCapacityTon: number;
-  currentSpotRateInr: number;
-  thirtyDayAvgRateInr: number;
-  trendPercentage: number;
-  trendDirection: 'UP' | 'DOWN' | 'STABLE';
-  marketLorryAvailability: 'SURPLUS' | 'BALANCED' | 'DEFICIT_HIGH_DEMAND';
-  dieselImpactNote: string;
-}
-
-export interface SpotBrokerBid {
-  id: string;
-  brokerName: string;
-  contactPerson: string;
-  phone: string;
-  vehicleNumber: string;
-  vehicleBody: string;
-  quotedRateInr: number;
-  varianceVsTargetInr: number;
-  driverRating: number;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  bidReceivedTime: string;
-}
-
-// ============================================================================
-// INITIAL MOCK DATA: MAJOR INDIAN FREIGHT HIGHWAY CORRIDORS
-// ============================================================================
-
-const INITIAL_CORRIDORS: FreightCorridorIndex[] = [
-  {
-    id: 'LANE-01',
-    lane: 'Pune ➔ Kolkata (NH-53)',
-    originHub: 'Pune Logistics Park (MH)',
-    destinationHub: 'Dankuni Hub, Kolkata (WB)',
-    distanceKm: 1840,
-    bodyType: '16-Wheeler Open',
-    recommendedCapacityTon: 22.0,
-    currentSpotRateInr: 92000,
-    thirtyDayAvgRateInr: 94500,
-    trendPercentage: -2.6,
-    trendDirection: 'DOWN',
-    marketLorryAvailability: 'SURPLUS',
-    dieselImpactNote: 'Surplus return empty lorries from Maharashtra manufacturing belt.'
-  },
-  {
-    id: 'LANE-02',
-    lane: 'Delhi ➔ Mumbai (NH-48)',
-    originHub: 'Kundli Terminal, Delhi NCR',
-    destinationHub: 'Bhiwandi Hub, Mumbai (MH)',
-    distanceKm: 1420,
-    bodyType: 'Container 32ft',
-    recommendedCapacityTon: 20.0,
-    currentSpotRateInr: 68500,
-    thirtyDayAvgRateInr: 66200,
-    trendPercentage: +3.4,
-    trendDirection: 'UP',
-    marketLorryAvailability: 'DEFICIT_HIGH_DEMAND',
-    dieselImpactNote: 'Festive retail e-commerce surge. Lorry demand exceeds supply.'
-  },
-  {
-    id: 'LANE-03',
-    lane: 'Bengaluru ➔ Delhi (NH-44)',
-    originHub: 'Nelamangala Hub, Bengaluru',
-    destinationHub: 'Kundli Terminal, Delhi NCR',
-    distanceKm: 2150,
-    bodyType: '22-Wheeler Trailer',
-    recommendedCapacityTon: 25.0,
-    currentSpotRateInr: 112000,
-    thirtyDayAvgRateInr: 110000,
-    trendPercentage: +1.8,
-    trendDirection: 'UP',
-    marketLorryAvailability: 'BALANCED',
-    dieselImpactNote: 'Steady South-North industrial electronics and textile flow.'
-  },
-  {
-    id: 'LANE-04',
-    lane: 'Ahmedabad ➔ Chennai (NH-48/16)',
-    originHub: 'Changodar Hub, Ahmedabad',
-    destinationHub: 'Madhavaram Hub, Chennai',
-    distanceKm: 1720,
-    bodyType: '16-Wheeler Open',
-    recommendedCapacityTon: 20.0,
-    currentSpotRateInr: 88000,
-    thirtyDayAvgRateInr: 87500,
-    trendPercentage: +0.5,
-    trendDirection: 'STABLE',
-    marketLorryAvailability: 'BALANCED',
-    dieselImpactNote: 'Chemical and pharma freight rates steady with minimal fluctuation.'
-  }
-];
-
-const INITIAL_BIDS: SpotBrokerBid[] = [
-  {
-    id: 'BID-01',
-    brokerName: 'Shree Ram Roadlines (Vapi)',
-    contactPerson: 'Sukhwinder Singh',
-    phone: '+91 98251 44021',
-    vehicleNumber: 'GJ-15-AT-7819',
-    vehicleBody: '16-Wheeler 28 Ton Multi-Axle',
-    quotedRateInr: 64500,
-    varianceVsTargetInr: -1535,
-    driverRating: 4.8,
-    status: 'ACCEPTED',
-    bidReceivedTime: '12 mins ago'
-  },
-  {
-    id: 'BID-02',
-    brokerName: 'Western Fleet Carrier (Thane)',
-    contactPerson: 'Karan Sharma',
-    phone: '+91 98200 99122',
-    vehicleNumber: 'MH-04-HY-6612',
-    vehicleBody: '16-Wheeler Tata Signa',
-    quotedRateInr: 65800,
-    varianceVsTargetInr: -235,
-    driverRating: 4.6,
-    status: 'PENDING',
-    bidReceivedTime: '18 mins ago'
-  },
-  {
-    id: 'BID-03',
-    brokerName: 'Balaji Transport Syndicate (Pune)',
-    contactPerson: 'Mahesh Patil',
-    phone: '+91 98901 33451',
-    vehicleNumber: 'MH-12-PQ-8890',
-    vehicleBody: '16-Wheeler Ashok Leyland',
-    quotedRateInr: 68500,
-    varianceVsTargetInr: +2465,
-    driverRating: 4.9,
-    status: 'PENDING',
-    bidReceivedTime: '24 mins ago'
-  }
-];
-
 export default function SpotFreightRateAiPredictor() {
   const { t } = useLanguage();
-  const [corridors, setCorridors] = useState<FreightCorridorIndex[]>(INITIAL_CORRIDORS);
-  const [selectedCorridor, setSelectedCorridor] = useState<FreightCorridorIndex>(INITIAL_CORRIDORS[0]);
-  const [bids, setBids] = useState<SpotBrokerBid[]>(INITIAL_BIDS);
+  const [corridors, setCorridors] = useState<FreightCorridorIndex[]>(DEFAULT_CORRIDORS);
+  const [selectedCorridor, setSelectedCorridor] = useState<FreightCorridorIndex>(DEFAULT_CORRIDORS[0]);
+
+  // Persistent Bids State from LocalStorage
+  const [bids, setBids] = useState<SpotBrokerBid[]>(() => {
+    try {
+      const cached = localStorage.getItem('ask_spot_broker_bids');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached spot broker bids', e);
+    }
+    return DEFAULT_BIDS;
+  });
+
+  // Modal State for Accepted Trip Advice Sheet
+  const [selectedAcceptedBid, setSelectedAcceptedBid] = useState<SpotBrokerBid | null>(null);
 
   // Custom Route AI Calculator State
   const [calcDistanceKm, setCalcDistanceKm] = useState<number>(1840);
@@ -186,14 +69,23 @@ export default function SpotFreightRateAiPredictor() {
   const [broadcastSent, setBroadcastSent] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Sync with API or LocalStorage on mount
   useEffect(() => {
     Promise.all([getFreightCorridors(), getBrokerBids()])
       .then(([cData, bData]) => {
         if (cData && cData.length > 0) setCorridors(cData);
-        if (bData && bData.length > 0) setBids(bData);
+        if (bData && bData.length > 0) {
+          // If local state doesn't differ dramatically, keep or sync
+          setBids(bData);
+        }
       })
       .catch(() => {});
   }, []);
+
+  // Save bids to localStorage on any state change
+  useEffect(() => {
+    saveLocalBids(bids);
+  }, [bids]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -220,10 +112,16 @@ export default function SpotFreightRateAiPredictor() {
   // --------------------------------------------------------------------------
   // ACTIONS
   // --------------------------------------------------------------------------
-  const handleBroadcastLoad = () => {
-    broadcastLoadRequirement(selectedCorridor.lane, calcCargoTon, maxSpotMarketLorryHireCap).catch(() => {});
+  const handleBroadcastLoad = async () => {
     setIsBroadcasting(true);
     showToast(`📲 ${t('Broadcasting load requirement on 65+ verified WhatsApp Transport Broker channels...', '65+ सत्यापित व्हाट्सएप ट्रांसपोर्ट ब्रोकर चैनलों पर लोड आवश्यकता प्रसारित की जा रही है...')}`);
+    
+    try {
+      await broadcastLoadRequirement(selectedCorridor.lane, calcCargoTon, maxSpotMarketLorryHireCap);
+      const updated = await getBrokerBids();
+      setBids(updated);
+    } catch {}
+
     setTimeout(() => {
       setIsBroadcasting(false);
       setBroadcastSent(true);
@@ -231,13 +129,70 @@ export default function SpotFreightRateAiPredictor() {
     }, 1200);
   };
 
+  const handleResetBids = () => {
+    const defaults = resetBrokerBidsToDefault();
+    setBids(defaults);
+    showToast(`🔄 ${t('Spot market bids reset to default.', 'स्पॉट मार्केट बोलियां डिफॉल्ट पर रीसेट कर दी गईं।')}`);
+  };
+
   const handleAcceptBid = (bidId: string) => {
+    let acceptedItem: SpotBrokerBid | null = null;
+
+    const updatedBids: SpotBrokerBid[] = bids.map(b => {
+      if (b.id === bidId) {
+        const advance = Math.round(b.quotedRateInr * 0.7);
+        const balance = b.quotedRateInr - advance;
+        const tds = Math.round(b.quotedRateInr * 0.02);
+        const tripNo = b.tripSheetNo || `TRP-SPOT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const time = b.issuedAt || new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+        acceptedItem = {
+          ...b,
+          status: 'ACCEPTED',
+          tripSheetNo: tripNo,
+          issuedAt: time,
+          advanceAmount: advance,
+          balanceAmount: balance,
+          tdsDeduction: tds
+        };
+        return acceptedItem;
+      }
+      return {
+        ...b,
+        status: 'REJECTED'
+      };
+    });
+
+    setBids(updatedBids);
+    saveLocalBids(updatedBids);
     acceptBrokerBid(bidId).catch(() => {});
-    setBids(prev =>
-      prev.map(b => (b.id === bidId ? { ...b, status: 'ACCEPTED' } : { ...b, status: 'REJECTED' }))
+
+    if (acceptedItem) {
+      setSelectedAcceptedBid(acceptedItem);
+      showToast(`✅ ${t(`Bid from ${(acceptedItem as SpotBrokerBid).brokerName} (₹${(acceptedItem as SpotBrokerBid).quotedRateInr.toLocaleString('en-IN')}) accepted! Trip Advice ${(acceptedItem as SpotBrokerBid).tripSheetNo} issued.`, `${(acceptedItem as SpotBrokerBid).brokerName} की बोली (₹${(acceptedItem as SpotBrokerBid).quotedRateInr.toLocaleString('en-IN')}) स्वीकृत! ट्रिप एडवाइस ${(acceptedItem as SpotBrokerBid).tripSheetNo} जारी।`)}`);
+    }
+  };
+
+  const handleRevokeBid = (bidId: string) => {
+    const updated = bids.map(b => (b.id === bidId ? { ...b, status: 'PENDING' as const } : b));
+    setBids(updated);
+    saveLocalBids(updated);
+    showToast(`⚠️ ${t('Bid revoked and re-opened for negotiation.', 'बोली रद्द करके पुनः बातचीत के लिए खोल दी गई।')}`);
+  };
+
+  const handleShareWhatsApp = (bid: SpotBrokerBid) => {
+    const text = encodeURIComponent(
+      `🚚 *ASK TRANSPORT GROUP - TRIP ADVICE / DISPATCH MEMO*\n` +
+      `Trip Sheet No: ${bid.tripSheetNo || 'TRP-SPOT-2026'}\n` +
+      `Corridor: ${selectedCorridor.lane}\n` +
+      `Transporter / Broker: ${bid.brokerName} (${bid.contactPerson})\n` +
+      `Vehicle: ${bid.vehicleNumber} (${bid.vehicleBody})\n` +
+      `Agreed Freight: ₹${bid.quotedRateInr.toLocaleString('en-IN')}\n` +
+      `Advance (70%): ₹${(bid.advanceAmount || Math.round(bid.quotedRateInr * 0.7)).toLocaleString('en-IN')} (Diesel Card + Toll)\n` +
+      `Balance on POD: ₹${(bid.balanceAmount || Math.round(bid.quotedRateInr * 0.3)).toLocaleString('en-IN')} (Less 2% TDS)\n` +
+      `Status: DISPATCH CONFIRMED & SEALED`
     );
-    const accepted = bids.find(b => b.id === bidId);
-    showToast(`✅ ${t(`Bid from ${accepted?.brokerName} (₹${(accepted?.quotedRateInr ?? 0).toLocaleString('en-IN')}) accepted! Trip Advice issued.`, `${accepted?.brokerName} की बोली (₹${(accepted?.quotedRateInr ?? 0).toLocaleString('en-IN')}) स्वीकृत! ट्रिप एडवाइस जारी।`)}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
   return (
@@ -253,10 +208,13 @@ export default function SpotFreightRateAiPredictor() {
             fontSize: '12px',
             fontWeight: 700,
             border: '1px solid #059669',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          {toastMessage}
+          <span>{toastMessage}</span>
         </div>
       )}
 
@@ -359,17 +317,21 @@ export default function SpotFreightRateAiPredictor() {
                 value={calcDistanceKm}
                 onChange={e => setCalcDistanceKm(Number(e.target.value))}
                 className="spot-input-field"
+                min="10"
+                max="5000"
               />
             </div>
 
             <div className="spot-input-wrap">
-              <label className="spot-input-label">{t('Payload (Ton)', 'लोड (टन)')}</label>
+              <label className="spot-input-label">{t('Payload (Ton)', 'पेलोड (टन)')}</label>
               <input
                 type="number"
-                step="0.5"
                 value={calcCargoTon}
                 onChange={e => setCalcCargoTon(Number(e.target.value))}
                 className="spot-input-field"
+                step="0.5"
+                min="1"
+                max="55"
               />
             </div>
 
@@ -377,10 +339,12 @@ export default function SpotFreightRateAiPredictor() {
               <label className="spot-input-label">{t('Mileage (KM/L)', 'माइलेज (किमी/ली)')}</label>
               <input
                 type="number"
-                step="0.1"
                 value={calcMileageKmPerL}
                 onChange={e => setCalcMileageKmPerL(Number(e.target.value))}
                 className="spot-input-field"
+                step="0.1"
+                min="1"
+                max="10"
               />
             </div>
 
@@ -391,91 +355,99 @@ export default function SpotFreightRateAiPredictor() {
                 value={targetMarginPercent}
                 onChange={e => setTargetMarginPercent(Number(e.target.value))}
                 className="spot-input-field"
+                min="5"
+                max="50"
               />
             </div>
           </div>
 
-          {/* AI COST BREAKDOWN COMPACT BOX */}
+          {/* TRIP COST BREAKDOWN (COMPACT 2x2 GRID) */}
           <div className="spot-cost-box">
-            <div className="spot-cost-header">
-              {t('Trip Cost Decomposition (Base Expense)', 'ट्रिप लागत विभाजन (मूल व्यय)')}
+            <div className="spot-cost-box-title">
+              {t('Trip Cost Decomposition (Base Expense)', 'ट्रिप लागत विभाजन (मूल खर्च)')}
             </div>
 
             <div className="spot-cost-grid">
               <div className="spot-cost-item">
                 <span className="spot-cost-item-label">
-                  <Fuel size={12} color="#0284c7" />
-                  {t('Diesel', 'डीजल')} ({estDieselLiters}L):
+                  <Fuel size={12} color="#059669" /> Diesel ({estDieselLiters}L):
                 </span>
-                <span className="spot-cost-item-val">₹{estFuelCost.toLocaleString('en-IN')}</span>
+                <span className="spot-cost-item-val">
+                  ₹{estFuelCost.toLocaleString('en-IN')}
+                </span>
               </div>
 
               <div className="spot-cost-item">
                 <span className="spot-cost-item-label">
-                  <Receipt size={12} color="#f59e0b" />
-                  {t('Fastag Tolls', 'फास्टैग टोल')}:
+                  <Receipt size={12} color="#d97706" /> Fastag Tolls:
                 </span>
-                <span className="spot-cost-item-val">₹{estFastagTolls.toLocaleString('en-IN')}</span>
+                <span className="spot-cost-item-val">
+                  ₹{estFastagTolls.toLocaleString('en-IN')}
+                </span>
               </div>
 
               <div className="spot-cost-item">
                 <span className="spot-cost-item-label">
-                  <User size={12} color="#8b5cf6" />
-                  {t('Driver Bhatta', 'चालक भत्ता')}:
+                  <User size={12} color="#6366f1" /> Driver Bhatta:
                 </span>
-                <span className="spot-cost-item-val">₹{estDriverBhatta.toLocaleString('en-IN')}</span>
+                <span className="spot-cost-item-val">
+                  ₹{estDriverBhatta.toLocaleString('en-IN')}
+                </span>
               </div>
 
               <div className="spot-cost-item">
                 <span className="spot-cost-item-label">
-                  <Wrench size={12} color="#64748b" />
-                  {t('Tyre & CPKM', 'टायर व रखरखाव')}:
+                  <Wrench size={12} color="#475569" /> Tyre &amp; CPKM:
                 </span>
-                <span className="spot-cost-item-val">₹{estTyreMaintenanceCost.toLocaleString('en-IN')}</span>
+                <span className="spot-cost-item-val">
+                  ₹{estTyreMaintenanceCost.toLocaleString('en-IN')}
+                </span>
               </div>
             </div>
 
             <div className="spot-breakeven-row">
-              <span className="spot-breakeven-label">{t('Total Break-Even Cost:', 'कुल नो-लॉस लागत (ब्रेक-ईवन):')}</span>
+              <span className="spot-breakeven-label">
+                {t('Total Break-Even Cost:', 'कुल ब्रेक-ईवन लागत:')}
+              </span>
               <span className="spot-breakeven-val">
                 ₹{totalOperatingCost.toLocaleString('en-IN')}
               </span>
             </div>
           </div>
 
-          {/* AI RECOMMENDATION BOXES */}
+          {/* TWO AI RECOMMENDATION PILLS */}
           <div className="spot-recom-grid">
             <div className="spot-recom-card green">
-              <span className="spot-recom-label">
-                {t('Recommended Client Quote', 'अनुशंसित ग्राहक कोटेशन')}
-              </span>
+              <div className="spot-recom-label">
+                {t('Recommended Client Quote', 'अनुशंसित क्लाइंट कोटेशन')}
+              </div>
               <div className="spot-recom-val">
                 ₹{recommendedClientQuote.toLocaleString('en-IN')}
               </div>
-              <span className="spot-recom-meta">
-                {t('Yields', 'लाभ')}: ₹{grossProfitInr.toLocaleString('en-IN')} ({safeMargin}% {t('Margin', 'मार्जिन')})
-              </span>
+              <div className="spot-recom-meta">
+                {t(`Yields ₹${grossProfitInr.toLocaleString('en-IN')} (${safeMargin}% Margin)`, `₹${grossProfitInr.toLocaleString('en-IN')} (${safeMargin}% मार्जिन) लाभ`)}
+              </div>
             </div>
 
             <div className="spot-recom-card blue">
-              <span className="spot-recom-label">
-                {t('Market Spot Lorry Hire Cap', 'मार्केट स्पॉट लॉरी किराया कैप')}
-              </span>
+              <div className="spot-recom-label">
+                {t('Market Spot Lorry Hire Cap', 'मार्केट स्पॉट लॉरी किराया सीमा')}
+              </div>
               <div className="spot-recom-val">
                 ₹{maxSpotMarketLorryHireCap.toLocaleString('en-IN')}
               </div>
-              <span className="spot-recom-meta">
-                {t('Do NOT hire above this cap (Locks 12% spread)', 'इस कैप से ऊपर हायर न करें (12% मार्जिन सुरक्षित)')}
-              </span>
+              <div className="spot-recom-meta">
+                {t('Do NOT hire above this cap (Locks 12% spread)', 'इस सीमा से अधिक पर न लें (12% स्प्रेड लॉक करता है)')}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: WHATSAPP REVERSE BIDDING EXCHANGE */}
+        {/* RIGHT COLUMN: WHATSAPP FLEET BROKER REVERSE AUCTION */}
         <div className="spot-main-card">
           <div className="spot-card-header">
             <div>
-              <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'block' }}>
+              <span className="spot-broker-network-tag">
                 {t('WhatsApp Fleet Broker Network', 'व्हाट्सएप फ्लीट ब्रोकर नेटवर्क')}
               </span>
               <h3 className="spot-card-title">
@@ -484,15 +456,27 @@ export default function SpotFreightRateAiPredictor() {
               </h3>
             </div>
 
-            <button
-              type="button"
-              disabled={isBroadcasting}
-              onClick={handleBroadcastLoad}
-              className="spot-btn-broadcast"
-            >
-              <Sparkles size={13} />
-              <span>{isBroadcasting ? t('Broadcasting...', 'प्रसारित हो रहा है...') : t('1-Tap Broadcast Load', '1-टैप ब्रॉडकास्ट लोड')}</span>
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleResetBids}
+                className="spot-btn-reset-bids"
+                title={t('Reset bids to initial sample state', 'बोलियों को पुनः रीसेट करें')}
+              >
+                <RotateCcw size={12} />
+                <span>{t('Reset', 'रीसेट')}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isBroadcasting}
+                onClick={handleBroadcastLoad}
+                className="spot-btn-broadcast"
+              >
+                <Sparkles size={13} />
+                <span>{isBroadcasting ? t('Broadcasting...', 'प्रसारित हो रहा है...') : t('1-Tap Broadcast Load', '1-टैप ब्रॉडकास्ट लोड')}</span>
+              </button>
+            </div>
           </div>
 
           <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', lineHeight: 1.4 }}>
@@ -513,13 +497,16 @@ export default function SpotFreightRateAiPredictor() {
           <div className="spot-bids-list">
             {bids.map(bid => {
               const isAccepted = bid.status === 'ACCEPTED';
+              const isRejected = bid.status === 'REJECTED';
               const isBelowTarget = bid.quotedRateInr <= maxSpotMarketLorryHireCap;
               const varianceAmount = Math.abs(bid.quotedRateInr - maxSpotMarketLorryHireCap);
+              const advanceAmount = bid.advanceAmount || Math.round(bid.quotedRateInr * 0.7);
+              const balanceAmount = bid.balanceAmount || Math.round(bid.quotedRateInr * 0.3);
 
               return (
                 <div
                   key={bid.id}
-                  className={`spot-bid-item ${isAccepted ? 'accepted' : ''}`}
+                  className={`spot-bid-item ${isAccepted ? 'accepted' : isRejected ? 'rejected' : ''}`}
                 >
                   <div className="spot-bid-top">
                     <div>
@@ -553,9 +540,33 @@ export default function SpotFreightRateAiPredictor() {
                     </span>
 
                     {isAccepted ? (
-                      <span className="spot-badge-accepted">
-                        ✓ {t('Accepted & Issued', 'स्वीकृत व जारी')}
-                      </span>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAcceptedBid(bid)}
+                          className="spot-btn-view-trip"
+                          title={t('View official issued Trip Advice & Lorry Hire memo', 'जारी ट्रिप एडवाइस व लॉरी हायर मेमो देखें')}
+                        >
+                          <FileText size={11} />
+                          <span>✓ {bid.tripSheetNo ? `${bid.tripSheetNo}` : t('Trip Issued', 'ट्रिप जारी')}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRevokeBid(bid.id)}
+                          className="spot-btn-revoke"
+                          title={t('Re-open bid for negotiation', 'पुनः खोलें')}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : isRejected ? (
+                      <button
+                        type="button"
+                        onClick={() => handleAcceptBid(bid.id)}
+                        className="spot-btn-reconsider"
+                      >
+                        {t('Choose This Bid', 'यह बोली चुनें')}
+                      </button>
                     ) : (
                       <button
                         type="button"
@@ -566,6 +577,17 @@ export default function SpotFreightRateAiPredictor() {
                       </button>
                     )}
                   </div>
+
+                  {/* ACCEPTED ADVANCE / BALANCE SUMMARY STRIP */}
+                  {isAccepted && (
+                    <div className="spot-bid-accepted-strip">
+                      <span>✓ <strong>{t('70% Adv:', '70% अग्रिम:')}</strong> ₹{advanceAmount.toLocaleString('en-IN')}</span>
+                      <span>•</span>
+                      <span><strong>{t('30% POD Bal:', '30% पीओडी शेष:')}</strong> ₹{balanceAmount.toLocaleString('en-IN')}</span>
+                      <span>•</span>
+                      <span><strong>{t('Issued:', 'जारी:')}</strong> {bid.issuedAt || 'Just now'}</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -582,6 +604,175 @@ export default function SpotFreightRateAiPredictor() {
           </div>
         </div>
       </div>
+
+      {/* ========================================================================
+          TRIP ADVICE & LORRY HIRE MEMO MODAL (POPUP ON ACCEPT BID)
+          ======================================================================== */}
+      {selectedAcceptedBid && (
+        <div className="spot-modal-overlay" onClick={() => setSelectedAcceptedBid(null)}>
+          <div className="spot-modal-wrapper" onClick={e => e.stopPropagation()}>
+            <div className="spot-modal-header">
+              <div className="spot-modal-header-left">
+                <CheckCircle size={20} color="#10b981" />
+                <div>
+                  <h3 className="spot-modal-title">
+                    {t('Official Spot Trip Advice & Dispatch Memo', 'आधिकारिक स्पॉट ट्रिप एडवाइस एवं प्रेषण मेमो')}
+                  </h3>
+                  <div className="spot-modal-subtitle">
+                    {t('Authorized Lorry Hire & Consignment Transit Note', 'अधिकृत लॉरी हायर एवं कंसाइनमेंट ट्रांजिट नोट')}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="spot-modal-close"
+                onClick={() => setSelectedAcceptedBid(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="spot-modal-body">
+              {/* TRIP SUMMARY STRIP */}
+              <div className="spot-memo-summary">
+                <div>
+                  <div className="spot-memo-ref-label">{t('TRIP SHEET NUMBER', 'ट्रिप शीट संख्या')}</div>
+                  <div className="spot-memo-ref-no">{selectedAcceptedBid.tripSheetNo || 'TRP-SPOT-2026-9284'}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="spot-memo-ref-label">{t('TRANSIT CORRIDOR', 'ट्रांजिट कॉरिडोर')}</div>
+                  <div className="spot-memo-lane">{selectedCorridor.lane}</div>
+                </div>
+              </div>
+
+              {/* PARTICULARS GRID */}
+              <div className="spot-memo-grid">
+                {/* 1. BROKER & TRANSPORTER */}
+                <div className="spot-memo-box">
+                  <div className="spot-memo-box-title">
+                    <Truck size={14} color="#4f46e5" />
+                    <span>{t('Assigned Transporter & Lorry Details', 'आवंटित ट्रांसपोर्टर एवं लॉरी विवरण')}</span>
+                  </div>
+                  <div className="spot-memo-rows">
+                    <div className="spot-memo-row">
+                      <span>{t('Transporter / Broker:', 'ट्रांसपोर्टर / ब्रोकर:')}</span>
+                      <strong>{selectedAcceptedBid.brokerName}</strong>
+                    </div>
+                    <div className="spot-memo-row">
+                      <span>{t('Contact Person:', 'संपर्क व्यक्ति:')}</span>
+                      <span>{selectedAcceptedBid.contactPerson} ({selectedAcceptedBid.phone})</span>
+                    </div>
+                    <div className="spot-memo-row">
+                      <span>{t('Vehicle Number:', 'वाहन संख्या:')}</span>
+                      <strong style={{ color: '#0369a1' }}>{selectedAcceptedBid.vehicleNumber}</strong>
+                    </div>
+                    <div className="spot-memo-row">
+                      <span>{t('Body & Capacity:', 'बॉडी एवं क्षमता:')}</span>
+                      <span>{selectedAcceptedBid.vehicleBody} ({calcCargoTon} Ton payload)</span>
+                    </div>
+                    <div className="spot-memo-row">
+                      <span>{t('Driver Rating:', 'चालक रेटिंग:')}</span>
+                      <span>★ {selectedAcceptedBid.driverRating} / 5.0 (MoRTH Verified)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. COMMERCIAL & TDS SETTLEMENT */}
+                <div className="spot-memo-box">
+                  <div className="spot-memo-box-title">
+                    <Receipt size={14} color="#059669" />
+                    <span>{t('Freight & Statutory Settlement (194C TDS)', 'भाड़ा एवं वैधानिक सेटलमेंट (194C टीडीएस)')}</span>
+                  </div>
+                  <div className="spot-memo-rows">
+                    <div className="spot-memo-row">
+                      <span>{t('Total Agreed Freight:', 'कुल तय भाड़ा:')}</span>
+                      <strong style={{ fontSize: '14px', color: '#0f172a' }}>
+                        ₹{selectedAcceptedBid.quotedRateInr.toLocaleString('en-IN')}
+                      </strong>
+                    </div>
+                    <div className="spot-memo-row" style={{ color: '#059669' }}>
+                      <span>{t('Less 70% Immediate Advance:', '70% अग्रिम (डीजल कार्ड + फास्टैग):')}</span>
+                      <strong>
+                        -₹{(selectedAcceptedBid.advanceAmount || Math.round(selectedAcceptedBid.quotedRateInr * 0.7)).toLocaleString('en-IN')}
+                      </strong>
+                    </div>
+                    <div className="spot-memo-row">
+                      <span>{t('Gross 30% Balance on Delivery:', '30% सकल शेष डिलीवरी पर:')}</span>
+                      <strong>
+                        ₹{(selectedAcceptedBid.balanceAmount || Math.round(selectedAcceptedBid.quotedRateInr * 0.3)).toLocaleString('en-IN')}
+                      </strong>
+                    </div>
+                    <div className="spot-memo-row" style={{ color: '#dc2626' }}>
+                      <span>{t('Less Statutory TDS (2% u/s 194C):', 'धारा 194C के तहत 2% टीडीएस कटौती:')}</span>
+                      <strong>
+                        -₹{(selectedAcceptedBid.tdsDeduction || Math.round(selectedAcceptedBid.quotedRateInr * 0.02)).toLocaleString('en-IN')}
+                      </strong>
+                    </div>
+                    <div className="spot-memo-row spot-memo-net-row">
+                      <span>{t('Net Balance Transfer upon POD:', 'पीओडी उपरांत शुद्ध देय शेष राशि:')}</span>
+                      <strong style={{ color: '#059669', fontSize: '15px' }}>
+                        ₹{(
+                          (selectedAcceptedBid.balanceAmount || Math.round(selectedAcceptedBid.quotedRateInr * 0.3)) -
+                          (selectedAcceptedBid.tdsDeduction || Math.round(selectedAcceptedBid.quotedRateInr * 0.02))
+                        ).toLocaleString('en-IN')}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* VERIFICATION CHECKLIST STRIP */}
+              <div className="spot-compliance-strip">
+                <div className="spot-compliance-item">
+                  <CheckCircle size={13} color="#10b981" />
+                  <span>{t('Fastag Auto-Toll Tag Linked', 'फास्टैग टोल टैग लिंक')}</span>
+                </div>
+                <div className="spot-compliance-item">
+                  <CheckCircle size={13} color="#10b981" />
+                  <span>{t('AIS-140 GPS Telematics Active', 'जीपीएस टेलीमैटिक्स सक्रिय')}</span>
+                </div>
+                <div className="spot-compliance-item">
+                  <CheckCircle size={13} color="#10b981" />
+                  <span>{t('MoRTH Vahan & Sarathi Verified', 'वाहन एवं सारथी सत्यापित')}</span>
+                </div>
+                <div className="spot-compliance-item">
+                  <CheckCircle size={13} color="#10b981" />
+                  <span>{t('Form 26Q TDS Audit Logged', 'फॉर्म 26Q टीडीएस ऑडिट दर्ज')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* MODAL FOOTER */}
+            <div className="spot-modal-footer">
+              <button
+                type="button"
+                onClick={() => handleShareWhatsApp(selectedAcceptedBid)}
+                className="spot-btn-share-wa"
+              >
+                <Share2 size={13} />
+                <span>{t('Share on WhatsApp', 'व्हाट्सएप पर भेजें')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="spot-btn-print"
+              >
+                <Printer size={13} />
+                <span>{t('Print Trip Advice Sheet', 'ट्रिप शीट प्रिंट करें')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedAcceptedBid(null)}
+                className="spot-btn-done"
+              >
+                <span>{t('Confirm & Done', 'पुष्टि करें एवं बंद करें')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
