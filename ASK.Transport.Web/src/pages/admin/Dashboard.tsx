@@ -1250,7 +1250,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   });
   const [shipmentSearch, setShipmentSearch] = useState('');
   const [shipmentFilterStatus, setShipmentFilterStatus] = useState('All');
-  const [shipmentViewMode, setShipmentViewMode] = useState<'table' | 'cards'>('table');
+  const [shipmentViewMode, setShipmentViewMode] = useState<'table' | 'cards'>(() => {
+    try {
+      const saved = localStorage.getItem('ask_admin_shipment_view');
+      if (saved === 'cards' || saved === 'table') return saved;
+    } catch {}
+    return 'cards';
+  });
   const [showAddShipmentModal, setShowAddShipmentModal] = useState(false);
   const [newShipmentNo, setNewShipmentNo] = useState('');
   const [newShipmentBookingNo, setNewShipmentBookingNo] = useState('');
@@ -4980,21 +4986,27 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     <div className="shipments-view-toggle">
                       <button
                         type="button"
-                        className={`shipments-view-btn ${shipmentViewMode === 'table' ? 'active' : ''}`}
-                        onClick={() => setShipmentViewMode('table')}
-                        title="Switch to detailed Table view"
-                      >
-                        <span>📋</span>
-                        <span>Table</span>
-                      </button>
-                      <button
-                        type="button"
                         className={`shipments-view-btn ${shipmentViewMode === 'cards' ? 'active' : ''}`}
-                        onClick={() => setShipmentViewMode('cards')}
+                        onClick={() => {
+                          setShipmentViewMode('cards');
+                          try { localStorage.setItem('ask_admin_shipment_view', 'cards'); } catch {}
+                        }}
                         title="Switch to visual Cards view"
                       >
                         <span>🗂️</span>
                         <span>Cards</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`shipments-view-btn ${shipmentViewMode === 'table' ? 'active' : ''}`}
+                        onClick={() => {
+                          setShipmentViewMode('table');
+                          try { localStorage.setItem('ask_admin_shipment_view', 'table'); } catch {}
+                        }}
+                        title="Switch to detailed Table view"
+                      >
+                        <span>📋</span>
+                        <span>Table</span>
                       </button>
                     </div>
                   </div>
@@ -5052,14 +5064,14 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   <table className="admin-data-table shipments-data-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '120px' }}>Shipment ID</th>
-                        <th style={{ width: '160px' }}>Booking / Client</th>
-                        <th style={{ width: '190px' }}>Corridor Route</th>
-                        <th style={{ width: '160px' }}>Driver &amp; Vehicle Plate</th>
-                        <th style={{ width: '170px' }}>Live Checkpoint</th>
-                        <th style={{ width: '130px' }}>{t('Status', 'स्थिति')}</th>
-                        <th style={{ width: '180px' }}>Custom Milestone / Note</th>
-                        <th className="shipments-sticky-actions" style={{ width: '145px', textAlign: 'center' }}>Dispatch Actions</th>
+                        <th style={{ minWidth: '120px' }}>Shipment ID</th>
+                        <th style={{ minWidth: '160px' }}>Booking / Client</th>
+                        <th style={{ minWidth: '190px' }}>Corridor Route</th>
+                        <th style={{ minWidth: '180px' }}>Driver &amp; Vehicle Plate</th>
+                        <th style={{ minWidth: '180px' }}>Live Checkpoint</th>
+                        <th style={{ minWidth: '140px' }}>{t('Status', 'स्थिति')}</th>
+                        <th style={{ minWidth: '180px' }}>Custom Milestone / Note</th>
+                        <th className="shipments-sticky-actions" style={{ minWidth: '150px', textAlign: 'center' }}>Dispatch Actions</th>
                       </tr>
                     </thead>
                     <tbody>
