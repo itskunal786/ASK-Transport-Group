@@ -23,10 +23,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore Dependencies
-        run: dotnet restore ASK.Group.Api.csproj
+        run: dotnet restore ASK.Transport.slnx
 
       - name: Build Backend (Release)
-        run: dotnet build ASK.Group.Api.csproj --configuration Release --no-restore
+        run: dotnet build ASK.Transport.slnx --configuration Release --no-restore
 
   # ============================================================================
   # 2. FRONTEND REACT 19 + TYPESCRIPT BUILD

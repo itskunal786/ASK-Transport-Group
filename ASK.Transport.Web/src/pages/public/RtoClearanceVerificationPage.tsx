@@ -305,91 +305,30 @@ export default function RtoClearanceVerificationPage() {
               <span>{t('Mandatory Interstate Transport Compliance Audit (7-Point Clearance)', '???????? ??????????? ?????? ??????? ???? (7-????? ?????????)')}</span>
             </h3>
 
-            <div className="rto-matrix-table-wrap">
-              <table className="rto-matrix-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>{t('Statutory Document', '??????? ????????')}</th>
-                    <th>{t('Document / Policy Ref No.', '???????? / ?????? ?????? ??????')}</th>
-                    <th>{t('Validity / Expiry', '????? / ???????')}</th>
-                    <th style={{ textAlign: 'center' }}>{t('Audit Status', '???? ??????')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>1</td>
-                    <td><strong>{t('RC Vehicle Fitness Certificate', '???? ?????? ?????????? (RC)')}</strong></td>
-                    <td style={{ fontFamily: 'monospace' }}>FIT-RJ14-2027-V91</td>
-                    <td>{record.rcFitnessExpiry}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('Verified Valid', '???????? ???')}</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>2</td>
-                    <td><strong>{t('All-India National Permit (Form 48/47)', '???? ?????? ????????? ????? (????? 48/47)')}</strong></td>
-                    <td style={{ fontFamily: 'monospace' }}>AIP-RJ-2026-8819</td>
-                    <td>{record.nationalPermitExpiry}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('Active Green Channel', '?????? ????? ????')}</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>3</td>
-                    <td><strong>{t('Commercial Comprehensive Insurance', '?????????? ?????? ???? ????')}</strong></td>
-                    <td>{record.insurancePolicyNo}</td>
-                    <td>{record.insuranceExpiry}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('Active Policy', '?????? ??????')}</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>4</td>
-                    <td><strong>{t('Pollution Under Control (PUC)', '??????? ???????? ?????????? (PUC)')}</strong></td>
-                    <td style={{ fontFamily: 'monospace' }}>PUCC-PASS-2026-901</td>
-                    <td>{record.pucExpiry}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('Passed Standards', '???? ???')}</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>5</td>
-                    <td><strong>{t('Govt GST E-Way Bill (Part-A & Part-B)', '?????? GST ?-?? ??? (?????-A ? ?????-B)')}</strong></td>
-                    <td style={{ fontFamily: 'monospace', color: '#0284c7', fontWeight: 800 }}>
-                      {record.ewbNo}
-                    </td>
-                    <td>Active in Transit</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('Valid Interstate Transit', '??? ??????????? ??????')}</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>6</td>
-                    <td><strong>{t('Consignment Bilty / Lorry Receipt (LR)', '?????????? ?????? / ???? ???? (LR)')}</strong></td>
-                    <td style={{ fontFamily: 'monospace', fontWeight: 700 }}>{record.biltyNo}</td>
-                    <td>Active Dispatch</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('Attached & Verified', '?????? ??? ????????')}</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>7</td>
-                    <td><strong>{t('State Motor Vehicle Road Tax (MVT Token)', '????? ???? ???? ?? ???? (MVT)')}</strong></td>
-                    <td style={{ fontFamily: 'monospace' }}>{record.taxTokenNo}</td>
-                    <td>Quarterly Paid</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="rto-status-pill-green">? {t('No Arrears / Cleared', '????? ????? / ??????')}</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="rto-matrix-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px', marginTop: '16px' }}>
+              {[
+                { no: 1, title: t('RC Vehicle Fitness Certificate', 'वाहन फिटनेस प्रमाणपत्र (RC)'), ref: 'FIT-RJ14-2027-V91', exp: record.rcFitnessExpiry, status: t('Verified Valid', 'सत्यापित वैध') },
+                { no: 2, title: t('All-India National Permit (Form 48/47)', 'अखिल भारतीय राष्ट्रीय परमिट (फॉर्म 48/47)'), ref: 'AIP-RJ-2026-8819', exp: record.nationalPermitExpiry, status: t('Active Green Channel', 'सक्रिय ग्रीन चैनल') },
+                { no: 3, title: t('Commercial Comprehensive Insurance', 'व्यावसायिक व्यापक बीमा पॉलिसी'), ref: record.insurancePolicyNo, exp: record.insuranceExpiry, status: t('Active Policy', 'सक्रिय पॉलिसी') },
+                { no: 4, title: t('Pollution Under Control (PUC)', 'प्रदूषण नियंत्रण प्रमाणपत्र (PUC)'), ref: 'PUCC-PASS-2026-901', exp: record.pucExpiry, status: t('Passed Standards', 'पास मानक') },
+                { no: 5, title: t('Govt GST E-Way Bill (Part-A & Part-B)', 'सरकारी GST ई-वे बिल (पार्ट-A व पार्ट-B)'), ref: record.ewbNo, exp: 'Active in Transit', status: t('Valid Interstate Transit', 'वैध अंतरराज्यीय परिवहन') },
+                { no: 6, title: t('Consignment Bilty / Lorry Receipt (LR)', 'कंसाइनमेंट बिल्टी / लॉरी रसीद (LR)'), ref: record.biltyNo, exp: 'Active Dispatch', status: t('Attached & Verified', 'संलग्न एवं सत्यापित') },
+                { no: 7, title: t('State Motor Vehicle Road Tax (MVT Token)', 'राज्य मोटर वाहन कर टोकन (MVT)'), ref: record.taxTokenNo, exp: 'Quarterly Paid', status: t('No Arrears / Cleared', 'शून्य बकाया / स्वीकृत') }
+              ].map(item => (
+                <div key={item.no} style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#0284c7', color: '#fff', fontSize: '11px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.no}</span>
+                      <strong style={{ fontSize: '13px' }}>{item.title}</strong>
+                    </div>
+                    <span className="rto-status-pill-green" style={{ fontSize: '10.5px' }}>✓ {item.status}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', background: 'var(--bg-input, #f8fafc)', padding: '6px 10px', borderRadius: '6px' }}>
+                    <span style={{ color: '#64748b' }}>Ref: <code style={{ color: '#0284c7' }}>{item.ref}</code></span>
+                    <span style={{ color: '#64748b' }}>Expires: <strong>{item.exp}</strong></span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

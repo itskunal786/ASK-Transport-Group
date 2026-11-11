@@ -42,8 +42,6 @@ Thumbs.db
 # Local base configuration
 appsettings.json
 
-# Local base configuration
-appsettings.json
 
 # React Frontend
 ASK.Transport.Web/node_modules/

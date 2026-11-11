@@ -422,119 +422,38 @@ export default function Invoices() {
             !error &&
             invoices.length > 0 && (
 
-              <div className="invoice-table-wrap">
+              <div className="customer-invoices-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                {invoices.map(invoice => (
+                  <div key={invoice.id} style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <strong className="invoice-number" style={{ color: '#0b72e7', fontSize: '14px' }}>{invoice.invoiceNumber}</strong>
+                      <span className={'invoice-status ' + statusClass(invoice.paymentStatus)}>
+                        <span className="invoice-status-dot" />
+                        {invoice.paymentStatus}
+                      </span>
+                    </div>
 
-                <table className="invoice-table">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                      <span style={{ color: '#64748b' }}>Booking: <strong style={{ color: 'var(--text-primary, #0f172a)' }}>{invoice.bookingNumber}</strong></span>
+                      <span style={{ color: '#64748b' }}>📅 {formatDate(invoice.createdAt)}</span>
+                    </div>
 
-                  <thead>
-                    <tr>
-                      <th>Invoice</th>
-                      <th>Booking</th>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-
-
-                  <tbody>
-
-                    {invoices.map(
-                      invoice => (
-
-                        <tr key={invoice.id}>
-
-                          <td>
-                            <strong className="invoice-number">
-                              {invoice.invoiceNumber}
-                            </strong>
-                          </td>
-
-
-                          <td>
-                            <span className="invoice-booking">
-                              {invoice.bookingNumber}
-                            </span>
-                          </td>
-
-
-                          <td>
-                            {formatDate(
-                              invoice.createdAt
-                            )}
-                          </td>
-
-
-                          <td>
-                            <strong className="invoice-amount">
-                              {money(
-                                invoice.totalAmount
-                              )}
-                            </strong>
-                          </td>
-
-
-                          <td>
-
-                            <span
-                              className={
-                                'invoice-status ' +
-                                statusClass(
-                                  invoice.paymentStatus
-                                )
-                              }
-                            >
-                              <span className="invoice-status-dot" />
-
-                              {invoice.paymentStatus}
-                            </span>
-
-                          </td>
-
-
-                          <td>
-
-                            <div className="invoice-actions">
-
-                              <button
-                                type="button"
-                                className="invoice-view"
-                                onClick={() =>
-                                  viewInvoice(
-                                    invoice.invoiceNumber
-                                  )
-                                }
-                              >
-                                View
-                              </button>
-
-
-                              <button
-                                type="button"
-                                className="invoice-download"
-                                onClick={() =>
-                                  downloadInvoice(
-                                    invoice.invoiceNumber
-                                  )
-                                }
-                              >
-                                Download PDF
-                              </button>
-
-                            </div>
-
-                          </td>
-
-                        </tr>
-
-                      )
-                    )}
-
-                  </tbody>
-
-                </table>
-
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border, #f1f5f9)' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Total Amount</span>
+                        <strong className="invoice-amount" style={{ fontSize: '16px', color: '#059669' }}>{money(invoice.totalAmount)}</strong>
+                      </div>
+                      <div className="invoice-actions" style={{ display: 'flex', gap: '6px' }}>
+                        <button type="button" className="invoice-view" onClick={() => viewInvoice(invoice.invoiceNumber)}>
+                          View
+                        </button>
+                        <button type="button" className="invoice-download" onClick={() => downloadInvoice(invoice.invoiceNumber)}>
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

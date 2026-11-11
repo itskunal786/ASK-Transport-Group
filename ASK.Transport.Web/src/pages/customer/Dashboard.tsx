@@ -315,45 +315,29 @@ export default function Dashboard() {
                 </Link>
               </div>
 
-              <div className="db-table-scroll">
-                <table className="db-shipments-table">
-                  <thead>
-                    <tr>
-                      <th>Booking No.</th>
-                      <th>From</th>
-                      <th>To</th>
-                      <th>Status</th>
-                      <th>Date</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {DEFAULT_RECENT_SHIPMENTS.map((s, idx) => {
-                      const statusClass = s.status.toLowerCase().replace(/\s+/g, '-');
-                      return (
-                        <tr key={idx}>
-                          <td className="db-bk-id">{s.bookingNumber}</td>
-                          <td>{s.from}</td>
-                          <td>{s.to}</td>
-                          <td>
-                            <span className={`db-status-pill ${statusClass}`}>
-                              {s.status}
-                            </span>
-                          </td>
-                          <td style={{ color: '#64748b' }}>{s.date}</td>
-                          <td>
-                            <Link
-                              to={s.actionLink}
-                              className={`db-btn-action ${s.actionType}`}
-                            >
-                              {s.actionText}
-                            </Link>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="customer-shipments-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px', padding: '16px' }}>
+                {DEFAULT_RECENT_SHIPMENTS.map((s, idx) => {
+                  const statusClass = s.status.toLowerCase().replace(/\s+/g, '-');
+                  return (
+                    <div key={idx} style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong className="db-bk-id" style={{ color: '#0b72e7', fontSize: '13px' }}>{s.bookingNumber}</strong>
+                        <span className={`db-status-pill ${statusClass}`}>{s.status}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input, #f8fafc)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 600 }}>
+                        <span>🟢 {s.from}</span>
+                        <span style={{ color: '#0284c7' }}>➔</span>
+                        <span>🔴 {s.to}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '8px', borderTop: '1px solid var(--border, #f1f5f9)' }}>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>📅 {s.date}</span>
+                        <Link to={s.actionLink} className={`db-btn-action ${s.actionType}`}>
+                          {s.actionText}
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

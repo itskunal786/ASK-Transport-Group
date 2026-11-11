@@ -329,80 +329,31 @@ export default function Payments() {
             !error &&
             payments.length > 0 && (
 
-              <div className="payments-table-wrap">
+              <div className="customer-payments-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                {payments.map(payment => (
+                  <div key={payment.id} style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <strong className="booking-number" style={{ color: '#0b72e7', fontSize: '14px' }}>{payment.bookingNumber}</strong>
+                      <span className={'payment-status ' + statusClass(payment.paymentStatus)}>
+                        <span className="status-dot" />
+                        {payment.paymentStatus}
+                      </span>
+                    </div>
 
-                <table className="payments-table">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                      <span style={{ color: '#64748b' }}>Txn ID: <code style={{ color: '#4338ca' }}>{payment.transactionId}</code></span>
+                      <span style={{ color: '#64748b' }}>💳 {payment.paymentMethod}</span>
+                    </div>
 
-                  <thead>
-                    <tr>
-                      <th>Booking</th>
-                      <th>Transaction ID</th>
-                      <th>Method</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Paid On</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-
-                    {payments.map(
-                      payment => (
-
-                        <tr key={payment.id}>
-
-                          <td>
-                            <strong className="booking-number">
-                              {payment.bookingNumber}
-                            </strong>
-                          </td>
-
-                          <td>
-                            <span className="transaction-id">
-                              {payment.transactionId}
-                            </span>
-                          </td>
-
-                          <td>
-                            {payment.paymentMethod}
-                          </td>
-
-                          <td>
-                            <strong className="payment-amount">
-                              {money(payment.amount)}
-                            </strong>
-                          </td>
-
-                          <td>
-                            <span
-                              className={
-                                'payment-status ' +
-                                statusClass(
-                                  payment.paymentStatus
-                                )
-                              }
-                            >
-                              <span className="status-dot" />
-
-                              {payment.paymentStatus}
-                            </span>
-                          </td>
-
-                          <td>
-                            {formatDate(
-                              payment.paidAt
-                            )}
-                          </td>
-
-                        </tr>
-
-                      )
-                    )}
-
-                  </tbody>
-
-                </table>
-
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border, #f1f5f9)', marginTop: 'auto' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Paid Amount</span>
+                        <strong className="payment-amount" style={{ fontSize: '16px', color: '#059669' }}>{money(payment.amount)}</strong>
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>⏱️ {formatDate(payment.paidAt)}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

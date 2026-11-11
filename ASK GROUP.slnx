@@ -1,3 +1,8 @@
 <Solution>
-  <Project Path="ASK.Group.Api.csproj" />
+  <Project Path="ASK.Transport.Core/ASK.Transport.Core.csproj" />
+  <Project Path="ASK.Transport.Utils/ASK.Transport.Utils.csproj" />
+  <Project Path="ASK.Transport.Logging/ASK.Transport.Logging.csproj" />
+  <Project Path="ASK.Transport.Infrastructure/ASK.Transport.Infrastructure.csproj" />
+  <Project Path="ASK.Transport.Application/ASK.Transport.Application.csproj" />
+  <Project Path="ASK.Transport.Api/ASK.Transport.Api.csproj" />
 </Solution>

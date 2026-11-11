@@ -784,147 +784,38 @@ export default function Documents() {
 
           <>
 
-            <div className="doc-table-wrap">
-
-              <table className="doc-table">
-
-                <thead>
-
-                  <tr>
-
-                    <th>
-                      File
-                    </th>
-
-                    <th>
-                      Booking
-                    </th>
-
-                    <th>
-                      Type
-                    </th>
-
-                    <th>
-                      Added on
-                    </th>
-
-                    <th className="doc-action-heading">
-                      Actions
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                  {documents.map(
-                    document => (
-
-                    <tr key={document.id}>
-
-                      <td>
-
-                        <div className="doc-file-info">
-
-                          <div className="doc-file-icon">
-                            FILE
-                          </div>
-
-                          <div>
-
-                            <strong>
-                              {document.fileName}
-                            </strong>
-
-                            <small>
-                              Document #{document.id}
-                            </small>
-
-                          </div>
-
+            <div className="customer-documents-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                {documents.map(document => (
+                  <div key={document.id} style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div className="doc-file-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="doc-file-icon" style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '11px' }}>
+                          FILE
                         </div>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="doc-booking">
-                          {document.bookingNumber}
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="doc-type-badge">
-                          {document.documentType}
-                        </span>
-
-                      </td>
-
-
-                      <td>
-                        {formatDate(
-                          document.createdAt
-                        )}
-                      </td>
-
-
-                      <td>
-
-                        <div className="doc-row-actions">
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleView(
-                                document
-                              )
-                            }
-                            disabled={
-                              actionId ===
-                              document.id
-                            }
-                          >
-                            View
-                          </button>
-
-                          <button
-                            type="button"
-                            className="download"
-                            onClick={() =>
-                              handleDownload(
-                                document
-                              )
-                            }
-                            disabled={
-                              actionId ===
-                              document.id
-                            }
-                          >
-                            {actionId ===
-                            document.id
-                              ? 'Please wait...'
-                              : 'Download'}
-                          </button>
-
+                        <div>
+                          <strong style={{ fontSize: '13px', color: 'var(--text-primary, #0f172a)', display: 'block' }}>{document.fileName}</strong>
+                          <small style={{ fontSize: '10.5px', color: '#64748b' }}>Doc #{document.id}</small>
                         </div>
+                      </div>
+                      <span className="doc-type-badge">{document.documentType}</span>
+                    </div>
 
-                      </td>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                      <span style={{ color: '#64748b' }}>Booking: <strong style={{ color: '#0b72e7' }}>{document.bookingNumber}</strong></span>
+                      <span style={{ color: '#64748b' }}>📅 {formatDate(document.createdAt)}</span>
+                    </div>
 
-                    </tr>
-
-                  ))}
-
-                </tbody>
-
-              </table>
-
-            </div>
+                    <div className="doc-row-actions" style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border, #f1f5f9)', marginTop: 'auto' }}>
+                      <button type="button" onClick={() => handleView(document)} disabled={actionId === document.id} style={{ flex: 1 }}>
+                        View
+                      </button>
+                      <button type="button" className="download" onClick={() => handleDownload(document)} disabled={actionId === document.id} style={{ flex: 1 }}>
+                        {actionId === document.id ? 'Please wait...' : 'Download'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
 
             {totalPages > 1 && (

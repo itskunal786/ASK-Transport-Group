@@ -4033,25 +4033,21 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
               </div>
 
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>{t('Booking No', 'बुकिंग सं.')}</th>
-                    <th>{t('Customer', 'ग्राहक')}</th>
-                    <th>{t('Route', 'मार्ग')}</th>
-                    <th>{t('Date', 'दिनांक')}</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>{t('Actions', 'कार्रवाई')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBookings.map((b, i) => (
-                    <tr key={i}>
-                      <td><strong style={{ color: '#0b72e7' }}>{b.bookingNo}</strong></td>
-                      <td style={{ fontWeight: 600 }}>{b.customer}</td>
-                      <td>{b.route}</td>
-                      <td style={{ color: '#64748b' }}>{b.date}</td>
-                      <td>
+              <div className="admin-cards-responsive-grid">
+                {filteredBookings.length === 0 ? (
+                  <div className="admin-cards-empty-state">
+                    <span style={{ fontSize: '32px' }}>📦</span>
+                    <h4>No bookings found matching current filters</h4>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>Try adjusting your search query or selecting a different status filter tab.</p>
+                  </div>
+                ) : (
+                  filteredBookings.map((b, i) => (
+                    <div key={i} className="admin-card-unit">
+                      <div className="admin-card-unit-head">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="shipment-id-badge">{b.bookingNo}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>📅 {b.date}</span>
+                        </div>
                         <span
                           className={`admin-badge-status admin-badge-${b.status.toLowerCase().replace(/\s+/g, '-')}`}
                           data-status={b.status}
@@ -4063,170 +4059,195 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                             color:
                               b.status === 'Delivered' ? '#10b981' :
                               b.status === 'In Transit' ? '#0b72e7' :
-                              b.status === 'Pending' ? '#d97706' : '#dc2626'
+                              b.status === 'Pending' ? '#d97706' : '#dc2626',
+                            padding: '4px 10px',
+                            borderRadius: '10px',
+                            fontSize: '11px',
+                            fontWeight: 700
                           }}
                         >
                           {b.status}
                         </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {/* 1. FLEET & DRIVER ALLOCATION (DISPATCH) */}
-                          {!b.assignedVehicle ? (
+                      </div>
+
+                      <div className="admin-card-unit-body">
+                        <div>
+                          <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{b.customer}</strong>
+                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>Freight Consignor</span>
+                        </div>
+
+                        <div className="shipment-card-route">
+                          <span>🟢 {b.route.split('→')[0]?.trim() || 'Origin'}</span>
+                          <span style={{ color: '#0284c7', fontWeight: 800 }}>➔</span>
+                          <span>🔴 {b.route.split('→')[1]?.trim() || 'Destination'}</span>
+                        </div>
+
+                        {b.assignedVehicle ? (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', background: 'var(--bg-input, #f8fafc)', padding: '6px 10px', borderRadius: '8px' }}>
+                            <span>🚛 <strong>{b.assignedVehicle}</strong></span>
+                            <span>👤 {b.assignedDriver || 'Assigned Driver'}</span>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '11px', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '4px 8px', borderRadius: '6px' }}>
+                            ⏳ Awaiting vehicle &amp; driver assignment
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="admin-card-unit-actions">
+                        {!b.assignedVehicle ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDispatchModal(b)}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #10b981',
+                              background: '#ecfdf5',
+                              color: '#059669',
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ⚡ Allot Fleet
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenChallan(b)}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #c7d2fe',
+                              background: '#eef2ff',
+                              color: '#4338ca',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                            title={`Vehicle: ${b.assignedVehicle} | Driver: ${b.assignedDriver}`}
+                          >
+                            🚛 Challan
+                          </button>
+                        )}
+
+                        {b.status === 'Delivered' && (
+                          b.podVerified ? (
                             <button
                               type="button"
-                              onClick={() => handleOpenDispatchModal(b)}
+                              onClick={() => {
+                                if (b.podData) {
+                                  setViewingElectronicPod({
+                                    ...b.podData,
+                                    podPhotoUrl: b.podPhotoUrl || b.podData.podPhotoUrl
+                                  });
+                                } else {
+                                  setViewingElectronicPod({
+                                    bookingNumber: b.bookingNo,
+                                    deliveredDate: `${b.date}, 04:00 PM`,
+                                    receiverName: b.customer,
+                                    receiverPhone: '9876543210',
+                                    deliveredLocation: b.route.split('→')[1]?.trim() || 'Destination Hub',
+                                    otpVerified: true,
+                                    notes: 'Delivered in good condition with receiver sign verified.',
+                                    driverName: b.assignedDriver || 'Commercial Driver',
+                                    podPhotoUrl: b.podPhotoUrl
+                                  });
+                                }
+                              }}
                               style={{
-                                padding: '4px 8px',
+                                padding: '5px 10px',
                                 borderRadius: '6px',
-                                border: '1px solid #10b981',
-                                background: '#ecfdf5',
-                                color: '#059669',
-                                fontSize: '11px',
+                                border: '1px solid #86efac',
+                                background: '#f0fdf4',
+                                color: '#166534',
+                                fontSize: '11.5px',
                                 fontWeight: 700,
                                 cursor: 'pointer'
                               }}
                             >
-                              ⚡ Allot Fleet
+                              ✓ POD Verified
                             </button>
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleOpenChallan(b)}
+                              onClick={() => setPodVerifyBooking(b)}
                               style={{
-                                padding: '4px 8px',
+                                padding: '5px 10px',
                                 borderRadius: '6px',
-                                border: '1px solid #c7d2fe',
-                                background: '#eef2ff',
-                                color: '#4338ca',
-                                fontSize: '11px',
-                                fontWeight: 600,
+                                border: '1px solid #fde68a',
+                                background: '#fffbeb',
+                                color: '#b45309',
+                                fontSize: '11.5px',
+                                fontWeight: 700,
                                 cursor: 'pointer'
                               }}
-                              title={`Vehicle: ${b.assignedVehicle} | Driver: ${b.assignedDriver}`}
                             >
-                              🚛 Challan
+                              📸 Verify POD
                             </button>
-                          )}
+                          )
+                        )}
 
-                          {/* 2. DIGITAL POD VERIFICATION */}
-                          {b.status === 'Delivered' && (
-                            b.podVerified ? (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (b.podData) {
-                                    setViewingElectronicPod({
-                                      ...b.podData,
-                                      podPhotoUrl: b.podPhotoUrl || b.podData.podPhotoUrl
-                                    });
-                                  } else {
-                                    setViewingElectronicPod({
-                                      bookingNumber: b.bookingNo,
-                                      deliveredDate: `${b.date}, 04:00 PM`,
-                                      receiverName: b.customer,
-                                      receiverPhone: '9876543210',
-                                      deliveredLocation: b.route.split('→')[1]?.trim() || 'Destination Hub',
-                                      otpVerified: true,
-                                      notes: 'Delivered in good condition with receiver sign verified.',
-                                      driverName: b.assignedDriver || 'Commercial Driver',
-                                      podPhotoUrl: b.podPhotoUrl
-                                    });
-                                  }
-                                }}
-                                style={{
-                                  padding: '4px 8px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #86efac',
-                                  background: '#f0fdf4',
-                                  color: '#166534',
-                                  fontSize: '11px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                ✓ POD Verified
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => setPodVerifyBooking(b)}
-                                style={{
-                                  padding: '4px 8px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #fde68a',
-                                  background: '#fffbeb',
-                                  color: '#b45309',
-                                  fontSize: '11px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                📸 Verify POD
-                              </button>
-                            )
-                          )}
+                        <button
+                          type="button"
+                          className="admin-btn-view"
+                          style={{ padding: '5px 10px', fontSize: '11.5px' }}
+                          onClick={() => {
+                            const foundShip = shipmentsList.find(s => s.bookingNo === b.bookingNo);
+                            if (foundShip) {
+                              openUpdateShipmentModal(foundShip);
+                            } else {
+                              alert(`Booking: ${b.bookingNo}\nCustomer: ${b.customer}\nRoute: ${b.route}\nStatus: ${b.status}`);
+                            }
+                          }}
+                        >
+                          Status
+                        </button>
 
-                          <button
-                            type="button"
-                            className="admin-btn-view"
-                            style={{ padding: '4px 8px', fontSize: '11px' }}
-                            onClick={() => {
-                              const foundShip = shipmentsList.find(s => s.bookingNo === b.bookingNo);
-                              if (foundShip) {
-                                openUpdateShipmentModal(foundShip);
-                              } else {
-                                alert(`Booking: ${b.bookingNo}\nCustomer: ${b.customer}\nRoute: ${b.route}\nStatus: ${b.status}`);
-                              }
-                            }}
-                          >
-                            Status
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedLr({
-                                bookingNumber: b.bookingNo,
-                                consignmentNumber: `LR-${b.bookingNo}`,
-                                bookingDate: b.date,
-                                fromCity: b.route.split('→')[0]?.trim() || 'Origin Hub',
-                                toCity: b.route.split('→')[1]?.trim() || 'Destination Terminal',
-                                senderName: b.customer,
-                                senderPhone: '9876543210',
-                                receiverName: 'Authorized Consignee',
-                                receiverPhone: '9812345678',
-                                goodsType: 'Commercial Goods',
-                                weight: 450,
-                                quantity: 10,
-                                freightAmount: 8500,
-                                gstAmount: 1530,
-                                totalAmount: 10030,
-                                status: b.status,
-                              });
-                            }}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              border: '1px solid #bfdbfe',
-                              background: '#eff6ff',
-                              color: '#1d4ed8',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '2px'
-                            }}
-                          >
-                            📄 LR
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedLr({
+                              bookingNumber: b.bookingNo,
+                              consignmentNumber: `LR-${b.bookingNo}`,
+                              bookingDate: b.date,
+                              fromCity: b.route.split('→')[0]?.trim() || 'Origin Hub',
+                              toCity: b.route.split('→')[1]?.trim() || 'Destination Terminal',
+                              senderName: b.customer,
+                              senderPhone: '9876543210',
+                              receiverName: 'Authorized Consignee',
+                              receiverPhone: '9812345678',
+                              goodsType: 'Commercial Goods',
+                              weight: 450,
+                              quantity: 10,
+                              freightAmount: 8500,
+                              gstAmount: 1530,
+                              totalAmount: 10030,
+                              status: b.status,
+                            });
+                          }}
+                          style={{
+                            padding: '5px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #bfdbfe',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px'
+                          }}
+                        >
+                          📄 LR
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -5159,60 +5180,68 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             </div>
 
             <div className="admin-table-card">
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Driver ID &amp; Name</th>
-                    <th>Contact Phone</th>
-                    <th>Driving License (DL)</th>
-                    <th>Base Hub</th>
-                    <th>Assigned Vehicle</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>Trips</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDrivers.map((d, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <strong>{d.name}</strong>
-                        <div style={{ fontSize: '11px', color: '#0b72e7' }}>{d.id}</div>
-                      </td>
-                      <td style={{ fontWeight: 600, color: '#f1f5f9' }}>{d.phone}</td>
-                      <td>
-                        <div>{d.licenseNo}</div>
-                        <small style={{ color: '#64748b' }}>{d.licenseType}</small>
-                      </td>
-                      <td>{d.hub}</td>
-                      <td style={{ color: '#0b72e7', fontWeight: 600 }}>{d.assignedVehicle || 'Unassigned'}</td>
-                      <td>
-                        <span
-                          className={`admin-badge-status ${
-                            d.status === 'Active' ? 'admin-badge-available' :
-                            d.status === 'On Trip' ? 'admin-badge-on-route' : 'admin-badge-off-duty'
-                          }`}
-                          data-status={d.status}
-                          style={{
-                            padding: '4px 12px',
-                            borderRadius: '12px',
-                            fontSize: '11.5px',
-                            fontWeight: 700,
-                            background:
-                              d.status === 'Active' ? '#edfdf4' :
-                              d.status === 'On Trip' ? '#e0f2fe' : '#f1f5f9',
-                            color:
-                              d.status === 'Active' ? '#10b981' :
-                              d.status === 'On Trip' ? '#0b72e7' : '#64748b'
-                          }}
-                        >
-                          {d.status}
-                        </span>
-                      </td>
-                      <td><strong>{d.tripsCompleted}</strong> trips</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="admin-cards-responsive-grid">
+                {filteredDrivers.map((d, idx) => (
+                  <div key={idx} className="admin-card-unit">
+                    <div className="admin-card-unit-head">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, #0284c7, #2563eb)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '15px' }}>
+                          👨‍✈️
+                        </div>
+                        <div>
+                          <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{d.name}</strong>
+                          <div style={{ fontSize: '11px', color: '#0b72e7', fontWeight: 700 }}>{d.id}</div>
+                        </div>
+                      </div>
+                      <span
+                        className={`admin-badge-status ${
+                          d.status === 'Active' ? 'admin-badge-available' :
+                          d.status === 'On Trip' ? 'admin-badge-on-route' : 'admin-badge-off-duty'
+                        }`}
+                        data-status={d.status}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          background:
+                            d.status === 'Active' ? '#edfdf4' :
+                            d.status === 'On Trip' ? '#e0f2fe' : '#f1f5f9',
+                          color:
+                            d.status === 'Active' ? '#10b981' :
+                            d.status === 'On Trip' ? '#0b72e7' : '#64748b'
+                        }}
+                      >
+                        {d.status}
+                      </span>
+                    </div>
+
+                    <div className="admin-card-unit-body">
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>📞 Contact:</span>
+                        <strong style={{ color: '#0b72e7' }}>{d.phone}</strong>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>🪪 License (DL):</span>
+                        <span><strong>{d.licenseNo}</strong> <small style={{ color: '#64748b' }}>({d.licenseType})</small></span>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>🏢 Base Hub:</span>
+                        <strong>{d.hub}</strong>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>🚛 Assigned Vehicle:</span>
+                        <strong style={{ color: '#0284c7' }}>{d.assignedVehicle || 'Unassigned'}</strong>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--border, #f1f5f9)', fontSize: '11.5px' }}>
+                      <span style={{ color: 'var(--text-secondary, #64748b)' }}>🛣️ Completed Trips</span>
+                      <strong style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', padding: '3px 8px', borderRadius: '6px' }}>{d.tripsCompleted} trips</strong>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -5302,87 +5331,86 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             </div>
 
             <div className="admin-table-card">
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Registration No.</th>
-                    <th>Model &amp; Chassis</th>
-                    <th>Body / Container Type</th>
-                    <th>Payload Capacity</th>
-                    <th>Assigned Terminal</th>
-                    <th>Fuel Level</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredVehicles.map((v, idx) => (
-                    <tr key={idx}>
-                      <td><strong style={{ color: '#0b72e7' }}>{v.plateNo}</strong></td>
-                      <td style={{ fontWeight: 600 }}>{v.model}</td>
-                      <td>{v.type}</td>
-                      <td><strong>{v.capacityTons}</strong> Tons</td>
-                      <td>{v.currentHub}</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981' }}>{v.fuelLevel}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-badge-status ${
-                            v.status === 'On Route' ? 'admin-badge-on-route' :
-                            v.status === 'Available' ? 'admin-badge-available' : 'admin-badge-maintenance'
-                          }`}
-                          data-status={v.status}
-                          style={{
-                            padding: '4px 12px',
-                            borderRadius: '12px',
-                            fontSize: '11.5px',
-                            fontWeight: 700,
-                            background:
-                              v.status === 'Available' ? '#edfdf4' :
-                              v.status === 'On Route' ? '#e0f2fe' : '#fee2e2',
-                            color:
-                              v.status === 'Available' ? '#10b981' :
-                              v.status === 'On Route' ? '#0b72e7' : '#dc2626'
-                          }}
-                        >
-                          {v.status}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button
-                            type="button"
-                            className="admin-btn-view"
-                            onClick={() => handleOpenEditVehicleModal(v)}
-                            style={{ padding: '4px 10px', fontSize: '11px', cursor: 'pointer' }}
-                          >
-                            ✏️ Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteFleetVehicle(v.plateNo)}
-                            style={{
-                              padding: '4px 10px',
-                              fontSize: '11px',
-                              background: '#fee2e2',
-                              color: '#dc2626',
-                              border: '1px solid #fecaca',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontWeight: 700
-                            }}
-                          >
-                            🗑️ Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="admin-cards-responsive-grid">
+                {filteredVehicles.map((v, idx) => (
+                  <div key={idx} className="admin-card-unit">
+                    <div className="admin-card-unit-head">
+                      <div>{renderVehicleHsrpPlate(v.plateNo)}</div>
+                      <span
+                        className={`admin-badge-status ${
+                          v.status === 'On Route' ? 'admin-badge-on-route' :
+                          v.status === 'Available' ? 'admin-badge-available' : 'admin-badge-maintenance'
+                        }`}
+                        data-status={v.status}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          background:
+                            v.status === 'Available' ? '#edfdf4' :
+                            v.status === 'On Route' ? '#e0f2fe' : '#fee2e2',
+                          color:
+                            v.status === 'Available' ? '#10b981' :
+                            v.status === 'On Route' ? '#0b72e7' : '#dc2626'
+                        }}
+                      >
+                        {v.status}
+                      </span>
+                    </div>
+
+                    <div className="admin-card-unit-body">
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>Model &amp; Chassis:</span>
+                        <strong>{v.model}</strong>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>Body / Type:</span>
+                        <span>{v.type}</span>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>Payload Capacity:</span>
+                        <strong style={{ color: '#0284c7' }}>{v.capacityTons} Tons</strong>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>Assigned Terminal:</span>
+                        <strong>{v.currentHub}</strong>
+                      </div>
+                      <div className="admin-card-unit-row">
+                        <span style={{ color: 'var(--text-secondary, #64748b)' }}>Fuel Level:</span>
+                        <strong style={{ color: '#10b981' }}>⛽ {v.fuelLevel}</strong>
+                      </div>
+                    </div>
+
+                    <div className="admin-card-unit-actions">
+                      <button
+                        type="button"
+                        className="admin-btn-view"
+                        onClick={() => handleOpenEditVehicleModal(v)}
+                        style={{ padding: '5px 12px', fontSize: '11.5px', cursor: 'pointer' }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFleetVehicle(v.plateNo)}
+                        style={{
+                          padding: '5px 12px',
+                          fontSize: '11.5px',
+                          background: '#fee2e2',
+                          color: '#dc2626',
+                          border: '1px solid #fecaca',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontWeight: 700
+                        }}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -5520,34 +5548,49 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
               </div>
 
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Personnel</th>
-                    <th>Email Address</th>
-                    <th>Role Privilege</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>Super Admin Rights Delegation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminUsers
-                    .filter(u => u.role === 'Admin' || u.role === 'SuperAdmin')
-                    .map(staff => (
-                      <tr key={staff.id}>
-                        <td>
-                          <div style={{ fontWeight: 600 }}>{staff.name}</div>
-                          <small style={{ color: '#64748b' }}>Staff ID: #{staff.id}</small>
-                        </td>
-                        <td style={{ color: '#0b72e7' }}>{staff.email}</td>
-                        <td>
+              <div className="admin-cards-responsive-grid">
+                {adminUsers
+                  .filter(u => u.role === 'Admin' || u.role === 'SuperAdmin')
+                  .map(staff => (
+                    <div key={staff.id} className="admin-card-unit">
+                      <div className="admin-card-unit-head">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '20px' }}>{staff.role === 'SuperAdmin' ? '👑' : '🛡️'}</span>
+                          <div>
+                            <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{staff.name}</strong>
+                            <div style={{ fontSize: '11px', color: '#64748b' }}>Staff ID: #{staff.id}</div>
+                          </div>
+                        </div>
+                        <span
+                          className={`admin-badge-status ${staff.isActive ? 'admin-badge-available' : 'admin-badge-maintenance'}`}
+                          data-status={staff.isActive ? 'Active' : 'Suspended'}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            background: staff.isActive ? '#edfdf4' : '#fee2e2',
+                            color: staff.isActive ? '#10b981' : '#dc2626'
+                          }}
+                        >
+                          {staff.isActive ? 'Active' : 'Suspended'}
+                        </span>
+                      </div>
+
+                      <div className="admin-card-unit-body">
+                        <div className="admin-card-unit-row">
+                          <span style={{ color: 'var(--text-secondary, #64748b)' }}>Email:</span>
+                          <strong style={{ color: '#0b72e7' }}>{staff.email}</strong>
+                        </div>
+                        <div className="admin-card-unit-row">
+                          <span style={{ color: 'var(--text-secondary, #64748b)' }}>Role Privilege:</span>
                           <span
                             className={`admin-badge-status ${staff.role === 'SuperAdmin' ? 'admin-role-superadmin' : 'admin-role-admin'}`}
                             data-role={staff.role}
                             style={{
-                              padding: '4px 12px',
-                              borderRadius: '12px',
-                              fontSize: '11.5px',
+                              padding: '3px 10px',
+                              borderRadius: '10px',
+                              fontSize: '11px',
                               fontWeight: 700,
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -5556,52 +5599,38 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                           >
                             {staff.role === 'SuperAdmin' ? '👑 Super Admin' : '⚡ Operational Admin'}
                           </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`admin-badge-status ${staff.isActive ? 'admin-badge-available' : 'admin-badge-maintenance'}`}
-                            data-status={staff.isActive ? 'Active' : 'Suspended'}
-                            style={{
-                              padding: '4px 12px',
-                              borderRadius: '12px',
-                              fontSize: '11.5px',
-                              fontWeight: 700,
-                              background: staff.isActive ? '#edfdf4' : '#fee2e2',
-                              color: staff.isActive ? '#10b981' : '#dc2626'
-                            }}
-                          >
-                            {staff.isActive ? 'Active' : 'Suspended'}
-                          </span>
-                        </td>
-                        <td>
-                          {user?.role === 'SuperAdmin' ? (
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button
-                                type="button"
-                                className="admin-btn-action-rights"
-                                onClick={() => handleOpenRightsModal(staff)}
-                              >
-                                🛡️ Manage Rights
-                              </button>
+                        </div>
+                      </div>
 
-                              <button
-                                type="button"
-                                className="admin-btn-action-role"
-                                onClick={() => handleOpenRoleModal(staff)}
-                              >
-                                👑 Change Role
-                              </button>
-                            </div>
-                          ) : (
-                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                              Governed by Super Admin
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+                      <div className="admin-card-unit-actions">
+                        {user?.role === 'SuperAdmin' ? (
+                          <>
+                            <button
+                              type="button"
+                              className="admin-btn-action-rights"
+                              onClick={() => handleOpenRightsModal(staff)}
+                              style={{ padding: '5px 12px', fontSize: '11.5px' }}
+                            >
+                              🛡️ Manage Rights
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn-action-role"
+                              onClick={() => handleOpenRoleModal(staff)}
+                              style={{ padding: '5px 12px', fontSize: '11.5px' }}
+                            >
+                              👑 Change Role
+                            </button>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                            Governed by Super Admin
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
 
             {/* NEW USER RESTRICTION & ACCESS CLEARANCE GOVERNANCE */}
@@ -5617,124 +5646,114 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
               </div>
 
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Customer Name</th>
-                    <th>Email</th>
-                    <th>Clearance State</th>
-                    <th>Account Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminUsers.filter(u => u.role === 'User').length > 0 ? (
-                    adminUsers
-                      .filter(u => u.role === 'User')
-                      .map(cust => {
-                        const approved = isUserApproved(cust);
-                        return (
-                          <tr key={cust.id}>
-                            <td>
-                              <div style={{ fontWeight: 600 }}>{cust.name}</div>
-                              <small style={{ color: '#94a3b8' }}>ID: #{cust.id}</small>
-                            </td>
-                            <td style={{ color: '#0b72e7' }}>{cust.email}</td>
-                            <td>
+              <div className="admin-cards-responsive-grid">
+                {adminUsers.filter(u => u.role === 'User').length > 0 ? (
+                  adminUsers
+                    .filter(u => u.role === 'User')
+                    .map(cust => {
+                      const approved = isUserApproved(cust);
+                      return (
+                        <div key={cust.id} className="admin-card-unit">
+                          <div className="admin-card-unit-head">
+                            <div>
+                              <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{cust.name}</strong>
+                              <div style={{ fontSize: '11px', color: '#94a3b8' }}>ID: #{cust.id}</div>
+                            </div>
+                            <span
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '10px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                background: cust.isActive ? '#edfdf4' : '#fee2e2',
+                                color: cust.isActive ? '#10b981' : '#dc2626'
+                              }}
+                            >
+                              {cust.isActive ? 'Active' : 'Suspended'}
+                            </span>
+                          </div>
+
+                          <div className="admin-card-unit-body">
+                            <div className="admin-card-unit-row">
+                              <span style={{ color: 'var(--text-secondary, #64748b)' }}>Email:</span>
+                              <strong style={{ color: '#0b72e7' }}>{cust.email}</strong>
+                            </div>
+                            <div className="admin-card-unit-row">
+                              <span style={{ color: 'var(--text-secondary, #64748b)' }}>Clearance:</span>
                               {approved ? (
                                 <span
                                   style={{
                                     padding: '3px 10px',
-                                    borderRadius: '12px',
+                                    borderRadius: '10px',
                                     fontSize: '11px',
                                     fontWeight: 700,
                                     background: '#edfdf4',
-                                    color: '#16a34a',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px'
+                                    color: '#16a34a'
                                   }}
                                 >
-                                  🟢 Full Access Granted
+                                  🟢 Full Access
                                 </span>
                               ) : (
                                 <span
                                   style={{
                                     padding: '3px 10px',
-                                    borderRadius: '12px',
+                                    borderRadius: '10px',
                                     fontSize: '11px',
                                     fontWeight: 700,
                                     background: '#fef3c7',
-                                    color: '#b45309',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px'
+                                    color: '#b45309'
                                   }}
                                 >
-                                  🟡 Restricted (Book &amp; Track Only)
+                                  🟡 Restricted
                                 </span>
                               )}
-                            </td>
-                            <td>
-                              <span
-                                style={{
-                                  padding: '3px 10px',
-                                  borderRadius: '12px',
-                                  fontSize: '11px',
-                                  fontWeight: 700,
-                                  background: cust.isActive ? '#edfdf4' : '#fee2e2',
-                                  color: cust.isActive ? '#10b981' : '#dc2626'
-                                }}
-                              >
-                                {cust.isActive ? 'Active' : 'Suspended'}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                {!approved ? (
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-approve"
-                                    onClick={() => handleToggleUserApproval(cust, true)}
-                                    title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
-                                  >
-                                    🔓 Approve Full Access
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-restrict"
-                                    onClick={() => handleToggleUserApproval(cust, false)}
-                                    title="Restrict User to Book &amp; Track Only"
-                                  >
-                                    🔒 {t('Restrict', 'सीमित करें')}
-                                  </button>
-                                )}
+                            </div>
+                          </div>
 
-                                {user?.role === 'SuperAdmin' && (
-                                  <button
-                                    type="button"
-                                    className="admin-btn-action-role"
-                                    onClick={() => handleOpenRoleModal(cust)}
-                                    title="Promote directly to Admin or SuperAdmin"
-                                  >
-                                    👑 Promote Role
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                  ) : (
-                    <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                        No regular customer accounts registered.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                          <div className="admin-card-unit-actions">
+                            {!approved ? (
+                              <button
+                                type="button"
+                                className="admin-btn-action-approve"
+                                onClick={() => handleToggleUserApproval(cust, true)}
+                                title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
+                                style={{ padding: '5px 12px', fontSize: '11.5px' }}
+                              >
+                                🔓 Approve Full Access
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="admin-btn-action-restrict"
+                                onClick={() => handleToggleUserApproval(cust, false)}
+                                title="Restrict User to Book &amp; Track Only"
+                                style={{ padding: '5px 12px', fontSize: '11.5px' }}
+                              >
+                                🔒 {t('Restrict', 'सीमित करें')}
+                              </button>
+                            )}
+
+                            {user?.role === 'SuperAdmin' && (
+                              <button
+                                type="button"
+                                className="admin-btn-action-role"
+                                onClick={() => handleOpenRoleModal(cust)}
+                                title="Promote directly to Admin or SuperAdmin"
+                                style={{ padding: '5px 12px', fontSize: '11.5px' }}
+                              >
+                                👑 Promote Role
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <div className="admin-cards-empty-state">
+                    <p style={{ color: '#64748b', margin: 0 }}>No regular customer accounts registered.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -6604,77 +6623,74 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
               </div>
 
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Ticket ID</th>
-                    <th>Customer Particulars</th>
-                    <th>Consignment Ref</th>
-                    <th>Category &amp; Subject</th>
-                    <th>Priority</th>
-                    <th>{t('Status', 'स्थिति')}</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {supportTickets
-                    .filter(t => {
-                      const matchSearch =
-                        t.id.toLowerCase().includes(ticketSearch.toLowerCase()) ||
-                        t.customerName.toLowerCase().includes(ticketSearch.toLowerCase()) ||
-                        t.consignmentNo.toLowerCase().includes(ticketSearch.toLowerCase()) ||
-                        t.subject.toLowerCase().includes(ticketSearch.toLowerCase());
-                      if (!matchSearch) return false;
-                      if (ticketFilterStatus !== 'All' && t.status !== ticketFilterStatus) return false;
-                      if (ticketFilterPriority !== 'All' && t.priority !== ticketFilterPriority) return false;
-                      return true;
-                    })
-                    .map(t => (
-                      <tr key={t.id}>
-                        <td><strong style={{ color: '#0b72e7' }}>{t.id}</strong></td>
-                        <td>
-                          <strong>{t.customerName}</strong>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>{t.customerPhone}</div>
-                        </td>
-                        <td>
-                          <span style={{ fontWeight: 700, color: '#4338ca' }}>{t.consignmentNo}</span>
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 600 }}>{t.subject}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>[{t.category}] • {t.createdAt}</div>
-                        </td>
-                        <td>
-                          <span
-                            className={`admin-badge-status ticket-prio-badge ticket-prio-${t.priority.toLowerCase()} admin-priority-${t.priority.toLowerCase()}`}
-                            data-priority={t.priority}
-                          >
-                            {t.priority}
-                          </span>
-                        </td>
-                        <td>
+              <div className="admin-cards-responsive-grid">
+                {supportTickets
+                  .filter(t => {
+                    const matchSearch =
+                      t.id.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                      t.customerName.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                      t.consignmentNo.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                      t.subject.toLowerCase().includes(ticketSearch.toLowerCase());
+                    if (!matchSearch) return false;
+                    if (ticketFilterStatus !== 'All' && t.status !== ticketFilterStatus) return false;
+                    if (ticketFilterPriority !== 'All' && t.priority !== ticketFilterPriority) return false;
+                    return true;
+                  })
+                  .map(t => (
+                    <div key={t.id} className="admin-card-unit">
+                      <div className="admin-card-unit-head">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="shipment-id-badge">{t.id}</span>
+                          <span style={{ fontWeight: 700, color: '#4338ca', fontSize: '11.5px' }}>{t.consignmentNo}</span>
+                        </div>
+                        <span
+                          className={`admin-badge-status ticket-prio-badge ticket-prio-${t.priority.toLowerCase()} admin-priority-${t.priority.toLowerCase()}`}
+                          data-priority={t.priority}
+                          style={{ padding: '3px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: 700 }}
+                        >
+                          {t.priority}
+                        </span>
+                      </div>
+
+                      <div className="admin-card-unit-body">
+                        <div>
+                          <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{t.customerName}</strong>
+                          <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>📞 {t.customerPhone}</span>
+                        </div>
+
+                        <div style={{ background: 'var(--bg-input, #f8fafc)', padding: '8px 10px', borderRadius: '8px', fontSize: '12px' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{t.subject}</div>
+                          <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '2px' }}>[{t.category}] • {t.createdAt}</div>
+                        </div>
+
+                        <div className="admin-card-unit-row">
+                          <span style={{ color: 'var(--text-secondary, #64748b)' }}>Status:</span>
                           <span
                             className={`admin-badge-status admin-support-status admin-support-status-${t.status.toLowerCase().replace(/\s+/g, '-')}`}
                             data-status={t.status}
+                            style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 700 }}
                           >
                             {t.status}
                           </span>
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className="admin-btn-view admin-btn-manage-ticket"
-                            onClick={() => {
-                              setEditingTicket(t);
-                              setTicketResolutionNote(t.resolutionNotes || '');
-                            }}
-                          >
-                            Manage Ticket
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+
+                      <div className="admin-card-unit-actions">
+                        <button
+                          type="button"
+                          className="admin-btn-view admin-btn-manage-ticket"
+                          onClick={() => {
+                            setEditingTicket(t);
+                            setTicketResolutionNote(t.resolutionNotes || '');
+                          }}
+                          style={{ padding: '5px 12px', fontSize: '11.5px', width: '100%' }}
+                        >
+                          Manage Ticket
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
 
             {/* EDIT / RESOLVE TICKET MODAL */}

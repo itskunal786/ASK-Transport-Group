@@ -22,7 +22,7 @@ if (-not (Test-Path $nodeModulesPath)) {
 
 # 1. Start Backend API in a new PowerShell window
 Write-Host "[1/2] Starting ASP.NET Core Web API (Port: 5208)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '--- ASK TRANSPORT API (Port 5208) ---' -ForegroundColor Cyan; dotnet run --urls 'http://localhost:5208'"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '--- ASK TRANSPORT API (Port 5208) ---' -ForegroundColor Cyan; dotnet run --project ASK.Transport.Api --urls 'http://localhost:5208'"
 
 # 2. Start Frontend in a new PowerShell window
 Write-Host "[2/2] Starting React + Vite Frontend (Port: 5173)..." -ForegroundColor Yellow

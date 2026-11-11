@@ -257,262 +257,124 @@ export default function MyBookings() {
 
         ) : (
 
-          <div className="table-scroll">
+          <div className="customer-bookings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px', marginTop: '16px' }}>
+            {bookings.map(booking => (
+              <div key={booking.id} className="customer-booking-card" style={{ background: 'var(--bg-card, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong style={{ fontSize: '14px', color: '#0b72e7', display: 'block' }}>{booking.bookingNumber}</strong>
+                    <small style={{ fontSize: '11px', color: '#64748b' }}>📅 {new Date(booking.createdAt).toLocaleDateString('en-IN')}</small>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className={`status-badge ${statusClass(booking.bookingStatus)}`}>
+                      {booking.bookingStatus}
+                    </span>
+                    <span className={`payment-badge ${statusClass(booking.paymentStatus)}`}>
+                      {booking.paymentStatus}
+                    </span>
+                  </div>
+                </div>
 
-            <table className="bookings-table">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input, #f8fafc)', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700 }}>
+                  <span>🟢 {booking.fromCity}</span>
+                  <span style={{ color: '#0284c7' }}>➔</span>
+                  <span>🔴 {booking.toCity}</span>
+                </div>
 
-              <thead>
-                <tr>
-                  <th>Booking</th>
-                  <th>Route</th>
-                  <th>Pickup</th>
-                  <th>Status</th>
-                  <th>Payment</th>
-                  <th>Amount</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                  <span style={{ color: '#64748b' }}>Pickup Date: <strong>{new Date(booking.pickupDate).toLocaleDateString('en-IN')}</strong></span>
+                  <strong style={{ fontSize: '15px', color: '#059669' }}>
+                    ₹{booking.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </strong>
+                </div>
 
-
-              <tbody>
-
-                {bookings.map(booking => (
-
-                  <tr key={booking.id}>
-
-                    <td>
-                      <strong>
-                        {booking.bookingNumber}
-                      </strong>
-
-                      <small>
-                        {new Date(
-                          booking.createdAt
-                        ).toLocaleDateString(
-                          'en-IN'
-                        )}
-                      </small>
-                    </td>
-
-
-                    <td>
-                      <strong>
-                        {booking.fromCity}
-                      </strong>
-
-                      <span className="route-arrow">
-                        →
-                      </span>
-
-                      <strong>
-                        {booking.toCity}
-                      </strong>
-                    </td>
-
-
-                    <td>
-                      {new Date(
-                        booking.pickupDate
-                      ).toLocaleDateString(
-                        'en-IN'
-                      )}
-                    </td>
-
-
-                    <td>
-                      <span
-                        className={
-                          `status-badge ${
-                            statusClass(
-                              booking.bookingStatus
-                            )
-                          }`
-                        }
-                      >
-                        {booking.bookingStatus}
-                      </span>
-                    </td>
-
-
-                    <td>
-                      <span
-                        className={
-                          `payment-badge ${
-                            statusClass(
-                              booking.paymentStatus
-                            )
-                          }`
-                        }
-                      >
-                        {booking.paymentStatus}
-                      </span>
-                    </td>
-
-
-                    <td>
-                      <strong>
-                        ₹
-                        {booking.totalAmount
-                          .toLocaleString(
-                            'en-IN',
-                            {
-                              minimumFractionDigits: 2
-                            }
-                          )}
-                      </strong>
-                    </td>
-
-
-                    <td>
-
-                      <div className="booking-actions">
-
-                        {booking.paymentStatus
-                          .toLowerCase() !==
-                          'paid' &&
-
-                          booking.bookingStatus
-                            .toLowerCase() !==
-                          'cancelled' && (
-
-                          <button
-                            className="pay-now-btn"
-                            onClick={() =>
-                              handlePayNow(
-                                booking
-                              )
-                            }
-                          >
-                            Pay Now
-                          </button>
-
-                        )}
-
-
-                        <button
-                          className="view-booking-btn"
-                          onClick={() =>
-                            navigate(
-                              `/tracking?no=${booking.bookingNumber}`
-                            )
-                          }
-                        >
-                          Track
-                        </button>
-
-                        <button
-                          type="button"
-                          className="view-booking-btn"
-                          style={{ background: '#f1f5f9', color: '#09284a', border: '1px solid #cbd5e1' }}
-                          onClick={() => {
-                            setSelectedLr({
-                              bookingNumber: booking.bookingNumber,
-                              date: new Date(booking.createdAt).toLocaleDateString('en-IN'),
-                              senderName: booking.senderName || 'Authorized Consignor',
-                              fromCity: booking.fromCity,
-                              receiverName: booking.receiverName || 'Authorized Consignee',
-                              toCity: booking.toCity,
-                              goodsDescription: 'General Commercial Freight',
-                              weightKg: booking.weight || 50,
-                              freightAmount: booking.totalAmount,
-                              paymentStatus: booking.paymentStatus,
-                              serviceType: 'Surface Freight'
-                            });
-                          }}
-                          title="Generate Lorry Receipt / Bilty"
-                        >
-                          📄 Bilty / LR
-                        </button>
-
-                        <button
-                          type="button"
-                          className="view-booking-btn"
-                          style={{ background: '#f0fdf4', color: '#047857', border: '1px solid #a7f3d0' }}
-                          onClick={() => {
-                            setSelectedInvoice({
-                              invoiceNumber: `INV-2026-${booking.bookingNumber.replace(/\D/g, '') || '9021'}`,
-                              invoiceDate: new Date(booking.createdAt).toLocaleDateString('en-IN'),
-                              bookingNumber: booking.bookingNumber,
-                              lrNumber: `LR-${booking.bookingNumber}`,
-                              shipperName: booking.senderName || 'Authorized Consignor Ltd',
-                              originCity: booking.fromCity,
-                              consigneeName: booking.receiverName || 'Authorized Consignee',
-                              destinationCity: booking.toCity,
-                              weightKg: booking.weight || 100,
-                              basicFreight: Math.round(booking.totalAmount * 0.80),
-                              fuelSurcharge: Math.round(booking.totalAmount * 0.08),
-                              handlingCharge: 250,
-                              cgstAmount: Math.round(booking.totalAmount * 0.06),
-                              sgstAmount: Math.round(booking.totalAmount * 0.06),
-                              totalInvoiceAmount: booking.totalAmount,
-                              paymentStatus: booking.paymentStatus
-                            });
-                          }}
-                          title="Download GST Tax Invoice"
-                        >
-                          🧾 Tax Invoice
-                        </button>
-
-                        <button
-                          type="button"
-                          className="view-booking-btn"
-                          style={{ background: '#fdf4ff', color: '#7e22ce', border: '1px solid #f0abfc' }}
-                          onClick={() => {
-                            const link = `${window.location.origin}/track?num=${booking.bookingNumber}`;
-                            navigator.clipboard?.writeText(link);
-                            setCopiedBookingNo(booking.bookingNumber);
-                            setTimeout(() => setCopiedBookingNo(null), 2500);
-                          }}
-                          title="Share tracking link with Consignee"
-                        >
-                          {copiedBookingNo === booking.bookingNumber ? '✓ Copied' : '🔗 Link'}
-                        </button>
-
-                        <a
-                          href={`https://wa.me/?text=${encodeURIComponent(`🚛 ASK Transport Group Live Update:\nConsignment ${booking.bookingNumber} (${booking.fromCity} ➔ ${booking.toCity}) is ${booking.bookingStatus.toUpperCase()}.\nTrack live without login: ${window.location.origin}/track?num=${booking.bookingNumber}`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="view-booking-btn"
-                          style={{ background: '#ecfdf5', color: '#15803d', border: '1px solid #86efac', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                          title="Share WhatsApp Live Alert to Receiver"
-                        >
-                          📲 WhatsApp
-                        </a>
-
-                        {booking.bookingStatus.toLowerCase() === 'delivered' && (
-                          <button
-                            type="button"
-                            className="view-booking-btn"
-                            style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}
-                            onClick={() => {
-                              setSelectedPod({
-                                bookingNumber: booking.bookingNumber,
-                                deliveredDate: new Date(booking.pickupDate || Date.now()).toLocaleDateString('en-IN') + ' (Verified)',
-                                receiverName: booking.receiverName || 'Authorized Receiver',
-                                receiverPhone: 'Verified (OTP Secured)',
-                                deliveredLocation: `${booking.toCity} Delivery Terminal`,
-                                otpVerified: true,
-                                notes: 'Delivered in intact condition against OTP verification.'
-                              });
-                            }}
-                            title="View Electronic Proof of Delivery"
-                          >
-                            ✅ e-POD
-                          </button>
-                        )}
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', paddingTop: '10px', borderTop: '1px solid var(--border, #f1f5f9)', marginTop: 'auto' }}>
+                  {booking.paymentStatus.toLowerCase() !== 'paid' && booking.bookingStatus.toLowerCase() !== 'cancelled' && (
+                    <button className="pay-now-btn" onClick={() => handlePayNow(booking)}>
+                      Pay Now
+                    </button>
+                  )}
+                  <button className="view-booking-btn" onClick={() => navigate(`/tracking?no=${booking.bookingNumber}`)}>
+                    Track
+                  </button>
+                  <button
+                    type="button"
+                    className="view-booking-btn"
+                    style={{ background: '#f1f5f9', color: '#09284a', border: '1px solid #cbd5e1' }}
+                    onClick={() => {
+                      setSelectedLr({
+                        bookingNumber: booking.bookingNumber,
+                        date: new Date(booking.createdAt).toLocaleDateString('en-IN'),
+                        senderName: booking.senderName || 'Authorized Consignor',
+                        fromCity: booking.fromCity,
+                        receiverName: booking.receiverName || 'Authorized Consignee',
+                        toCity: booking.toCity,
+                        goodsDescription: 'General Commercial Freight',
+                        weightKg: booking.weight || 50,
+                        freightAmount: booking.totalAmount,
+                        paymentStatus: booking.paymentStatus,
+                        serviceType: 'Surface Freight'
+                      });
+                    }}
+                    title="Generate Lorry Receipt / Bilty"
+                  >
+                    📄 Bilty / LR
+                  </button>
+                  <button
+                    type="button"
+                    className="view-booking-btn"
+                    style={{ background: '#f0fdf4', color: '#047857', border: '1px solid #a7f3d0' }}
+                    onClick={() => {
+                      setSelectedInvoice({
+                        invoiceNumber: `INV-2026-${booking.bookingNumber.replace(/\D/g, '') || '9021'}`,
+                        invoiceDate: new Date(booking.createdAt).toLocaleDateString('en-IN'),
+                        bookingNumber: booking.bookingNumber,
+                        lrNumber: `LR-${booking.bookingNumber}`,
+                        shipperName: booking.senderName || 'Authorized Consignor Ltd',
+                        originCity: booking.fromCity,
+                        consigneeName: booking.receiverName || 'Authorized Consignee',
+                        destinationCity: booking.toCity,
+                        weightKg: booking.weight || 100,
+                        basicFreight: Math.round(booking.totalAmount * 0.80),
+                        fuelSurcharge: Math.round(booking.totalAmount * 0.08),
+                        handlingCharge: 250,
+                        cgstAmount: Math.round(booking.totalAmount * 0.06),
+                        sgstAmount: Math.round(booking.totalAmount * 0.06),
+                        totalInvoiceAmount: booking.totalAmount,
+                        paymentStatus: booking.paymentStatus
+                      });
+                    }}
+                    title="Download GST Tax Invoice"
+                  >
+                    🧾 Tax Invoice
+                  </button>
+                  <button
+                    type="button"
+                    className="view-booking-btn"
+                    style={{ background: '#fdf4ff', color: '#7e22ce', border: '1px solid #f0abfc' }}
+                    onClick={() => {
+                      const link = `${window.location.origin}/track?num=${booking.bookingNumber}`;
+                      navigator.clipboard?.writeText(link);
+                      setCopiedBookingNo(booking.bookingNumber);
+                      setTimeout(() => setCopiedBookingNo(null), 2500);
+                    }}
+                    title="Share tracking link with Consignee"
+                  >
+                    {copiedBookingNo === booking.bookingNumber ? '✓ Copied' : '🔗 Link'}
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`🚛 ASK Transport Group Live Update:\nConsignment ${booking.bookingNumber} (${booking.fromCity} ➔ ${booking.toCity}) is ${booking.bookingStatus.toUpperCase()}.\nTrack live without login: ${window.location.origin}/track?num=${booking.bookingNumber}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="view-booking-btn"
+                    style={{ background: '#ecfdf5', color: '#15803d', border: '1px solid #86efac', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                    title="Share WhatsApp Live Alert to Receiver"
+                  >
+                    📲 WhatsApp
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
 
         )}
