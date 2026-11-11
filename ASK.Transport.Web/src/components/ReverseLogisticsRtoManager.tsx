@@ -198,18 +198,7 @@ export default function ReverseLogisticsRtoManager() {
       </div>
 
       {successMsg && (
-        <div style={{
-          padding: '14px 20px',
-          background: '#dcfce7',
-          border: '1px solid #86efac',
-          borderRadius: '12px',
-          color: '#15803d',
-          fontSize: '13.5px',
-          fontWeight: 800,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
+        <div className="rto-success-alert">
           <CheckCircle2 size={18} />
           <span>{successMsg}</span>
         </div>
@@ -253,7 +242,7 @@ export default function ReverseLogisticsRtoManager() {
       {/* CASES CARDS LIST */}
       <div className="rto-cases-list">
         {(!data?.cases || data.cases.length === 0) && (
-          <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--bg-surface, #ffffff)', borderRadius: '14px', border: '1px solid var(--border-color, #e2e8f0)', color: 'var(--text-secondary, #64748b)' }}>
+          <div className="rto-empty-state">
             <p style={{ margin: 0, fontSize: '14px' }}>No active RTO return cases found. Click 'Initiate Return / RTO Case' to file a consignment return.</p>
           </div>
         )}
@@ -275,32 +264,32 @@ export default function ReverseLogisticsRtoManager() {
                       {c.status.replace(/_/g, ' ')}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                    <span><strong>Original LR:</strong> {c.originalLrNumber}</span>
-                    <span><strong>Reverse Waybill:</strong> <span style={{ color: '#ef4444', fontWeight: 800 }}>{c.reverseLrNumber}</span></span>
-                    <span><strong>Damage Severity:</strong> {c.damageSeverity}</span>
+                  <div className="rto-case-meta">
+                    <span><strong className="rto-meta-label">Original LR:</strong> <span className="rto-meta-val">{c.originalLrNumber}</span></span>
+                    <span><strong className="rto-meta-label">Reverse Waybill:</strong> <span className="rto-meta-val-rwb">{c.reverseLrNumber}</span></span>
+                    <span><strong className="rto-meta-label">Damage Severity:</strong> <span className="rto-meta-val-severity">{c.damageSeverity}</span></span>
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800 }}>CLAIM DEMAND</div>
-                  <strong style={{ fontSize: '17px', color: '#dc2626' }}>₹{c.customerRefundClaimed.toLocaleString('en-IN')}</strong>
+                <div className="rto-case-claim">
+                  <div className="rto-claim-label">{t('CLAIM DEMAND', 'दावा मांग')}</div>
+                  <strong className="rto-claim-val">₹{c.customerRefundClaimed.toLocaleString('en-IN')}</strong>
                 </div>
               </div>
 
               {/* ROUTING INFO */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid var(--border-color, #e2e8f0)' }}>
-                <div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>RETURN DESTINATION (ORIGIN FACTORY):</span>
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, marginTop: '2px', color: 'var(--text-primary, #0f172a)' }}>{c.originFactory}</div>
+              <div className="rto-routing-box">
+                <div className="rto-routing-col">
+                  <span className="rto-routing-label">{t('RETURN DESTINATION (ORIGIN FACTORY):', 'वापसी गंतव्य (उत्पत्ति फ़ैक्टरी):')}</span>
+                  <div className="rto-routing-val">{c.originFactory}</div>
                 </div>
-                <div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>REJECTING CONSIGNEE:</span>
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, marginTop: '2px', color: 'var(--text-primary, #0f172a)' }}>{c.consigneeWhoRejected}</div>
+                <div className="rto-routing-col">
+                  <span className="rto-routing-label">{t('REJECTING CONSIGNEE:', 'अस्वीकार करने वाला कंसाइनी:')}</span>
+                  <div className="rto-routing-val">{c.consigneeWhoRejected}</div>
                 </div>
-                <div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>REASON FOR REJECTION:</span>
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, marginTop: '2px', color: '#b91c1c' }}>{c.returnReason}</div>
+                <div className="rto-routing-col">
+                  <span className="rto-routing-label">{t('REASON FOR REJECTION:', 'अस्वीकृति का कारण:')}</span>
+                  <div className="rto-routing-reason">{c.returnReason}</div>
                 </div>
               </div>
 
@@ -316,8 +305,8 @@ export default function ReverseLogisticsRtoManager() {
                       <span>📷</span> View Inspection Evidence
                     </button>
                   )}
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
-                    Current Terminal: <strong>{c.currentReverseHub}</strong>
+                  <span className="rto-terminal-info">
+                    {t('Current Terminal:', 'वर्तमान टर्मिनल:')} <strong className="rto-terminal-val">{c.currentReverseHub}</strong>
                   </span>
                 </div>
 
@@ -365,14 +354,14 @@ export default function ReverseLogisticsRtoManager() {
 
               {/* TIMELINE STEPS */}
               <div className="rto-timeline-wrap">
-                <span className="rto-timeline-label">REVERSE AUDIT TIMELINE:</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span className="rto-timeline-label">{t('REVERSE AUDIT TIMELINE:', 'रिवर्स ऑडिट टाइमलाइन:')}</span>
+                <div className="rto-timeline-list">
                   {c.timeline?.map((ev, i) => (
                     <div key={i} className="rto-timeline-item">
-                      <span style={{ color: '#2563eb' }}>●</span>
-                      <strong style={{ color: 'var(--text-primary, #0f172a)' }}>{ev.title}:</strong>
-                      <span style={{ color: 'var(--text-secondary, #475569)' }}>{ev.description}</span>
-                      <small style={{ color: '#94a3b8', marginLeft: 'auto' }}>{ev.timestamp}</small>
+                      <span className="rto-timeline-bullet">●</span>
+                      <strong className="rto-timeline-title">{ev.title}:</strong>
+                      <span className="rto-timeline-desc">{ev.description}</span>
+                      <small className="rto-timeline-time">{ev.timestamp}</small>
                     </div>
                   ))}
                 </div>

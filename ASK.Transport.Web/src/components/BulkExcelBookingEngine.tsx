@@ -640,7 +640,7 @@ export default function BulkExcelBookingEngine() {
 
             {/* GENERATED BILTIES & BARCODES SCROLLER */}
             <div className="bulk-modal-body">
-              <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>
+              <h4 className="bulk-modal-title" style={{ margin: '0 0 12px', fontSize: '14px' }}>
                 {t('Consignment Barcodes & Official Bilties Preview:', 'कंसाइनमेंट बारकोड एवं ऑफिशियल बिल्टी प्रीव्यू:')}
               </h4>
               <div className="bulk-bilties-grid">
