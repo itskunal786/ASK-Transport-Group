@@ -98,6 +98,56 @@ public class AccountApprovalController : ControllerBase
         return Ok(new { success = true, data = requests });
     }
 
+    [HttpPost("pre-approve/{userId:int}")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> PreApproveUser(int userId)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return NotFound(new { success = false, message = "User not found" });
+        }
+
+        var callerName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Operations Admin";
+        var callerEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "admin@asktransport.com";
+
+        // Notify SuperAdmins for mandatory dual-control re-verification
+        var superAdmins = await _db.Users.Where(u => u.Role == UserRole.SuperAdmin).ToListAsync();
+        foreach (var sa in superAdmins)
+        {
+            await _notificationService.CreateAsync(
+                sa.Id,
+                "👑 Account Clearance Needs SuperAdmin Re-Verification",
+                $"Admin '{callerName}' has pre-approved Shipper '{user.Name}' ({user.Email}). Dual-control requires SuperAdmin to re-verify and pass clearance.",
+                "ACCOUNT_REVERIFY_REQUEST"
+            );
+        }
+
+        await _auditService.LogAsync(
+            "ADMIN_PRE_APPROVAL_SUBMITTED",
+            $"Admin '{callerName}' ({callerEmail}) pre-approved user {user.Email}. Forwarded to SuperAdmin for dual-control re-verification & final pass.",
+            user.Id,
+            user.Email
+        );
+
+        return Ok(new
+        {
+            success = true,
+            status = "PENDING_SUPERADMIN",
+            message = $"Admin pre-approval registered by {callerName}. Forwarded to SuperAdmin for dual-control re-verification and pass.",
+            userId = user.Id,
+            userEmail = user.Email,
+            adminApprovedBy = callerName
+        });
+    }
+
+    [HttpPost("reverify-pass/{userId:int}")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> SuperAdminReverifyAndPass(int userId)
+    {
+        return await ApproveUser(userId);
+    }
+
     [HttpPost("approve/{userId:int}")]
     [Authorize(Roles = "Admin,SuperAdmin")]
     public async Task<IActionResult> ApproveUser(int userId)
@@ -108,26 +158,39 @@ public class AccountApprovalController : ControllerBase
             return NotFound(new { success = false, message = "User not found" });
         }
 
+        var callerRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        var isSuperAdmin = User.IsInRole("SuperAdmin") || callerRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase);
+
+        // DUAL-CONTROL ENFORCEMENT:
+        // If caller is regular Admin, automatically treat as Level-1 Pre-Approval (must be re-verified by SuperAdmin)!
+        if (!isSuperAdmin)
+        {
+            return await PreApproveUser(userId);
+        }
+
+        // Caller is SuperAdmin -> Grant Final Clearance Pass!
         user.IsVerified = true;
         user.IsActive = true;
         await _db.SaveChangesAsync();
 
+        var callerName = User.FindFirst(ClaimTypes.Name)?.Value ?? "ASK GROUP Admin (Super Admin)";
+
         await _notificationService.CreateAsync(
             user.Id,
-            "🎉 Account Verified & Unlocked!",
-            "Your account has been approved by Super Admin. Payments, Invoices, and Documents are now fully unlocked.",
+            "🎉 Account Re-Verified & Passed by SuperAdmin!",
+            $"Your account clearance has been re-verified and granted final pass by SuperAdmin ({callerName}). Payments, Invoices, and Documents are now fully unlocked.",
             "ACCOUNT_APPROVED"
         );
 
         var notifs = await _db.Notifications
-            .Where(n => n.Type == "ACCOUNT_APPROVAL_REQUEST" && n.Message.Contains(user.Email))
+            .Where(n => (n.Type == "ACCOUNT_APPROVAL_REQUEST" || n.Type == "ACCOUNT_REVERIFY_REQUEST") && n.Message.Contains(user.Email))
             .ToListAsync();
         foreach (var n in notifs) n.IsRead = true;
         await _db.SaveChangesAsync();
 
         await _auditService.LogAsync(
-            "ACCOUNT_APPROVED",
-            $"SuperAdmin approved full access for {user.Email}",
+            "SUPERADMIN_REVERIFIED_AND_PASSED",
+            $"SuperAdmin '{callerName}' re-verified and granted final clearance to user {user.Email}. Dual-authorization verified.",
             user.Id,
             user.Email
         );
@@ -135,9 +198,11 @@ public class AccountApprovalController : ControllerBase
         return Ok(new
         {
             success = true,
-            message = $"Full access granted to {user.Name}!",
+            status = "APPROVED",
+            message = $"Dual-control verified! Full clearance granted to {user.Name} by SuperAdmin.",
             userId = user.Id,
-            userEmail = user.Email
+            userEmail = user.Email,
+            superAdminVerifiedBy = callerName
         });
     }
 

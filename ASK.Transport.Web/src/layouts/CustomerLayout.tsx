@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { isUserApproved, requestUserApproval, isApprovalPending } from '../utils/accessControl';
+import { isUserApproved, requestUserApproval, isApprovalPending, isPendingSuperAdminReverify, getApprovalRequestForUser } from '../utils/accessControl';
 import ThemeToggle from '../components/ThemeToggle';
 import '../styles/Dashboard.css';
 
@@ -15,6 +15,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
   const [approved, setApproved] = useState(() => isUserApproved(user));
   const [isPending, setIsPending] = useState(() => isApprovalPending(user?.id, user?.email));
+  const [isPendingReverify, setIsPendingReverify] = useState(() => isPendingSuperAdminReverify(user?.id, user?.email));
   const [requestToast, setRequestToast] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -29,10 +30,12 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
     function handleAccessChange() {
       setApproved(isUserApproved(user));
       setIsPending(isApprovalPending(user?.id, user?.email));
+      setIsPendingReverify(isPendingSuperAdminReverify(user?.id, user?.email));
     }
 
     function handleRequestUpdate() {
       setIsPending(isApprovalPending(user?.id, user?.email));
+      setIsPendingReverify(isPendingSuperAdminReverify(user?.id, user?.email));
       setApproved(isUserApproved(user));
     }
 
@@ -284,31 +287,48 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
         </header>
 
         {/* RESTRICTED ACCOUNT CLEARANCE NOTICE FOR NEW UNAPPROVED USERS */}
-        {!approved && (
-          <div className="customer-access-ribbon">
-            <div className="ribbon-content">
-              <span className="ribbon-pill">🟡 Basic Shipper Access</span>
-              <span>
-                New accounts currently have access to <strong>Book Shipment</strong> and <strong>Track Shipment</strong> only. Payments, Invoices, and Documents will be unlocked upon administrative account verification.
-              </span>
+        {!approved && (() => {
+          const reqDetails = getApprovalRequestForUser(user?.id, user?.email);
+          return (
+            <div className="customer-access-ribbon">
+              <div className="ribbon-content">
+                <span className="ribbon-pill" style={{ background: isPendingReverify ? 'rgba(245, 158, 11, 0.2)' : undefined, color: isPendingReverify ? '#fbbf24' : undefined, border: isPendingReverify ? '1px solid #f59e0b' : undefined }}>
+                  {isPendingReverify ? '🛡️ Step 1/2 Admin Verified' : '🟡 Basic Shipper Access'}
+                </span>
+                <span>
+                  {isPendingReverify ? (
+                    <>
+                      <strong>Step 1 Verified:</strong> Operations Admin ({reqDetails?.adminApprovedBy || 'Admin'}) has pre-approved your account. Forwarded for <strong>SuperAdmin Final Re-Verification & Master Pass</strong>. Full clearance will unlock automatically.
+                    </>
+                  ) : (
+                    <>
+                      New accounts currently have access to <strong>Book Shipment</strong> and <strong>Track Shipment</strong> only. Payments, Invoices, and Documents will be unlocked upon administrative account verification.
+                    </>
+                  )}
+                </span>
+              </div>
+              {isPendingReverify ? (
+                <span className="ribbon-action-btn" style={{ background: 'rgba(245, 158, 11, 0.25)', color: '#fbbf24', border: '1px solid #f59e0b', cursor: 'default' }}>
+                  👑 Awaiting SuperAdmin Final Pass
+                </span>
+              ) : isPending ? (
+                <span className="ribbon-action-btn pending" title="Super Admin has been alerted to review your account" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fde68a', border: '1px solid rgba(245, 158, 11, 0.4)', cursor: 'default' }}>
+                  ⏳ Approval Pending (Admin Notified)
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="ribbon-action-btn"
+                  onClick={handleRequestApproval}
+                  title="Send notification to Super Admin to unlock your account"
+                  style={{ cursor: 'pointer', border: 'none' }}
+                >
+                  Request Approval →
+                </button>
+              )}
             </div>
-            {isPending ? (
-              <span className="ribbon-action-btn pending" title="Super Admin has been alerted to review your account" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fde68a', border: '1px solid rgba(245, 158, 11, 0.4)', cursor: 'default' }}>
-                ⏳ Approval Pending (Admin Notified)
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="ribbon-action-btn"
-                onClick={handleRequestApproval}
-                title="Send notification to Super Admin to unlock your account"
-                style={{ cursor: 'pointer', border: 'none' }}
-              >
-                Request Approval →
-              </button>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* APPROVAL NOTIFICATION TOAST */}
         {requestToast && (

@@ -7,7 +7,9 @@ export interface AccessControlUser {
   isApproved?: boolean;
 }
 
-export type AccessStatus = 'SuperAdmin' | 'Admin' | 'Approved' | 'Restricted';
+export type AccessStatus = 'SuperAdmin' | 'Admin' | 'Approved' | 'PendingSuperAdmin' | 'Restricted';
+
+export type ApprovalStatus = 'PENDING' | 'PENDING_SUPERADMIN' | 'APPROVED' | 'REJECTED';
 
 export interface ApprovalRequest {
   id: string;
@@ -16,88 +18,20 @@ export interface ApprovalRequest {
   userEmail: string;
   userPhone?: string;
   requestedAt: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: ApprovalStatus;
+
+  // Step 1: Admin Pre-Approval Details (Maker / Level-1)
+  adminApprovedBy?: string;
+  adminApprovedAt?: string;
+  adminNotes?: string;
+
+  // Step 2: SuperAdmin Re-Verification & Master Pass Details (Checker / Final Level)
+  superAdminVerifiedBy?: string;
+  superAdminVerifiedAt?: string;
+  superAdminNotes?: string;
 }
 
 const STORAGE_REQUESTS_KEY = 'ask_approval_requests';
-
-/**
- * Checks if a user has full account clearance approved by Admin or Super Admin.
- * SuperAdmin and Admin users always have full master/operational privileges.
- * Regular 'User' accounts are restricted to Book & Track only by default,
- * until explicitly granted access / approved by Admin or Super Admin.
- */
-export function isUserApproved(user: AccessControlUser | null | undefined): boolean {
-  if (!user) return false;
-  if (user.role === 'Admin' || user.role === 'SuperAdmin') return true;
-  if (user.isApproved === true) return true;
-
-  // Check persistent storage by user ID
-  if (user.id !== undefined && user.id !== null) {
-    const byId = localStorage.getItem(`ask_user_approved_${user.id}`);
-    if (byId === 'true') return true;
-    if (byId === 'false') return false;
-  }
-
-  // Check persistent storage by user email
-  if (user.email) {
-    const byEmail = localStorage.getItem(`ask_user_approved_${user.email.trim().toLowerCase()}`);
-    if (byEmail === 'true') return true;
-    if (byEmail === 'false') return false;
-  }
-
-  // By default, newly created / registered users are restricted to Book & Track only
-  return false;
-}
-
-/**
- * Returns a human-readable status for display badges across portals.
- */
-export function getUserApprovalStatus(user: AccessControlUser | null | undefined): AccessStatus {
-  if (!user) return 'Restricted';
-  if (user.role === 'SuperAdmin') return 'SuperAdmin';
-  if (user.role === 'Admin') return 'Admin';
-  return isUserApproved(user) ? 'Approved' : 'Restricted';
-}
-
-/**
- * Sets user approval state in persistent storage and dispatches a cross-component event.
- */
-export function setUserApproved(
-  userId: number | string,
-  email?: string,
-  approved: boolean = true
-): void {
-  localStorage.setItem(`ask_user_approved_${userId}`, approved ? 'true' : 'false');
-  if (email) {
-    localStorage.setItem(`ask_user_approved_${email.trim().toLowerCase()}`, approved ? 'true' : 'false');
-  }
-
-  // Also update approval request status if present
-  try {
-    const requests = getApprovalRequests();
-    const updated = requests.map(r => {
-      if (String(r.userId) === String(userId) || (email && r.userEmail.toLowerCase() === email.toLowerCase())) {
-        return { ...r, status: (approved ? 'APPROVED' : 'REJECTED') as 'APPROVED' | 'REJECTED' };
-      }
-      return r;
-    });
-    localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(updated));
-  } catch {
-    // ignore
-  }
-
-  // Notify active components immediately across windows/tabs
-  try {
-    window.dispatchEvent(
-      new CustomEvent('ask_access_control_change', {
-        detail: { userId, email, approved }
-      })
-    );
-  } catch {
-    // Fallback if CustomEvent fails
-  }
-}
 
 /**
  * Retrieve all account clearance approval requests.
@@ -106,15 +40,29 @@ export function getApprovalRequests(): ApprovalRequest[] {
   try {
     const raw = localStorage.getItem(STORAGE_REQUESTS_KEY);
     if (!raw) {
-      // Seed initial pending request for Demo Shipper if not yet approved
+      // Seed demonstration requests illustrating the dual-control pipeline:
+      // 1. User #4 (Pooja Verma): Pre-approved by Admin Kunal Kumar, awaiting SuperAdmin re-verification!
+      // 2. User #2 (Demo Shipper): Fresh pending request awaiting initial admin review.
       const initial: ApprovalRequest[] = [
+        {
+          id: 'req-init-4',
+          userId: 4,
+          userName: 'Pooja Verma (Billing & Accounts)',
+          userEmail: 'pooja.verma@asktransport.com',
+          userPhone: '+91 94140 77812',
+          requestedAt: new Date(Date.now() - 3600000).toISOString(),
+          status: 'PENDING_SUPERADMIN',
+          adminApprovedBy: 'Kunal Kumar (Operations Admin)',
+          adminApprovedAt: new Date(Date.now() - 1800000).toISOString(),
+          adminNotes: 'Verified KYC, GSTIN ledger, and verified billing contract. Forwarded for SuperAdmin re-verification.'
+        },
         {
           id: 'req-init-2',
           userId: 2,
           userName: 'Demo Shipper Updated',
           userEmail: 'user@askgroup.com',
           userPhone: '+91 98765 43210',
-          requestedAt: new Date().toISOString(),
+          requestedAt: new Date(Date.now() - 7200000).toISOString(),
           status: 'PENDING'
         }
       ];
@@ -128,23 +76,153 @@ export function getApprovalRequests(): ApprovalRequest[] {
 }
 
 /**
- * Check if a user currently has an approval request in PENDING state.
+ * Find the approval request corresponding to a given user ID or email.
  */
-export function isApprovalPending(userId?: number | string, email?: string): boolean {
-  if (!userId && !email) return false;
-  // If already approved, not pending
-  if (isUserApproved({ id: userId, email })) return false;
-
+export function getApprovalRequestForUser(userId?: number | string, email?: string): ApprovalRequest | undefined {
+  if (userId === undefined && !email) return undefined;
   const requests = getApprovalRequests();
-  return requests.some(r => {
-    const matchesUser = (userId !== undefined && String(r.userId) === String(userId)) ||
-      (email && r.userEmail.toLowerCase() === email.trim().toLowerCase());
-    return matchesUser && r.status === 'PENDING';
+  return requests.find(r => {
+    const matchesId = userId !== undefined && String(r.userId) === String(userId);
+    const matchesEmail = email && r.userEmail.toLowerCase() === email.trim().toLowerCase();
+    return matchesId || matchesEmail;
   });
 }
 
 /**
- * Submits an approval request for a shipper user, notifies Super Admin,
+ * Checks if a user has full account clearance approved by SuperAdmin.
+ * Dual-control rule: Admin approval alone is NOT enough! It must be re-verified and passed by SuperAdmin.
+ * SuperAdmin and Admin users always have full master/operational privileges.
+ * Regular 'User' accounts are restricted to Book & Track only until SuperAdmin re-verifies and passes.
+ */
+export function isUserApproved(user: AccessControlUser | null | undefined): boolean {
+  if (!user) return false;
+  if (user.role === 'Admin' || user.role === 'SuperAdmin') return true;
+
+  // Check matching approval request state
+  const req = getApprovalRequestForUser(user.id, user.email);
+  if (req) {
+    if (req.status === 'PENDING_SUPERADMIN') return false; // Waiting for SuperAdmin Re-verification!
+    if (req.status === 'APPROVED') return true;
+    if (req.status === 'PENDING' || req.status === 'REJECTED') return false;
+  }
+
+  // Check persistent stage flag by user ID
+  if (user.id !== undefined && user.id !== null) {
+    const stage = localStorage.getItem(`ask_user_approval_stage_${user.id}`);
+    if (stage === 'PENDING_SUPERADMIN') return false;
+    if (stage === 'APPROVED') return true;
+    const byId = localStorage.getItem(`ask_user_approved_${user.id}`);
+    if (byId === 'true') return true;
+    if (byId === 'false') return false;
+  }
+
+  // Check persistent stage flag by user email
+  if (user.email) {
+    const emailKey = user.email.trim().toLowerCase();
+    const stage = localStorage.getItem(`ask_user_approval_stage_${emailKey}`);
+    if (stage === 'PENDING_SUPERADMIN') return false;
+    if (stage === 'APPROVED') return true;
+    const byEmail = localStorage.getItem(`ask_user_approved_${emailKey}`);
+    if (byEmail === 'true') return true;
+    if (byEmail === 'false') return false;
+  }
+
+  if (user.isApproved === true) return true;
+
+  // By default, newly created / registered users are restricted to Book & Track only
+  return false;
+}
+
+/**
+ * Check if a user is currently in the Step-1 Admin Verified state, awaiting Step-2 SuperAdmin Re-Verification.
+ */
+export function isPendingSuperAdminReverify(userId?: number | string, email?: string): boolean {
+  const req = getApprovalRequestForUser(userId, email);
+  if (req?.status === 'PENDING_SUPERADMIN') return true;
+
+  if (userId !== undefined && userId !== null) {
+    if (localStorage.getItem(`ask_user_approval_stage_${userId}`) === 'PENDING_SUPERADMIN') return true;
+  }
+  if (email) {
+    if (localStorage.getItem(`ask_user_approval_stage_${email.trim().toLowerCase()}`) === 'PENDING_SUPERADMIN') return true;
+  }
+  return false;
+}
+
+/**
+ * Check if a user currently has an active clearance request (either fresh PENDING or PENDING_SUPERADMIN).
+ */
+export function isApprovalPending(userId?: number | string, email?: string): boolean {
+  if (!userId && !email) return false;
+  if (isUserApproved({ id: userId, email })) return false;
+
+  const req = getApprovalRequestForUser(userId, email);
+  if (req) {
+    return req.status === 'PENDING' || req.status === 'PENDING_SUPERADMIN';
+  }
+  return false;
+}
+
+/**
+ * Returns a human-readable status for display badges across portals.
+ */
+export function getUserApprovalStatus(user: AccessControlUser | null | undefined): AccessStatus {
+  if (!user) return 'Restricted';
+  if (user.role === 'SuperAdmin') return 'SuperAdmin';
+  if (user.role === 'Admin') return 'Admin';
+  if (isPendingSuperAdminReverify(user.id, user.email)) return 'PendingSuperAdmin';
+  return isUserApproved(user) ? 'Approved' : 'Restricted';
+}
+
+/**
+ * Sets user approval state in persistent storage and dispatches a cross-component event.
+ */
+export function setUserApproved(
+  userId: number | string,
+  email?: string,
+  approved: boolean = true
+): void {
+  localStorage.setItem(`ask_user_approved_${userId}`, approved ? 'true' : 'false');
+  localStorage.setItem(`ask_user_approval_stage_${userId}`, approved ? 'APPROVED' : 'REJECTED');
+  if (email) {
+    const emailKey = email.trim().toLowerCase();
+    localStorage.setItem(`ask_user_approved_${emailKey}`, approved ? 'true' : 'false');
+    localStorage.setItem(`ask_user_approval_stage_${emailKey}`, approved ? 'APPROVED' : 'REJECTED');
+  }
+
+  // Also update approval request status if present
+  try {
+    const requests = getApprovalRequests();
+    const updated = requests.map(r => {
+      if (String(r.userId) === String(userId) || (email && r.userEmail.toLowerCase() === email.toLowerCase())) {
+        return {
+          ...r,
+          status: (approved ? 'APPROVED' : 'REJECTED') as ApprovalStatus,
+          superAdminVerifiedBy: approved ? (r.superAdminVerifiedBy || 'Super Admin') : undefined,
+          superAdminVerifiedAt: approved ? (r.superAdminVerifiedAt || new Date().toISOString()) : undefined
+        };
+      }
+      return r;
+    });
+    localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(updated));
+  } catch {
+    // ignore
+  }
+
+  // Notify active components immediately across windows/tabs
+  try {
+    window.dispatchEvent(
+      new CustomEvent('ask_access_control_change', {
+        detail: { userId, email, approved, stage: approved ? 'APPROVED' : 'REJECTED' }
+      })
+    );
+  } catch {
+    // Fallback
+  }
+}
+
+/**
+ * Submits an approval request for a shipper user, notifies Admins & SuperAdmin,
  * and notifies any listening components immediately.
  */
 export async function requestUserApproval(user: AccessControlUser): Promise<ApprovalRequest> {
@@ -173,7 +251,7 @@ export async function requestUserApproval(user: AccessControlUser): Promise<Appr
     // ignore
   }
 
-  // Also call backend API to notify SuperAdmin asynchronously
+  // Call backend API to notify administrators asynchronously
   try {
     const token = localStorage.getItem('ask_token');
     fetch('http://localhost:5208/api/account-approval/request', {
@@ -182,12 +260,8 @@ export async function requestUserApproval(user: AccessControlUser): Promise<Appr
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
-    }).catch(() => {
-      // offline/mock fallback
-    });
-  } catch {
-    // offline/mock fallback
-  }
+    }).catch(() => {});
+  } catch {}
 
   // Dispatch live cross-component notification event
   try {
@@ -196,20 +270,164 @@ export async function requestUserApproval(user: AccessControlUser): Promise<Appr
         detail: newReq
       })
     );
-  } catch {
-    // ignore
-  }
+  } catch {}
 
   return newReq;
 }
 
 /**
- * Approve a user request directly from Super Admin notification center or User Directory.
+ * STEP 1: Admin Pre-Approves User Request.
+ * Dual-Authorization rule: Status is set to PENDING_SUPERADMIN. The user remains restricted
+ * until SuperAdmin re-verifies and gives the master pass.
  */
-export async function approveUserRequest(userId: number | string, email?: string): Promise<void> {
-  setUserApproved(userId, email, true);
+export async function adminPreApproveUserRequest(
+  userId: number | string,
+  email?: string,
+  adminName: string = 'Operations Admin',
+  notes: string = 'Verified documents & KYC. Forwarded for SuperAdmin re-verification.'
+): Promise<ApprovalRequest> {
+  const requests = getApprovalRequests();
+  let existing = getApprovalRequestForUser(userId, email);
+  const now = new Date().toISOString();
 
-  // Call backend API if possible
+  if (!existing) {
+    existing = {
+      id: `req-${Date.now()}`,
+      userId,
+      userName: `User #${userId}`,
+      userEmail: email || `user${userId}@asktransport.com`,
+      requestedAt: now,
+      status: 'PENDING_SUPERADMIN',
+      adminApprovedBy: adminName,
+      adminApprovedAt: now,
+      adminNotes: notes
+    };
+    requests.unshift(existing);
+  } else {
+    existing.status = 'PENDING_SUPERADMIN';
+    existing.adminApprovedBy = adminName;
+    existing.adminApprovedAt = now;
+    existing.adminNotes = notes;
+  }
+
+  // Explicitly keep account restricted until SuperAdmin verification!
+  localStorage.setItem(`ask_user_approved_${userId}`, 'false');
+  localStorage.setItem(`ask_user_approval_stage_${userId}`, 'PENDING_SUPERADMIN');
+  if (email) {
+    const emailKey = email.trim().toLowerCase();
+    localStorage.setItem(`ask_user_approved_${emailKey}`, 'false');
+    localStorage.setItem(`ask_user_approval_stage_${emailKey}`, 'PENDING_SUPERADMIN');
+  }
+  localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+
+  // Cross-component notifications
+  try {
+    window.dispatchEvent(
+      new CustomEvent('ask_approval_request_updated', {
+        detail: {
+          userId,
+          email,
+          status: 'PENDING_SUPERADMIN',
+          adminApprovedBy: adminName,
+          adminApprovedAt: now
+        }
+      })
+    );
+    window.dispatchEvent(
+      new CustomEvent('ask_access_control_change', {
+        detail: { userId, email, approved: false, stage: 'PENDING_SUPERADMIN' }
+      })
+    );
+  } catch {}
+
+  // Inform backend
+  try {
+    const token = localStorage.getItem('ask_token');
+    fetch(`http://localhost:5208/api/account-approval/pre-approve/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ adminName, notes })
+    }).catch(() => {});
+  } catch {}
+
+  return existing;
+}
+
+/**
+ * STEP 2: SuperAdmin Re-Verifies and Grants Master Pass.
+ * This is the final statutory verification that unlocks full portal clearance.
+ */
+export async function superAdminReverifyAndPass(
+  userId: number | string,
+  email?: string,
+  superAdminName: string = 'ASK GROUP Admin (Super Admin)',
+  notes: string = 'Re-verified and cleared by SuperAdmin'
+): Promise<ApprovalRequest> {
+  const requests = getApprovalRequests();
+  let existing = getApprovalRequestForUser(userId, email);
+  const now = new Date().toISOString();
+
+  if (!existing) {
+    existing = {
+      id: `req-${Date.now()}`,
+      userId,
+      userName: `User #${userId}`,
+      userEmail: email || `user${userId}@asktransport.com`,
+      requestedAt: now,
+      status: 'APPROVED',
+      adminApprovedBy: 'Direct Master Clearance',
+      adminApprovedAt: now,
+      superAdminVerifiedBy: superAdminName,
+      superAdminVerifiedAt: now,
+      superAdminNotes: notes
+    };
+    requests.unshift(existing);
+  } else {
+    existing.status = 'APPROVED';
+    if (!existing.adminApprovedBy) {
+      existing.adminApprovedBy = 'Direct Master Clearance';
+      existing.adminApprovedAt = now;
+    }
+    existing.superAdminVerifiedBy = superAdminName;
+    existing.superAdminVerifiedAt = now;
+    existing.superAdminNotes = notes;
+  }
+
+  // UNLOCK ACCOUNT FULLY
+  localStorage.setItem(`ask_user_approved_${userId}`, 'true');
+  localStorage.setItem(`ask_user_approval_stage_${userId}`, 'APPROVED');
+  if (email) {
+    const emailKey = email.trim().toLowerCase();
+    localStorage.setItem(`ask_user_approved_${emailKey}`, 'true');
+    localStorage.setItem(`ask_user_approval_stage_${emailKey}`, 'APPROVED');
+  }
+  localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+
+  // Cross-component notifications
+  try {
+    window.dispatchEvent(
+      new CustomEvent('ask_approval_request_updated', {
+        detail: {
+          userId,
+          email,
+          status: 'APPROVED',
+          adminApprovedBy: existing.adminApprovedBy,
+          superAdminVerifiedBy: superAdminName,
+          superAdminVerifiedAt: now
+        }
+      })
+    );
+    window.dispatchEvent(
+      new CustomEvent('ask_access_control_change', {
+        detail: { userId, email, approved: true, stage: 'APPROVED' }
+      })
+    );
+  } catch {}
+
+  // Inform backend
   try {
     const token = localStorage.getItem('ask_token');
     fetch(`http://localhost:5208/api/account-approval/approve/${userId}`, {
@@ -217,22 +435,67 @@ export async function approveUserRequest(userId: number | string, email?: string
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
-      }
+      },
+      body: JSON.stringify({ superAdminName, notes })
     }).catch(() => {});
-  } catch {
-    // ignore
-  }
-
-  try {
-    window.dispatchEvent(new CustomEvent('ask_approval_request_updated', { detail: { userId, status: 'APPROVED' } }));
   } catch {}
+
+  return existing;
+}
+
+/**
+ * Universal approval gateway that routes according to caller role.
+ */
+export async function approveUserRequest(
+  userId: number | string,
+  email?: string,
+  callerRole: string = 'SuperAdmin',
+  callerName: string = 'Admin'
+): Promise<void> {
+  if (callerRole === 'SuperAdmin') {
+    await superAdminReverifyAndPass(userId, email, callerName);
+  } else {
+    await adminPreApproveUserRequest(userId, email, callerName);
+  }
 }
 
 /**
  * Reject or restrict a user request.
  */
-export async function rejectUserRequest(userId: number | string, email?: string): Promise<void> {
-  setUserApproved(userId, email, false);
+export async function rejectUserRequest(
+  userId: number | string,
+  email?: string,
+  rejectedBy: string = 'SuperAdmin',
+  reason: string = 'Account restricted by administrator'
+): Promise<void> {
+  const requests = getApprovalRequests();
+  const existing = getApprovalRequestForUser(userId, email);
+  if (existing) {
+    existing.status = 'REJECTED';
+    existing.superAdminNotes = `Rejected/Restricted by ${rejectedBy}: ${reason}`;
+    localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+  }
+
+  localStorage.setItem(`ask_user_approved_${userId}`, 'false');
+  localStorage.setItem(`ask_user_approval_stage_${userId}`, 'REJECTED');
+  if (email) {
+    const emailKey = email.trim().toLowerCase();
+    localStorage.setItem(`ask_user_approved_${emailKey}`, 'false');
+    localStorage.setItem(`ask_user_approval_stage_${emailKey}`, 'REJECTED');
+  }
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent('ask_approval_request_updated', {
+        detail: { userId, email, status: 'REJECTED', rejectedBy, reason }
+      })
+    );
+    window.dispatchEvent(
+      new CustomEvent('ask_access_control_change', {
+        detail: { userId, email, approved: false, stage: 'REJECTED' }
+      })
+    );
+  } catch {}
 
   try {
     const token = localStorage.getItem('ask_token');
@@ -243,11 +506,5 @@ export async function rejectUserRequest(userId: number | string, email?: string)
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
     }).catch(() => {});
-  } catch {
-    // ignore
-  }
-
-  try {
-    window.dispatchEvent(new CustomEvent('ask_approval_request_updated', { detail: { userId, status: 'REJECTED' } }));
   } catch {}
 }

@@ -33,7 +33,18 @@ import DigitalPodVerifyModal from '../../components/DigitalPodVerifyModal';
 import ElectronicPodModal, { type PodData } from '../../components/ElectronicPodModal';
 import LiveGpsRouteMap from '../../components/LiveGpsRouteMap';
 import type { Shipment } from '../../api/trackingApi';
-import { isUserApproved, setUserApproved, getApprovalRequests, approveUserRequest, rejectUserRequest, isApprovalPending, type ApprovalRequest } from '../../utils/accessControl';
+import {
+  isUserApproved,
+  setUserApproved,
+  getApprovalRequests,
+  rejectUserRequest,
+  isApprovalPending,
+  isPendingSuperAdminReverify,
+  adminPreApproveUserRequest,
+  superAdminReverifyAndPass,
+  getApprovalRequestForUser,
+  type ApprovalRequest
+} from '../../utils/accessControl';
 import './AdminDashboard.css';
 import '../../components/UserDirectoryManagement.css';
 import '../../components/SecurityAuditTrail.css';
@@ -1067,7 +1078,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [adminUsers, setAdminUsers] = useState<AdminUserData[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'SuperAdmin' | 'Admin' | 'User' | 'Active' | 'Pending'>('All');
+  const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'SuperAdmin' | 'Admin' | 'User' | 'Active' | 'Pending' | 'Reverify'>('All');
 
   function getUserAvatar(name: string, role: string) {
     const initials = name
@@ -1121,7 +1132,9 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const notifDropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const pendingRequests = approvalRequests.filter(r => r.status === 'PENDING');
+  const pendingRequests = approvalRequests.filter(r => r.status === 'PENDING' || r.status === 'PENDING_SUPERADMIN');
+  const awaitingSuperAdminCount = approvalRequests.filter(r => r.status === 'PENDING_SUPERADMIN').length;
+  const freshPendingCount = approvalRequests.filter(r => r.status === 'PENDING').length;
 
   useEffect(() => {
     function refreshRequests() {
@@ -1147,17 +1160,34 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
     };
   }, []);
 
-  async function handleQuickApprove(req: ApprovalRequest) {
-    await approveUserRequest(req.userId, req.userEmail);
+  async function handleAdminPreApprove(req: ApprovalRequest) {
+    const adminName = user?.name || 'Operations Admin';
+    await adminPreApproveUserRequest(req.userId, req.userEmail, adminName);
+    setApprovalRequests(getApprovalRequests());
+    showToast(`🛡️ Pre-Approved by ${adminName}! Forwarded to SuperAdmin for dual-control Re-Verification & Pass.`);
+  }
+
+  async function handleSuperAdminPass(req: ApprovalRequest) {
+    const superAdminName = user?.name || 'ASK GROUP Admin (Super Admin)';
+    await superAdminReverifyAndPass(req.userId, req.userEmail, superAdminName);
     setApprovalRequests(getApprovalRequests());
     setAdminUsers(prev => prev.map(x => (x.id === req.userId || (req.userEmail && x.email.toLowerCase() === req.userEmail.toLowerCase())) ? { ...x, isApproved: true } : x));
-    showToast(`✓ Account Approved! Full access granted to ${req.userName || req.userEmail}`);
+    showToast(`👑 Re-Verified & Passed! Full clearance granted to ${req.userName || req.userEmail}. Dual-authorization verified.`);
+  }
+
+  async function handleQuickApprove(req: ApprovalRequest) {
+    if (user?.role === 'SuperAdmin') {
+      await handleSuperAdminPass(req);
+    } else {
+      await handleAdminPreApprove(req);
+    }
   }
 
   async function handleQuickReject(req: ApprovalRequest) {
-    await rejectUserRequest(req.userId, req.userEmail);
+    await rejectUserRequest(req.userId, req.userEmail, user?.name || 'SuperAdmin');
     setApprovalRequests(getApprovalRequests());
-    showToast(`🔒 Clearance request for ${req.userName || req.userEmail} rejected.`);
+    setAdminUsers(prev => prev.map(x => (x.id === req.userId || (req.userEmail && x.email.toLowerCase() === req.userEmail.toLowerCase())) ? { ...x, isApproved: false } : x));
+    showToast(`🔒 Clearance request for ${req.userName || req.userEmail} restricted.`);
   }
 
   // Current Logged-in Admin Rights & Restrictions
@@ -1942,19 +1972,28 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   }
 
   async function handleToggleUserApproval(u: AdminUserData, approved: boolean) {
-    if (approved) {
-      await approveUserRequest(u.id, u.email);
-    } else {
-      await rejectUserRequest(u.id, u.email);
+    if (!approved) {
+      await rejectUserRequest(u.id, u.email, user?.name || 'SuperAdmin');
+      setUserApproved(u.id, u.email, false);
+      setApprovalRequests(getApprovalRequests());
+      setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: false } : x)));
+      showToast(`🔒 Restricted ${u.name} to Book & Track only.`);
+      return;
     }
-    setUserApproved(u.id, u.email, approved);
-    setApprovalRequests(getApprovalRequests());
-    showToast(
-      approved
-        ? `✓ Granted Full Access to ${u.name}! (Payments, Invoices & Documents Unlocked)`
-        : `🔒 Restricted ${u.name} to Book & Track only.`
-    );
-    setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: approved } : x)));
+
+    if (user?.role === 'SuperAdmin') {
+      // SuperAdmin re-verifies and gives final master pass!
+      await superAdminReverifyAndPass(u.id, u.email, user?.name || 'ASK GROUP Admin');
+      setApprovalRequests(getApprovalRequests());
+      setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: true } : x)));
+      showToast(`👑 Re-Verified & Passed! Full clearance granted to ${u.name}. Dual-authorization complete.`);
+    } else {
+      // Operations Admin gives Level-1 Pre-Approval (Forward to SuperAdmin)
+      await adminPreApproveUserRequest(u.id, u.email, user?.name || 'Operations Admin');
+      setApprovalRequests(getApprovalRequests());
+      setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: false } : x)));
+      showToast(`🛡️ Pre-Approved by ${user?.name || 'Admin'}! Request forwarded to SuperAdmin for dual-control Re-Verification & Pass.`);
+    }
   }
 
   // CSV Exporters
@@ -3293,38 +3332,75 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                           <small>No pending account approval requests. All customers cleared.</small>
                         </div>
                       ) : (
-                        pendingRequests.map(req => (
-                          <div key={req.id} className="admin-notif-item">
-                            <div className="admin-notif-item-top">
-                              <div className="admin-notif-user-info">
-                                <span className="admin-notif-user-name">{req.userName || 'Customer User'}</span>
-                                <span className="admin-notif-user-meta">{req.userEmail} {req.userPhone ? `• ${req.userPhone}` : ''}</span>
+                        pendingRequests.map(req => {
+                          const isReverify = req.status === 'PENDING_SUPERADMIN';
+                          return (
+                            <div key={req.id} className="admin-notif-item" style={{ borderLeft: isReverify ? '3px solid #f59e0b' : '3px solid #0284c7' }}>
+                              <div className="admin-notif-item-top">
+                                <div className="admin-notif-user-info">
+                                  <span className="admin-notif-user-name">{req.userName || 'Customer User'}</span>
+                                  <span className="admin-notif-user-meta">{req.userEmail} {req.userPhone ? `• ${req.userPhone}` : ''}</span>
+                                </div>
+                                <span className="admin-notif-time" style={{ fontSize: '10.5px', color: isReverify ? '#d97706' : '#64748b', fontWeight: 700 }}>
+                                  {isReverify ? '👑 Needs SuperAdmin Pass' : '⚪ Fresh Request'}
+                                </span>
                               </div>
-                              <span className="admin-notif-time">
-                                {new Date(req.requestedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
+                              <div className="admin-notif-desc">
+                                {isReverify ? (
+                                  <span style={{ color: '#d97706', fontSize: '11.5px' }}>
+                                    🛡️ Pre-approved by: <strong>{req.adminApprovedBy || 'Operations Admin'}</strong>. Dual-control requires SuperAdmin re-verification to pass.
+                                  </span>
+                                ) : (
+                                  <span>⚠️ Requesting full access to Payments, Invoices, and Documents.</span>
+                                )}
+                              </div>
+                              <div className="admin-notif-actions">
+                                {user?.role === 'SuperAdmin' ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="admin-notif-btn-approve"
+                                      onClick={() => handleSuperAdminPass(req)}
+                                      style={{ background: isReverify ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : undefined, borderColor: isReverify ? '#b45309' : undefined }}
+                                    >
+                                      👑 {isReverify ? t('Re-Verify & Pass', 'सत्यापित करें व पास करें') : t('Master Pass', 'मास्टर पास')}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="admin-notif-btn-reject"
+                                      onClick={() => handleQuickReject(req)}
+                                    >
+                                      ✕ {t('Reject', 'अस्वीकार')}
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    {isReverify ? (
+                                      <span style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic', padding: '4px 8px' }}>
+                                        ⏳ Awaiting SuperAdmin Final Pass
+                                      </span>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        className="admin-notif-btn-approve"
+                                        onClick={() => handleAdminPreApprove(req)}
+                                      >
+                                        🛡️ {t('Pre-Approve & Forward', 'प्री-अप्रूव करें')}
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="admin-notif-btn-reject"
+                                      onClick={() => handleQuickReject(req)}
+                                    >
+                                      ✕ {t('Reject', 'अस्वीकार')}
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <div className="admin-notif-desc">
-                              ⚠️ Requesting full access to Payments, Invoices, and Documents.
-                            </div>
-                            <div className="admin-notif-actions">
-                              <button
-                                type="button"
-                                className="admin-notif-btn-approve"
-                                onClick={() => handleQuickApprove(req)}
-                              >
-                                ✓ {t('Approve Full Access', 'स्वीकृति दें')}
-                              </button>
-                              <button
-                                type="button"
-                                className="admin-notif-btn-reject"
-                                onClick={() => handleQuickReject(req)}
-                              >
-                                ✕ {t('Reject', 'अस्वीकार')}
-                              </button>
-                            </div>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>
@@ -3896,22 +3972,38 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <div className="approval-banner-left">
                   <span className="approval-bell-pulse">🔔</span>
                   <div>
-                    <strong>{pendingRequests.length} Account Clearance Request{pendingRequests.length > 1 ? 's' : ''} Pending</strong>
-                    <p>Shippers are waiting for verification to unlock billing, GST invoices, and electronic documents.</p>
+                    <strong>{pendingRequests.length} Dual-Control Account Approval{pendingRequests.length > 1 ? 's' : ''} Pending</strong>
+                    <p>
+                      {awaitingSuperAdminCount > 0 ? (
+                        <><strong>{awaitingSuperAdminCount}</strong> pre-approved by Admin awaiting <strong>SuperAdmin Re-Verification & Pass</strong> • {freshPendingCount} fresh requests</>
+                      ) : (
+                        <>Shippers are waiting for verification to unlock billing, GST invoices, and electronic documents.</>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="approval-banner-actions">
-                  {pendingRequests.slice(0, 3).map(req => (
-                    <button
-                      key={req.id}
-                      type="button"
-                      className="approval-quick-btn"
-                      onClick={() => handleQuickApprove(req)}
-                      title={`Unlock ${req.userName || req.userEmail}`}
-                    >
-                      ✓ Quick Approve: {req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}
-                    </button>
-                  ))}
+                  {pendingRequests.slice(0, 3).map(req => {
+                    const isReverify = req.status === 'PENDING_SUPERADMIN';
+                    return (
+                      <button
+                        key={req.id}
+                        type="button"
+                        className="approval-quick-btn"
+                        onClick={() => handleQuickApprove(req)}
+                        title={isReverify ? `SuperAdmin Re-verify & Pass ${req.userName || req.userEmail}` : `Approve ${req.userName || req.userEmail}`}
+                        style={{
+                          background: isReverify && user?.role === 'SuperAdmin' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : undefined,
+                          borderColor: isReverify && user?.role === 'SuperAdmin' ? '#b45309' : undefined
+                        }}
+                      >
+                        {user?.role === 'SuperAdmin'
+                          ? (isReverify ? `👑 Re-Verify Pass: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}` : `👑 Master Pass: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}`)
+                          : (isReverify ? `⏳ In SuperAdmin Queue: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}` : `🛡️ Pre-Approve: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}`)
+                        }
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -4167,6 +4259,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             if (userRoleFilter === 'Admin') return u.role === 'Admin';
             if (userRoleFilter === 'User') return u.role === 'User';
             if (userRoleFilter === 'Active') return u.isActive;
+            if (userRoleFilter === 'Reverify') return isPendingSuperAdminReverify(u.id, u.email);
             if (userRoleFilter === 'Pending') return isApprovalPending(u.id, u.email);
             return true;
           });
@@ -4350,6 +4443,16 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       🟢 Active ({activeUsersCount})
                     </button>
 
+                    {awaitingSuperAdminCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setUserRoleFilter('Reverify')}
+                        className={`user-dir-chip reverify ${userRoleFilter === 'Reverify' ? 'active' : ''}`}
+                      >
+                        👑 Needs SuperAdmin Pass ({awaitingSuperAdminCount})
+                      </button>
+                    )}
+
                     {pendingApprovalCount > 0 && (
                       <button
                         type="button"
@@ -4371,6 +4474,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     filteredUsers.map(u => {
                       const userApproved = isUserApproved(u);
                       const isPending = isApprovalPending(u.id, u.email);
+                      const isReverify = isPendingSuperAdminReverify(u.id, u.email);
+                      const req = getApprovalRequestForUser(u.id, u.email);
                       const avatar = getUserAvatar(u.name, u.role);
 
                       return (
@@ -4449,8 +4554,12 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                               ) : u.role === 'Admin' ? (
                                 <span className="user-dir-clearance-pill cleared">⚡ Admin Cleared</span>
                               ) : userApproved ? (
-                                <span className="user-dir-clearance-pill approved" title="Payments, Invoices & Documents Unlocked">
-                                  🟢 Full Access
+                                <span className="user-dir-clearance-pill dual-cleared" title="Verified by Admin and passed by SuperAdmin">
+                                  🟢 Full Access (Dual Verified)
+                                </span>
+                              ) : isReverify ? (
+                                <span className="user-dir-clearance-pill reverify" title="Admin pre-approved. SuperAdmin re-verification required">
+                                  👑 Needs SuperAdmin Pass
                                 </span>
                               ) : isPending ? (
                                 <span className="user-dir-clearance-pill pending" title="User requested account clearance">
@@ -4464,18 +4573,63 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                             </div>
                           </div>
 
+                          {/* Transparency Audit Trail Strip (Dual-Control) */}
+                          {u.role === 'User' && (req?.adminApprovedBy || isReverify || userApproved) && (
+                            <div className="user-dir-trail-box">
+                              <span className="user-dir-trail-item" style={{ color: req?.adminApprovedBy ? '#0284c7' : '#64748b' }}>
+                                🛡️ Admin: <strong>{req?.adminApprovedBy || 'Direct Clearance'}</strong>
+                              </span>
+                              <span className="user-dir-trail-arrow">➔</span>
+                              <span className="user-dir-trail-item" style={{ color: userApproved ? '#059669' : '#d97706' }}>
+                                👑 SuperAdmin: <strong>{userApproved ? (req?.superAdminVerifiedBy || 'Super Admin Passed') : 'Pending Re-Verification'}</strong>
+                              </span>
+                            </div>
+                          )}
+
                           {/* Quick Actions Footer */}
                           <div className="user-dir-card-actions">
                             {u.role === 'User' && (
                               !userApproved ? (
-                                <button
-                                  type="button"
-                                  className="user-dir-btn-action approve"
-                                  onClick={() => handleToggleUserApproval(u, true)}
-                                  title={t('Grant Full Role Access', 'पूर्ण एक्सेस दें')}
-                                >
-                                  {isPending ? '✓ ' + t('Approve', 'स्वीकारें') : '🔓 ' + t('Grant Access', 'अनुमति दें')}
-                                </button>
+                                isReverify ? (
+                                  user?.role === 'SuperAdmin' ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        className="user-dir-btn-action reverify"
+                                        onClick={() => handleSuperAdminPass(req || { id: `req-${u.id}`, userId: u.id, userName: u.name, userEmail: u.email, requestedAt: new Date().toISOString(), status: 'PENDING_SUPERADMIN' })}
+                                        title={t('SuperAdmin Re-Verify & Grant Master Clearance', 'सत्यापित करें व पास करें')}
+                                      >
+                                        👑 {t('Re-Verify & Pass', 'सत्यापित करें व पास')}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="user-dir-btn-action restrict"
+                                        onClick={() => handleToggleUserApproval(u, false)}
+                                        title={t('Reject or Send Back', 'अस्वीकार')}
+                                      >
+                                        ✕ {t('Reject', 'अस्वीकार')}
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action awaiting"
+                                      disabled
+                                      title={t('Admin approval logged. Waiting for SuperAdmin Re-Verification & Master Pass', 'सुपरएडमिन सत्यापन का इंतज़ार')}
+                                    >
+                                      ⏳ {t('Awaiting SuperAdmin Pass', 'सुपरएडमिन का इंतज़ार')}
+                                    </button>
+                                  )
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="user-dir-btn-action approve"
+                                    onClick={() => handleToggleUserApproval(u, true)}
+                                    title={user?.role === 'SuperAdmin' ? t('Master Clearance Pass', 'मास्टर पास') : t('Pre-Approve and Forward to SuperAdmin', 'प्री-अप्रूव करें')}
+                                  >
+                                    {user?.role === 'SuperAdmin' ? '👑 Master Pass' : '🛡️ ' + t('Admin Pre-Approve', 'एडमिन अप्रूवल')}
+                                  </button>
+                                )
                               ) : (
                                 <button
                                   type="button"
