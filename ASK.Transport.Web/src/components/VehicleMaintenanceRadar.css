@@ -78,14 +78,30 @@ body.dark .maintenance-radar-container,
 
 .maintenance-filter-bar {
   background: var(--bg-surface);
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 12px 18px;
+  border-radius: 14px;
   border: 1px solid var(--border-color);
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.maintenance-filter-pills-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.maintenance-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
 }
 
 .maintenance-filter-pill {
@@ -319,4 +335,402 @@ body:not(.dark) .maintenance-driver-info {
     padding: 6px 10px !important;
     font-size: 11px !important;
   }
+}
+
+/* ============================================================================
+   VIEW MODE TOGGLE & VEHICLE COMPLIANCE CARDS GRID
+   ============================================================================ */
+
+/* VIEW MODE TOGGLE BUTTONS */
+.maintenance-view-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.maintenance-view-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.maintenance-view-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.maintenance-view-btn.active {
+  background: #0284c7;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+}
+
+/* SEARCH BOX ENHANCEMENT */
+.maintenance-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  padding: 6px 12px;
+  min-width: 240px;
+}
+
+.maintenance-search-box .maintenance-search-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  flex: 1;
+}
+
+.maintenance-search-clear {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.maintenance-search-clear:hover {
+  color: var(--text-primary);
+}
+
+/* CARDS GRID */
+.maintenance-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 18px;
+}
+
+.maintenance-cards-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: 14px;
+  color: var(--text-secondary);
+}
+
+/* VEHICLE CARD */
+.maintenance-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.maintenance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.maintenance-card.status-critical {
+  border-left: 4px solid #ef4444;
+}
+
+.maintenance-card.status-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.maintenance-card.status-healthy {
+  border-left: 4px solid #10b981;
+}
+
+/* CARD HEADER */
+.m-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.m-card-truck-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.m-plate-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.m-truck-plate {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.m-truck-model {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.m-hub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.m-health-pill {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.m-health-pill.critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.m-health-pill.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.m-health-pill.healthy {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+/* DRIVER & ODOMETER STRIP */
+.m-card-driver-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 14px;
+  gap: 12px;
+}
+
+.m-driver-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.m-driver-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m-driver-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.m-driver-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.m-driver-phone {
+  font-size: 11px;
+  color: #0284c7;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.m-driver-phone:hover {
+  text-decoration: underline;
+}
+
+.m-odometer-box {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-odo-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.m-odo-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* 5-DOCUMENT COMPLIANCE GRID */
+.m-compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.m-comp-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all 0.15s ease;
+}
+
+.m-comp-box.expired {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.m-comp-box.warning {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.m-comp-box.healthy {
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.m-comp-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.m-comp-icon {
+  font-size: 12px;
+}
+
+.m-comp-name {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m-comp-days {
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 1px;
+}
+
+.m-comp-box.expired .m-comp-days {
+  color: #ef4444;
+}
+
+.m-comp-box.warning .m-comp-days {
+  color: #f59e0b;
+}
+
+.m-comp-box.healthy .m-comp-days {
+  color: #10b981;
+}
+
+.m-comp-date {
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+/* CRITICAL ISSUES ACCENT BAR */
+.m-card-critical-issues {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 9px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.m-alert-icon {
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.m-issues-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.m-issue-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+/* ACTION FOOTER */
+.m-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.m-card-footer .maintenance-btn-alert {
+  padding: 8px 16px;
+  font-size: 12px;
+  border-radius: 8px;
+  width: 100%;
+  justify-content: center;
 }

@@ -1,5 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import {
+  AlertTriangle,
+  Phone,
+  Send,
+  Search,
+  X,
+  MapPin
+} from 'lucide-react';
+import {
   getFleetMaintenanceAlerts,
   sendVehicleRenewalAlert,
   type VehicleMaintenanceAlert,
@@ -204,6 +212,22 @@ export default function VehicleMaintenanceRadar() {
     }
   });
 
+  // Dual View Mode: 'cards' (Corridor/Vehicle Cards Grid) vs 'table' (Clean Responsive Table)
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>(() => {
+    try {
+      const saved = localStorage.getItem('ask_fleet_maintenance_view');
+      if (saved === 'cards' || saved === 'table') return saved;
+    } catch {}
+    return 'cards'; // Cards view as modern default
+  });
+
+  const handleSetViewMode = (mode: 'cards' | 'table') => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem('ask_fleet_maintenance_view', mode);
+    } catch {}
+  };
+
   async function loadData() {
     try {
       setLoading(true);
@@ -350,166 +374,377 @@ export default function VehicleMaintenanceRadar() {
 
       {/* 2. FILTER TABS & SEARCH BAR */}
       <div className="maintenance-filter-bar">
-        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-secondary)', marginRight: '4px' }}>FILTER STATUS:</span>
-        
-        <button
-          type="button"
-          onClick={() => setFilterHealth('All')}
-          className={`maintenance-filter-pill ${filterHealth === 'All' ? 'active' : ''}`}
-        >
-          <span>All</span>
-          <span className="maintenance-filter-count">{counts.all}</span>
-        </button>
+        <div className="maintenance-filter-pills-group">
+          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-secondary)', marginRight: '4px' }}>FILTER STATUS:</span>
+          
+          <button
+            type="button"
+            onClick={() => setFilterHealth('All')}
+            className={`maintenance-filter-pill ${filterHealth === 'All' ? 'active' : ''}`}
+          >
+            <span>All</span>
+            <span className="maintenance-filter-count">{counts.all}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setFilterHealth('Critical')}
-          className={`maintenance-filter-pill ${filterHealth === 'Critical' ? 'active' : ''}`}
-        >
-          <span>Critical</span>
-          <span className="maintenance-filter-count" style={{ background: 'rgba(239, 68, 68, 0.25)', color: '#ef4444' }}>{counts.critical}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setFilterHealth('Critical')}
+            className={`maintenance-filter-pill ${filterHealth === 'Critical' ? 'active' : ''}`}
+          >
+            <span>Critical</span>
+            <span className="maintenance-filter-count" style={{ background: 'rgba(239, 68, 68, 0.25)', color: '#ef4444' }}>{counts.critical}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setFilterHealth('Warning')}
-          className={`maintenance-filter-pill ${filterHealth === 'Warning' ? 'active' : ''}`}
-        >
-          <span>Warning</span>
-          <span className="maintenance-filter-count" style={{ background: 'rgba(245, 158, 11, 0.25)', color: '#f59e0b' }}>{counts.warning}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setFilterHealth('Warning')}
+            className={`maintenance-filter-pill ${filterHealth === 'Warning' ? 'active' : ''}`}
+          >
+            <span>Warning</span>
+            <span className="maintenance-filter-count" style={{ background: 'rgba(245, 158, 11, 0.25)', color: '#f59e0b' }}>{counts.warning}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setFilterHealth('Healthy')}
-          className={`maintenance-filter-pill ${filterHealth === 'Healthy' ? 'active' : ''}`}
-        >
-          <span>Healthy</span>
-          <span className="maintenance-filter-count" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#10b981' }}>{counts.healthy}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setFilterHealth('Healthy')}
+            className={`maintenance-filter-pill ${filterHealth === 'Healthy' ? 'active' : ''}`}
+          >
+            <span>Healthy</span>
+            <span className="maintenance-filter-count" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#10b981' }}>{counts.healthy}</span>
+          </button>
 
-        {loading && <span style={{ fontSize: '11px', color: '#38bdf8', marginLeft: '6px', fontWeight: 600 }}>Syncing...</span>}
+          {loading && <span style={{ fontSize: '11px', color: '#38bdf8', marginLeft: '6px', fontWeight: 600 }}>Syncing...</span>}
+        </div>
 
-        <input
-          type="text"
-          placeholder="🔍 Search truck plate, driver, hub..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="maintenance-search-input"
-        />
-      </div>
+        <div className="maintenance-actions-group">
+          {/* VIEW MODE TOGGLE (CARDS vs CLEAN TABLE) */}
+          <div className="maintenance-view-mode-toggle">
+            <button
+              type="button"
+              className={`maintenance-view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+              onClick={() => handleSetViewMode('cards')}
+              title="Vehicle Cards Grid View"
+            >
+              🗂️ Cards
+            </button>
+            <button
+              type="button"
+              className={`maintenance-view-btn ${viewMode === 'table' ? 'active' : ''}`}
+              onClick={() => handleSetViewMode('table')}
+              title="Clean Table View"
+            >
+              📑 Table
+            </button>
+          </div>
 
-      {/* 3. VEHICLES COMPLIANCE TABLE */}
-      <div className="maintenance-table-card">
-        <div style={{ overflowX: 'auto' }}>
-          <table className="maintenance-table">
-            <thead>
-              <tr>
-                <th>Truck &amp; Driver</th>
-                <th>Fitness Certificate</th>
-                <th>Commercial Insurance</th>
-                <th>PUC Certificate</th>
-                <th>National Permit</th>
-                <th>Next Oil Service</th>
-                <th style={{ textAlign: 'right' }}>Compliance Alert</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredList.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    No fleet vehicles found matching the "{filterHealth}" filter{searchQuery ? ` and search "${searchQuery}"` : ''}.
-                  </td>
-                </tr>
-              ) : (
-                filteredList.map(v => {
-                  const status = v.overallHealthStatus;
-                  const fitDays = v.fitnessDaysLeft;
-                  const insDays = v.insuranceDaysLeft;
-                  const pucDays = v.pucDaysLeft;
-                  const permitDays = v.permitDaysLeft;
-                  const kmLeft = v.kmUntilNextService;
-                  const alertedTime = alertedVehicles[v.vehicleId];
-
-                  return (
-                    <tr key={v.vehicleId}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontSize: '18px' }}>{status === 'Critical' ? '🔴' : status === 'Warning' ? '🟡' : '🟢'}</span>
-                          <div>
-                            <strong className="maintenance-truck-plate">{v.vehicleNumber}</strong>
-                            <div className="maintenance-truck-model">{v.model} • <span style={{ color: 'var(--text-muted)' }}>{v.hubName}</span></div>
-                            <div className="maintenance-driver-info">{v.driverName} ({v.driverPhone})</div>
-                            {v.criticalIssues && v.criticalIssues.length > 0 && (
-                              <div className="maintenance-issue-tag">
-                                ⚠ {v.criticalIssues[0]}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        <strong style={{ color: fitDays <= 0 ? '#ef4444' : fitDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                          {fitDays <= 0 ? `EXPIRED (${Math.abs(fitDays)}d ago)` : `${fitDays} days left`}
-                        </strong>
-                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                          {v.fitnessExpiryDate ? new Date(v.fitnessExpiryDate).toLocaleDateString() : 'N/A'}
-                        </div>
-                      </td>
-
-                      <td>
-                        <strong style={{ color: insDays <= 0 ? '#ef4444' : insDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                          {insDays <= 0 ? `EXPIRED (${Math.abs(insDays)}d ago)` : `${insDays} days left`}
-                        </strong>
-                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                          {v.insuranceExpiryDate ? new Date(v.insuranceExpiryDate).toLocaleDateString() : 'N/A'}
-                        </div>
-                      </td>
-
-                      <td>
-                        <strong style={{ color: pucDays <= 0 ? '#ef4444' : pucDays <= 15 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                          {pucDays <= 0 ? `EXPIRED (${Math.abs(pucDays)}d ago)` : `${pucDays} days left`}
-                        </strong>
-                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                          {v.pucExpiryDate ? new Date(v.pucExpiryDate).toLocaleDateString() : 'Valid'}
-                        </div>
-                      </td>
-
-                      <td>
-                        <strong style={{ color: permitDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
-                          {permitDays} days
-                        </strong>
-                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>All-India Form 48</div>
-                      </td>
-
-                      <td>
-                        <strong style={{ color: kmLeft <= 1000 ? '#f59e0b' : 'var(--text-primary)', display: 'block', fontSize: '13px' }}>
-                          {kmLeft} KM Left
-                        </strong>
-                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>Due @ {v.nextEngineOilServiceKm.toLocaleString('en-IN')} KM</div>
-                      </td>
-
-                      <td style={{ textAlign: 'right' }}>
-                        <button
-                          type="button"
-                          disabled={sendingId === v.vehicleId}
-                          onClick={() => handleSendAlert(v)}
-                          className={`maintenance-btn-alert ${alertedTime ? 'alerted' : ''}`}
-                          title={`Send WhatsApp renewal alert to ${v.driverName}`}
-                        >
-                          <span>{alertedTime ? '✓' : '📲'}</span>
-                          <span>{sendingId === v.vehicleId ? 'Sending...' : alertedTime ? `Alerted (${alertedTime})` : 'WhatsApp Alert'}</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+          <div className="maintenance-search-box">
+            <Search size={14} style={{ color: '#94a3b8' }} />
+            <input
+              type="text"
+              placeholder="Search truck plate, driver, hub..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="maintenance-search-input"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="maintenance-search-clear"
+                title="Clear search"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* 3. DUAL VIEW: VEHICLE CARDS GRID vs CLEAN TABLE */}
+      {viewMode === 'cards' ? (
+        /* ======================================================== */
+        /* 3A. MODERN TMS VEHICLE COMPLIANCE CARDS GRID            */
+        /* ======================================================== */
+        <div className="maintenance-cards-grid">
+          {filteredList.length === 0 ? (
+            <div className="maintenance-cards-empty">
+              <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
+              <strong style={{ fontSize: '15px' }}>No fleet vehicles found</strong>
+              <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                Matching the "{filterHealth}" filter{searchQuery ? ` and search "${searchQuery}"` : ''}.
+              </p>
+            </div>
+          ) : (
+            filteredList.map(v => {
+              const status = v.overallHealthStatus;
+              const fitDays = v.fitnessDaysLeft;
+              const insDays = v.insuranceDaysLeft;
+              const pucDays = v.pucDaysLeft;
+              const permitDays = v.permitDaysLeft;
+              const kmLeft = v.kmUntilNextService;
+              const alertedTime = alertedVehicles[v.vehicleId];
+
+              const isCritical = status === 'Critical';
+              const isWarning = status === 'Warning';
+
+              return (
+                <div key={v.vehicleId} className={`maintenance-card status-${status.toLowerCase()}`}>
+                  {/* CARD HEADER */}
+                  <div className="m-card-header">
+                    <div className="m-card-truck-info">
+                      <div className="m-plate-badge-wrap">
+                        <span className="m-status-indicator">{isCritical ? '🔴' : isWarning ? '🟡' : '🟢'}</span>
+                        <span className="m-truck-plate">{v.vehicleNumber}</span>
+                      </div>
+                      <div className="m-truck-model">{v.model}</div>
+                      <div className="m-hub-badge">
+                        <MapPin size={11} />
+                        <span>{v.hubName}</span>
+                      </div>
+                    </div>
+
+                    <div className="m-card-status-wrap">
+                      <span className={`m-health-pill ${status.toLowerCase()}`}>
+                        {isCritical ? 'CRITICAL RTO RISK' : isWarning ? 'EXPIRING SOON' : 'COMPLIANT & ACTIVE'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* DRIVER & ODOMETER STRIP */}
+                  <div className="m-card-driver-strip">
+                    <div className="m-driver-profile">
+                      <div className="m-driver-avatar">
+                        {v.driverName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="m-driver-text">
+                        <div className="m-driver-name">{v.driverName}</div>
+                        <a href={`tel:${v.driverPhone}`} className="m-driver-phone">
+                          <Phone size={11} />
+                          <span>{v.driverPhone}</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="m-odometer-box">
+                      <span className="m-odo-label">ODOMETER:</span>
+                      <strong className="m-odo-val">{v.currentOdometerKm.toLocaleString('en-IN')} KM</strong>
+                    </div>
+                  </div>
+
+                  {/* 5-DOCUMENT COMPLIANCE GRID */}
+                  <div className="m-compliance-grid">
+                    {/* 1. FITNESS */}
+                    <div className={`m-comp-box ${fitDays <= 0 ? 'expired' : fitDays <= 30 ? 'warning' : 'healthy'}`}>
+                      <div className="m-comp-head">
+                        <span className="m-comp-icon">🛡️</span>
+                        <span className="m-comp-name">Fitness Cert</span>
+                      </div>
+                      <div className="m-comp-days">
+                        {fitDays <= 0 ? `EXPIRED (${Math.abs(fitDays)}d)` : `${fitDays}d left`}
+                      </div>
+                      <div className="m-comp-date">
+                        {v.fitnessExpiryDate ? new Date(v.fitnessExpiryDate).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </div>
+
+                    {/* 2. INSURANCE */}
+                    <div className={`m-comp-box ${insDays <= 0 ? 'expired' : insDays <= 30 ? 'warning' : 'healthy'}`}>
+                      <div className="m-comp-head">
+                        <span className="m-comp-icon">📜</span>
+                        <span className="m-comp-name">Insurance</span>
+                      </div>
+                      <div className="m-comp-days">
+                        {insDays <= 0 ? `EXPIRED (${Math.abs(insDays)}d)` : `${insDays}d left`}
+                      </div>
+                      <div className="m-comp-date">
+                        {v.insuranceExpiryDate ? new Date(v.insuranceExpiryDate).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </div>
+
+                    {/* 3. PUC */}
+                    <div className={`m-comp-box ${pucDays <= 0 ? 'expired' : pucDays <= 15 ? 'warning' : 'healthy'}`}>
+                      <div className="m-comp-head">
+                        <span className="m-comp-icon">🌿</span>
+                        <span className="m-comp-name">PUC Emission</span>
+                      </div>
+                      <div className="m-comp-days">
+                        {pucDays <= 0 ? `EXPIRED (${Math.abs(pucDays)}d)` : `${pucDays}d left`}
+                      </div>
+                      <div className="m-comp-date">
+                        {v.pucExpiryDate ? new Date(v.pucExpiryDate).toLocaleDateString() : 'Valid'}
+                      </div>
+                    </div>
+
+                    {/* 4. NATIONAL PERMIT */}
+                    <div className={`m-comp-box ${permitDays <= 30 ? 'warning' : 'healthy'}`}>
+                      <div className="m-comp-head">
+                        <span className="m-comp-icon">🇮🇳</span>
+                        <span className="m-comp-name">Nat. Permit</span>
+                      </div>
+                      <div className="m-comp-days">
+                        {permitDays}d left
+                      </div>
+                      <div className="m-comp-date">Form 48</div>
+                    </div>
+
+                    {/* 5. OIL SERVICE */}
+                    <div className={`m-comp-box ${kmLeft <= 1000 ? 'warning' : 'healthy'}`}>
+                      <div className="m-comp-head">
+                        <span className="m-comp-icon">🛢️</span>
+                        <span className="m-comp-name">Oil Service</span>
+                      </div>
+                      <div className="m-comp-days">
+                        {kmLeft} KM left
+                      </div>
+                      <div className="m-comp-date">@ {v.nextEngineOilServiceKm.toLocaleString('en-IN')} KM</div>
+                    </div>
+                  </div>
+
+                  {/* CRITICAL ISSUES ACCENT BAR */}
+                  {v.criticalIssues && v.criticalIssues.length > 0 && (
+                    <div className="m-card-critical-issues">
+                      <AlertTriangle size={14} className="m-alert-icon" />
+                      <div className="m-issues-list">
+                        {v.criticalIssues.map((issue, idx) => (
+                          <span key={idx} className="m-issue-pill">⚠ {issue}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ACTION FOOTER */}
+                  <div className="m-card-footer">
+                    <button
+                      type="button"
+                      disabled={sendingId === v.vehicleId}
+                      onClick={() => handleSendAlert(v)}
+                      className={`maintenance-btn-alert ${alertedTime ? 'alerted' : ''}`}
+                      title={`Send WhatsApp renewal alert to ${v.driverName}`}
+                    >
+                      <Send size={13} />
+                      <span>{sendingId === v.vehicleId ? 'Sending...' : alertedTime ? `Alert Dispatched (${alertedTime})` : 'Dispatch WhatsApp Alert'}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        /* ======================================================== */
+        /* 3B. CLEAN RESPONSIVE TABLE VIEW                         */
+        /* ======================================================== */
+        <div className="maintenance-table-card">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="maintenance-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '28%' }}>Truck &amp; Driver</th>
+                  <th style={{ width: '12%' }}>Fitness Certificate</th>
+                  <th style={{ width: '12%' }}>Commercial Insurance</th>
+                  <th style={{ width: '12%' }}>PUC Certificate</th>
+                  <th style={{ width: '11%' }}>National Permit</th>
+                  <th style={{ width: '11%' }}>Next Oil Service</th>
+                  <th style={{ width: '14%', textAlign: 'right' }}>Compliance Alert</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredList.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                      No fleet vehicles found matching the "{filterHealth}" filter{searchQuery ? ` and search "${searchQuery}"` : ''}.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredList.map(v => {
+                    const status = v.overallHealthStatus;
+                    const fitDays = v.fitnessDaysLeft;
+                    const insDays = v.insuranceDaysLeft;
+                    const pucDays = v.pucDaysLeft;
+                    const permitDays = v.permitDaysLeft;
+                    const kmLeft = v.kmUntilNextService;
+                    const alertedTime = alertedVehicles[v.vehicleId];
+
+                    return (
+                      <tr key={v.vehicleId}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '18px' }}>{status === 'Critical' ? '🔴' : status === 'Warning' ? '🟡' : '🟢'}</span>
+                            <div>
+                              <strong className="maintenance-truck-plate">{v.vehicleNumber}</strong>
+                              <div className="maintenance-truck-model">{v.model} • <span style={{ color: 'var(--text-muted)' }}>{v.hubName}</span></div>
+                              <div className="maintenance-driver-info">{v.driverName} ({v.driverPhone})</div>
+                              {v.criticalIssues && v.criticalIssues.length > 0 && (
+                                <div className="maintenance-issue-tag">
+                                  ⚠ {v.criticalIssues[0]}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        <td>
+                          <strong style={{ color: fitDays <= 0 ? '#ef4444' : fitDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
+                            {fitDays <= 0 ? `EXPIRED (${Math.abs(fitDays)}d ago)` : `${fitDays} days left`}
+                          </strong>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            {v.fitnessExpiryDate ? new Date(v.fitnessExpiryDate).toLocaleDateString() : 'N/A'}
+                          </div>
+                        </td>
+
+                        <td>
+                          <strong style={{ color: insDays <= 0 ? '#ef4444' : insDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
+                            {insDays <= 0 ? `EXPIRED (${Math.abs(insDays)}d ago)` : `${insDays} days left`}
+                          </strong>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            {v.insuranceExpiryDate ? new Date(v.insuranceExpiryDate).toLocaleDateString() : 'N/A'}
+                          </div>
+                        </td>
+
+                        <td>
+                          <strong style={{ color: pucDays <= 0 ? '#ef4444' : pucDays <= 15 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
+                            {pucDays <= 0 ? `EXPIRED (${Math.abs(pucDays)}d ago)` : `${pucDays} days left`}
+                          </strong>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            {v.pucExpiryDate ? new Date(v.pucExpiryDate).toLocaleDateString() : 'Valid'}
+                          </div>
+                        </td>
+
+                        <td>
+                          <strong style={{ color: permitDays <= 30 ? '#f59e0b' : '#10b981', display: 'block', fontSize: '13px' }}>
+                            {permitDays} days
+                          </strong>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>All-India Form 48</div>
+                        </td>
+
+                        <td>
+                          <strong style={{ color: kmLeft <= 1000 ? '#f59e0b' : 'var(--text-primary)', display: 'block', fontSize: '13px' }}>
+                            {kmLeft} KM Left
+                          </strong>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>Due @ {v.nextEngineOilServiceKm.toLocaleString('en-IN')} KM</div>
+                        </td>
+
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            disabled={sendingId === v.vehicleId}
+                            onClick={() => handleSendAlert(v)}
+                            className={`maintenance-btn-alert ${alertedTime ? 'alerted' : ''}`}
+                            title={`Send WhatsApp renewal alert to ${v.driverName}`}
+                          >
+                            <span>{alertedTime ? '✓' : '📲'}</span>
+                            <span>{sendingId === v.vehicleId ? 'Sending...' : alertedTime ? `Alerted (${alertedTime})` : 'WhatsApp Alert'}</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
