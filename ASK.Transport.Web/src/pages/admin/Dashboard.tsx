@@ -770,23 +770,17 @@ export default function Dashboard() {
     if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(tab)) {
       return { operations: false, fleet: false, enterprise: false, ai: false, governance: true };
     }
-    return { operations: true, fleet: false, enterprise: false, ai: false, governance: false };
+    // On dashboard home: open operations, fleet, and enterprise so users instantly see all key modules
+    return { operations: true, fleet: true, enterprise: true, ai: false, governance: false };
   };
 
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>(() => getInitialNavGroups(activeTab));
 
   const toggleNavGroup = (groupKey: string) => {
-    setOpenNavGroups(prev => {
-      const isCurrentlyOpen = !!prev[groupKey];
-      // Accordion mode: Clicking a category opens ONLY that category and closes all others!
-      return {
-        operations: groupKey === 'operations' ? !isCurrentlyOpen : false,
-        fleet: groupKey === 'fleet' ? !isCurrentlyOpen : false,
-        enterprise: groupKey === 'enterprise' ? !isCurrentlyOpen : false,
-        ai: groupKey === 'ai' ? !isCurrentlyOpen : false,
-        governance: groupKey === 'governance' ? !isCurrentlyOpen : false
-      };
-    });
+    setOpenNavGroups(prev => ({
+      ...prev,
+      [groupKey]: !prev[groupKey]
+    }));
   };
 
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
@@ -3279,6 +3273,48 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
           <div className="admin-topbar-quick-actions">
             <button
               type="button"
+              onClick={() => { setFinanceDeckSubTab('credit'); setActiveTab('finance_accounting', 'credit'); }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: activeTab === 'finance_accounting' && financeDeckSubTab === 'credit' ? '#2563eb' : 'rgba(37, 99, 235, 0.12)',
+                color: activeTab === 'finance_accounting' && financeDeckSubTab === 'credit' ? '#ffffff' : '#38bdf8',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Customer Credit Limits, Overdue Aging & Auto-Lock Hub"
+            >
+              <span>💳</span> 🔒 Shipper Credit
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setFleetDeckSubTab('duty_slip'); setActiveTab('fleet_mgmt', 'duty_slip'); }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'duty_slip' ? '#16a34a' : 'rgba(22, 163, 74, 0.12)',
+                color: activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'duty_slip' ? '#ffffff' : '#22c55e',
+                border: '1px solid rgba(22, 163, 74, 0.3)',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Driver WhatsApp Duty Slip Dispatch Console"
+            >
+              <span>💬</span> WhatsApp Duty Slip
+            </button>
+
+            <button
+              type="button"
               onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
               style={{
                 display: 'inline-flex',
@@ -3296,8 +3332,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             >
               <span>🚛</span> Petty Cash (P&amp;L)
             </button>
-
-
 
             <button
               type="button"
@@ -3756,7 +3790,157 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       {t('Open Compliance Radar →', 'अनुपालन रडार खोलें →')}
                     </button>
                   </div>
+                
+                {/* CARD 4: SHIPPER CREDIT AUTO-LOCK & CUSTOMER LEDGER */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      💳
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {t('4. Shipper Credit Auto-Lock', '4. शिपर क्रेडिट ऑटो-लॉक')}
+                        <span style={{ background: '#2563eb', color: '#eff6ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>CREDIT SHIELD</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                        {t('Enforce GSTIN credit limits, track overdue aging ledger, and trigger automatic booking auto-lock when credit grace period is breached.', 'जीएसटीन क्रेडिट सीमाएं लागू करें, बकाया लेजर ट्रैक करें, और ग्रेस अवधि पार होने पर स्वचालित बुकिंग लॉक लगाएं।')}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setFinanceDeckSubTab('credit'); setActiveTab('finance_accounting', 'credit'); }}
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        background: '#2563eb',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {t('Audit Shipper Credit & Auto-Lock →', 'क्रेडिट लेजर व ऑटो-लॉक जांचें →')}
+                    </button>
+                  </div>
                 </div>
+
+                {/* CARD 5: DRIVER WHATSAPP DUTY SLIP CONSOLE */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(22, 163, 74, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      💬
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {t('5. Driver WhatsApp Duty Slip', '5. चालक व्हाट्सएप ड्यूटी स्लिप')}
+                        <span style={{ background: '#16a34a', color: '#f0fdf4', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>WHATSAPP LIVE</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                        {t('Generate and dispatch 1-click digital trip sheets to driver WhatsApp with transit route, consignor/consignee contact, e-way bill QR, and diesel advance slip.', 'ड्राइवर के व्हाट्सएप पर 1-क्लिक डिजिटल ट्रिप शीट भेजें जिसमें ट्रांजिट रूट, संपर्क नंबर, ई-वे बिल क्यूआर और डीजल एडवांस शामिल है।')}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setFleetDeckSubTab('duty_slip'); setActiveTab('fleet_mgmt', 'duty_slip'); }}
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        background: '#16a34a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {t('Dispatch Duty Slip Hub →', 'ड्यूटी स्लिप हब खोलें →')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* CARD 6: FASTAG NETC TOLL RECONCILIATION */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '14px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(139, 92, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      🛣️
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {t('6. FASTag NETC Reconciliation', '6. फास्टैग टोल समाधान')}
+                        <span style={{ background: '#8b5cf6', color: '#f5f3ff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px' }}>NPCI AUDIT</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                        {t('Reconcile FASTag wallet deductions with highway toll plaza logs to identify double charges, missed plazas, and audit highway corridor profitability.', 'फास्टैग कटौती का राष्ट्रीय राजमार्ग प्लाजा से मिलान करें, दोहरी कटौती पहचानें और ट्रिप टोल लाभप्रदता जांचें।')}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setFleetDeckSubTab('fastag_reconcile'); setActiveTab('fleet_mgmt', 'fastag_reconcile'); }}
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        background: '#7c3aed',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {t('Audit FASTag Highway Deductions →', 'फास्टैग टोल कटौती जांचें →')}
+                    </button>
+                  </div>
+                </div>
+</div>
               </div>
             </div>
 
