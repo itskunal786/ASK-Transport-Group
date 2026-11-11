@@ -710,11 +710,11 @@
   position: sticky !important;
   left: 0;
   top: 0;
-  z-index: 30 !important;
+  z-index: 25 !important;
   background: #111c38 !important;
-  min-width: 280px;
-  max-width: 320px;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+  min-width: 240px;
+  max-width: 280px;
+  border-right: 1px solid #1e3a5f;
 }
 
 .lrm-table td {
@@ -735,9 +735,8 @@
   left: 0;
   z-index: 10 !important;
   background: #0f172a !important;
-  min-width: 280px;
-  max-width: 320px;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+  min-width: 240px;
+  max-width: 280px;
   border-right: 1px solid #1e3a5f;
 }
 
@@ -1019,28 +1018,19 @@
 }
 
 .lrm-th-actions {
-  position: sticky !important;
-  right: 0 !important;
-  top: 0 !important;
-  z-index: 32 !important;
   background: #111c38 !important;
-  min-width: 175px !important;
-  width: 175px !important;
+  min-width: 140px;
+  width: auto;
   text-align: right;
   padding-right: 18px !important;
-  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.45);
 }
 
 .lrm-td-actions {
-  position: sticky !important;
-  right: 0 !important;
-  z-index: 12 !important;
-  background: #0f172a !important;
-  min-width: 175px !important;
-  width: 175px !important;
+  background: #0f172a;
+  min-width: 140px;
+  width: auto;
   text-align: right;
   padding-right: 18px !important;
-  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.45);
 }
 
 .lrm-table tr:hover .lrm-td-actions {
@@ -1348,5 +1338,352 @@
   .lrm-sim-result-strip {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ============================================================================
+   CORRIDOR CARDS GRID & DUAL VIEW MODE STYLES
+   ============================================================================ */
+
+/* VIEW MODE TOGGLE BUTTONS */
+.lrm-view-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #334155;
+  border-radius: 9px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.lrm-view-btn {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.lrm-view-btn:hover:not(.active) {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lrm-view-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+/* CARDS GRID CONTAINER */
+.lrm-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+  gap: 18px;
+  padding: 20px 24px 28px;
+  background: #090f1d;
+}
+
+.lrm-cards-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  color: #94a3b8;
+  background: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 14px;
+}
+
+/* LANE CARD */
+.lrm-lane-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lrm-lane-card:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -6px rgba(56, 189, 248, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.lrm-lane-card.is-paused {
+  opacity: 0.72;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* CARD HEADER */
+.lrm-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lrm-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.lrm-highway-chip {
+  font-size: 11px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #334155;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  max-width: 190px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lrm-card-state-tag {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* CARD ROUTE STRIP (CORRIDOR VISUALIZER) */
+.lrm-card-route-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #172033;
+  border: 1px solid #1e2f4d;
+  border-radius: 12px;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.lrm-city-box {
+  display: flex;
+  flex-direction: column;
+  min-width: 95px;
+}
+
+.lrm-city-box.dest {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.lrm-city-pin {
+  font-size: 14px;
+}
+
+.lrm-city-name {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  margin-top: 1px;
+}
+
+.lrm-city-box.origin .lrm-city-name {
+  color: #38bdf8;
+}
+
+.lrm-city-box.dest .lrm-city-name {
+  color: #34d399;
+}
+
+.lrm-state-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.lrm-corridor-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  padding: 0 6px;
+}
+
+.lrm-distance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #f1f5f9;
+  background: #0f172a;
+  border: 1px solid #334155;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.lrm-connector-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.lrm-connector-line::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #334155;
+  z-index: 1;
+}
+
+.lrm-connector-arrow {
+  background: #172033;
+  padding: 0 6px;
+  z-index: 2;
+  color: #38bdf8;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.lrm-transit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* 4-COLUMN RATE PRICING PILLARS */
+.lrm-card-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.lrm-rate-pillar {
+  background: #172033;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lrm-rate-pillar.ptl {
+  border-left: 3.5px solid #10b981;
+}
+
+.lrm-rate-pillar.floor {
+  border-left: 3.5px solid #38bdf8;
+}
+
+.lrm-rate-pillar.ftl {
+  border-left: 3.5px solid #c084fc;
+}
+
+.lrm-rate-pillar.express {
+  border-left: 3.5px solid #fbbf24;
+}
+
+.lrm-pillar-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.lrm-pillar-val-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 2px 0;
+}
+
+.lrm-pillar-val {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+}
+
+.lrm-rate-pillar.ptl .lrm-pillar-val { color: #10b981; }
+.lrm-rate-pillar.floor .lrm-pillar-val { color: #38bdf8; }
+.lrm-rate-pillar.ftl .lrm-pillar-val { color: #c084fc; }
+.lrm-rate-pillar.express .lrm-pillar-val { color: #fbbf24; }
+
+.lrm-pillar-unit {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.lrm-pillar-sub {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* CARD FOOTER */
+.lrm-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #1e293b;
+  padding-top: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lrm-btn-card-calc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.lrm-btn-card-calc:hover {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.lrm-card-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* RESPONSIVE BREAKPOINTS FOR CORRIDOR CARDS */
+@media (max-width: 768px) {
+  .lrm-cards-grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+  .lrm-card-rates-grid {
+    grid-template-columns: 1fr;
   }
 }
