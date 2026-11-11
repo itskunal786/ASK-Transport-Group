@@ -1052,7 +1052,7 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
                 <th>{t('Express (₹/KG)', 'एक्सप्रेस दर')}</th>
                 <th>{t('Est. Transit', 'समय सीमा')}</th>
                 <th>{t('Status', 'स्थिति')}</th>
-                <th style={{ textAlign: 'right' }}>{t('Actions', 'कार्रवाई')}</th>
+                <th className="lrm-th-actions">{t('Actions', 'कार्रवाई')}</th>
               </tr>
             </thead>
             <tbody>
@@ -1160,7 +1160,7 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
                     </td>
 
                     {/* ACTIONS */}
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="lrm-td-actions">
                       <div className="lrm-action-buttons">
                         <button
                           type="button"
@@ -1179,6 +1179,7 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
                           title="Delete route rate"
                         >
                           <Trash2 size={13} />
+                          <span>{t('Delete', 'हटाएं')}</span>
                         </button>
                       </div>
                     </td>
@@ -1385,20 +1386,37 @@ TOTAL INVOICED FREIGHT: ₹${totalInvoicedFreight.toLocaleString('en-IN')}
               </div>
 
               <div className="lrm-modal-footer">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="lrm-btn-cancel"
-                >
-                  {t('Cancel', 'रद्द करें')}
-                </button>
-                <button
-                  type="submit"
-                  className="lrm-btn-save"
-                >
-                  <Check size={16} />
-                  <span>{editingLane ? t('Update Rate ✓', 'दर अपडेट करें ✓') : t('Save & Publish Rate ✓', 'दर सुरक्षित व लागू करें ✓')}</span>
-                </button>
+                {editingLane && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to permanently delete route: ${editingLane.originCity} ➔ ${editingLane.destCity}?`)) {
+                        handleDeleteRate(editingLane.id, `${editingLane.originCity} ➔ ${editingLane.destCity}`);
+                        setShowModal(false);
+                      }
+                    }}
+                    className="lrm-btn-delete-modal"
+                  >
+                    <Trash2 size={14} />
+                    <span>{t('Delete Route Rate', 'यह रूट भाड़ा हटाएं')}</span>
+                  </button>
+                )}
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="lrm-btn-cancel"
+                  >
+                    {t('Cancel', 'रद्द करें')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="lrm-btn-save"
+                  >
+                    <Check size={16} />
+                    <span>{editingLane ? t('Update Rate ✓', 'दर अपडेट करें ✓') : t('Save & Publish Rate ✓', 'दर सुरक्षित व लागू करें ✓')}</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
