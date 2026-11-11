@@ -642,3 +642,81 @@ body:not(.dark) .ai-load-checkbox-label {
   border-color: #0284c7;
   transform: translateY(-1px);
 }
+
+/* ============================================================================
+   ADMIN COMMAND CENTER & HIGH CONTRAST DARK MODE OVERRIDES
+   ============================================================================ */
+.admin-main-viewport .ai-load-manifest-card,
+[data-theme='dark'] .ai-load-manifest-card,
+body.dark .ai-load-manifest-card {
+  background: #0f172a !important;
+  border-color: #1e3a5f !important;
+  color: #f8fafc !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.admin-main-viewport .ai-load-guidance-card,
+[data-theme='dark'] .ai-load-guidance-card,
+body.dark .ai-load-guidance-card {
+  background: #0f172a !important;
+  border-color: #1e3a5f !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.admin-main-viewport .ai-load-guidance-list,
+[data-theme='dark'] .ai-load-guidance-list,
+body.dark .ai-load-guidance-list {
+  color: #e2e8f0 !important;
+}
+
+.admin-main-viewport .ai-load-table thead tr,
+[data-theme='dark'] .ai-load-table thead tr,
+body.dark .ai-load-table thead tr {
+  background: #111c38 !important;
+  border-bottom-color: #1e3a5f !important;
+  color: #94a3b8 !important;
+}
+
+.admin-main-viewport .ai-load-table tbody tr,
+[data-theme='dark'] .ai-load-table tbody tr,
+body.dark .ai-load-table tbody tr {
+  background: #0f172a !important;
+  border-bottom-color: #1e293b !important;
+}
+
+.admin-main-viewport .ai-load-table tbody tr:hover,
+[data-theme='dark'] .ai-load-table tbody tr:hover,
+body.dark .ai-load-table tbody tr:hover {
+  background: #172442 !important;
+}
+
+.admin-main-viewport .ai-load-table td,
+[data-theme='dark'] .ai-load-table td,
+body.dark .ai-load-table td {
+  color: #f1f5f9 !important;
+}
+
+.admin-main-viewport .ai-load-item-name,
+[data-theme='dark'] .ai-load-item-name,
+body.dark .ai-load-item-name {
+  color: #ffffff !important;
+}
+
+.admin-main-viewport .ai-load-form,
+[data-theme='dark'] .ai-load-form,
+body.dark .ai-load-form {
+  background: #111a2e !important;
+  border-color: #1e3a5f !important;
+}
+
+.admin-main-viewport .ai-load-form-input,
+.admin-main-viewport .ai-load-form-select,
+[data-theme='dark'] .ai-load-form-input,
+[data-theme='dark'] .ai-load-form-select,
+body.dark .ai-load-form-input,
+body.dark .ai-load-form-select {
+  background: #0b1326 !important;
+  border-color: #1e3a5f !important;
+  color: #f8fafc !important;
+}

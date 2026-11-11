@@ -388,3 +388,90 @@ body.dark .bot-td,
   border-bottom-color: #1e293b !important;
   color: #f1f5f9 !important;
 }
+
+/* ============================================================================
+   ADMIN COMMAND CENTER & HIGH CONTRAST DARK MODE OVERRIDES
+   ============================================================================ */
+.admin-main-viewport .bot-card,
+[data-theme="dark"] .bot-card,
+body.dark .bot-card {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  color: #f8fafc !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.admin-main-viewport .bot-card-title,
+[data-theme="dark"] .bot-card-title,
+body.dark .bot-card-title {
+  color: #f8fafc !important;
+}
+
+.admin-main-viewport .bot-rule-item,
+[data-theme="dark"] .bot-rule-item,
+body.dark .bot-rule-item {
+  background: #172033 !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.admin-main-viewport .bot-rule-detail,
+[data-theme="dark"] .bot-rule-detail,
+body.dark .bot-rule-detail {
+  color: #cbd5e1 !important;
+}
+
+.admin-main-viewport .bot-trigger-label,
+[data-theme="dark"] .bot-trigger-label,
+body.dark .bot-trigger-label {
+  background: #172033 !important;
+  border-color: #334155 !important;
+}
+
+.admin-main-viewport .bot-trigger-text,
+[data-theme="dark"] .bot-trigger-text,
+body.dark .bot-trigger-text {
+  color: #f8fafc !important;
+}
+
+.admin-main-viewport .bot-table-container,
+[data-theme="dark"] .bot-table-container,
+body.dark .bot-table-container {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.admin-main-viewport .bot-th,
+[data-theme="dark"] .bot-th,
+body.dark .bot-th {
+  background: #172033 !important;
+  border-bottom-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+.admin-main-viewport .bot-td,
+[data-theme="dark"] .bot-td,
+body.dark .bot-td {
+  border-bottom-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.admin-main-viewport .bot-telemetry-card,
+[data-theme="dark"] .bot-telemetry-card,
+body.dark .bot-telemetry-card {
+  background: #172033 !important;
+  border-color: #334155 !important;
+}
+
+.admin-main-viewport .bot-telemetry-title,
+[data-theme="dark"] .bot-telemetry-title,
+body.dark .bot-telemetry-title {
+  color: #94a3b8 !important;
+}
+
+.admin-main-viewport .bot-telemetry-val,
+[data-theme="dark"] .bot-telemetry-val,
+body.dark .bot-telemetry-val {
+  color: #f8fafc !important;
+}
