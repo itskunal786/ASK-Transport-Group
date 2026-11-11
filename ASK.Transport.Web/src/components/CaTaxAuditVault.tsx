@@ -13,7 +13,14 @@ import {
   Building2,
   Calendar,
   X,
-  FileCheck
+  FileCheck,
+  Eye,
+  Copy,
+  Check,
+  FileText,
+  Printer,
+  Table as TableIcon,
+  LayoutGrid
 } from 'lucide-react';
 import type { TaxAuditVaultEntry, GstTaxFilingType } from '../types/transportOperations';
 import { getTaxAuditEntries, generateTaxAuditEntry, markEntryFiled } from '../api/taxAuditVaultApi';
@@ -106,7 +113,7 @@ const SEED_AUDIT_ENTRIES: TaxAuditVaultEntry[] = [
     rcmTaxLiabilityInr: 0,
     section194CTdsDeductedInr: 9000,
     tdsCertificateNumber: 'TDS/26AS/OCT-8821',
-    filingStatus: 'FILED_ACKNOWLEDGED',
+    filingStatus: 'READY_FOR_PORTAL',
     generatedTimestamp: '2026-10-24 16:30'
   },
   {
@@ -114,7 +121,7 @@ const SEED_AUDIT_ENTRIES: TaxAuditVaultEntry[] = [
     auditPeriodQuarter: 'Q3 FY 2026-27',
     taxFilingType: 'RcmFivePercent',
     documentReferenceNo: 'BILTY/2026/BOM-8921',
-    partyGstin: '27AABCS1429B1Z8',
+    partyGstin: '27AABC51429B1Z8',
     partyLegalName: 'UltraTech Cement Dispatch Depot',
     taxableFreightAmountInr: 820000,
     cgstAmountInr: 20500,
@@ -142,7 +149,7 @@ const SEED_AUDIT_ENTRIES: TaxAuditVaultEntry[] = [
     rcmTaxLiabilityInr: 0,
     section194CTdsDeductedInr: 250000,
     tdsCertificateNumber: 'FORM26AS-CONSOLIDATED-Q3',
-    filingStatus: 'READY_FOR_PORTAL',
+    filingStatus: 'FILED_ACKNOWLEDGED',
     generatedTimestamp: '2026-10-27 18:45'
   },
   {
@@ -185,15 +192,39 @@ const SEED_AUDIT_ENTRIES: TaxAuditVaultEntry[] = [
 
 export const CaTaxAuditVault: React.FC = () => {
   const { t } = useLanguage();
-  const [entries, setEntries] = useState<TaxAuditVaultEntry[]>(SEED_AUDIT_ENTRIES);
+
+  const [entries, setEntries] = useState<TaxAuditVaultEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem('ask_ca_tax_audit_entries');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return SEED_AUDIT_ENTRIES;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('ask_ca_tax_audit_entries', JSON.stringify(entries));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [entries]);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedQuarter, setSelectedQuarter] = useState<string>('Q3 FY 2026-27');
   const [activeFilingTab, setActiveFilingTab] = useState<'ALL' | GstTaxFilingType>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'READY_FOR_PORTAL' | 'FILED_ACKNOWLEDGED' | 'UNDER_RECONCILIATION'>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'TABLE' | 'CARDS'>('TABLE');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Modals
   const [showNewEntryModal, setShowNewEntryModal] = useState<boolean>(false);
   const [showMarkFiledModal, setShowMarkFiledModal] = useState<TaxAuditVaultEntry | null>(null);
+  const [selectedVoucherForPreview, setSelectedVoucherForPreview] = useState<TaxAuditVaultEntry | null>(null);
   const [ackRefInput, setAckRefInput] = useState<string>('');
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
@@ -223,7 +254,7 @@ export const CaTaxAuditVault: React.FC = () => {
         setEntries(data.map((item, idx) => normalizeEntry(item, idx)));
       }
     } catch {
-      // Keep seed fallback
+      // Keep state fallback
     } finally {
       setLoading(false);
     }
@@ -236,6 +267,15 @@ export const CaTaxAuditVault: React.FC = () => {
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleCopyText = (text: string, id: string, label: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    }
+    setCopiedId(id);
+    showToast(`📋 ${label} "${text}" copied!`);
+    setTimeout(() => setCopiedId(null), 2500);
   };
 
   const handleCreateEntry = async (e: React.FormEvent) => {
@@ -328,23 +368,79 @@ export const CaTaxAuditVault: React.FC = () => {
     showToast(t('GST Portal & CA Schema JSON Exported!', 'GST पोर्टल और CA स्कीमा JSON डाउनलोड हो गया!'));
   };
 
+  const handleExportCsv = () => {
+    const headers = [
+      'Document / Invoice Ref',
+      'Date & Timestamp',
+      'Party Legal Name',
+      'GSTIN',
+      'Filing Type',
+      'Taxable Freight (INR)',
+      'CGST (INR)',
+      'SGST (INR)',
+      'IGST (INR)',
+      'Total Output GST (INR)',
+      'RCM Applicable',
+      'Sec 194C TDS (INR)',
+      'TDS Certificate / 26AS',
+      'Filing Status',
+      'Quarter'
+    ];
+
+    const rows = filteredEntries.map(e => [
+      `"${e.documentReferenceNo}"`,
+      `"${e.generatedTimestamp}"`,
+      `"${e.partyLegalName.replace(/"/g, '""')}"`,
+      `"${e.partyGstin}"`,
+      `"${e.taxFilingType}"`,
+      e.taxableFreightAmountInr,
+      e.cgstAmountInr,
+      e.sgstAmountInr,
+      e.igstAmountInr,
+      e.cgstAmountInr + e.sgstAmountInr + e.igstAmountInr,
+      e.rcmApplicable ? 'YES' : 'NO',
+      e.section194CTdsDeductedInr,
+      `"${e.tdsCertificateNumber}"`,
+      `"${e.filingStatus}"`,
+      `"${e.auditPeriodQuarter}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `CA_Tax_Audit_Vault_${selectedQuarter.replace(/\s+/g, '_')}_${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast(t('CA Audit CSV exported successfully!', 'CA ऑडिट CSV सफलतापूर्वक डाउनलोड हो गया!'));
+  };
+
+  // Filtered dataset
   const filteredEntries = entries.filter(e => {
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase().trim();
     const matchesTab = activeFilingTab === 'ALL' || e.taxFilingType === activeFilingTab;
-    const matchesSearch = (e.documentReferenceNo || '').toLowerCase().includes(q) ||
+    const matchesStatus = statusFilter === 'ALL' || e.filingStatus === statusFilter;
+    const matchesSearch = !q ||
+      (e.documentReferenceNo || '').toLowerCase().includes(q) ||
       (e.partyLegalName || '').toLowerCase().includes(q) ||
       (e.partyGstin || '').toLowerCase().includes(q) ||
       ((e.tdsCertificateNumber || '').toLowerCase().includes(q));
-    return matchesTab && matchesSearch;
+    return matchesTab && matchesStatus && matchesSearch;
   });
 
   // KPI Calculations
+  const gstr1Count = entries.filter(e => e.taxFilingType === 'Gstr1B2B').length;
+  const gstr3bCount = entries.filter(e => e.taxFilingType === 'Gstr3BMonthlySummary').length;
+  const rcmCount = entries.filter(e => e.taxFilingType === 'RcmFivePercent').length;
+  const tdsCount = entries.filter(e => e.taxFilingType === 'Tds194C26As').length;
+
   const totalTaxable = filteredEntries.reduce((sum, e) => sum + (e.taxableFreightAmountInr || 0), 0);
   const totalGstLiability = filteredEntries.reduce((sum, e) => sum + (e.cgstAmountInr || 0) + (e.sgstAmountInr || 0) + (e.igstAmountInr || 0), 0);
   const totalRcmFreight = filteredEntries.filter(e => e.rcmApplicable).reduce((sum, e) => sum + (e.taxableFreightAmountInr || 0), 0);
   const totalTdsDeducted = filteredEntries.reduce((sum, e) => sum + (e.section194CTdsDeductedInr || 0), 0);
-  const readyCount = filteredEntries.filter(e => e.filingStatus === 'READY_FOR_PORTAL').length;
-  const filedCount = filteredEntries.filter(e => e.filingStatus === 'FILED_ACKNOWLEDGED').length;
+  const readyCount = entries.filter(e => e.filingStatus === 'READY_FOR_PORTAL').length;
+  const filedCount = entries.filter(e => e.filingStatus === 'FILED_ACKNOWLEDGED').length;
 
   return (
     <div className="tax-vault-deck">
@@ -388,18 +484,28 @@ export const CaTaxAuditVault: React.FC = () => {
             </select>
 
             <button
-              onClick={handleExportJsonForCa}
+              onClick={handleExportCsv}
               className="tax-btn-export"
+              title="Download CA Audit Spreadsheet in CSV"
+            >
+              <FileSpreadsheet size={15} />
+              <span>{t('Export CSV', 'CSV डाउनलोड')}</span>
+            </button>
+
+            <button
+              onClick={handleExportJsonForCa}
+              className="tax-btn-json"
+              title="Download GST Portal Schema JSON"
             >
               <Download size={14} />
-              <span>{t('Export for CA / Portal', 'CA / पोर्टल हेतु निर्यात')}</span>
+              <span>{t('CA JSON Schema', 'CA स्कीमा JSON')}</span>
             </button>
 
             <button
               onClick={() => setShowNewEntryModal(true)}
               className="tax-btn-new"
             >
-              <PlusCircle size={14} />
+              <PlusCircle size={15} />
               <span>{t('New Voucher', 'नया वाउचर')}</span>
             </button>
 
@@ -413,33 +519,17 @@ export const CaTaxAuditVault: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Quick Filter Tabs */}
-        <div className="tax-tabs-row">
-          {[
-            { id: 'ALL', label: t('All Tax Vault Records', 'सभी टैक्स वॉल्ट रिकॉर्ड्स') },
-            { id: 'Gstr1B2B', label: t('GSTR-1 Outbound B2B Invoices', 'GSTR-1 आउटबाउंड B2B इनवॉइस') },
-            { id: 'Gstr3BMonthlySummary', label: t('GSTR-3B Monthly ITC Reconciliation', 'GSTR-3B मासिक ITC सुलह') },
-            { id: 'RcmFivePercent', label: t('RCM 5% GTA Reverse Charge', 'RCM 5% GTA रिवर्स चार्ज') },
-            { id: 'Tds194C26As', label: t('Section 194C TDS (26AS)', 'धारा 194C TDS (26AS)') }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveFilingTab(tab.id as 'ALL' | GstTaxFilingType)}
-              className={`tax-tab-btn ${activeFilingTab === tab.id ? 'active' : ''}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* 5 KPI Metric Cards */}
+      {/* 5 KPI Metric Cards - Unified Responsive Grid (No Orphans) */}
       <div className="tax-kpis-grid">
-        <div className="tax-kpi-card">
+        {/* KPI 1 */}
+        <div className="tax-kpi-card kpi-taxable">
           <div className="tax-kpi-top">
             <span className="tax-kpi-label">{t('Taxable Freight', 'कर योग्य भाड़ा')}</span>
-            <IndianRupee size={18} style={{ color: '#6366f1' }} />
+            <div className="tax-kpi-icon-wrap icon-indigo">
+              <IndianRupee size={18} />
+            </div>
           </div>
           <div className="tax-kpi-value">
             ₹{totalTaxable.toLocaleString('en-IN')}
@@ -449,12 +539,15 @@ export const CaTaxAuditVault: React.FC = () => {
           </span>
         </div>
 
-        <div className="tax-kpi-card">
+        {/* KPI 2 */}
+        <div className="tax-kpi-card kpi-gst">
           <div className="tax-kpi-top">
-            <span className="tax-kpi-label">{t('Total GST Liability', 'कुल GST देनदारी')}</span>
-            <FileSpreadsheet size={18} style={{ color: '#10b981' }} />
+            <span className="tax-kpi-label">{t('Total GST Output', 'कुल GST आउटपुट')}</span>
+            <div className="tax-kpi-icon-wrap icon-emerald">
+              <FileSpreadsheet size={18} />
+            </div>
           </div>
-          <div className="tax-kpi-value" style={{ color: '#10b981' }}>
+          <div className="tax-kpi-value text-emerald">
             ₹{totalGstLiability.toLocaleString('en-IN')}
           </div>
           <span className="tax-kpi-sub">
@@ -462,12 +555,15 @@ export const CaTaxAuditVault: React.FC = () => {
           </span>
         </div>
 
-        <div className="tax-kpi-card">
+        {/* KPI 3 */}
+        <div className="tax-kpi-card kpi-rcm">
           <div className="tax-kpi-top">
             <span className="tax-kpi-label">{t('RCM 5% Freight Ledger', 'RCM 5% भाड़ा लेजर')}</span>
-            <Building2 size={18} style={{ color: '#f59e0b' }} />
+            <div className="tax-kpi-icon-wrap icon-amber">
+              <Building2 size={18} />
+            </div>
           </div>
-          <div className="tax-kpi-value" style={{ color: '#f59e0b' }}>
+          <div className="tax-kpi-value text-amber">
             ₹{totalRcmFreight.toLocaleString('en-IN')}
           </div>
           <span className="tax-kpi-sub">
@@ -475,12 +571,15 @@ export const CaTaxAuditVault: React.FC = () => {
           </span>
         </div>
 
-        <div className="tax-kpi-card">
+        {/* KPI 4 */}
+        <div className="tax-kpi-card kpi-tds">
           <div className="tax-kpi-top">
             <span className="tax-kpi-label">{t('Sec 194C TDS Credited', 'धारा 194C TDS जमा')}</span>
-            <ShieldCheck size={18} style={{ color: '#0284c7' }} />
+            <div className="tax-kpi-icon-wrap icon-sky">
+              <ShieldCheck size={18} />
+            </div>
           </div>
-          <div className="tax-kpi-value" style={{ color: '#0284c7' }}>
+          <div className="tax-kpi-value text-sky">
             ₹{totalTdsDeducted.toLocaleString('en-IN')}
           </div>
           <span className="tax-kpi-sub">
@@ -488,15 +587,31 @@ export const CaTaxAuditVault: React.FC = () => {
           </span>
         </div>
 
-        <div className="tax-kpi-card">
+        {/* KPI 5 */}
+        <div className="tax-kpi-card kpi-readiness">
           <div className="tax-kpi-top">
             <span className="tax-kpi-label">{t('Filing Readiness', 'फाइलिंग तत्परता')}</span>
-            <FileCheck size={18} style={{ color: '#8b5cf6' }} />
+            <div className="tax-kpi-icon-wrap icon-purple">
+              <FileCheck size={18} />
+            </div>
           </div>
-          <div className="tax-kpi-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="tax-kpi-value">
             <span style={{ color: '#f59e0b' }}>{readyCount}</span>
-            <span style={{ color: '#94a3b8', fontSize: '16px' }}>/</span>
+            <span style={{ color: '#64748b', fontSize: '16px', margin: '0 4px' }}>/</span>
             <span style={{ color: '#10b981' }}>{filedCount}</span>
+          </div>
+          {/* Visual Mini Progress Bar */}
+          <div className="tax-kpi-progress-bar">
+            <div
+              className="tax-kpi-progress-fill-filed"
+              style={{ width: `${entries.length > 0 ? (filedCount / entries.length) * 100 : 0}%` }}
+              title={`${filedCount} Filed`}
+            />
+            <div
+              className="tax-kpi-progress-fill-ready"
+              style={{ width: `${entries.length > 0 ? (readyCount / entries.length) * 100 : 0}%` }}
+              title={`${readyCount} Ready`}
+            />
           </div>
           <span className="tax-kpi-sub">
             {t('Ready for Portal vs Filed Ack', 'पोर्टल हेतु तैयार बनाम फाइल रसीद')}
@@ -504,8 +619,56 @@ export const CaTaxAuditVault: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Table and Control Bar */}
+      {/* Main Table Card and Control Bar */}
       <div className="tax-table-card">
+        {/* Interactive Filter Pills Row */}
+        <div className="tax-filter-pills-row">
+          <div className="tax-tabs-scrollable">
+            {[
+              { id: 'ALL', label: 'All Records', count: entries.length },
+              { id: 'Gstr1B2B', label: 'GSTR-1 B2B', count: gstr1Count },
+              { id: 'Gstr3BMonthlySummary', label: 'GSTR-3B ITC', count: gstr3bCount },
+              { id: 'RcmFivePercent', label: 'RCM 5% GTA', count: rcmCount },
+              { id: 'Tds194C26As', label: 'Sec 194C TDS', count: tdsCount }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveFilingTab(tab.id as 'ALL' | GstTaxFilingType)}
+                className={`tax-filter-pill ${activeFilingTab === tab.id ? 'active' : ''}`}
+              >
+                <span>{tab.label}</span>
+                <span className="tax-pill-badge">{tab.count}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="tax-status-filter-pills">
+            <button
+              type="button"
+              onClick={() => setStatusFilter('ALL')}
+              className={`tax-status-btn ${statusFilter === 'ALL' ? 'active' : ''}`}
+            >
+              All Status
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('READY_FOR_PORTAL')}
+              className={`tax-status-btn ready ${statusFilter === 'READY_FOR_PORTAL' ? 'active' : ''}`}
+            >
+              <span>⏳ Ready ({readyCount})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('FILED_ACKNOWLEDGED')}
+              className={`tax-status-btn filed ${statusFilter === 'FILED_ACKNOWLEDGED' ? 'active' : ''}`}
+            >
+              <span>✓ Filed ({filedCount})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Control Bar: Search + Count + View Mode Switch */}
         <div className="tax-control-bar">
           <div className="tax-search-wrap">
             <Search size={15} className="tax-search-icon" />
@@ -516,162 +679,349 @@ export const CaTaxAuditVault: React.FC = () => {
               placeholder={t('Search by Doc #, GSTIN, Party or TDS Ref...', 'दस्तावेज़ #, GSTIN, पार्टी या TDS से खोजें...')}
               className="tax-search-input"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="tax-search-clear"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
-          <div className="tax-count-badge">
-            <Filter size={14} style={{ color: '#6366f1' }} />
-            <span>
-              {t('Showing', 'प्रदर्शित')} <b>{filteredEntries.length}</b> {t('entries for', 'प्रविष्टियां')} <b>{selectedQuarter}</b>
-            </span>
+          <div className="tax-control-right">
+            <div className="tax-count-badge">
+              <Filter size={14} style={{ color: '#6366f1' }} />
+              <span>
+                {t('Showing', 'प्रदर्शित')} <b>{filteredEntries.length}</b> {t('entries for', 'प्रविष्टियां')} <b>{selectedQuarter}</b>
+              </span>
+            </div>
+
+            {/* View Mode Switcher */}
+            <div className="tax-view-mode-toggle">
+              <button
+                type="button"
+                onClick={() => setViewMode('TABLE')}
+                className={`tax-view-btn ${viewMode === 'TABLE' ? 'active' : ''}`}
+                title="Table View"
+              >
+                <TableIcon size={14} />
+                <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('CARDS')}
+                className={`tax-view-btn ${viewMode === 'CARDS' ? 'active' : ''}`}
+                title="Cards View"
+              >
+                <LayoutGrid size={14} />
+                <span>Cards</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Responsive Table */}
-        <div className="tax-table-wrap">
-          <table className="tax-data-table">
-            <thead>
-              <tr>
-                <th>{t('Doc / Invoice Ref', 'दस्तावेज़ / इनवॉइस सं.')}</th>
-                <th>{t('Party Name & GSTIN', 'पार्टी का नाम व GSTIN')}</th>
-                <th>{t('Filing Type', 'फाइलिंग प्रकार')}</th>
-                <th style={{ textAlign: 'right' }}>{t('Taxable Value', 'कर योग्य मूल्य')}</th>
-                <th style={{ textAlign: 'right' }}>{t('GST Output', 'GST आउटपुट')}</th>
-                <th style={{ textAlign: 'right' }}>{t('194C TDS', '194C TDS')}</th>
-                <th style={{ textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
-                <th style={{ textAlign: 'right' }}>{t('Action', 'कार्रवाई')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredEntries.length === 0 ? (
+        {/* VIEW 1: DATA TABLE WITH STICKY ACTIONS */}
+        {viewMode === 'TABLE' ? (
+          <div className="tax-table-wrap">
+            <table className="tax-data-table">
+              <thead>
                 <tr>
-                  <td colSpan={8} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--text-secondary, #94a3b8)' }}>
-                    <FileSpreadsheet size={40} style={{ margin: '0 auto 8px', opacity: 0.4 }} />
-                    <p style={{ margin: 0 }}>{t('No tax records found matching your filters.', 'आपके फ़िल्टर से मेल खाता कोई रिकॉर्ड नहीं मिला।')}</p>
-                  </td>
+                  <th>{t('Doc / Invoice Ref', 'दस्तावेज़ / इनवॉइस सं.')}</th>
+                  <th>{t('Party Name & GSTIN', 'पार्टी का नाम व GSTIN')}</th>
+                  <th>{t('Filing Type', 'फाइलिंग प्रकार')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('Taxable Value', 'कर योग्य मूल्य')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('GST Output', 'GST आउटपुट')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('194C TDS', '194C TDS')}</th>
+                  <th style={{ textAlign: 'center' }}>{t('Status', 'स्थिति')}</th>
+                  <th className="tax-sticky-actions" style={{ textAlign: 'center' }}>{t('Actions', 'कार्रवाई')}</th>
                 </tr>
-              ) : (
-                filteredEntries.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <div style={{ fontWeight: 800 }}>{item.documentReferenceNo}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                        <Calendar size={12} />
-                        <span>{item.generatedTimestamp}</span>
-                      </div>
-                    </td>
-
-                    <td style={{ maxWidth: '240px' }}>
-                      <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.partyLegalName}</div>
-                      <span className="tax-gstin-chip">
-                        {item.partyGstin}
-                      </span>
-                    </td>
-
-                    <td>
-                      {item.taxFilingType === 'Gstr1B2B' && (
-                        <span className="tax-type-pill gstr1">
-                          GSTR-1 (B2B)
-                        </span>
-                      )}
-                      {item.taxFilingType === 'Gstr3BMonthlySummary' && (
-                        <span className="tax-type-pill gstr3b">
-                          GSTR-3B ITC
-                        </span>
-                      )}
-                      {item.taxFilingType === 'RcmFivePercent' && (
-                        <span className="tax-type-pill rcm">
-                          RCM 5% GTA
-                        </span>
-                      )}
-                      {item.taxFilingType === 'Tds194C26As' && (
-                        <span className="tax-type-pill tds">
-                          Sec 194C TDS
-                        </span>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'right', fontWeight: 800 }}>
-                      ₹{item.taxableFreightAmountInr.toLocaleString('en-IN')}
-                      {item.rcmApplicable && (
-                        <div style={{ fontSize: '10px', color: '#d97706', fontWeight: 600 }}>
-                          {t('(RCM Exempt)', '(RCM छूट)')}
-                        </div>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'right' }}>
-                      {item.cgstAmountInr + item.sgstAmountInr + item.igstAmountInr > 0 ? (
-                        <>
-                          <div style={{ fontWeight: 800, color: '#10b981' }}>
-                            ₹{(item.cgstAmountInr + item.sgstAmountInr + item.igstAmountInr).toLocaleString('en-IN')}
-                          </div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', fontFamily: 'monospace' }}>
-                            {item.igstAmountInr > 0 ? `IGST ₹${item.igstAmountInr.toLocaleString('en-IN')}` : `C+S ₹${(item.cgstAmountInr + item.sgstAmountInr).toLocaleString('en-IN')}`}
-                          </div>
-                        </>
-                      ) : (
-                        <span style={{ color: 'var(--text-secondary, #94a3b8)', fontFamily: 'monospace', fontSize: '11px' }}>₹0 (RCM)</span>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 800, color: '#0284c7' }}>
-                        ₹{item.section194CTdsDeductedInr.toLocaleString('en-IN')}
-                      </div>
-                      {item.tdsCertificateNumber && (
-                        <div style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px', marginLeft: 'auto' }}>
-                          {item.tdsCertificateNumber}
-                        </div>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'center' }}>
-                      {item.filingStatus === 'FILED_ACKNOWLEDGED' && (
-                        <span className="tax-status-chip filed">
-                          <CheckCircle2 size={12} />
-                          <span>{t('Filed', 'दायर किया')}</span>
-                        </span>
-                      )}
-                      {item.filingStatus === 'READY_FOR_PORTAL' && (
-                        <span className="tax-status-chip ready">
-                          <Clock size={12} />
-                          <span>{t('Ready to File', 'फाइल हेतु तैयार')}</span>
-                        </span>
-                      )}
-                      {item.filingStatus === 'UNDER_RECONCILIATION' && (
-                        <span className="tax-status-chip reconciliation">
-                          <RefreshCw size={12} />
-                          <span>{t('Reconciliation', 'सुलह प्रक्रिया')}</span>
-                        </span>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'right' }}>
-                      {item.filingStatus !== 'FILED_ACKNOWLEDGED' ? (
-                        <button
-                          onClick={() => {
-                            setShowMarkFiledModal(item);
-                            setAckRefInput(`GSTN-ARN-${Math.floor(10000000 + Math.random() * 90000000)}`);
-                          }}
-                          className="tax-btn-mark-filed"
-                        >
-                          {t('Mark Filed', 'फाइल चिह्नित करें')}
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 700 }}>
-                          {t('Acknowledged', 'स्वीकृत')}
-                        </span>
-                      )}
+              </thead>
+              <tbody>
+                {filteredEntries.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ padding: '56px 16px', textAlign: 'center', color: 'var(--text-secondary, #94a3b8)' }}>
+                      <FileSpreadsheet size={44} style={{ margin: '0 auto 10px', opacity: 0.35 }} />
+                      <p style={{ margin: 0, fontWeight: 700, fontSize: '14px' }}>
+                        {t('No tax records found matching your filters.', 'आपके फ़िल्टर से मेल खाता कोई रिकॉर्ड नहीं मिला।')}
+                      </p>
+                      <small style={{ color: '#64748b' }}>Try clearing the search query or changing the filing type filter.</small>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  filteredEntries.map((item) => {
+                    const isCopiedGstin = copiedId === `gstin-${item.id}`;
+                    const isCopiedDoc = copiedId === `doc-${item.id}`;
+
+                    return (
+                      <tr key={item.id}>
+                        {/* 1. Doc Ref */}
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <strong style={{ fontSize: '13px', color: 'var(--text-primary, #0f172a)' }}>
+                              {item.documentReferenceNo}
+                            </strong>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(item.documentReferenceNo, `doc-${item.id}`, 'Document Ref')}
+                              className="tax-btn-icon-tiny"
+                              title="Copy Doc Ref"
+                            >
+                              {isCopiedDoc ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
+                            </button>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
+                            <Calendar size={12} />
+                            <span>{item.generatedTimestamp}</span>
+                          </div>
+                        </td>
+
+                        {/* 2. Party Name & GSTIN */}
+                        <td style={{ maxWidth: '240px' }}>
+                          <div style={{ fontWeight: 700, color: 'var(--text-primary, #0f172a)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {item.partyLegalName}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
+                            <span className="tax-gstin-chip">
+                              {item.partyGstin}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(item.partyGstin, `gstin-${item.id}`, 'GSTIN')}
+                              className="tax-btn-icon-tiny"
+                              title="Copy GSTIN"
+                            >
+                              {isCopiedGstin ? <Check size={11} color="#10b981" /> : <Copy size={11} />}
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* 3. Filing Type */}
+                        <td>
+                          {item.taxFilingType === 'Gstr1B2B' && (
+                            <span className="tax-type-pill gstr1">
+                              GSTR-1 (B2B)
+                            </span>
+                          )}
+                          {item.taxFilingType === 'Gstr3BMonthlySummary' && (
+                            <span className="tax-type-pill gstr3b">
+                              GSTR-3B ITC
+                            </span>
+                          )}
+                          {item.taxFilingType === 'RcmFivePercent' && (
+                            <span className="tax-type-pill rcm">
+                              RCM 5% GTA
+                            </span>
+                          )}
+                          {item.taxFilingType === 'Tds194C26As' && (
+                            <span className="tax-type-pill tds">
+                              Sec 194C TDS
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 4. Taxable Value */}
+                        <td style={{ textAlign: 'right', fontWeight: 800 }}>
+                          <div style={{ fontSize: '13px' }}>₹{item.taxableFreightAmountInr.toLocaleString('en-IN')}</div>
+                          {item.rcmApplicable && (
+                            <span style={{ fontSize: '10px', color: '#d97706', fontWeight: 700, background: 'rgba(245, 158, 11, 0.12)', padding: '1px 5px', borderRadius: '4px' }}>
+                              {t('RCM Exempt', 'RCM छूट')}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 5. GST Output */}
+                        <td style={{ textAlign: 'right' }}>
+                          {item.cgstAmountInr + item.sgstAmountInr + item.igstAmountInr > 0 ? (
+                            <>
+                              <div style={{ fontWeight: 800, color: '#10b981', fontSize: '13px' }}>
+                                ₹{(item.cgstAmountInr + item.sgstAmountInr + item.igstAmountInr).toLocaleString('en-IN')}
+                              </div>
+                              <div style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', fontFamily: 'monospace', marginTop: '2px' }}>
+                                {item.igstAmountInr > 0 ? `IGST ₹${item.igstAmountInr.toLocaleString('en-IN')}` : `C+S ₹${(item.cgstAmountInr + item.sgstAmountInr).toLocaleString('en-IN')}`}
+                              </div>
+                            </>
+                          ) : (
+                            <span style={{ color: 'var(--text-secondary, #94a3b8)', fontFamily: 'monospace', fontSize: '11px', background: 'rgba(148, 163, 184, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                              ₹0 (RCM Paid by Consignee)
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 6. Section 194C TDS */}
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 800, color: '#0284c7', fontSize: '13px' }}>
+                            ₹{item.section194CTdsDeductedInr.toLocaleString('en-IN')}
+                          </div>
+                          {item.tdsCertificateNumber && (
+                            <div style={{ fontSize: '10px', color: 'var(--text-secondary, #64748b)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px', marginLeft: 'auto', marginTop: '2px' }}>
+                              {item.tdsCertificateNumber}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* 7. Status */}
+                        <td style={{ textAlign: 'center' }}>
+                          {item.filingStatus === 'FILED_ACKNOWLEDGED' && (
+                            <span className="tax-status-chip filed">
+                              <CheckCircle2 size={12} />
+                              <span>{t('Filed', 'दायर किया')}</span>
+                            </span>
+                          )}
+                          {item.filingStatus === 'READY_FOR_PORTAL' && (
+                            <span className="tax-status-chip ready">
+                              <Clock size={12} />
+                              <span>{t('Ready to File', 'फाइल हेतु तैयार')}</span>
+                            </span>
+                          )}
+                          {item.filingStatus === 'UNDER_RECONCILIATION' && (
+                            <span className="tax-status-chip reconciliation">
+                              <RefreshCw size={12} />
+                              <span>{t('Reconciliation', 'सुलह प्रक्रिया')}</span>
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 8. Actions (Sticky Right Column) */}
+                        <td className="tax-sticky-actions" style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedVoucherForPreview(item)}
+                              className="tax-btn-preview"
+                              title="Preview Statutory Tax Slip"
+                            >
+                              <Eye size={13} />
+                              <span>Preview</span>
+                            </button>
+
+                            {item.filingStatus !== 'FILED_ACKNOWLEDGED' ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowMarkFiledModal(item);
+                                  setAckRefInput(`GSTN-ARN-${Math.floor(10000000 + Math.random() * 90000000)}`);
+                                }}
+                                className="tax-btn-mark-filed"
+                              >
+                                {t('Mark Filed', 'फाइल चिह्नित करें')}
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 800, background: 'rgba(16, 185, 129, 0.12)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                                ✓ Ack
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* VIEW 2: RESPONSIVE CARDS VIEW (NO HORIZONTAL SCROLLBAR) */
+          <div className="tax-cards-grid">
+            {filteredEntries.map((item) => (
+              <div key={item.id} className="tax-card-item">
+                <div className="tax-card-header">
+                  <div>
+                    <strong style={{ fontSize: '14px', color: 'var(--text-primary, #0f172a)' }}>
+                      {item.documentReferenceNo}
+                    </strong>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
+                      {item.generatedTimestamp} • Quarter: {item.auditPeriodQuarter}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {item.taxFilingType === 'Gstr1B2B' && <span className="tax-type-pill gstr1">GSTR-1</span>}
+                    {item.taxFilingType === 'Gstr3BMonthlySummary' && <span className="tax-type-pill gstr3b">GSTR-3B</span>}
+                    {item.taxFilingType === 'RcmFivePercent' && <span className="tax-type-pill rcm">RCM 5%</span>}
+                    {item.taxFilingType === 'Tds194C26As' && <span className="tax-type-pill tds">194C TDS</span>}
+                  </div>
+                </div>
+
+                <div className="tax-card-party">
+                  <div style={{ fontWeight: 700, fontSize: '13px' }}>{item.partyLegalName}</div>
+                  <span className="tax-gstin-chip">{item.partyGstin}</span>
+                </div>
+
+                <div className="tax-card-metrics-grid">
+                  <div className="tax-card-metric-box">
+                    <span className="tax-card-metric-label">Taxable Freight</span>
+                    <strong className="tax-card-metric-val">₹{item.taxableFreightAmountInr.toLocaleString('en-IN')}</strong>
+                  </div>
+                  <div className="tax-card-metric-box">
+                    <span className="tax-card-metric-label">Output GST</span>
+                    <strong className="tax-card-metric-val text-emerald">
+                      ₹{(item.cgstAmountInr + item.sgstAmountInr + item.igstAmountInr).toLocaleString('en-IN')}
+                    </strong>
+                  </div>
+                  <div className="tax-card-metric-box">
+                    <span className="tax-card-metric-label">194C TDS</span>
+                    <strong className="tax-card-metric-val text-sky">
+                      ₹{item.section194CTdsDeductedInr.toLocaleString('en-IN')}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="tax-card-footer">
+                  <div>
+                    {item.filingStatus === 'FILED_ACKNOWLEDGED' && (
+                      <span className="tax-status-chip filed">
+                        <CheckCircle2 size={12} />
+                        <span>Filed &amp; Ack</span>
+                      </span>
+                    )}
+                    {item.filingStatus === 'READY_FOR_PORTAL' && (
+                      <span className="tax-status-chip ready">
+                        <Clock size={12} />
+                        <span>Ready to File</span>
+                      </span>
+                    )}
+                    {item.filingStatus === 'UNDER_RECONCILIATION' && (
+                      <span className="tax-status-chip reconciliation">
+                        <RefreshCw size={12} />
+                        <span>Reconciliation</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVoucherForPreview(item)}
+                      className="tax-btn-preview"
+                    >
+                      <Eye size={13} />
+                      <span>Preview Slip</span>
+                    </button>
+
+                    {item.filingStatus !== 'FILED_ACKNOWLEDGED' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMarkFiledModal(item);
+                          setAckRefInput(`GSTN-ARN-${Math.floor(10000000 + Math.random() * 90000000)}`);
+                        }}
+                        className="tax-btn-mark-filed"
+                      >
+                        Mark Filed
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* MODAL: New Tax Audit Entry */}
+      {/* MODAL 1: NEW TAX AUDIT VOUCHER */}
       {showNewEntryModal && (
         <div className="tax-modal-backdrop">
           <div className="tax-modal-dialog">
@@ -848,7 +1198,7 @@ export const CaTaxAuditVault: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL: Mark Filed & ARN Acknowledgment */}
+      {/* MODAL 2: CONFIRM GSTN ARN FILING */}
       {showMarkFiledModal && (
         <div className="tax-modal-backdrop">
           <div className="tax-modal-dialog" style={{ maxWidth: '460px' }}>
@@ -911,6 +1261,164 @@ export const CaTaxAuditVault: React.FC = () => {
                 className="tax-btn-export"
               >
                 {t('Confirm Acknowledged', 'पुष्टि करें')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: STATUTORY CA TAX VOUCHER SLIP PREVIEW */}
+      {selectedVoucherForPreview && (
+        <div className="tax-modal-backdrop">
+          <div className="tax-modal-dialog" style={{ maxWidth: '640px' }}>
+            <div className="tax-modal-header" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)' }}>
+              <h3 className="tax-modal-title">
+                <FileText size={18} />
+                <span>Statutory GST &amp; CA Tax Audit Voucher</span>
+              </h3>
+              <button
+                onClick={() => setSelectedVoucherForPreview(null)}
+                className="tax-modal-close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="tax-modal-body" style={{ gap: '16px' }}>
+              {/* Slip Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color, #e2e8f0)', paddingBottom: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#6366f1', fontWeight: 800, textTransform: 'uppercase' }}>
+                    ASK TRANSPORT GROUP CORP
+                  </div>
+                  <strong style={{ fontSize: '15px', color: 'var(--text-primary, #0f172a)' }}>
+                    GSTIN: 07AABCA5555M1Z2
+                  </strong>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                    SAC Code: <strong>996511</strong> (Goods Transport Agency)
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>Voucher Ref:</div>
+                  <strong style={{ fontSize: '13px', color: 'var(--text-primary, #0f172a)', fontFamily: 'monospace' }}>
+                    {selectedVoucherForPreview.documentReferenceNo}
+                  </strong>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                    {selectedVoucherForPreview.generatedTimestamp}
+                  </div>
+                </div>
+              </div>
+
+              {/* Party Information */}
+              <div style={{ background: 'var(--bg-subtle, #f8fafc)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', fontWeight: 800, textTransform: 'uppercase' }}>
+                  Consignee / Billed Entity
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #0f172a)', marginTop: '2px' }}>
+                  {selectedVoucherForPreview.partyLegalName}
+                </div>
+                <div style={{ fontSize: '12px', color: '#4f46e5', fontWeight: 700, fontFamily: 'monospace', marginTop: '2px' }}>
+                  GSTIN: {selectedVoucherForPreview.partyGstin}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary, #64748b)', marginTop: '4px' }}>
+                  Statutory Classification: <strong>{selectedVoucherForPreview.taxFilingType}</strong> • Quarter: <strong>{selectedVoucherForPreview.auditPeriodQuarter}</strong>
+                </div>
+              </div>
+
+              {/* Tax Breakup Table */}
+              <div style={{ border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-subtle, #f1f5f9)', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--border-color, #cbd5e1)' }}>Tax Component</th>
+                      <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--border-color, #cbd5e1)', textAlign: 'center' }}>Applicable Rate</th>
+                      <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--border-color, #cbd5e1)', textAlign: 'right' }}>Amount (INR)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid var(--border-color, #f1f5f9)' }}>
+                      <td style={{ padding: '8px 10px' }}>Taxable Freight Turnover</td>
+                      <td style={{ padding: '8px 10px', textAlign: 'center' }}>Base</td>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700 }}>
+                        ₹{selectedVoucherForPreview.taxableFreightAmountInr.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                    {selectedVoucherForPreview.cgstAmountInr > 0 && (
+                      <tr style={{ borderBottom: '1px solid var(--border-color, #f1f5f9)' }}>
+                        <td style={{ padding: '8px 10px' }}>Central GST (CGST)</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>2.5% / 6%</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', color: '#10b981', fontWeight: 700 }}>
+                          ₹{selectedVoucherForPreview.cgstAmountInr.toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    )}
+                    {selectedVoucherForPreview.sgstAmountInr > 0 && (
+                      <tr style={{ borderBottom: '1px solid var(--border-color, #f1f5f9)' }}>
+                        <td style={{ padding: '8px 10px' }}>State GST (SGST)</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>2.5% / 6%</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', color: '#10b981', fontWeight: 700 }}>
+                          ₹{selectedVoucherForPreview.sgstAmountInr.toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    )}
+                    {selectedVoucherForPreview.igstAmountInr > 0 && (
+                      <tr style={{ borderBottom: '1px solid var(--border-color, #f1f5f9)' }}>
+                        <td style={{ padding: '8px 10px' }}>Integrated GST (IGST)</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>5% / 12%</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', color: '#10b981', fontWeight: 700 }}>
+                          ₹{selectedVoucherForPreview.igstAmountInr.toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    )}
+                    <tr style={{ borderBottom: '1px solid var(--border-color, #f1f5f9)' }}>
+                      <td style={{ padding: '8px 10px' }}>Section 194C TDS Withheld</td>
+                      <td style={{ padding: '8px 10px', textAlign: 'center' }}>1% / 2%</td>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', color: '#0284c7', fontWeight: 700 }}>
+                        ₹{selectedVoucherForPreview.section194CTdsDeductedInr.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                    <tr style={{ background: 'var(--bg-subtle, #f8fafc)', fontWeight: 800 }}>
+                      <td style={{ padding: '10px' }}>Net Statutory Output GST</td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>Total</td>
+                      <td style={{ padding: '10px', textAlign: 'right', color: '#10b981', fontSize: '14px' }}>
+                        ₹{(selectedVoucherForPreview.cgstAmountInr + selectedVoucherForPreview.sgstAmountInr + selectedVoucherForPreview.igstAmountInr).toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Status & Compliance Declaration */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--text-secondary, #64748b)' }}>
+                <div>
+                  Certificate: <strong>{selectedVoucherForPreview.tdsCertificateNumber}</strong>
+                </div>
+                <div>
+                  Filing Status: <strong style={{ color: selectedVoucherForPreview.filingStatus === 'FILED_ACKNOWLEDGED' ? '#10b981' : '#d97706' }}>
+                    {selectedVoucherForPreview.filingStatus}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="tax-modal-footer">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="tax-btn-cancel"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Printer size={14} />
+                <span>Print Voucher</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedVoucherForPreview(null)}
+                className="tax-btn-submit"
+              >
+                Close Slip
               </button>
             </div>
           </div>
