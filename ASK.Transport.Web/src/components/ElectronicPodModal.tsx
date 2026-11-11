@@ -10,6 +10,13 @@ export interface PodData {
   otpVerified: boolean;
   notes?: string;
   driverName?: string;
+  podPhotoUrl?: string;
+  photoMeta?: {
+    fileName?: string;
+    fileSize?: string;
+    uploadedAt?: string;
+    source?: string;
+  };
 }
 
 interface Props {
@@ -103,6 +110,64 @@ export default function ElectronicPodModal({ data, onClose }: Props) {
             {data.notes && (
               <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
                 <strong>Delivery Remarks:</strong> {data.notes}
+              </div>
+            )}
+
+            {/* ATTACHED PHYSICAL POD PHOTO (SIGNED & STAMPED BILTY) */}
+            {data.podPhotoUrl && (
+              <div style={{
+                background: '#f8fafc',
+                padding: '12px 14px',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                marginBottom: '16px'
+              }}>
+                <div style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  color: '#065f46',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span>📸 Attached Physical Proof of Delivery (Signed & Stamped Bilty)</span>
+                  <span style={{
+                    background: '#ecfdf5',
+                    color: '#059669',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    border: '1px solid #a7f3d0',
+                    fontSize: '10px',
+                    fontWeight: 700
+                  }}>
+                    Verified Document ✓
+                  </span>
+                </div>
+                <div style={{
+                  maxHeight: '260px',
+                  overflow: 'hidden',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  background: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <img
+                    src={data.podPhotoUrl}
+                    alt="Physical Signed POD Bilty"
+                    style={{ maxWidth: '100%', maxHeight: '260px', objectFit: 'contain' }}
+                  />
+                </div>
+                {data.photoMeta?.fileName && (
+                  <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Attachment: {data.photoMeta.fileName} {data.photoMeta.fileSize ? `(${data.photoMeta.fileSize})` : ''}</span>
+                    <span>Source: {data.photoMeta.source || 'Digital POD Scanned'}</span>
+                  </div>
+                )}
               </div>
             )}
 

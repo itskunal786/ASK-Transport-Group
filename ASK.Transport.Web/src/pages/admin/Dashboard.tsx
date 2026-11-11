@@ -620,7 +620,18 @@ export default function Dashboard() {
   const [activeMonthHover, setActiveMonthHover] = useState<number | null>(null);
 
   // Bookings list state
-  const [bookingsList, setBookingsList] = useState<BookingRow[]>(INITIAL_BOOKINGS);
+  const [bookingsList, setBookingsList] = useState<BookingRow[]>(() => {
+    try {
+      const saved = localStorage.getItem('ask_admin_bookings_list');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_BOOKINGS;
+  });
   const [bookingFilterStatus, setBookingFilterStatus] = useState('All');
   const [bookingSearch, setBookingSearch] = useState('');
 
@@ -965,12 +976,28 @@ export default function Dashboard() {
   // 3. Digital POD Verification Handlers
   function handleApprovePod(pod: PodData) {
     if (!podVerifyBooking) return;
-    setBookingsList(prev => prev.map(b => b.bookingNo === podVerifyBooking.bookingNo ? {
-      ...b,
-      status: 'Delivered',
-      podVerified: true,
-      podData: pod
-    } : b));
+    setBookingsList(prev => {
+      const updated = prev.map(b => b.bookingNo === podVerifyBooking.bookingNo ? {
+        ...b,
+        status: 'Delivered' as const,
+        podVerified: true,
+        podPhotoUrl: pod.podPhotoUrl,
+        podData: pod
+      } : b);
+      try {
+        localStorage.setItem('ask_admin_bookings_list', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to save bookings to localStorage:', e);
+      }
+      return updated;
+    });
+    if (pod.podPhotoUrl) {
+      try {
+        localStorage.setItem(`ask_pod_photo_${pod.bookingNumber}`, pod.podPhotoUrl);
+      } catch (e) {
+        console.warn('Failed to save pod photo to localStorage:', e);
+      }
+    }
     setPodVerifyBooking(null);
     showToast(`✓ POD Verified & Sealed for ${pod.bookingNumber}! Proof of Delivery archived`);
   }
@@ -3451,7 +3478,10 @@ export default function Dashboard() {
                                 type="button"
                                 onClick={() => {
                                   if (b.podData) {
-                                    setViewingElectronicPod(b.podData);
+                                    setViewingElectronicPod({
+                                      ...b.podData,
+                                      podPhotoUrl: b.podPhotoUrl || b.podData.podPhotoUrl
+                                    });
                                   } else {
                                     setViewingElectronicPod({
                                       bookingNumber: b.bookingNo,
@@ -3461,7 +3491,8 @@ export default function Dashboard() {
                                       deliveredLocation: b.route.split('→')[1]?.trim() || 'Destination Hub',
                                       otpVerified: true,
                                       notes: 'Delivered in good condition with receiver sign verified.',
-                                      driverName: b.assignedDriver || 'Commercial Driver'
+                                      driverName: b.assignedDriver || 'Commercial Driver',
+                                      podPhotoUrl: b.podPhotoUrl
                                     });
                                   }
                                 }}
@@ -7643,6 +7674,7 @@ export default function Dashboard() {
             customer={podVerifyBooking.customer}
             route={podVerifyBooking.route}
             initialPod={podVerifyBooking.podData}
+            initialPhotoUrl={podVerifyBooking.podPhotoUrl || podVerifyBooking.podData?.podPhotoUrl}
             onClose={() => setPodVerifyBooking(null)}
             onApprove={handleApprovePod}
             onReject={handleRejectPod}
