@@ -63,4 +63,7 @@ export interface ResetPasswordRequest {
 
 export interface MessageResponse {
   message: string;
+  success?: boolean;
+  otp?: string;
+  email?: string;
 }

@@ -366,11 +366,58 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
     };
   }
 
-  if (cleanUrl.includes('/auth/verify-otp') || cleanUrl.includes('/auth/resend-otp')) {
+  if (cleanUrl.includes('/auth/send-otp') || cleanUrl.includes('/auth/resend-otp')) {
+    const rawEmail = (typeof body === 'object' && body && (body as { email?: string }).email) || '';
+    const emailKey = (rawEmail || 'customer').trim().toLowerCase();
+    const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+      sessionStorage.setItem(`ask_active_otp_${emailKey}`, generatedOtp);
+      localStorage.setItem(`ask_active_otp_${emailKey}`, generatedOtp);
+      sessionStorage.setItem('ask_last_dispatched_otp', generatedOtp);
+      sessionStorage.setItem('ask_last_dispatched_email', rawEmail);
+    } catch {}
+    console.info(`[Email Dispatch Service] Dispatched 6-digit OTP ${generatedOtp} to ${rawEmail}`);
     return {
       status: 200,
-      data: { message: 'OTP verified successfully! Account is active.' }
+      data: {
+        success: true,
+        message: `OTP verification code dispatched to ${rawEmail || 'your email'}. Check inbox or preview banner.`,
+        otp: generatedOtp,
+        email: rawEmail
+      }
     };
+  }
+
+  if (cleanUrl.includes('/auth/verify-otp')) {
+    const rawEmail = (typeof body === 'object' && body && (body as { email?: string }).email) || '';
+    const rawOtp = (typeof body === 'object' && body && String((body as { otp?: string }).otp || '')) || '';
+    const emailKey = (rawEmail || '').trim().toLowerCase();
+    const storedOtp = typeof window !== 'undefined'
+      ? (sessionStorage.getItem(`ask_active_otp_${emailKey}`) || localStorage.getItem(`ask_active_otp_${emailKey}`) || sessionStorage.getItem('ask_last_dispatched_otp'))
+      : null;
+
+    const isValid = rawOtp === '123456' || rawOtp === '4821' || (storedOtp && rawOtp === storedOtp) || rawOtp.length === 6;
+    if (isValid) {
+      try {
+        localStorage.setItem(`ask_verified_${emailKey}`, 'true');
+        sessionStorage.setItem(`ask_verified_${emailKey}`, 'true');
+      } catch {}
+      return {
+        status: 200,
+        data: {
+          success: true,
+          message: 'OTP verified successfully! Email authenticated.'
+        }
+      };
+    } else {
+      return {
+        status: 400,
+        data: {
+          success: false,
+          message: 'Invalid verification code. Please check your email or use the dispatched OTP.'
+        }
+      };
+    }
   }
 
   if (cleanUrl.includes('/token/logout')) {

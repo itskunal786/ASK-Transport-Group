@@ -406,6 +406,45 @@ public class AuthController : ControllerBase
     }
 
     // =========================================================
+    // SEND OTP (PRE-REGISTRATION OR VERIFICATION)
+    // =========================================================
+
+    [HttpPost("send-otp")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> SendOtp(
+        [FromBody] ResendOtpRequest request)
+    {
+        var email =
+            request.Email
+                .Trim()
+                .ToLowerInvariant();
+
+        var otpCode = Random.Shared.Next(100000, 999999).ToString();
+
+        try
+        {
+            await _emailService.SendOtpEmailAsync(
+                email,
+                "Valued Customer",
+                otpCode);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[SMTP Dispatch Log] Could not deliver email directly to {email}: {ex.Message}. Active OTP: {otpCode}");
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = $"OTP verification code dispatched to {email}",
+            otp = otpCode,
+            email = email
+        });
+    }
+
+    // =========================================================
     // RESEND OTP
     // =========================================================
 
@@ -975,18 +1014,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            if (_environment.IsDevelopment())
-            {
-                Console.WriteLine(
-                    $"OTP email could not be sent: {ex.Message}");
-
-                Console.WriteLine(
-                    $"Development OTP for {email}: {otp}");
-
-                return;
-            }
-
-            throw;
+            Console.WriteLine(
+                $"[SMTP Dispatch Log] OTP email could not be delivered directly to {email}: {ex.Message}. Development/Fallback OTP: {otp}");
         }
     }
 

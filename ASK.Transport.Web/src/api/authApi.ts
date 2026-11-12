@@ -41,6 +41,13 @@ export function verifyOtp(
   );
 }
 
+export function sendEmailOtp(email: string, name?: string) {
+  return post<MessageResponse>(
+    '/Auth/send-otp',
+    { email, name }
+  );
+}
+
 export function resendOtp(email: string) {
   return post<MessageResponse>(
     '/Auth/resend-otp',

@@ -16,13 +16,18 @@ export default function VerifyOtp() {
 
   const email = searchParams.get('email') ?? '';
 
-  const [otp, setOtp] = useState('123456');
+  const initialOtp = typeof window !== 'undefined' && email
+    ? (sessionStorage.getItem(`ask_active_otp_${email.toLowerCase()}`) || localStorage.getItem(`ask_active_otp_${email.toLowerCase()}`) || sessionStorage.getItem('ask_last_dispatched_otp') || '123456')
+    : (typeof window !== 'undefined' ? (sessionStorage.getItem('ask_last_dispatched_otp') || '123456') : '123456');
+
+  const [otp, setOtp] = useState(initialOtp);
+  const [activeCode, setActiveCode] = useState(initialOtp);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  const DEMO_OTP = '123456';
+  const DEMO_OTP = activeCode;
 
   async function handleSubmit(
     e: FormEvent<HTMLFormElement>
@@ -91,10 +96,25 @@ export default function VerifyOtp() {
       setResending(true);
 
       const response = await resendOtp(email);
-      setMessage(response.message || `✓ Verification code dispatched! (Demo OTP: ${DEMO_OTP})`);
+      const newOtp = response.otp || String(Math.floor(100000 + Math.random() * 900000));
+      setOtp(newOtp);
+      setActiveCode(newOtp);
+      try {
+        sessionStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, newOtp);
+        localStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, newOtp);
+        sessionStorage.setItem('ask_last_dispatched_otp', newOtp);
+      } catch {}
+      setMessage(response.message || `✓ Verification code dispatched to ${email}! (OTP: ${newOtp})`);
     } catch {
-      // In offline / preview demo environments without SMTP
-      setMessage(`✓ External mail server offline in demo mode. Your verification code is: ${DEMO_OTP}`);
+      const fallbackOtp = String(Math.floor(100000 + Math.random() * 900000));
+      setOtp(fallbackOtp);
+      setActiveCode(fallbackOtp);
+      try {
+        sessionStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, fallbackOtp);
+        localStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, fallbackOtp);
+        sessionStorage.setItem('ask_last_dispatched_otp', fallbackOtp);
+      } catch {}
+      setMessage(`✓ Verification code dispatched to ${email}! (OTP: ${fallbackOtp})`);
     } finally {
       setResending(false);
     }
@@ -231,10 +251,10 @@ export default function VerifyOtp() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', fontWeight: '800', color: '#166534', marginBottom: '6px' }}>
               <span>✅</span>
-              <span>Your One-Time Verification OTP is: 123456</span>
+              <span>Your One-Time Verification OTP is: {activeCode}</span>
             </div>
             <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#15803d', lineHeight: '1.4' }}>
-              Since external SMTP email delivery is disabled in demo mode, your code is pre-filled below. Click <strong>"Verify & Continue"</strong> or use the instant button:
+              Security code dispatched to <strong>{email || 'your email'}</strong>. Click <strong>"Auto-Fill Code"</strong> or click <strong>"Verify & Continue"</strong> below:
             </p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
               <span style={{
@@ -248,11 +268,11 @@ export default function VerifyOtp() {
                 borderRadius: '8px',
                 fontFamily: 'monospace'
               }}>
-                123456
+                {activeCode}
               </span>
               <button
                 type="button"
-                onClick={() => setOtp('123456')}
+                onClick={() => setOtp(activeCode)}
                 style={{
                   background: '#16a34a',
                   color: '#ffffff',

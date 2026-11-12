@@ -988,3 +988,246 @@
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
 }
+
+/* ==========================================================================
+   EMAIL OTP VERIFICATION SUITE (REGISTER PAGE)
+   ========================================================================== */
+
+.register-email-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.reg-btn-send-otp {
+  padding: 0 16px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.reg-btn-send-otp:hover:not(:disabled) {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.reg-btn-send-otp:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.reg-btn-change-email {
+  padding: 0 14px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reg-btn-change-email:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.register-inline-otp-card {
+  margin-top: 10px;
+  padding: 14px 16px;
+  background: #f0f9ff;
+  border: 1.5px solid #38bdf8;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.12);
+  animation: regSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes regSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.register-otp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.register-otp-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0369a1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.register-otp-timer {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.register-otp-timer strong {
+  color: #0284c7;
+}
+
+.register-otp-resend-link {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.register-otp-resend-link:hover {
+  color: #0369a1;
+}
+
+.register-otp-live-preview {
+  background: #ffffff;
+  border: 1.5px dashed #0284c7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.register-otp-preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.register-otp-preview-to {
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.register-otp-preview-to strong {
+  color: #0f172a;
+}
+
+.register-otp-badge-live {
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.register-otp-preview-code-row {
+  font-size: 12px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.register-otp-code-highlight {
+  color: #0284c7;
+  font-size: 15px;
+  letter-spacing: 2px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 800;
+}
+
+.register-btn-autofill {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.25);
+}
+
+.register-btn-autofill:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.register-otp-action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.register-otp-digits-input {
+  flex: 1;
+  font-size: 16px;
+  letter-spacing: 4px;
+  font-weight: 800;
+  text-align: center;
+  padding: 8px 12px;
+  border: 1.5px solid #0284c7;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.register-btn-verify-otp {
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.register-btn-verify-otp:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.register-btn-verify-otp:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.register-otp-error-msg {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.register-otp-success-msg {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #16a34a;
+  font-weight: 600;
+}
