@@ -456,15 +456,11 @@ export default function Register() {
               <label htmlFor="email" style={{ margin: 0 }}>
                 Email Address
               </label>
-              {isEmailVerified ? (
+              {isEmailVerified && (
                 <span className="reg-email-verified-tag" style={{ color: '#16a34a', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <CheckCircle2 size={14} /> Email Verified
                 </span>
-              ) : otpSent ? (
-                <span style={{ color: '#0284c7', fontSize: '11.5px', fontWeight: 700 }}>
-                  ✉️ OTP Dispatched
-                </span>
-              ) : null}
+              )}
             </div>
 
             <div className="register-email-input-row" style={{ display: 'flex', gap: '8px' }}>
