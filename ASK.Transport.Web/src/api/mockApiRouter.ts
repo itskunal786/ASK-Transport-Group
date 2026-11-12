@@ -854,6 +854,20 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
       };
     }
 
+    if (method === 'DELETE') {
+      const id = parseInt(cleanUrl.split('/users/')[1]?.split('/')[0] || '0', 10);
+      const userToDelete = users.find((u: any) => u.id === id);
+      users = users.filter((u: any) => u.id !== id);
+      setStorageItem('ask_admin_users', users);
+      return {
+        status: 200,
+        data: {
+          message: `User ${userToDelete?.name || '#' + id} deleted permanently! ✓`,
+          deletedId: id
+        }
+      };
+    }
+
     if (method === 'PUT') {
       const id = parseInt(cleanUrl.split('/users/')[1]?.split('/')[0], 10);
       users = users.map((u: any) => u.id === id ? { ...u, ...parsedBody } : u);

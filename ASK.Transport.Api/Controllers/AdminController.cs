@@ -739,6 +739,44 @@ public class AdminController : ControllerBase
         });
     }
 
+    [HttpDelete("users/{id:int}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        if (!User.IsInRole("SuperAdmin"))
+        {
+            return StatusCode(403, new { message = "Forbidden: Only Super Admin can delete users." });
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        if (user.Role == UserRole.SuperAdmin)
+        {
+            var superAdminCount = await _db.Users.CountAsync(x => x.Role == UserRole.SuperAdmin && x.IsActive);
+            if (superAdminCount <= 1)
+            {
+                return BadRequest(new { message = "Cannot delete the last active Super Admin account." });
+            }
+        }
+
+        var userEmail = user.Email;
+        var userName = user.Name;
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            "USER_DELETED",
+            $"SuperAdmin deleted user account: {userName} ({userEmail}, ID: {id})",
+            id,
+            userEmail);
+
+        return Ok(new { message = $"User {userName} ({userEmail}) deleted successfully" });
+    }
+
     [HttpGet("rights")]
     public async Task<IActionResult> GetAllRights()
     {

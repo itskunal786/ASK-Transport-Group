@@ -10,6 +10,7 @@ import {
   updateAdminUser,
   updateAdminUserRole,
   changeUserStatus,
+  deleteAdminUser,
   getAllRights,
   getUserRights,
   updateUserRights,
@@ -1124,6 +1125,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [rightsLoading, setRightsLoading] = useState(false);
   const [rightsSaving, setRightsSaving] = useState(false);
 
+  // Delete User State (SuperAdmin Only)
+  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<AdminUserData | null>(null);
+  const [deleteUserLoading, setDeleteUserLoading] = useState(false);
+
   // Super Admin Account Clearance Notifications
   const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>(() => getApprovalRequests());
   const [showNotifMenu, setShowNotifMenu] = useState(false);
@@ -1967,6 +1973,56 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       loadUsers();
     } catch (err: any) {
       showToast(err?.message || 'Failed to update status');
+    }
+  }
+
+  function handleOpenDeleteUser(u: AdminUserData) {
+    const isSelf = user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase()));
+    if (isSelf) {
+      showToast('⚠️ Action Denied: You cannot delete your own active administrator account.');
+      return;
+    }
+    const isRootAdmin = u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com';
+    if (isRootAdmin) {
+      showToast('⚠️ Protected Identity: Master SuperAdmin account cannot be deleted.');
+      return;
+    }
+    setUserToDelete(u);
+    setShowDeleteUserModal(true);
+  }
+
+  async function handleConfirmDeleteUser() {
+    if (!userToDelete) return;
+    try {
+      setDeleteUserLoading(true);
+      await deleteAdminUser(userToDelete.id);
+
+      // 1. Remove from React memory state
+      setAdminUsers(prev => prev.filter(x => x.id !== userToDelete.id));
+
+      // 2. Remove from localStorage ask_admin_users
+      try {
+        const stored = JSON.parse(localStorage.getItem('ask_admin_users') || '[]');
+        if (Array.isArray(stored)) {
+          const updated = stored.filter((x: any) => x.id !== userToDelete.id);
+          localStorage.setItem('ask_admin_users', JSON.stringify(updated));
+        }
+      } catch {}
+
+      // 3. Purge individual user credential settings & permissions
+      localStorage.removeItem(`ask_user_approved_${userToDelete.id}`);
+      localStorage.removeItem(`ask_user_role_${userToDelete.id}`);
+      localStorage.removeItem(`ask_user_revoked_ids_${userToDelete.id}`);
+      localStorage.removeItem(`ask_user_granted_ids_${userToDelete.id}`);
+
+      const uIdCode = (userToDelete as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(userToDelete.id, userToDelete.email, userToDelete.role);
+      showToast(`🗑️ User "${userToDelete.name}" (${uIdCode}) deleted permanently.`);
+      setShowDeleteUserModal(false);
+      setUserToDelete(null);
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to delete user');
+    } finally {
+      setDeleteUserLoading(false);
     }
   }
 
@@ -4929,6 +4985,17 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                 >
                                   🛡️ {t('Rights', 'अधिकार')}
                                 </button>
+
+                                {!(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase())))) && (
+                                  <button
+                                    type="button"
+                                    className="user-dir-btn-action delete"
+                                    onClick={() => handleOpenDeleteUser(u)}
+                                    title={t('Delete User Permanently', 'उपयोगकर्ता हटाएं')}
+                                  >
+                                    🗑️ {t('Delete', 'हटाएं')}
+                                  </button>
+                                )}
                               </>
                             )}
                           </div>
@@ -8794,6 +8861,161 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   style={{ background: '#4338ca' }}
                 >
                   {rightsSaving ? 'Saving Rights...' : 'Save Rights Delegation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL 7B: PERMANENT DELETE USER CONFIRMATION MODAL */}
+        {/* ============================================================== */}
+        {showDeleteUserModal && userToDelete && (
+          <div className="st-modal-overlay" onClick={() => !deleteUserLoading && setShowDeleteUserModal(false)}>
+            <div
+              className="st-drawer-box"
+              style={{
+                maxWidth: '480px',
+                background: '#0c1527',
+                border: '1px solid #1e2c47',
+                borderRadius: '16px',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div
+                className="st-drawer-head"
+                style={{
+                  padding: '18px 24px',
+                  borderBottom: '1px solid rgba(239, 68, 68, 0.25)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                <div>
+                  <h2 style={{ color: '#ef4444', fontSize: '18px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>🗑️</span>
+                    <span>{t('Delete User Account', 'उपयोगकर्ता खाता हटाएं')}</span>
+                  </h2>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#94a3b8' }}>
+                    ID: {(userToDelete as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(userToDelete.id, userToDelete.email, userToDelete.role)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="st-drawer-close"
+                  onClick={() => !deleteUserLoading && setShowDeleteUserModal(false)}
+                  style={{ color: '#94a3b8', fontSize: '24px', cursor: 'pointer', background: 'none', border: 'none' }}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="st-drawer-body" style={{ padding: '20px 24px' }}>
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ color: '#f87171', fontWeight: 700, fontSize: '13px', marginBottom: '6px' }}>
+                    ⚠️ {t('Irreversible Action', 'अपरिवर्तनीय कार्रवाई')}
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                    {t(
+                      `Are you sure you want to permanently delete the account for "${userToDelete.name}"? All associated sessions, access tokens, and portal authorizations will be permanently terminated.`,
+                      `क्या आप वाकई "${userToDelete.name}" का खाता स्थायी रूप से हटाना चाहते हैं? सभी सक्रिय सत्र व अधिकार तुरंत समाप्त कर दिए जाएंगे।`
+                    )}
+                  </p>
+                </div>
+
+                <div style={{
+                  background: '#091122',
+                  border: '1px solid #1e2c47',
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  fontSize: '12.5px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>{t('Full Name', 'नाम')}:</span>
+                    <strong style={{ color: '#f8fafc' }}>{userToDelete.name}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>{t('Email', 'ईमेल')}:</span>
+                    <span style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{userToDelete.email}</span>
+                  </div>
+                  {userToDelete.phone && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#64748b', fontWeight: 600 }}>{t('Phone', 'फ़ोन')}:</span>
+                      <span style={{ color: '#cbd5e1' }}>{userToDelete.phone}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>{t('Assigned Role', 'भूमिका')}:</span>
+                    <span style={{
+                      fontWeight: 700,
+                      color: userToDelete.role === 'SuperAdmin' ? '#f59e0b' : userToDelete.role === 'Admin' ? '#38bdf8' : '#94a3b8'
+                    }}>
+                      {userToDelete.role === 'SuperAdmin' ? '👑 Super Admin' : userToDelete.role === 'Admin' ? '⚡ Operations Admin' : '👤 Portal User'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="st-drawer-actions"
+                style={{
+                  padding: '16px 24px',
+                  background: '#091122',
+                  borderTop: '1px solid #1e2c47',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '10px'
+                }}
+              >
+                <button
+                  type="button"
+                  className="st-btn-cancel"
+                  onClick={() => setShowDeleteUserModal(false)}
+                  disabled={deleteUserLoading}
+                  style={{
+                    background: '#1e293b',
+                    color: '#cbd5e1',
+                    border: '1px solid #334155',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {t('Cancel', 'रद्द करें')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDeleteUser}
+                  disabled={deleteUserLoading}
+                  style={{
+                    background: '#dc2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: deleteUserLoading ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 10px rgba(220, 38, 38, 0.4)'
+                  }}
+                >
+                  {deleteUserLoading ? 'Deleting...' : `🗑️ ${t('Confirm & Delete', 'स्थायी रूप से हटाएं')}`}
                 </button>
               </div>
             </div>

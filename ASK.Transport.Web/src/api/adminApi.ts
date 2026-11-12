@@ -168,6 +168,12 @@ export async function changeUserStatus(
   });
 }
 
+export async function deleteAdminUser(id: number): Promise<{ message: string }> {
+  return request<{ message: string }>(`/Admin/users/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function forceLogoutUser(userId: number): Promise<{ message: string }> {
   return request<{ message: string }>(`/Admin/force-logout/${userId}`, {
     method: 'POST',
