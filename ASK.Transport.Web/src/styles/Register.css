@@ -1103,6 +1103,20 @@
   color: #0369a1;
 }
 
+.register-otp-dispatched-box {
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  border-radius: 8px;
+  padding: 11px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #0369a1;
+  line-height: 1.45;
+}
+
 .register-otp-live-preview {
   background: #ffffff;
   border: 1.5px dashed #0284c7;

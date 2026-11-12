@@ -17,10 +17,10 @@ export default function VerifyOtp() {
   const email = searchParams.get('email') ?? '';
 
   const initialOtp = typeof window !== 'undefined' && email
-    ? (sessionStorage.getItem(`ask_active_otp_${email.toLowerCase()}`) || localStorage.getItem(`ask_active_otp_${email.toLowerCase()}`) || sessionStorage.getItem('ask_last_dispatched_otp') || '123456')
-    : (typeof window !== 'undefined' ? (sessionStorage.getItem('ask_last_dispatched_otp') || '123456') : '123456');
+    ? (sessionStorage.getItem(`ask_active_otp_${email.toLowerCase()}`) || localStorage.getItem(`ask_active_otp_${email.toLowerCase()}`) || sessionStorage.getItem('ask_last_dispatched_otp') || '')
+    : (typeof window !== 'undefined' ? (sessionStorage.getItem('ask_last_dispatched_otp') || '') : '');
 
-  const [otp, setOtp] = useState(initialOtp);
+  const [otp, setOtp] = useState('');
   const [activeCode, setActiveCode] = useState(initialOtp);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -76,7 +76,7 @@ export default function VerifyOtp() {
       setError(
         err instanceof Error
           ? err.message
-          : 'OTP verification failed. Please use demo code 123456.'
+          : 'Invalid verification code. Please check your email inbox and enter the 6-digit OTP.'
       );
     } finally {
       setLoading(false);
@@ -97,24 +97,22 @@ export default function VerifyOtp() {
 
       const response = await resendOtp(email);
       const newOtp = response.otp || String(Math.floor(100000 + Math.random() * 900000));
-      setOtp(newOtp);
       setActiveCode(newOtp);
       try {
         sessionStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, newOtp);
         localStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, newOtp);
         sessionStorage.setItem('ask_last_dispatched_otp', newOtp);
       } catch {}
-      setMessage(response.message || `✓ Verification code dispatched to ${email}! (OTP: ${newOtp})`);
+      setMessage(`✓ A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
     } catch {
       const fallbackOtp = String(Math.floor(100000 + Math.random() * 900000));
-      setOtp(fallbackOtp);
       setActiveCode(fallbackOtp);
       try {
         sessionStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, fallbackOtp);
         localStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, fallbackOtp);
         sessionStorage.setItem('ask_last_dispatched_otp', fallbackOtp);
       } catch {}
-      setMessage(`✓ Verification code dispatched to ${email}! (OTP: ${fallbackOtp})`);
+      setMessage(`✓ A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
     } finally {
       setResending(false);
     }
@@ -239,55 +237,22 @@ export default function VerifyOtp() {
             activate your ASK Transport account.
           </div>
 
-          {/* DEMO / INSTANT OTP HELPER BANNER */}
+          {/* Email Dispatch Notice */}
           <div style={{
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-            border: '2px solid #86efac',
-            borderRadius: '12px',
-            padding: '16px 18px',
+            background: 'rgba(2, 132, 199, 0.08)',
+            border: '1px solid rgba(2, 132, 199, 0.25)',
+            borderRadius: '10px',
+            padding: '14px 16px',
             marginBottom: '20px',
-            textAlign: 'center',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.12)'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color: '#0369a1',
+            fontSize: '13.5px',
+            lineHeight: '1.45'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', fontWeight: '800', color: '#166534', marginBottom: '6px' }}>
-              <span>✅</span>
-              <span>Your One-Time Verification OTP is: {activeCode}</span>
-            </div>
-            <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#15803d', lineHeight: '1.4' }}>
-              Security code dispatched to <strong>{email || 'your email'}</strong>. Click <strong>"Auto-Fill Code"</strong> or click <strong>"Verify & Continue"</strong> below:
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-              <span style={{
-                fontSize: '20px',
-                fontWeight: '900',
-                letterSpacing: '4px',
-                color: '#15803d',
-                background: '#ffffff',
-                border: '1.5px solid #86efac',
-                padding: '4px 16px',
-                borderRadius: '8px',
-                fontFamily: 'monospace'
-              }}>
-                {activeCode}
-              </span>
-              <button
-                type="button"
-                onClick={() => setOtp(activeCode)}
-                style={{
-                  background: '#16a34a',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.3)'
-                }}
-              >
-                Auto-fill 123456
-              </button>
-            </div>
+            <span style={{ fontSize: '18px' }}>📩</span>
+            <span>A 6-digit verification code has been dispatched to <strong>{email || 'your email'}</strong>. Please check your inbox or spam folder and enter the code below.</span>
           </div>
 
 
@@ -344,37 +309,6 @@ export default function VerifyOtp() {
                 ? 'Verifying...'
                 : 'Verify & Continue'}
             </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.setItem(`ask_verified_${email}`, 'true');
-                }
-                setMessage('✓ Email verified successfully! Redirecting to sign in...');
-                setTimeout(() => navigate('/login'), 800);
-              }}
-              style={{
-                width: '100%',
-                marginTop: '10px',
-                background: '#059669',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '12px',
-                fontSize: '13px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)'
-              }}
-            >
-              <span>⚡</span> Instant Verify &amp; Go to Sign In
-            </button>
-
           </form>
 
 

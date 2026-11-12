@@ -97,7 +97,7 @@ export default function Register() {
         sessionStorage.setItem('ask_last_dispatched_email', trimmedEmail);
       } catch {}
 
-      setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}!`);
+      setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}. Please check your email inbox.`);
     } catch {
       const fallbackCode = String(Math.floor(100000 + Math.random() * 900000));
       setActiveOtpCode(fallbackCode);
@@ -109,7 +109,7 @@ export default function Register() {
         sessionStorage.setItem('ask_last_dispatched_otp', fallbackCode);
         sessionStorage.setItem('ask_last_dispatched_email', trimmedEmail);
       } catch {}
-      setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}!`);
+      setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}. Please check your email inbox.`);
     } finally {
       setOtpSending(false);
     }
@@ -144,7 +144,7 @@ export default function Register() {
           sessionStorage.setItem(`ask_verified_${trimmedEmail.toLowerCase()}`, 'true');
         } catch {}
       } else {
-        setOtpError(`Invalid code. Enter the 6-digit code received on your email (${activeOtpCode || '123456'}).`);
+        setOtpError('Invalid verification code. Please check your email inbox and enter the correct 6-digit OTP.');
       }
     } finally {
       setVerifyingOtp(false);
@@ -534,26 +534,12 @@ export default function Register() {
                   )}
                 </div>
 
-                {/* Simulated Email Dispatch Live Preview */}
-                <div className="register-otp-live-preview">
-                  <div className="register-otp-preview-content">
-                    <div className="register-otp-preview-to">
-                      <span>To: <strong>{email.trim()}</strong></span>
-                      <span className="register-otp-badge-live">LIVE DISPATCH</span>
-                    </div>
-                    <div className="register-otp-preview-code-row">
-                      <span>Security OTP:</span>
-                      <strong className="register-otp-code-highlight">{activeOtpCode}</strong>
-                    </div>
+                {/* Email Dispatch Notice */}
+                <div className="register-otp-dispatched-box">
+                  <Mail size={18} style={{ flexShrink: 0, color: '#0284c7' }} />
+                  <div>
+                    A 6-digit verification code has been dispatched to <strong>{email.trim()}</strong>. Please check your inbox or spam folder and enter the code below.
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setEmailOtp(activeOtpCode)}
-                    className="register-btn-autofill"
-                    title="1-Click Auto-Fill Code"
-                  >
-                    ⚡ Auto-Fill
-                  </button>
                 </div>
 
                 {/* OTP Input and Verify Action */}
