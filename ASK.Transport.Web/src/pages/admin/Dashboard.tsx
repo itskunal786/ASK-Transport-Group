@@ -3607,8 +3607,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 </div>
               </div>
 
-              {/* 3 CORE FEATURE CARDS */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {/* 6 OPERATIONS FEATURE CARDS */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
                 {/* CARD 1: TRIP EXPENSES & DIESEL SLIPS */}
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.04)',
@@ -3618,7 +3618,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '14px'
+                  gap: '14px',
+                  minHeight: '210px'
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -3668,7 +3669,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '14px'
+                  gap: '14px',
+                  minHeight: '210px'
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -3718,7 +3720,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '14px'
+                  gap: '14px',
+                  minHeight: '210px'
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -3757,7 +3760,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       {t('Open Compliance Radar →', 'अनुपालन रडार खोलें →')}
                     </button>
                   </div>
-                
+                </div>
+
                 {/* CARD 4: SHIPPER CREDIT AUTO-LOCK & CUSTOMER LEDGER */}
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.04)',
@@ -3767,7 +3771,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '14px'
+                  gap: '14px',
+                  minHeight: '210px'
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -3817,7 +3822,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '14px'
+                  gap: '14px',
+                  minHeight: '210px'
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(22, 163, 74, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -3867,7 +3873,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '14px'
+                  gap: '14px',
+                  minHeight: '210px'
                 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(139, 92, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -3907,7 +3914,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     </button>
                   </div>
                 </div>
-</div>
               </div>
             </div>
 
