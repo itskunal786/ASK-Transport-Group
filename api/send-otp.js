@@ -77,7 +77,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const body = req.body || {};
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch {
+      body = {};
+    }
+  } else if (!body) {
+    body = {};
+  }
+
   const email = (body.email || '').trim().toLowerCase();
   const name = (body.name || 'Valued Customer').trim();
 

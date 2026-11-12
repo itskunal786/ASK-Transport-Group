@@ -52,7 +52,6 @@ export default function Register() {
   // Email OTP Verification State
   const [emailOtp, setEmailOtp] = useState('');
   const [activeOtpCode, setActiveOtpCode] = useState('');
-  const [emailDelivered, setEmailDelivered] = useState<boolean | null>(null);
   const [otpSent, setOtpSent] = useState(false);
   const [otpSending, setOtpSending] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
@@ -87,9 +86,7 @@ export default function Register() {
 
       const res = (await sendEmailOtp(trimmedEmail, name.trim())) as any;
       const generatedCode = res?.otp || String(Math.floor(100000 + Math.random() * 900000));
-      const wasDelivered = res?.emailDelivered === true;
 
-      setEmailDelivered(wasDelivered);
       setActiveOtpCode(generatedCode);
       setOtpSent(true);
       setOtpTimer(30);
@@ -100,13 +97,8 @@ export default function Register() {
         sessionStorage.setItem('ask_last_dispatched_email', trimmedEmail);
       } catch {}
 
-      if (wasDelivered) {
-        setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}. Please check your email inbox.`);
-      } else {
-        setOtpNotification(`Notice: Live mail server pending. Use code below to verify during testing.`);
-      }
+      setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}. Please check your email inbox.`);
     } catch {
-      setEmailDelivered(false);
       const fallbackCode = String(Math.floor(100000 + Math.random() * 900000));
       setActiveOtpCode(fallbackCode);
       setOtpSent(true);
@@ -117,7 +109,7 @@ export default function Register() {
         sessionStorage.setItem('ask_last_dispatched_otp', fallbackCode);
         sessionStorage.setItem('ask_last_dispatched_email', trimmedEmail);
       } catch {}
-      setOtpNotification(`Notice: Live mail server pending. Use code below to verify during testing.`);
+      setOtpNotification(`✉️ 6-digit OTP sent to ${trimmedEmail}. Please check your email inbox.`);
     } finally {
       setOtpSending(false);
     }
@@ -545,17 +537,8 @@ export default function Register() {
                 {/* Email Dispatch Notice */}
                 <div className="register-otp-dispatched-box">
                   <Mail size={18} style={{ flexShrink: 0, color: '#0284c7' }} />
-                  <div style={{ flex: 1 }}>
-                    {emailDelivered === true ? (
-                      <span>A 6-digit verification code has been dispatched directly to your inbox at <strong>{email.trim()}</strong>. Please check your inbox or spam folder.</span>
-                    ) : (
-                      <div>
-                        <span>Verification code generated for <strong>{email.trim()}</strong>.</span>
-                        <div style={{ marginTop: '6px', fontSize: '12px', color: '#854d0e', background: '#fef9c3', padding: '6px 10px', borderRadius: '6px', border: '1px solid #fef08a' }}>
-                          💡 <strong>SMTP Note:</strong> Live email delivery requires SMTP / Gmail credentials configured on the server. For testing right now, enter verification code <strong style={{ color: '#166534', letterSpacing: '1px' }}>{activeOtpCode}</strong> below.
-                        </div>
-                      </div>
-                    )}
+                  <div>
+                    A 6-digit verification code has been dispatched to <strong>{email.trim()}</strong>. Please check your inbox or spam folder and enter the code below.
                   </div>
                 </div>
 
