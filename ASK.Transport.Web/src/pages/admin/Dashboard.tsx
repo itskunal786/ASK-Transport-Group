@@ -1167,8 +1167,9 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   async function handleSuperAdminPass(req: ApprovalRequest) {
     const superAdminName = user?.name || 'ASK GROUP Admin (Super Admin)';
     await superAdminReverifyAndPass(req.userId, req.userEmail, superAdminName);
+    setUserApproved(req.userId, req.userEmail, true);
     setApprovalRequests(getApprovalRequests());
-    setAdminUsers(prev => prev.map(x => (x.id === req.userId || (req.userEmail && x.email.toLowerCase() === req.userEmail.toLowerCase())) ? { ...x, isApproved: true } : x));
+    setAdminUsers(prev => prev.map(x => (String(x.id) === String(req.userId) || (req.userEmail && x.email.toLowerCase() === req.userEmail.toLowerCase())) ? { ...x, isApproved: true } : x));
     showToast(`👑 Re-Verified & Passed! Full clearance granted to ${req.userName || req.userEmail}. Dual-authorization verified.`);
   }
 
@@ -1983,8 +1984,9 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
     if (user?.role === 'SuperAdmin') {
       // SuperAdmin re-verifies and gives final master pass!
       await superAdminReverifyAndPass(u.id, u.email, user?.name || 'ASK GROUP Admin');
+      setUserApproved(u.id, u.email, true);
       setApprovalRequests(getApprovalRequests());
-      setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: true } : x)));
+      setAdminUsers(prev => prev.map(x => (x.id === u.id || (u.email && x.email.toLowerCase() === u.email.toLowerCase()) ? { ...x, isApproved: true } : x)));
       showToast(`👑 Re-Verified & Passed (${uIdCode})! Full clearance granted to ${u.name}. Dual-authorization complete.`);
     } else {
       // Operations Admin gives Level-1 Pre-Approval (Forward to SuperAdmin)
@@ -4832,7 +4834,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                       <button
                                         type="button"
                                         className="user-dir-btn-action reverify"
-                                        onClick={() => handleSuperAdminPass(req || { id: `req-${u.id}`, userId: u.id, userIdCode: uIdCode, userName: u.name, userEmail: u.email, requestedAt: new Date().toISOString(), status: 'PENDING_SUPERADMIN' })}
+                                        onClick={() => handleToggleUserApproval(u, true)}
                                         title={t('SuperAdmin Re-Verify & Grant Master Clearance', 'सत्यापित करें व पास करें')}
                                       >
                                         👑 {t('Re-Verify ID & Pass', 'आईडी सत्यापित करें व पास')}
@@ -4862,7 +4864,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                       type="button"
                                       className="user-dir-btn-action approve"
                                       style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', borderColor: '#b45309' }}
-                                      onClick={() => handleSuperAdminPass(req || { id: `req-${u.id}`, userId: u.id, userIdCode: uIdCode, userName: u.name, userEmail: u.email, requestedAt: new Date().toISOString(), status: 'PENDING_SUPERADMIN' })}
+                                      onClick={() => handleToggleUserApproval(u, true)}
                                       title={t('SuperAdmin Direct Bypass & Approve without prior admin review', 'सुपरएडमिन डायरेक्ट बाईपास एवं अप्रूवल')}
                                     >
                                       ⚡ {t('SuperAdmin Bypass & Approve', 'बाईपास एवं अप्रूव')}

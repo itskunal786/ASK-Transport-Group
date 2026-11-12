@@ -78,7 +78,7 @@ export function getApprovalRequests(): ApprovalRequest[] {
     if (!raw) {
       // Seed demonstration requests illustrating the dual-control pipeline:
       // 1. User #4 (Pooja Verma): Pre-approved by Admin Kunal Kumar, awaiting SuperAdmin re-verification!
-      // 2. User #2 (Demo Shipper): Fresh pending request awaiting initial admin review.
+      // 2. User #999 (Demo Shipper): Fresh pending request awaiting initial admin review.
       const initial: ApprovalRequest[] = [
         {
           id: 'req-init-4',
@@ -95,7 +95,7 @@ export function getApprovalRequests(): ApprovalRequest[] {
         },
         {
           id: 'req-init-2',
-          userId: 2,
+          userId: 999,
           userIdCode: 'ASK-CUST-30003',
           userName: 'Demo Shipper Updated',
           userEmail: 'user@askgroup.com',
@@ -107,7 +107,18 @@ export function getApprovalRequests(): ApprovalRequest[] {
       localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(initial));
       return initial;
     }
-    return JSON.parse(raw);
+    const parsed: ApprovalRequest[] = JSON.parse(raw);
+    let modified = false;
+    for (const r of parsed) {
+      if ((String(r.userId) === '2' || r.userId === 2) && r.userEmail === 'user@askgroup.com') {
+        r.userId = 999;
+        modified = true;
+      }
+    }
+    if (modified) {
+      localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(parsed));
+    }
+    return parsed;
   } catch {
     return [];
   }
@@ -124,10 +135,21 @@ export function getApprovalRequestForUser(
   if (userId === undefined && !email && !userIdCode) return undefined;
   const requests = getApprovalRequests();
   return requests.find(r => {
-    const matchesId = userId !== undefined && String(r.userId) === String(userId);
-    const matchesEmail = email && r.userEmail.toLowerCase() === email.trim().toLowerCase();
-    const matchesCode = userIdCode && r.userIdCode && r.userIdCode.toLowerCase() === userIdCode.trim().toLowerCase();
-    return matchesId || matchesEmail || matchesCode;
+    // 1. Email matching takes highest priority
+    if (email && r.userEmail) {
+      if (email.trim().toLowerCase() === r.userEmail.trim().toLowerCase()) return true;
+      // If email doesn't match, this is a different user
+      return false;
+    }
+    // 2. User ID Code match
+    if (userIdCode && r.userIdCode && userIdCode.trim().toLowerCase() === r.userIdCode.trim().toLowerCase()) {
+      return true;
+    }
+    // 3. User ID match only if emails don't conflict
+    if (userId !== undefined && String(r.userId) === String(userId)) {
+      return true;
+    }
+    return false;
   });
 }
 
@@ -180,6 +202,7 @@ export function isUserApproved(user: AccessControlUser | null | undefined): bool
  * Check if a user is currently in the Step-1 Admin Verified state, awaiting Step-2 SuperAdmin Re-Verification.
  */
 export function isPendingSuperAdminReverify(userId?: number | string, email?: string): boolean {
+  if (isUserApproved({ id: userId, email })) return false;
   const req = getApprovalRequestForUser(userId, email);
   if (req?.status === 'PENDING_SUPERADMIN') return true;
 
@@ -237,7 +260,9 @@ export function setUserApproved(
   try {
     const requests = getApprovalRequests();
     const updated = requests.map(r => {
-      if (String(r.userId) === String(userId) || (email && r.userEmail.toLowerCase() === email.toLowerCase())) {
+      const emailMatches = email && r.userEmail && email.trim().toLowerCase() === r.userEmail.trim().toLowerCase();
+      const idMatches = (!email || !r.userEmail || emailMatches) && String(r.userId) === String(userId);
+      if (emailMatches || idMatches) {
         return {
           ...r,
           status: (approved ? 'APPROVED' : 'REJECTED') as ApprovalStatus,
