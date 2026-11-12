@@ -77,7 +77,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>⛽</span> Trip Petty Cash &amp; Dual-Control P&amp;L
+          Trip Petty Cash &amp; Dual-Control P&amp;L
         </button>
 
         <button
@@ -98,7 +98,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>🏷️</span> FASTag NETC Toll Reconciliation
+          FASTag NETC Toll Reconciliation
         </button>
 
         <button
@@ -119,7 +119,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>💬</span> Driver WhatsApp Duty Slip
+          Driver WhatsApp Duty Slip
         </button>
 
         <button
@@ -140,7 +140,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>🚨</span> Fuel Sensor &amp; Diesel Anti-Theft
+          Fuel Sensor &amp; Diesel Anti-Theft
         </button>
 
         <button
@@ -161,7 +161,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>❄️</span> IoT Cold-Chain Temp Radar
+          IoT Cold-Chain Temp Radar
         </button>
 
         <button
@@ -182,7 +182,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>🛡️</span> Parivahan RC, Fitness &amp; Challan Radar
+          Parivahan RC, Fitness &amp; Challan Radar
         </button>
 
         <button
@@ -203,7 +203,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
             whiteSpace: 'nowrap'
           }}
         >
-          <span>🛞</span> Tyre &amp; TPMS Radar
+          Tyre &amp; TPMS Radar
         </button>
       </div>
 

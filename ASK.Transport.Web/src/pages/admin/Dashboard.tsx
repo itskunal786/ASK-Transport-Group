@@ -2822,7 +2822,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   onClick={() => { setFleetDeckSubTab('duty_slip'); setActiveTab('fleet_mgmt', 'duty_slip'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>💬 {t('Driver WhatsApp Duty Slip', 'ड्राइवर व्हाट्सएप ड्यूटी स्लिप')}</span>
+                  <span>{t('Driver WhatsApp Duty Slip', 'ड्राइवर व्हाट्सएप ड्यूटी स्लिप')}</span>
                 </button>
 
                 <button
@@ -2849,7 +2849,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                 >
                   <span className="nav-sub-bullet">•</span>
-                  <span>🚗 {t('Parivahan RC & Challan Radar', 'परिवहन RC और चालान रडार')}</span>
+                  <span>{t('Parivahan RC & Challan Radar', 'परिवहन RC और चालान रडार')}</span>
                 </button>
 
                 <button

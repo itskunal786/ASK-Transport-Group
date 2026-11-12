@@ -152,7 +152,7 @@ export default function AiOperationsDeck({
             whiteSpace: 'nowrap'
           }}
         >
-          <span>🚛</span> {t('3D Truck Load Optimizer', '3D ट्रक लोड ऑप्टिमाइज़र')}
+          {t('3D Truck Load Optimizer', '3D ट्रक लोड ऑप्टिमाइज़र')}
         </button>
 
         <button
@@ -173,7 +173,7 @@ export default function AiOperationsDeck({
             whiteSpace: 'nowrap'
           }}
         >
-          <span>🛣️</span> {t('Route & Fastag Predictor', 'रूट व फास्टैग प्रेडिक्टर')}
+          {t('Route & Fastag Predictor', 'रूट व फास्टैग प्रेडिक्टर')}
         </button>
 
         <button
@@ -194,7 +194,7 @@ export default function AiOperationsDeck({
             whiteSpace: 'nowrap'
           }}
         >
-          <span>📄</span> {t('AI OCR Document Studio', 'एआई ओसीआर डॉक्यूमेंट स्टूडियो')}
+          {t('AI OCR Document Studio', 'एआई ओसीआर डॉक्यूमेंट स्टूडियो')}
         </button>
 
         <button
@@ -215,7 +215,7 @@ export default function AiOperationsDeck({
             whiteSpace: 'nowrap'
           }}
         >
-          <span>📈</span> {t('Spot Freight Rate AI', 'स्पॉट भाड़ा दर एआई')}
+          {t('Spot Freight Rate AI', 'स्पॉट भाड़ा दर एआई')}
         </button>
 
         <button
@@ -236,7 +236,7 @@ export default function AiOperationsDeck({
             whiteSpace: 'nowrap'
           }}
         >
-          <span>📲</span> {t('WhatsApp AI Bot', 'व्हाट्सएप एआई बॉट')}
+          {t('WhatsApp AI Bot', 'व्हाट्सएप एआई बॉट')}
         </button>
       </div>
 

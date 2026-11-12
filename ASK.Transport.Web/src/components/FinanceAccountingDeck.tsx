@@ -90,7 +90,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv', onSubTab
               transition: 'all 0.2s'
             }}
           >
-            <span>🤝</span> Hired Fleet &amp; 194C TDS
+            Hired Fleet &amp; 194C TDS
           </button>
 
           <button
@@ -111,7 +111,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv', onSubTab
               transition: 'all 0.2s'
             }}
           >
-            <span>🏛️</span> Govt E-Invoice &amp; IRN
+            Govt E-Invoice &amp; IRN
           </button>
 
           <button
@@ -132,7 +132,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv', onSubTab
               transition: 'all 0.2s'
             }}
           >
-            <span>🔄</span> Tally &amp; Zoho Sync
+            Tally &amp; Zoho Sync
           </button>
 
           <button
@@ -153,7 +153,7 @@ export default function FinanceAccountingDeck({ initialSubTab = 'einv', onSubTab
               transition: 'all 0.2s'
             }}
           >
-            <span>💳</span> Credit Ledgers &amp; Cycles
+            Credit Ledgers &amp; Cycles
           </button>
         </div>
       </div>
