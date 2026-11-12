@@ -262,8 +262,8 @@ body.dark .fleet-expense-container,
 }
 
 .fleet-expense-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface, #111a2e);
+  border: 1px solid var(--border-color, #1e2c47);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -332,10 +332,10 @@ body:not(.dark) .fleet-exp-id-tag {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-card-inner);
+  background: var(--bg-card-inner, #0f172a);
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, #1e2c47);
 }
 
 .fleet-exp-amount-label {
@@ -371,10 +371,10 @@ body:not(.dark) .fleet-exp-id-tag {
 
 /* Details Box (Station, Liters, Odo, Slip) */
 .fleet-exp-details-box {
-  background: var(--bg-card-inner);
+  background: var(--bg-card-inner, #0f172a);
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, #1e2c47);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -416,9 +416,9 @@ body:not(.dark) .fleet-exp-id-tag {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: var(--bg-card-inner);
+  background: var(--bg-card-inner, #0f172a);
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, #1e2c47);
 }
 
 .fleet-exp-driver-avatar {

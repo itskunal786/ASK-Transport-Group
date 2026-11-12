@@ -119,7 +119,7 @@ export interface FleetMaintenanceSummary {
 }
 
 function getAuthHeaders() {
-  const token = localStorage.getItem('token');
+  const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

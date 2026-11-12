@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAuthToken } from './api';
 
 const API_ROOT = import.meta.env.VITE_API_ROOT || 'http://localhost:5208/api';
 const API_BASE = `${API_ROOT}/ai`;
@@ -131,7 +132,7 @@ export async function ocrScanDocument(params: {
 
   if (!isHttps || !isLocalhostRoot) {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const res = await axios.post(`${API_BASE}/ocr-scan`, params, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         timeout: 3000
@@ -236,7 +237,7 @@ export async function optimize3dLoad(params: {
   truckType: string;
   boxes?: BoxItem[];
 }): Promise<LoadOptimizationResult> {
-  const token = localStorage.getItem('token');
+  const token = getAuthToken();
   const res = await axios.post(`${API_BASE}/optimize-3d-load`, params, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
@@ -666,7 +667,7 @@ export async function predictRouteAndCosts(params: {
     return calculateLocalRoutePrediction(params);
   }
   try {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     const res = await axios.post(`${API_BASE}/route-toll-cost-predictor`, params, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       timeout: 2500

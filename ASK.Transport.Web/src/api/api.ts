@@ -48,6 +48,24 @@ axios.interceptors.response.use(
 );
 
 // =============================================================================
+// TOKEN STORAGE UTILITIES (SESSION-FIRST SECURITY)
+// =============================================================================
+export function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return sessionStorage.getItem('token') || localStorage.getItem('token');
+}
+
+export function clearAuthStorage(): void {
+  if (typeof window === 'undefined') return;
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('refreshToken');
+  sessionStorage.removeItem('user');
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+}
+
+// =============================================================================
 // CENTRAL FETCH REQUEST WRAPPER
 // =============================================================================
 
@@ -64,7 +82,7 @@ export async function request<T>(
     return mock.data as T;
   }
 
-  const token = localStorage.getItem('token');
+  const token = getAuthToken();
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
 
@@ -107,9 +125,7 @@ export async function request<T>(
         return mock.data as T;
       }
 
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      clearAuthStorage();
 
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         const isAdmin = window.location.pathname.startsWith('/admin');

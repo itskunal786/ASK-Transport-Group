@@ -274,6 +274,18 @@ body.dark .admin-layout-container,
   font-size: 10px;
 }
 
+/* Hide ugly horizontal scrollbars on Windows Chrome/Edge */
+.fleet-subtabs-bar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.fleet-subtabs-bar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
 /* SIDEBAR FOOTER */
 .admin-sidebar-footer {
   padding: 12px 14px;

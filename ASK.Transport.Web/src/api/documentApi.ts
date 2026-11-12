@@ -1,4 +1,4 @@
-import { get } from './api';
+import { get, getAuthToken } from './api';
 
 const API_ROOT =
   import.meta.env.VITE_API_ROOT ||
@@ -82,8 +82,7 @@ export async function uploadDocument(
   documentType: string,
   file: File
 ) {
-  const token =
-    localStorage.getItem('token');
+  const token = getAuthToken();
 
   const formData =
     new FormData();
@@ -146,8 +145,7 @@ export async function downloadDocument(
   fileName: string,
   preview = false
 ) {
-  const token =
-    localStorage.getItem('token');
+  const token = getAuthToken();
 
   const response =
     await fetch(

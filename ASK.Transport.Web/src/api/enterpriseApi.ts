@@ -4,7 +4,7 @@ const API_ROOT = import.meta.env.VITE_API_ROOT || 'http://localhost:5208/api';
 const API_BASE = `${API_ROOT}/enterprise`;
 
 function getAuthHeaders() {
-  const token = localStorage.getItem('token');
+  const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

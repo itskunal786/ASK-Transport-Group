@@ -17,12 +17,23 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.search.includes('expired=1')) {
-      return 'Your session has expired. Please sign in again to continue.';
+    if (typeof window !== 'undefined') {
+      const search = window.location.search;
+      if (search.includes('reason=inactivity')) {
+        return '🔒 Session Expired: You were automatically signed out due to 15 minutes of inactivity. Please sign in again to resume.';
+      }
+      if (search.includes('reason=closed') || search.includes('reason=relogin')) {
+        return '🔒 Session Ended: Browser tab/window was closed. Please sign in to access your portal.';
+      }
+      if (search.includes('expired=1')) {
+        return 'Your session has expired. Please sign in again to continue.';
+      }
     }
     return '';
   });
   const [loading, setLoading] = useState(false);
+
+  const lastKnownEmail = typeof window !== 'undefined' ? sessionStorage.getItem('ask_last_user_email') : null;
 
   // Clear inputs on mount & role switch to prevent browser password auto-fill on logout
   useState(() => {
@@ -281,6 +292,31 @@ export default function Login() {
             </div>
           )}
 
+          {lastKnownEmail && !email && (
+            <div style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => handleEmailChange(lastKnownEmail)}
+                style={{
+                  background: 'rgba(2, 132, 199, 0.08)',
+                  border: '1px dashed #0284c7',
+                  color: '#0284c7',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>⚡ Re-Login as:</span>
+                <strong>{lastKnownEmail}</strong>
+              </button>
+            </div>
+          )}
+
           <div className="login-field">
 
             <label htmlFor="email">
@@ -306,7 +342,6 @@ export default function Login() {
             </div>
 
           </div>
-
 
           <div className="login-field">
 
