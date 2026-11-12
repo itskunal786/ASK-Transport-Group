@@ -22,6 +22,7 @@ export default function VerifyOtp() {
 
   const [otp, setOtp] = useState('');
   const [activeCode, setActiveCode] = useState(initialOtp);
+  const [emailDelivered, setEmailDelivered] = useState<boolean | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -95,16 +96,24 @@ export default function VerifyOtp() {
     try {
       setResending(true);
 
-      const response = await resendOtp(email);
-      const newOtp = response.otp || String(Math.floor(100000 + Math.random() * 900000));
+      const response = (await resendOtp(email)) as any;
+      const newOtp = response?.otp || String(Math.floor(100000 + Math.random() * 900000));
+      const wasDelivered = response?.emailDelivered === true;
+      setEmailDelivered(wasDelivered);
       setActiveCode(newOtp);
       try {
         sessionStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, newOtp);
         localStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, newOtp);
         sessionStorage.setItem('ask_last_dispatched_otp', newOtp);
       } catch {}
-      setMessage(`✓ A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
+
+      if (wasDelivered) {
+        setMessage(`✓ A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
+      } else {
+        setMessage(`Notice: Live mail server pending. Use code below to verify during testing.`);
+      }
     } catch {
+      setEmailDelivered(false);
       const fallbackOtp = String(Math.floor(100000 + Math.random() * 900000));
       setActiveCode(fallbackOtp);
       try {
@@ -112,7 +121,7 @@ export default function VerifyOtp() {
         localStorage.setItem(`ask_active_otp_${email.toLowerCase()}`, fallbackOtp);
         sessionStorage.setItem('ask_last_dispatched_otp', fallbackOtp);
       } catch {}
-      setMessage(`✓ A fresh 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
+      setMessage(`Notice: Live mail server pending. Use code below to verify during testing.`);
     } finally {
       setResending(false);
     }
@@ -252,7 +261,18 @@ export default function VerifyOtp() {
             lineHeight: '1.45'
           }}>
             <span style={{ fontSize: '18px' }}>📩</span>
-            <span>A 6-digit verification code has been dispatched to <strong>{email || 'your email'}</strong>. Please check your inbox or spam folder and enter the code below.</span>
+            <div style={{ flex: 1 }}>
+              {emailDelivered === true ? (
+                <span>A 6-digit verification code has been dispatched directly to your inbox at <strong>{email || 'your email'}</strong>. Please check your inbox or spam folder.</span>
+              ) : (
+                <div>
+                  <span>Verification code generated for <strong>{email || 'your email'}</strong>.</span>
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: '#854d0e', background: '#fef9c3', padding: '6px 10px', borderRadius: '6px', border: '1px solid #fef08a' }}>
+                    💡 <strong>SMTP Note:</strong> Live email delivery requires SMTP / Gmail credentials configured on the server. For testing right now, enter verification code <strong style={{ color: '#166534', letterSpacing: '1px' }}>{activeCode}</strong> below.
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
 

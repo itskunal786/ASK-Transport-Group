@@ -381,6 +381,7 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
       status: 200,
       data: {
         success: true,
+        emailDelivered: false,
         message: `OTP verification code dispatched to ${rawEmail || 'your email'}. Please check your inbox or spam folder.`,
         otp: generatedOtp,
         email: rawEmail

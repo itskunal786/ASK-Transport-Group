@@ -75,6 +75,23 @@ export async function request<T>(
 ): Promise<T> {
   const method = (options.method || 'GET').toUpperCase();
 
+  // Try same-origin serverless dispatch for OTP if on web/cloud
+  if (typeof window !== 'undefined' && (url.toLowerCase().includes('/auth/send-otp') || url.toLowerCase().includes('/auth/resend-otp'))) {
+    try {
+      const sResponse = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: options.body
+      });
+      if (sResponse.ok) {
+        const sData = await sResponse.json();
+        return sData as T;
+      }
+    } catch (e) {
+      console.warn('[Serverless Dispatch Fallback] Could not reach /api/send-otp:', e);
+    }
+  }
+
   // If deployed on HTTPS (e.g. Vercel) and API points to localhost, immediately use local registry
   if (isOfflineOrHttpsLocalhost(API_ROOT)) {
     console.info(`[Offline Registry] Instantly resolving ${method} ${url}`);
