@@ -198,30 +198,36 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
         {/* SIDEBAR FOOTER */}
         <div className="customer-sidebar-footer">
-          <Link to="/profile" className="footer-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Profile &amp; Settings
+          <Link to="/profile" className="customer-sidebar-user-card" title="Account Profile & Settings">
+            <div className="customer-user-avatar">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="customer-user-meta">
+              <span className="customer-user-name">{user?.name || 'ASK User'}</span>
+              <span className="customer-user-role">Profile &amp; Settings ⚙️</span>
+            </div>
           </Link>
 
           <button
             type="button"
-            className="footer-link logout-btn"
+            className="customer-sidebar-logout-btn"
             onClick={handleLogout}
+            title="Sign Out of session"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            Sign Out
+            <span>Sign Out</span>
           </button>
 
-          <div className="support-helpline">
-            <span>24/7 Helpline: </span>
-            <a href="tel:+919876543210">+91 98765 43210</a>
+          <div className="customer-sidebar-helpline">
+            <span className="helpline-icon">📞</span>
+            <div className="helpline-meta">
+              <span className="helpline-label">24/7 Toll-Free Support</span>
+              <a href="tel:+919876543210" className="helpline-number">+91 98765 43210</a>
+            </div>
           </div>
         </div>
       </aside>
