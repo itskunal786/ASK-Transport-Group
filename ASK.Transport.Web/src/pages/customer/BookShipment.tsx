@@ -1120,9 +1120,9 @@ return (
             style={{
               padding: '10px 22px',
               borderRadius: '24px',
-              border: bookingMode === 'single' ? '2px solid #2563eb' : '1px solid var(--border, #cbd5e1)',
-              background: bookingMode === 'single' ? 'rgba(37, 99, 235, 0.12)' : 'var(--bg-card, #ffffff)',
-              color: bookingMode === 'single' ? '#2563eb' : 'var(--text-secondary, #64748b)',
+              border: bookingMode === 'single' ? '2px solid #38bdf8' : '1px solid #1e2c47',
+              background: bookingMode === 'single' ? 'rgba(56, 189, 248, 0.16)' : '#0f172a',
+              color: bookingMode === 'single' ? '#38bdf8' : '#94a3b8',
               fontWeight: 700,
               cursor: 'pointer',
               fontSize: '0.92rem',
@@ -1137,9 +1137,9 @@ return (
             style={{
               padding: '10px 22px',
               borderRadius: '24px',
-              border: bookingMode === 'bulk' ? '2px solid #2563eb' : '1px solid var(--border, #cbd5e1)',
-              background: bookingMode === 'bulk' ? 'rgba(37, 99, 235, 0.12)' : 'var(--bg-card, #ffffff)',
-              color: bookingMode === 'bulk' ? '#2563eb' : 'var(--text-secondary, #64748b)',
+              border: bookingMode === 'bulk' ? '2px solid #38bdf8' : '1px solid #1e2c47',
+              background: bookingMode === 'bulk' ? 'rgba(56, 189, 248, 0.16)' : '#0f172a',
+              color: bookingMode === 'bulk' ? '#38bdf8' : '#94a3b8',
               fontWeight: 700,
               cursor: 'pointer',
               fontSize: '0.92rem',
@@ -1268,14 +1268,14 @@ return (
 
                   {/* SAVED PICKUP GODOWNS CHIPS */}
                   <div style={{
-                    background: 'var(--surface-color, #f0f9ff)',
-                    padding: '10px 14px',
+                    background: 'rgba(2, 132, 199, 0.1)',
+                    padding: '12px 14px',
                     borderRadius: '10px',
-                    border: '1px solid var(--border-color, #bae6fd)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
                     marginBottom: '16px'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary, #0369a1)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         📖 Saved Pickup Godowns ({savedPickupGodowns.length})
                       </span>
                       <button
@@ -1292,7 +1292,7 @@ return (
                           background: '#0284c7',
                           color: '#ffffff',
                           border: 'none',
-                          padding: '4px 10px',
+                          padding: '5px 12px',
                           borderRadius: '6px',
                           fontSize: '11px',
                           fontWeight: 700,
@@ -1304,7 +1304,7 @@ return (
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {savedPickupGodowns.map(g => (
                         <div
                           key={g.id}
@@ -1313,11 +1313,11 @@ return (
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            padding: '4px 9px',
-                            fontSize: '11px',
-                            background: fromPinCode === g.pinCode ? '#0284c7' : 'var(--input-bg, #ffffff)',
-                            color: fromPinCode === g.pinCode ? '#ffffff' : 'var(--text-primary, #0369a1)',
-                            border: '1px solid #7dd3fc',
+                            padding: '5px 10px',
+                            fontSize: '11.5px',
+                            background: fromPinCode === g.pinCode ? '#0284c7' : '#0f172a',
+                            color: fromPinCode === g.pinCode ? '#ffffff' : '#e0f2fe',
+                            border: fromPinCode === g.pinCode ? '1px solid #38bdf8' : '1px solid rgba(56, 189, 248, 0.4)',
                             borderRadius: '6px',
                             cursor: 'pointer',
                             fontWeight: 600,
@@ -1329,9 +1329,9 @@ return (
                           <span
                             onClick={(e) => handleDeletePickupGodown(g.id, e)}
                             style={{
-                              marginLeft: '2px',
-                              opacity: 0.7,
-                              fontSize: '12px',
+                              marginLeft: '4px',
+                              opacity: 0.75,
+                              fontSize: '13px',
                               cursor: 'pointer'
                             }}
                             title="Remove from saved godowns"
@@ -1476,13 +1476,13 @@ return (
 
                   {/* INLINE SAVE TO ADDRESS BOOK OPTION */}
                   <div style={{
-                    marginTop: '12px',
-                    padding: '10px 12px',
+                    marginTop: '14px',
+                    padding: '11px 14px',
                     background: 'rgba(2, 132, 199, 0.08)',
                     borderRadius: '8px',
-                    border: '1px solid rgba(2, 132, 199, 0.2)'
+                    border: '1px solid rgba(56, 189, 248, 0.25)'
                   }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, color: '#f1f5f9' }}>
                       <input
                         type="checkbox"
                         checked={saveCurrentPickupToBook}
@@ -1497,12 +1497,12 @@ return (
                           placeholder="Enter godown nickname (e.g. Okhla Depot #2)"
                           value={currentPickupLabel}
                           onChange={(e) => setCurrentPickupLabel(e.target.value)}
-                          style={{ flex: 1, padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                          style={{ flex: 1, padding: '7px 10px', fontSize: '11.5px', borderRadius: '6px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc' }}
                         />
                         <button
                           type="button"
                           onClick={handleSaveCurrentPickupAddress}
-                          style={{ padding: '6px 12px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          style={{ padding: '7px 14px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
                         >
                           Save Godown
                         </button>
@@ -1531,14 +1531,14 @@ return (
 
                   {/* SAVED DELIVERY CONSIGNEES CHIPS */}
                   <div style={{
-                    background: 'var(--surface-color, #f0fdf4)',
-                    padding: '10px 14px',
+                    background: 'rgba(22, 163, 74, 0.1)',
+                    padding: '12px 14px',
                     borderRadius: '10px',
-                    border: '1px solid var(--border-color, #bbf7d0)',
+                    border: '1px solid rgba(74, 222, 128, 0.3)',
                     marginBottom: '16px'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary, #166534)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         📖 Saved Delivery Consignees ({savedDeliveryConsignees.length})
                       </span>
                       <button
@@ -1555,7 +1555,7 @@ return (
                           background: '#16a34a',
                           color: '#ffffff',
                           border: 'none',
-                          padding: '4px 10px',
+                          padding: '5px 12px',
                           borderRadius: '6px',
                           fontSize: '11px',
                           fontWeight: 700,
@@ -1567,7 +1567,7 @@ return (
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {savedDeliveryConsignees.map(c => (
                         <div
                           key={c.id}
@@ -1576,11 +1576,11 @@ return (
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            padding: '4px 9px',
-                            fontSize: '11px',
-                            background: toPinCode === c.pinCode ? '#16a34a' : 'var(--input-bg, #ffffff)',
-                            color: toPinCode === c.pinCode ? '#ffffff' : 'var(--text-primary, #166534)',
-                            border: '1px solid #86efac',
+                            padding: '5px 10px',
+                            fontSize: '11.5px',
+                            background: toPinCode === c.pinCode ? '#16a34a' : '#0f172a',
+                            color: toPinCode === c.pinCode ? '#ffffff' : '#dcfce7',
+                            border: toPinCode === c.pinCode ? '1px solid #4ade80' : '1px solid rgba(74, 222, 128, 0.4)',
                             borderRadius: '6px',
                             cursor: 'pointer',
                             fontWeight: 600,
@@ -1592,9 +1592,9 @@ return (
                           <span
                             onClick={(e) => handleDeleteDeliveryConsignee(c.id, e)}
                             style={{
-                              marginLeft: '2px',
-                              opacity: 0.7,
-                              fontSize: '12px',
+                              marginLeft: '4px',
+                              opacity: 0.75,
+                              fontSize: '13px',
                               cursor: 'pointer'
                             }}
                             title="Remove from saved consignees"
@@ -1739,13 +1739,13 @@ return (
 
                   {/* INLINE SAVE DELIVERY CONSIGNEE OPTION */}
                   <div style={{
-                    marginTop: '12px',
-                    padding: '10px 12px',
-                    background: 'rgba(34, 197, 94, 0.08)',
+                    marginTop: '14px',
+                    padding: '11px 14px',
+                    background: 'rgba(22, 163, 74, 0.08)',
                     borderRadius: '8px',
-                    border: '1px solid rgba(34, 197, 94, 0.2)'
+                    border: '1px solid rgba(74, 222, 128, 0.25)'
                   }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, color: '#f1f5f9' }}>
                       <input
                         type="checkbox"
                         checked={saveCurrentDeliveryToBook}
@@ -1760,12 +1760,12 @@ return (
                           placeholder="Enter consignee nickname (e.g. Bhiwandi DC #3)"
                           value={currentDeliveryLabel}
                           onChange={(e) => setCurrentDeliveryLabel(e.target.value)}
-                          style={{ flex: 1, padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                          style={{ flex: 1, padding: '7px 10px', fontSize: '11.5px', borderRadius: '6px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc' }}
                         />
                         <button
                           type="button"
                           onClick={handleSaveCurrentDeliveryAddress}
-                          style={{ padding: '6px 12px', background: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          style={{ padding: '7px 14px', background: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
                         >
                           Save Consignee
                         </button>
@@ -2504,28 +2504,28 @@ return (
         padding: '20px'
       }} onClick={() => setShowAddAddressModal(null)}>
         <div style={{
-          background: 'var(--surface-color, #ffffff)',
-          color: 'var(--text-primary, #0f172a)',
+          background: '#0c1527',
+          color: '#f8fafc',
           width: '100%',
           maxWidth: '520px',
           borderRadius: '16px',
           padding: '24px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-          border: '1px solid var(--border-color, #e2e8f0)'
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+          border: '1px solid #1e2c47'
         }} onClick={e => e.stopPropagation()}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #1e2c47', paddingBottom: '12px' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#f8fafc' }}>
                 {showAddAddressModal === 'pickup' ? '🏭 Add New Saved Pickup Godown' : '🏪 Add New Saved Delivery Consignee'}
               </h3>
-              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#94a3b8' }}>
                 Save your warehouse / consignee address for 1-click auto-fill in future bookings
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowAddAddressModal(null)}
-              style={{ background: 'transparent', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#64748b' }}
+              style={{ background: 'transparent', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#94a3b8' }}
             >
               &times;
             </button>
@@ -2534,7 +2534,7 @@ return (
           <form onSubmit={handleModalSaveAddress}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px', color: '#cbd5e1' }}>
                   Label / Nickname *
                 </label>
                 <input
@@ -2543,13 +2543,13 @@ return (
                   placeholder={showAddAddressModal === 'pickup' ? 'e.g. Delhi Central Hub (110042)' : 'e.g. Bhiwandi DC Unit 4'}
                   value={newAddrLabel}
                   onChange={e => setNewAddrLabel(e.target.value)}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc', fontSize: '13px' }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px', color: '#cbd5e1' }}>
                     Contact Person Name
                   </label>
                   <input
@@ -2557,11 +2557,11 @@ return (
                     placeholder="e.g. Ramesh Kumar"
                     value={newAddrName}
                     onChange={e => setNewAddrName(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc', fontSize: '13px' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px', color: '#cbd5e1' }}>
                     Mobile Number
                   </label>
                   <input
@@ -2570,13 +2570,13 @@ return (
                     placeholder="10-digit number"
                     value={newAddrPhone}
                     onChange={e => setNewAddrPhone(e.target.value.replace(/\D/g, ''))}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc', fontSize: '13px' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px', color: '#cbd5e1' }}>
                   Complete Street / Building Address *
                 </label>
                 <textarea
@@ -2585,12 +2585,12 @@ return (
                   placeholder="Plot / Gala / House number, Street, Industrial Area"
                   value={newAddrAddress}
                   onChange={e => setNewAddrAddress(e.target.value)}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', resize: 'vertical' }}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc', fontSize: '13px', resize: 'vertical' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '5px', color: '#cbd5e1' }}>
                   6-Digit Postal PIN Code *
                 </label>
                 <input
@@ -2600,15 +2600,15 @@ return (
                   placeholder="e.g. 110042"
                   value={newAddrPin}
                   onChange={e => setNewAddrPin(e.target.value.replace(/\D/g, ''))}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #1e3355', background: '#091122', color: '#f8fafc', fontSize: '13px' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', borderTop: '1px solid #1e2c47', paddingTop: '14px' }}>
                 <button
                   type="button"
                   onClick={() => setShowAddAddressModal(null)}
-                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f1f5f9', color: '#475569', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #1e2c47', background: '#1e293b', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
