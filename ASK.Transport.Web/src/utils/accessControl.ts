@@ -1,5 +1,6 @@
 export interface AccessControlUser {
   id?: number | string;
+  userIdCode?: string; // Auto-generated ID (e.g. ASK-CUST-84920)
   name?: string;
   phone?: string;
   email?: string;
@@ -14,6 +15,7 @@ export type ApprovalStatus = 'PENDING' | 'PENDING_SUPERADMIN' | 'APPROVED' | 'RE
 export interface ApprovalRequest {
   id: string;
   userId: number | string;
+  userIdCode?: string; // Unique Auto-generated User ID (e.g. ASK-CUST-84920)
   userName: string;
   userEmail: string;
   userPhone?: string;
@@ -34,6 +36,40 @@ export interface ApprovalRequest {
 const STORAGE_REQUESTS_KEY = 'ask_approval_requests';
 
 /**
+ * Returns or generates a deterministic User ID Code for any given user.
+ */
+export function getUserIdCodeForUser(userId?: number | string, email?: string, role?: string): string {
+  if (userId !== undefined && userId !== null) {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(`ask_user_id_code_${userId}`) : null;
+    if (saved) return saved;
+  }
+  if (email) {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(`ask_user_id_code_${email.trim().toLowerCase()}`) : null;
+    if (saved) return saved;
+  }
+
+  // Check approval requests
+  const req = getApprovalRequestForUser(userId, email);
+  if (req?.userIdCode) return req.userIdCode;
+
+  // Known seeds
+  if (email === 'superadmin@askgroup.com') return 'ASK-SUP-10001';
+  if (email === 'admin@askgroup.com') return 'ASK-ADM-20002';
+  if (email === 'ops@askgroup.com') return 'ASK-ADM-20003';
+  if (email === 'user@askgroup.com') return 'ASK-CUST-30003';
+
+  // Generate deterministic ID
+  const prefix = role === 'SuperAdmin' ? 'ASK-SUP' : role === 'Admin' ? 'ASK-ADM' : 'ASK-CUST';
+  const num = Math.abs(typeof userId === 'number' ? userId : 7400);
+  const code = `${prefix}-${10000 + (num % 89999)}`;
+  if (typeof window !== 'undefined') {
+    if (userId !== undefined) localStorage.setItem(`ask_user_id_code_${userId}`, code);
+    if (email) localStorage.setItem(`ask_user_id_code_${email.trim().toLowerCase()}`, code);
+  }
+  return code;
+}
+
+/**
  * Retrieve all account clearance approval requests.
  */
 export function getApprovalRequests(): ApprovalRequest[] {
@@ -47,6 +83,7 @@ export function getApprovalRequests(): ApprovalRequest[] {
         {
           id: 'req-init-4',
           userId: 4,
+          userIdCode: 'ASK-CUST-40004',
           userName: 'Pooja Verma (Billing & Accounts)',
           userEmail: 'pooja.verma@asktransport.com',
           userPhone: '+91 94140 77812',
@@ -59,6 +96,7 @@ export function getApprovalRequests(): ApprovalRequest[] {
         {
           id: 'req-init-2',
           userId: 2,
+          userIdCode: 'ASK-CUST-30003',
           userName: 'Demo Shipper Updated',
           userEmail: 'user@askgroup.com',
           userPhone: '+91 98765 43210',
@@ -76,15 +114,20 @@ export function getApprovalRequests(): ApprovalRequest[] {
 }
 
 /**
- * Find the approval request corresponding to a given user ID or email.
+ * Find the approval request corresponding to a given user ID, email, or user ID code.
  */
-export function getApprovalRequestForUser(userId?: number | string, email?: string): ApprovalRequest | undefined {
-  if (userId === undefined && !email) return undefined;
+export function getApprovalRequestForUser(
+  userId?: number | string,
+  email?: string,
+  userIdCode?: string
+): ApprovalRequest | undefined {
+  if (userId === undefined && !email && !userIdCode) return undefined;
   const requests = getApprovalRequests();
   return requests.find(r => {
     const matchesId = userId !== undefined && String(r.userId) === String(userId);
     const matchesEmail = email && r.userEmail.toLowerCase() === email.trim().toLowerCase();
-    return matchesId || matchesEmail;
+    const matchesCode = userIdCode && r.userIdCode && r.userIdCode.toLowerCase() === userIdCode.trim().toLowerCase();
+    return matchesId || matchesEmail || matchesCode;
   });
 }
 
@@ -230,10 +273,12 @@ export async function requestUserApproval(user: AccessControlUser): Promise<Appr
   const userName = user.name || 'Shipper User';
   const userEmail = user.email || 'user@askgroup.com';
   const userPhone = user.phone || '+91 98765 43210';
+  const userIdCode = user.userIdCode || getUserIdCodeForUser(userId, userEmail, user.role);
 
   const newReq: ApprovalRequest = {
     id: `req-${Date.now()}`,
     userId,
+    userIdCode,
     userName,
     userEmail,
     userPhone,
@@ -289,11 +334,13 @@ export async function adminPreApproveUserRequest(
   const requests = getApprovalRequests();
   let existing = getApprovalRequestForUser(userId, email);
   const now = new Date().toISOString();
+  const userIdCode = getUserIdCodeForUser(userId, email);
 
   if (!existing) {
     existing = {
       id: `req-${Date.now()}`,
       userId,
+      userIdCode,
       userName: `User #${userId}`,
       userEmail: email || `user${userId}@asktransport.com`,
       requestedAt: now,
@@ -304,6 +351,7 @@ export async function adminPreApproveUserRequest(
     };
     requests.unshift(existing);
   } else {
+    if (!existing.userIdCode) existing.userIdCode = userIdCode;
     existing.status = 'PENDING_SUPERADMIN';
     existing.adminApprovedBy = adminName;
     existing.adminApprovedAt = now;
@@ -369,11 +417,13 @@ export async function superAdminReverifyAndPass(
   const requests = getApprovalRequests();
   let existing = getApprovalRequestForUser(userId, email);
   const now = new Date().toISOString();
+  const userIdCode = getUserIdCodeForUser(userId, email);
 
   if (!existing) {
     existing = {
       id: `req-${Date.now()}`,
       userId,
+      userIdCode,
       userName: `User #${userId}`,
       userEmail: email || `user${userId}@asktransport.com`,
       requestedAt: now,
@@ -386,6 +436,7 @@ export async function superAdminReverifyAndPass(
     };
     requests.unshift(existing);
   } else {
+    if (!existing.userIdCode) existing.userIdCode = userIdCode;
     existing.status = 'APPROVED';
     if (!existing.adminApprovedBy) {
       existing.adminApprovedBy = 'Direct Master Clearance';

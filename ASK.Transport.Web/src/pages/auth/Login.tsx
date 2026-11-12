@@ -13,7 +13,14 @@ export default function Login() {
     }
     return 'customer';
   });
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get('userId') || params.get('prefill') || '';
+      if (uid) return uid;
+    }
+    return '';
+  });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(() => {
@@ -34,10 +41,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const lastKnownEmail = typeof window !== 'undefined' ? sessionStorage.getItem('ask_last_user_email') : null;
+  const lastKnownUserId = typeof window !== 'undefined' ? sessionStorage.getItem('ask_last_registered_userid') : null;
 
-  // Clear inputs on mount & role switch to prevent browser password auto-fill on logout
+  // Clear inputs on mount if no prefill provided
   useState(() => {
-    setEmail('');
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('userId') && !params.get('prefill')) {
+        setEmail('');
+      }
+    }
     setPassword('');
   });
 
@@ -49,7 +62,9 @@ export default function Login() {
         trimmed === 'superadmin@askgroup.com' ||
         trimmed === 'admin@askgroup.com' ||
         trimmed.startsWith('superadmin@') ||
-        trimmed.startsWith('admin@')
+        trimmed.startsWith('admin@') ||
+        trimmed.startsWith('ask-sup') ||
+        trimmed.startsWith('ask-adm')
       ) {
         setLoginRole('admin');
         navigate('/login?portal=admin', { replace: true });
@@ -59,7 +74,8 @@ export default function Login() {
       if (
         trimmed === 'user@askgroup.com' ||
         trimmed.startsWith('user@') ||
-        trimmed.startsWith('customer@')
+        trimmed.startsWith('customer@') ||
+        trimmed.startsWith('ask-cust')
       ) {
         setLoginRole('customer');
         navigate('/login', { replace: true });
@@ -292,35 +308,61 @@ export default function Login() {
             </div>
           )}
 
-          {lastKnownEmail && !email && (
-            <div style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => handleEmailChange(lastKnownEmail)}
-                style={{
-                  background: 'rgba(2, 132, 199, 0.08)',
-                  border: '1px dashed #0284c7',
-                  color: '#0284c7',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  padding: '5px 12px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <span>⚡ Re-Login as:</span>
-                <strong>{lastKnownEmail}</strong>
-              </button>
+          {/* QUICK RE-LOGIN CHIPS FOR USER ID & EMAIL */}
+          {(!email) && (lastKnownUserId || lastKnownEmail) && (
+            <div style={{ marginBottom: '14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+              {lastKnownUserId && (
+                <button
+                  type="button"
+                  onClick={() => handleEmailChange(lastKnownUserId)}
+                  style={{
+                    background: 'rgba(16, 185, 129, 0.12)',
+                    border: '1px solid #10b981',
+                    color: '#059669',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                  title="Click to sign in with your auto-generated User ID"
+                >
+                  <span>🆔 User ID:</span>
+                  <strong>{lastKnownUserId}</strong>
+                </button>
+              )}
+              {lastKnownEmail && (
+                <button
+                  type="button"
+                  onClick={() => handleEmailChange(lastKnownEmail)}
+                  style={{
+                    background: 'rgba(2, 132, 199, 0.08)',
+                    border: '1px dashed #0284c7',
+                    color: '#0284c7',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span>📧 Email:</span>
+                  <strong>{lastKnownEmail}</strong>
+                </button>
+              )}
             </div>
           )}
 
           <div className="login-field">
 
             <label htmlFor="email">
-              Email Address
+              Email Address or User ID / ईमेल या यूज़र आईडी
             </label>
 
             <div className="field-control">
@@ -330,8 +372,8 @@ export default function Login() {
               <input
                 id="email"
                 name="ask_no_autofill_email"
-                type="email"
-                placeholder="Enter your email address"
+                type="text"
+                placeholder={loginRole === 'admin' ? 'admin@askgroup.com or ASK-ADM-XXXXX' : 'Enter email or User ID (e.g. ASK-CUST-XXXXX)'}
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={() => handleEmailChange(email)}

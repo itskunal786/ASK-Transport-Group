@@ -6,6 +6,7 @@ export interface User {
   role: 'User' | 'Admin' | 'SuperAdmin';
   isVerified: boolean;
   isActive: boolean;
+  userIdCode?: string; // Auto-generated e.g. "ASK-CUST-84920"
 }
 
 export interface LoginRequest {
@@ -39,7 +40,9 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   message: string;
   userId: number;
+  userIdCode?: string;
   email: string;
+  phone?: string;
   otp?: string;
 }
 

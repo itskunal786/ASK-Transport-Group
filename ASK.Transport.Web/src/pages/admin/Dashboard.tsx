@@ -44,6 +44,7 @@ import {
   adminPreApproveUserRequest,
   superAdminReverifyAndPass,
   getApprovalRequestForUser,
+  getUserIdCodeForUser,
   type ApprovalRequest
 } from '../../utils/accessControl';
 import './AdminDashboard.css';
@@ -1970,12 +1971,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   }
 
   async function handleToggleUserApproval(u: AdminUserData, approved: boolean) {
+    const uIdCode = (u as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(u.id, u.email, u.role);
     if (!approved) {
       await rejectUserRequest(u.id, u.email, user?.name || 'SuperAdmin');
       setUserApproved(u.id, u.email, false);
       setApprovalRequests(getApprovalRequests());
       setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: false } : x)));
-      showToast(`🔒 Restricted ${u.name} to Book & Track only.`);
+      showToast(`🔒 Restricted ${u.name} (${uIdCode}) to Book & Track only.`);
       return;
     }
 
@@ -1984,13 +1986,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       await superAdminReverifyAndPass(u.id, u.email, user?.name || 'ASK GROUP Admin');
       setApprovalRequests(getApprovalRequests());
       setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: true } : x)));
-      showToast(`👑 Re-Verified & Passed! Full clearance granted to ${u.name}. Dual-authorization complete.`);
+      showToast(`👑 Re-Verified & Passed (${uIdCode})! Full clearance granted to ${u.name}. Dual-authorization complete.`);
     } else {
       // Operations Admin gives Level-1 Pre-Approval (Forward to SuperAdmin)
       await adminPreApproveUserRequest(u.id, u.email, user?.name || 'Operations Admin');
       setApprovalRequests(getApprovalRequests());
       setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: false } : x)));
-      showToast(`🛡️ Pre-Approved by ${user?.name || 'Admin'}! Request forwarded to SuperAdmin for dual-control Re-Verification & Pass.`);
+      showToast(`🛡️ Pre-Approved by ${user?.name || 'Admin'} (Verified ID: ${uIdCode})! Forwarded to SuperAdmin for dual-control Re-Verification & Pass.`);
     }
   }
 
@@ -3360,11 +3362,17 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       ) : (
                         pendingRequests.map(req => {
                           const isReverify = req.status === 'PENDING_SUPERADMIN';
+                          const reqUserIdCode = req.userIdCode || getUserIdCodeForUser(req.userId, req.userEmail);
                           return (
                             <div key={req.id} className="admin-notif-item" style={{ borderLeft: isReverify ? '3px solid #f59e0b' : '3px solid #0284c7' }}>
                               <div className="admin-notif-item-top">
                                 <div className="admin-notif-user-info">
-                                  <span className="admin-notif-user-name">{req.userName || 'Customer User'}</span>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span className="admin-notif-user-name">{req.userName || 'Customer User'}</span>
+                                    <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#0284c7', border: '1px solid rgba(56, 189, 248, 0.35)', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', fontSize: '10px' }}>
+                                      🆔 {reqUserIdCode}
+                                    </span>
+                                  </div>
                                   <span className="admin-notif-user-meta">{req.userEmail} {req.userPhone ? `• ${req.userPhone}` : ''}</span>
                                 </div>
                                 <span className="admin-notif-time" style={{ fontSize: '10.5px', color: isReverify ? '#d97706' : '#64748b', fontWeight: 700 }}>
@@ -3374,10 +3382,10 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                               <div className="admin-notif-desc">
                                 {isReverify ? (
                                   <span style={{ color: '#d97706', fontSize: '11.5px' }}>
-                                    🛡️ Pre-approved by: <strong>{req.adminApprovedBy || 'Operations Admin'}</strong>. Dual-control requires SuperAdmin re-verification to pass.
+                                    🛡️ Pre-approved by: <strong>{req.adminApprovedBy || 'Operations Admin'}</strong>. SuperAdmin must re-verify User ID <strong>{reqUserIdCode}</strong> to grant master clearance.
                                   </span>
                                 ) : (
-                                  <span>⚠️ Requesting full access to Payments, Invoices, and Documents.</span>
+                                  <span>⚠️ Requesting full access to Payments, Invoices, and Documents for User ID <strong>{reqUserIdCode}</strong>.</span>
                                 )}
                               </div>
                               <div className="admin-notif-actions">
@@ -3389,7 +3397,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                       onClick={() => handleSuperAdminPass(req)}
                                       style={{ background: isReverify ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : undefined, borderColor: isReverify ? '#b45309' : undefined }}
                                     >
-                                      👑 {isReverify ? t('Re-Verify & Pass', 'सत्यापित करें व पास करें') : t('Master Pass', 'मास्टर पास')}
+                                      👑 {isReverify ? t('Re-Verify ID & Pass', 'आईडी सत्यापित करें व पास') : t(`Bypass & Pass (${reqUserIdCode})`, 'बाईपास एवं पास')}
                                     </button>
                                     <button
                                       type="button"
@@ -3411,7 +3419,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                         className="admin-notif-btn-approve"
                                         onClick={() => handleAdminPreApprove(req)}
                                       >
-                                        🛡️ {t('Pre-Approve & Forward', 'प्री-अप्रूव करें')}
+                                        🛡️ {t(`Pre-Approve (Verify ID: ${reqUserIdCode})`, 'प्री-अप्रूव करें')}
                                       </button>
                                     )}
                                     <button
@@ -4167,21 +4175,22 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <div className="approval-banner-actions">
                   {pendingRequests.slice(0, 3).map(req => {
                     const isReverify = req.status === 'PENDING_SUPERADMIN';
+                    const reqUserIdCode = req.userIdCode || getUserIdCodeForUser(req.userId, req.userEmail);
                     return (
                       <button
                         key={req.id}
                         type="button"
                         className="approval-quick-btn"
                         onClick={() => handleQuickApprove(req)}
-                        title={isReverify ? `SuperAdmin Re-verify & Pass ${req.userName || req.userEmail}` : `Approve ${req.userName || req.userEmail}`}
+                        title={isReverify ? `SuperAdmin Re-verify & Pass ${req.userName || reqUserIdCode}` : `Approve ${req.userName || reqUserIdCode}`}
                         style={{
                           background: isReverify && user?.role === 'SuperAdmin' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : undefined,
                           borderColor: isReverify && user?.role === 'SuperAdmin' ? '#b45309' : undefined
                         }}
                       >
                         {user?.role === 'SuperAdmin'
-                          ? (isReverify ? `👑 Re-Verify Pass: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}` : `👑 Master Pass: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}`)
-                          : (isReverify ? `⏳ In SuperAdmin Queue: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}` : `🛡️ Pre-Approve: ${req.userName ? req.userName.split(' ')[0] : req.userEmail.split('@')[0]}`)
+                          ? (isReverify ? `👑 Re-Verify ID: ${reqUserIdCode}` : `⚡ Master Bypass: ${reqUserIdCode}`)
+                          : (isReverify ? `⏳ In SuperAdmin Queue: ${reqUserIdCode}` : `🛡️ Pre-Approve ID: ${reqUserIdCode}`)
                         }
                       </button>
                     );
@@ -4450,12 +4459,14 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
           const filteredUsers = adminUsers.filter(u => {
             if (customerSearch.trim()) {
               const q = customerSearch.toLowerCase();
+              const uIdCode = (u as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(u.id, u.email, u.role);
               const matches =
                 u.name.toLowerCase().includes(q) ||
                 u.email.toLowerCase().includes(q) ||
                 (u.phone && u.phone.includes(q)) ||
                 u.role.toLowerCase().includes(q) ||
-                String(u.id).includes(q);
+                String(u.id).includes(q) ||
+                uIdCode.toLowerCase().includes(q);
               if (!matches) return false;
             }
             if (userRoleFilter === 'SuperAdmin') return u.role === 'SuperAdmin';
@@ -4680,6 +4691,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       const isReverify = isPendingSuperAdminReverify(u.id, u.email);
                       const req = getApprovalRequestForUser(u.id, u.email);
                       const avatar = getUserAvatar(u.name, u.role);
+                      const uIdCode = (u as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(u.id, u.email, u.role);
 
                       return (
                         <div key={u.id} className="user-dir-card">
@@ -4693,7 +4705,24 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                               <div className="user-dir-card-title-col">
                                 <div className="user-dir-card-name-row">
                                   <h3 className="user-dir-card-name">{u.name}</h3>
-                                  <span className="user-dir-id-badge">#{u.id}</span>
+                                  <span
+                                    className="user-dir-id-badge"
+                                    style={{
+                                      background: 'rgba(56, 189, 248, 0.14)',
+                                      color: '#0284c7',
+                                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                                      fontWeight: 800,
+                                      padding: '2px 8px',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      letterSpacing: '0.3px',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}
+                                  >
+                                    🆔 {uIdCode}
+                                  </span>
                                 </div>
                                 <span className="user-dir-card-dept">
                                   {u.role === 'SuperAdmin'
@@ -4799,10 +4828,10 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                       <button
                                         type="button"
                                         className="user-dir-btn-action reverify"
-                                        onClick={() => handleSuperAdminPass(req || { id: `req-${u.id}`, userId: u.id, userName: u.name, userEmail: u.email, requestedAt: new Date().toISOString(), status: 'PENDING_SUPERADMIN' })}
+                                        onClick={() => handleSuperAdminPass(req || { id: `req-${u.id}`, userId: u.id, userIdCode: uIdCode, userName: u.name, userEmail: u.email, requestedAt: new Date().toISOString(), status: 'PENDING_SUPERADMIN' })}
                                         title={t('SuperAdmin Re-Verify & Grant Master Clearance', 'सत्यापित करें व पास करें')}
                                       >
-                                        👑 {t('Re-Verify & Pass', 'सत्यापित करें व पास')}
+                                        👑 {t('Re-Verify ID & Pass', 'आईडी सत्यापित करें व पास')}
                                       </button>
                                       <button
                                         type="button"
@@ -4824,14 +4853,26 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                     </button>
                                   )
                                 ) : (
-                                  <button
-                                    type="button"
-                                    className="user-dir-btn-action approve"
-                                    onClick={() => handleToggleUserApproval(u, true)}
-                                    title={user?.role === 'SuperAdmin' ? t('Master Clearance Pass', 'मास्टर पास') : t('Pre-Approve and Forward to SuperAdmin', 'प्री-अप्रूव करें')}
-                                  >
-                                    {user?.role === 'SuperAdmin' ? '👑 Master Pass' : '🛡️ ' + t('Admin Pre-Approve', 'एडमिन अप्रूवल')}
-                                  </button>
+                                  user?.role === 'SuperAdmin' ? (
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action approve"
+                                      style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', borderColor: '#b45309' }}
+                                      onClick={() => handleSuperAdminPass(req || { id: `req-${u.id}`, userId: u.id, userIdCode: uIdCode, userName: u.name, userEmail: u.email, requestedAt: new Date().toISOString(), status: 'PENDING_SUPERADMIN' })}
+                                      title={t('SuperAdmin Direct Bypass & Approve without prior admin review', 'सुपरएडमिन डायरेक्ट बाईपास एवं अप्रूवल')}
+                                    >
+                                      ⚡ {t('SuperAdmin Bypass & Approve', 'बाईपास एवं अप्रूव')}
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action approve"
+                                      onClick={() => handleToggleUserApproval(u, true)}
+                                      title={t('Pre-Approve and Forward to SuperAdmin', 'प्री-अप्रूव करें')}
+                                    >
+                                      🛡️ {t(`Admin Pre-Approve (Verify ID: ${uIdCode})`, 'एडमिन प्री-अप्रूवल')}
+                                    </button>
+                                  )
                                 )
                               ) : (
                                 <button
@@ -5855,12 +5896,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     .filter(u => u.role === 'User')
                     .map(cust => {
                       const approved = isUserApproved(cust);
+                      const custIdCode = (cust as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(cust.id, cust.email, cust.role);
                       return (
                         <div key={cust.id} className="admin-card-unit">
                           <div className="admin-card-unit-head">
                             <div>
                               <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{cust.name}</strong>
-                              <div style={{ fontSize: '11px', color: '#94a3b8' }}>ID: #{cust.id}</div>
+                              <div style={{ fontSize: '11px', color: '#0284c7', fontWeight: 700 }}>🆔 {custIdCode} • #{cust.id}</div>
                             </div>
                             <span
                               style={{
@@ -5922,7 +5964,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                 title="Grant Full Role Access (Unlock Invoices, Payments, Documents)"
                                 style={{ padding: '5px 12px', fontSize: '11.5px' }}
                               >
-                                🔓 Approve Full Access
+                                {user?.role === 'SuperAdmin' ? `⚡ Master Pass (${custIdCode})` : `🛡️ Admin Pre-Approve (${custIdCode})`}
                               </button>
                             ) : (
                               <button

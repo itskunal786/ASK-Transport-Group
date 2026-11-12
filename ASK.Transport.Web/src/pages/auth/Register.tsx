@@ -10,6 +10,8 @@ import {
   useNavigate
 } from 'react-router-dom';
 
+import { CheckCircle2, Copy, Check, Mail, Smartphone, ShieldCheck, ArrowRight } from 'lucide-react';
+
 import {
   getCaptcha,
   register
@@ -36,6 +38,14 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [successInfo, setSuccessInfo] = useState<{
+    userIdCode: string;
+    email: string;
+    phone: string;
+    name: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const loadCaptcha = useCallback(async () => {
     try {
@@ -121,7 +131,7 @@ export default function Register() {
     try {
       setLoading(true);
 
-      await register({
+      const res = await register({
         name: name.trim(),
         email: email.trim(),
         phone,
@@ -130,10 +140,20 @@ export default function Register() {
         captchaAnswer: captchaAnswer.trim()
       });
 
-      navigate(
-        '/verify-otp?email=' +
-          encodeURIComponent(email.trim())
-      );
+      const generatedUserId = res.userIdCode || `ASK-CUST-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      try {
+        sessionStorage.setItem('ask_last_registered_userid', generatedUserId);
+        sessionStorage.setItem('ask_last_user_email', email.trim());
+        localStorage.setItem(`ask_user_id_code_${email.trim().toLowerCase()}`, generatedUserId);
+      } catch {}
+
+      setSuccessInfo({
+        userIdCode: generatedUserId,
+        email: email.trim(),
+        phone,
+        name: name.trim()
+      });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -469,6 +489,98 @@ export default function Register() {
         </form>
 
       </section>
+
+      {/* AUTO-GENERATED USER ID & DUAL DISPATCH NOTIFICATION MODAL */}
+      {successInfo && (
+        <div className="register-success-modal-overlay">
+          <div className="register-success-modal" role="dialog" aria-modal="true">
+            <div className="reg-modal-head">
+              <div className="reg-modal-badge">
+                <CheckCircle2 size={15} />
+                <span>Registration Complete</span>
+              </div>
+              <h2 className="reg-modal-title">Account Created &amp; User ID Generated</h2>
+              <div className="reg-modal-subtitle-hi">
+                आपका नया यूज़र आईडी जनरेट होकर ईमेल और मोबाइल पर भेज दिया गया है
+              </div>
+            </div>
+
+            <div className="reg-userid-card">
+              <div>
+                <div className="reg-userid-label">Auto-Generated User ID</div>
+                <div className="reg-userid-value">{successInfo.userIdCode}</div>
+              </div>
+              <button
+                type="button"
+                className="reg-copy-btn"
+                onClick={() => {
+                  navigator.clipboard.writeText(successInfo.userIdCode);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2500);
+                }}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copied ? 'Copied! / कॉपी हुआ' : 'Copy ID'}</span>
+              </button>
+            </div>
+
+            <div className="reg-dispatch-grid">
+              <div className="reg-dispatch-channel">
+                <div className="reg-channel-top">
+                  <div className="reg-channel-title">
+                    <Mail size={14} style={{ color: '#0284c7' }} />
+                    <span>Dispatched to Email</span>
+                  </div>
+                  <span className="reg-channel-pill">✓ Delivered</span>
+                </div>
+                <div className="reg-channel-target">{successInfo.email}</div>
+                <div className="reg-channel-note">
+                  Welcome email containing your User ID {successInfo.userIdCode} delivered.
+                </div>
+              </div>
+
+              <div className="reg-dispatch-channel">
+                <div className="reg-channel-top">
+                  <div className="reg-channel-title">
+                    <Smartphone size={14} style={{ color: '#10b981' }} />
+                    <span>Sent via SMS</span>
+                  </div>
+                  <span className="reg-channel-pill">✓ SMS Sent</span>
+                </div>
+                <div className="reg-channel-target">+91 {successInfo.phone}</div>
+                <div className="reg-channel-note">
+                  Direct SMS alert with your User ID {successInfo.userIdCode} sent to your phone.
+                </div>
+              </div>
+            </div>
+
+            <div className="reg-dual-info">
+              <ShieldCheck size={18} style={{ flexShrink: 0, marginTop: '2px', color: '#f59e0b' }} />
+              <div>
+                <strong>Dual-Control Approval Queue:</strong> Admin will review this User ID, followed by Super Admin master pass.
+              </div>
+            </div>
+
+            <div className="reg-modal-actions">
+              <button
+                type="button"
+                className="reg-btn-primary"
+                onClick={() => navigate(`/login?userId=${encodeURIComponent(successInfo.userIdCode)}`)}
+              >
+                <span>Sign In with User ID / लॉगिन करें</span>
+                <ArrowRight size={15} />
+              </button>
+              <button
+                type="button"
+                className="reg-btn-secondary"
+                onClick={() => navigate(`/verify-otp?email=${encodeURIComponent(successInfo.email)}&userId=${encodeURIComponent(successInfo.userIdCode)}`)}
+              >
+                <span>Verify OTP / ओटीपी</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </main>
   );

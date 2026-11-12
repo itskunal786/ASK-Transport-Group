@@ -150,6 +150,14 @@ export function sanitizeUserForStorage(rawUser: any): User {
     ...safeMetadata
   } = rawUser;
 
+  // Auto-generate or preserve deterministic User ID
+  let userIdCode = safeMetadata.userIdCode;
+  if (!userIdCode) {
+    const rolePrefix = safeMetadata.role === 'SuperAdmin' ? 'ASK-SUP' : safeMetadata.role === 'Admin' ? 'ASK-ADM' : 'ASK-CUST';
+    const numId = Number(safeMetadata.id) || 1;
+    userIdCode = `${rolePrefix}-${10000 + (numId % 89999)}`;
+  }
+
   return {
     id: Number(safeMetadata.id) || 1,
     name: String(safeMetadata.name || 'ASK User').trim(),
@@ -157,7 +165,8 @@ export function sanitizeUserForStorage(rawUser: any): User {
     phone: String(safeMetadata.phone || ''),
     role: (['SuperAdmin', 'Admin', 'User'].includes(safeMetadata.role) ? safeMetadata.role : 'User') as any,
     isVerified: safeMetadata.isVerified !== false,
-    isActive: safeMetadata.isActive !== false
+    isActive: safeMetadata.isActive !== false,
+    userIdCode
   };
 }
 
@@ -165,8 +174,15 @@ export function sanitizeUserForStorage(rawUser: any): User {
 // SECURE USER CREDENTIAL VAULT (In-Browser SHA-256 Hashed Store)
 // =============================================================================
 
+export function generateCustomUserIdCode(role: string = 'User'): string {
+  const prefix = role === 'SuperAdmin' ? 'ASK-SUP' : role === 'Admin' ? 'ASK-ADM' : 'ASK-CUST';
+  const rand = Math.floor(10000 + Math.random() * 90000);
+  return `${prefix}-${rand}`;
+}
+
 export interface SecureAuthRecord {
   id: number;
+  userIdCode?: string; // Auto-generated ID (e.g. ASK-CUST-84920)
   name: string;
   email: string;
   phone: string;
@@ -187,6 +203,7 @@ const STORAGE_USERS_KEY = 'ask_secure_auth_users';
 export const SEED_SECURE_USERS: SecureAuthRecord[] = [
   {
     id: 1,
+    userIdCode: 'ASK-SUP-10001',
     name: 'ASK Super Admin',
     email: 'superadmin@askgroup.com',
     phone: '+91 99999 99990',
@@ -201,6 +218,7 @@ export const SEED_SECURE_USERS: SecureAuthRecord[] = [
   },
   {
     id: 2,
+    userIdCode: 'ASK-ADM-20002',
     name: 'ASK GROUP Admin',
     email: 'admin@askgroup.com',
     phone: '+91 99999 99999',
@@ -215,6 +233,7 @@ export const SEED_SECURE_USERS: SecureAuthRecord[] = [
   },
   {
     id: 3,
+    userIdCode: 'ASK-ADM-20003',
     name: 'ASK Operations Lead',
     email: 'ops@askgroup.com',
     phone: '+91 99999 99999',
@@ -229,6 +248,7 @@ export const SEED_SECURE_USERS: SecureAuthRecord[] = [
   },
   {
     id: 4,
+    userIdCode: 'ASK-CUST-30003',
     name: 'Demo Corporate User',
     email: 'user@askgroup.com',
     phone: '+91 88888 88888',
@@ -277,6 +297,7 @@ export async function registerSecureUser(userData: {
   phone: string;
   password: string;
   role?: 'SuperAdmin' | 'Admin' | 'User';
+  userIdCode?: string;
 }): Promise<SecureAuthRecord> {
   const registry = getSecureUserRegistry();
   const cleanEmail = userData.email.trim().toLowerCase();
@@ -287,12 +308,16 @@ export async function registerSecureUser(userData: {
   // Generate SHA-256 hash of password
   const passwordHash = await hashPasswordSHA256(userData.password);
 
+  const role = userData.role || 'User';
+  const userIdCode = userData.userIdCode || generateCustomUserIdCode(role);
+
   const newRecord: SecureAuthRecord = {
     id: existingIdx >= 0 ? registry[existingIdx].id : Date.now(),
+    userIdCode,
     name: userData.name.trim() || 'ASK Transport User',
     email: cleanEmail,
     phone: userData.phone.trim() || '9876543210',
-    role: userData.role || 'User',
+    role,
     passwordHash, // Cryptographically hashed
     isVerified: true,
     isActive: true,
@@ -315,25 +340,34 @@ export async function registerSecureUser(userData: {
 
 /**
  * Authenticates user by comparing SHA-256 password hash against stored hash.
+ * Accepts either Email Address OR Auto-Generated User ID (e.g. ASK-CUST-84920).
  * Returns safe LoginResponse with zero password exposure.
  */
 export async function authenticateWithSecureHash(
-  email: string,
+  identifier: string,
   plainPassword: string
 ): Promise<LoginResponse | null> {
-  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanId = (identifier || '').trim().toLowerCase();
   const cleanPwd = (plainPassword || '').trim();
-  if (!cleanEmail || !cleanPwd) return null;
+  if (!cleanId || !cleanPwd) return null;
 
   // Compute incoming password's SHA-256 hash
   const incomingHash = await hashPasswordSHA256(cleanPwd);
 
   const registry = getSecureUserRegistry();
-  const matchedUser = registry.find(u => u.email === cleanEmail);
+  const matchedUser = registry.find(u =>
+    u.email.toLowerCase() === cleanId ||
+    (u.userIdCode && u.userIdCode.toLowerCase() === cleanId) ||
+    String(u.id) === cleanId
+  );
 
   if (!matchedUser) {
     // If not found in registry, check default seed
-    const seedUser = SEED_SECURE_USERS.find(u => u.email === cleanEmail);
+    const seedUser = SEED_SECURE_USERS.find(u =>
+      u.email.toLowerCase() === cleanId ||
+      (u.userIdCode && u.userIdCode.toLowerCase() === cleanId) ||
+      String(u.id) === cleanId
+    );
     if (seedUser && (seedUser.passwordHash === incomingHash || seedUser.secondaryHash === incomingHash)) {
       return buildSecureLoginResponse(seedUser);
     }

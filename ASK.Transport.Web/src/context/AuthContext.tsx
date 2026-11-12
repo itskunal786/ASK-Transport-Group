@@ -168,14 +168,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [triggerInactivityLock, isIdleTimedOut]);
 
-  async function login(email: string, password: string) {
+  async function login(identifier: string, password: string) {
     let response: LoginResponse;
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanId = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
     // Map admin / superadmin credentials if needed
-    const isSuper = cleanEmail === 'superadmin@askgroup.com';
-    const effectiveEmail = cleanEmail === 'ops@askgroup.com' ? 'admin@askgroup.com' : cleanEmail;
+    const isSuper = cleanId === 'superadmin@askgroup.com' || cleanId === 'ask-sup-10001';
+    const effectiveIdentifier = (cleanId === 'ops@askgroup.com' || cleanId === 'ask-adm-20003') ? 'admin@askgroup.com' : cleanId;
     // SuperAdmin in backend uses SuperAdmin@123; accept Admin@123 as well by mapping it
     const effectivePassword = (isSuper && (cleanPassword === 'Admin@123' || cleanPassword === 'admin@123'))
       ? 'SuperAdmin@123'
@@ -183,7 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       response = await authApi.login({
-        email: effectiveEmail,
+        email: effectiveIdentifier,
         password: effectivePassword
       });
       if (response && response.user) {
@@ -191,11 +191,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.warn('Backend API login unavailable, verifying via SHA-256 cryptographic vault:', err);
-      const localAuth = await authenticateWithSecureHash(cleanEmail, cleanPassword);
+      const localAuth = await authenticateWithSecureHash(cleanId, cleanPassword);
       if (localAuth) {
         response = localAuth;
       } else {
-        throw new Error('Invalid email or password. Please verify your credentials.');
+        throw new Error('Invalid email/User ID or password. Please verify your credentials.');
       }
     }
 

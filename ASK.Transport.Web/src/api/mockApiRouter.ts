@@ -7,7 +7,8 @@ import {
   sha256SyncFallback,
   sanitizeUserForStorage,
   getSecureUserRegistry,
-  SEED_SECURE_USERS
+  SEED_SECURE_USERS,
+  generateCustomUserIdCode
 } from '../utils/cryptoUtils';
 
 export interface MockResponse<T = any> {
@@ -222,16 +223,24 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
   // 0. SECURE AUTHENTICATION (SHA-256 Cryptographic Verification)
   // ---------------------------------------------------------------------------
   if (cleanUrl.includes('/auth/login')) {
-    const rawEmail = (parsedBody?.email || '').trim().toLowerCase();
+    const rawIdentifier = (parsedBody?.email || parsedBody?.userIdCode || parsedBody?.identifier || '').trim().toLowerCase();
     const plainPwd = (parsedBody?.password || '').trim();
-    const isSuper = rawEmail === 'superadmin@askgroup.com';
-    const effectiveEmail = rawEmail === 'ops@askgroup.com' ? 'admin@askgroup.com' : rawEmail;
+    const isSuper = rawIdentifier === 'superadmin@askgroup.com' || rawIdentifier === 'ask-sup-10001';
+    const effectiveEmail = (rawIdentifier === 'ops@askgroup.com' || rawIdentifier === 'ask-adm-20003') ? 'admin@askgroup.com' : rawIdentifier;
     const effectivePwd = (isSuper && (plainPwd === 'Admin@123' || plainPwd === 'admin@123')) ? 'SuperAdmin@123' : plainPwd;
 
     const inputHash = sha256SyncFallback(effectivePwd);
     const registry = getSecureUserRegistry();
-    const found = registry.find((u: any) => u.email === effectiveEmail) ||
-      SEED_SECURE_USERS.find((u: any) => u.email === effectiveEmail);
+    const found = registry.find((u: any) =>
+      u.email?.toLowerCase() === effectiveEmail ||
+      u.userIdCode?.toLowerCase() === effectiveEmail ||
+      String(u.id) === effectiveEmail
+    ) ||
+      SEED_SECURE_USERS.find((u: any) =>
+        u.email?.toLowerCase() === effectiveEmail ||
+        u.userIdCode?.toLowerCase() === effectiveEmail ||
+        String(u.id) === effectiveEmail
+      );
 
     if (found && (found.passwordHash === inputHash || found.secondaryHash === inputHash)) {
       const safeUser = sanitizeUserForStorage(found);
@@ -249,7 +258,7 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
 
     return {
       status: 401,
-      data: { message: 'Invalid email or password. Please verify your credentials.' }
+      data: { message: 'Invalid email/User ID or password. Please verify your credentials.' }
     };
   }
 
@@ -274,10 +283,12 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
     const phone = (parsedBody?.phone || '9876543210').trim();
     const plainPwd = (parsedBody?.password || '').trim();
     const pwdHash = sha256SyncFallback(plainPwd);
+    const userIdCode = generateCustomUserIdCode('User');
 
     const registry = getSecureUserRegistry();
     const newRecord = {
       id: Date.now(),
+      userIdCode,
       name,
       email,
       phone,
@@ -290,14 +301,44 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
     const updated = [...registry.filter((u: any) => u.email !== email), newRecord];
     try {
       localStorage.setItem('ask_secure_auth_users', JSON.stringify(updated));
+
+      // Also register a pending dual-control approval request with this new User ID
+      const existingReqs = JSON.parse(localStorage.getItem('ask_approval_requests') || '[]');
+      const newApprovalReq = {
+        id: `req-${newRecord.id}`,
+        userId: newRecord.id,
+        userIdCode,
+        userName: name,
+        userEmail: email,
+        userPhone: phone,
+        requestedAt: new Date().toISOString(),
+        status: 'PENDING'
+      };
+      localStorage.setItem('ask_approval_requests', JSON.stringify([newApprovalReq, ...existingReqs]));
+
+      // Log simulated dispatch to email and mobile
+      const dispatched = JSON.parse(sessionStorage.getItem('ask_dispatched_user_ids') || '[]');
+      dispatched.unshift({
+        userIdCode,
+        email,
+        phone,
+        timestamp: new Date().toISOString(),
+        emailDispatched: true,
+        smsDispatched: true
+      });
+      sessionStorage.setItem('ask_dispatched_user_ids', JSON.stringify(dispatched));
+      sessionStorage.setItem('ask_last_registered_userid', userIdCode);
+      sessionStorage.setItem('ask_last_user_email', email);
     } catch {}
 
     return {
       status: 200,
       data: {
-        message: 'Registration successful! Verification code sent to your registered contact.',
+        message: `Registration successful! User ID ${userIdCode} generated and dispatched to ${email} and +91 ${phone}.`,
         userId: newRecord.id,
+        userIdCode,
         email: newRecord.email,
+        phone: newRecord.phone,
         otp: '123456'
       }
     };
