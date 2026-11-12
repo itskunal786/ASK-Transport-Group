@@ -125,7 +125,7 @@ const INITIAL_HIRED_FLEETS: HiredFleetRecord[] = [
     grossBalanceInr: 21600,
     podStatus: 'VERIFIED_OK',
     podVerifiedDate: '28-Oct-2026',
-    podSignedPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80',
+    podSignedPhotoUrl: '',
     tdsRatePercent: 2, // 2% for Corporate Carrier
     tdsDeductedInr: 1440, // 2% of ₹72,000
     challanBSRCode: '0210041/2026/0019',
@@ -182,7 +182,7 @@ const INITIAL_HIRED_FLEETS: HiredFleetRecord[] = [
     grossBalanceInr: 7200,
     podStatus: 'VERIFIED_OK',
     podVerifiedDate: '27-Oct-2026',
-    podSignedPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80',
+    podSignedPhotoUrl: '',
     tdsRatePercent: 0, // 0% TDS under Section 194C(6) Exemption
     tdsDeductedInr: 0,
     shortageDamagePenaltyInr: 0,
@@ -291,7 +291,7 @@ const INITIAL_HIRED_FLEETS: HiredFleetRecord[] = [
     grossBalanceInr: 19200,
     podStatus: 'SHORTAGE_FLAGGED',
     podVerifiedDate: '27-Oct-2026',
-    podSignedPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80',
+    podSignedPhotoUrl: '',
     tdsRatePercent: 2, // 2% Company
     tdsDeductedInr: 1280, // 2% of ₹64,000
     shortageDamagePenaltyInr: 3500, // 1 tyre carton torn during transit

@@ -1,3 +1,4 @@
+import ImageUploadOrCapture from './ImageUploadOrCapture';
 import './FleetTripExpenseManager.css';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -24,7 +25,7 @@ const DEFAULT_EXPENSES: TripExpense[] = [
     amount: 18450,
     liters: 203.8,
     fuelStationName: 'IndianOil COCO Highway Pump, Surat NH-48',
-    receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400',
+    receiptPhotoUrl: '',
     odometerReading: 142850,
     status: 'Approved',
     createdAt: new Date().toISOString()
@@ -40,7 +41,7 @@ const DEFAULT_EXPENSES: TripExpense[] = [
     expenseType: 'Toll',
     amount: 1420,
     fuelStationName: 'Vadodara Expressway Toll Plaza',
-    receiptPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400',
+    receiptPhotoUrl: '',
     odometerReading: 143120,
     status: 'Approved',
     createdAt: new Date().toISOString()
@@ -72,7 +73,7 @@ const DEFAULT_EXPENSES: TripExpense[] = [
     amount: 24500,
     liters: 270.5,
     fuelStationName: 'Bharat Petroleum Highway MegaHub, Jaipur NH-48',
-    receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400',
+    receiptPhotoUrl: '',
     odometerReading: 144120,
     status: 'PendingSuperAdmin',
     adminPreApprovedBy: 'Kunal Kumar (Operations Admin)',
@@ -90,7 +91,7 @@ const DEFAULT_EXPENSES: TripExpense[] = [
     expenseType: 'TyrePuncture',
     amount: 650,
     fuelStationName: 'Shree Ram Tyre Vulcanizing, Jaipur Bypass',
-    receiptPhotoUrl: 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=400',
+    receiptPhotoUrl: '',
     odometerReading: 98450,
     status: 'Pending',
     createdAt: new Date().toISOString()
@@ -148,8 +149,9 @@ export default function FleetTripExpenseManager() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
 
-  // Receipt Preview Modal
-  const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
+  // Receipt Preview & Upload Modal
+  const [selectedExpenseForSlip, setSelectedExpenseForSlip] = useState<TripExpense | null>(null);
+  const [newReceiptPhoto, setNewReceiptPhoto] = useState('');
 
   // Rejection Modal
   const [rejectId, setRejectId] = useState<number | null>(null);
@@ -291,7 +293,7 @@ export default function FleetTripExpenseManager() {
         amount: Number(newAmount),
         liters: newLiters ? Number(newLiters) : undefined,
         fuelStationName: newStation || undefined,
-        receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400'
+        receiptPhotoUrl: newReceiptPhoto || undefined
       });
       setShowAddModal(false);
       setNewAmount('');
@@ -490,17 +492,14 @@ export default function FleetTripExpenseManager() {
                   <div className="fleet-exp-meta-row">
                     {exp.liters && <span className="fleet-exp-chip">⛽ {exp.liters} Liters</span>}
                     {exp.odometerReading && <span className="fleet-exp-chip">🧭 Odo: {exp.odometerReading} km</span>}
-                    {exp.receiptPhotoUrl ? (
-                      <button
-                        type="button"
-                        onClick={() => setPreviewReceiptUrl(exp.receiptPhotoUrl!)}
-                        className="fleet-expense-btn-slip"
-                      >
-                        👁️ Slip Proof
-                      </button>
-                    ) : (
-                      <span className="fleet-exp-no-slip">No Slip</span>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedExpenseForSlip(exp)}
+                      className="fleet-expense-btn-slip"
+                      style={!exp.receiptPhotoUrl ? { background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.25)' } : undefined}
+                    >
+                      {exp.receiptPhotoUrl ? '👁️ Slip Proof' : '📷 Upload / Snap Slip'}
+                    </button>
                   </div>
                 </div>
 
@@ -674,16 +673,7 @@ export default function FleetTripExpenseManager() {
         </div>
       )}
 
-      {/* RECEIPT PREVIEW MODAL */}
-      {previewReceiptUrl && (
-        <div className="fleet-expense-modal-overlay" onClick={() => setPreviewReceiptUrl(null)}>
-          <div className="fleet-expense-modal-card" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: 'var(--text-primary)' }}>Diesel / Expense Slip Proof</h3>
-            <img src={previewReceiptUrl} alt="Slip" style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '8px', background: '#000' }} />
-            <button type="button" onClick={() => setPreviewReceiptUrl(null)} className="fleet-expense-btn-cancel" style={{ marginTop: '14px' }}>Close</button>
-          </div>
-        </div>
-      )}
+
 
       {/* REJECT MODAL */}
       {rejectId && (
@@ -750,11 +740,65 @@ export default function FleetTripExpenseManager() {
                 </div>
               )}
 
+              <div>
+                <ImageUploadOrCapture
+                  value={newReceiptPhoto}
+                  onChange={setNewReceiptPhoto}
+                  onRemove={() => setNewReceiptPhoto('')}
+                  label="BILL / SLIP PROOF (MAX 2 MB)"
+                  placeholderText="Upload an image (Max 2 MB) or take a photo"
+                />
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} className="fleet-expense-btn-cancel">Cancel</button>
+                <button type="button" onClick={() => { setShowAddModal(false); setNewReceiptPhoto(''); }} className="fleet-expense-btn-cancel">Cancel</button>
                 <button type="submit" className="fleet-expense-btn-add">Save Expense</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* RECEIPT PREVIEW & UPLOAD MODAL */}
+      {selectedExpenseForSlip && (
+        <div className="fleet-expense-modal-overlay" onClick={() => setSelectedExpenseForSlip(null)}>
+          <div className="fleet-expense-modal-card" style={{ maxWidth: '560px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>Receipt Slip — Claim #{selectedExpenseForSlip.id}</h4>
+              <button
+                type="button"
+                onClick={() => setSelectedExpenseForSlip(null)}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{ textAlign: 'left', margin: '14px 0' }}>
+              <ImageUploadOrCapture
+                label="RECEIPT / SLIP PHOTO (MAX 2 MB):"
+                value={selectedExpenseForSlip.receiptPhotoUrl}
+                onChange={(dataUrl) => {
+                  setExpenses(prev => prev.map(x => x.id === selectedExpenseForSlip.id ? { ...x, receiptPhotoUrl: dataUrl } : x));
+                  setSelectedExpenseForSlip({ ...selectedExpenseForSlip, receiptPhotoUrl: dataUrl });
+                }}
+                onRemove={() => {
+                  setExpenses(prev => prev.map(x => x.id === selectedExpenseForSlip.id ? { ...x, receiptPhotoUrl: '' } : x));
+                  setSelectedExpenseForSlip({ ...selectedExpenseForSlip, receiptPhotoUrl: '' });
+                }}
+                placeholderText="Upload an image (Max 2 MB) or take a photo"
+              />
+            </div>
+
+            <div style={{ marginTop: '16px' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedExpenseForSlip(null)}
+                className="fleet-expense-btn-cancel"
+                style={{ padding: '8px 20px' }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

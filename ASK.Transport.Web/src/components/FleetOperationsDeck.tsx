@@ -58,7 +58,7 @@ export default function FleetOperationsDeck({ initialTab = 'expenses', onTabChan
       </div>
 
       {/* SUB-TABS */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px', overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid var(--border-color, #e2e8f0)', paddingBottom: '2px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button
           type="button"
           onClick={() => handleTabClick('expenses')}

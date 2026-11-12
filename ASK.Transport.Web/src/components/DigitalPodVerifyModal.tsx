@@ -17,7 +17,7 @@ export const SAMPLE_POD_PRESETS: PodPreset[] = [
     name: 'Standard Stamped Bilty (LR)',
     category: 'FTL Freight',
     badge: 'Stamp Verified ✓',
-    url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80',
+    url: '',
     notes: 'Consignment verified in intact condition. No transit damages or seal tampering.'
   },
   {
@@ -25,7 +25,7 @@ export const SAMPLE_POD_PRESETS: PodPreset[] = [
     name: 'Express Delivery Challan',
     category: 'PTL / Parcel',
     badge: 'Signed & Acknowledged ✓',
-    url: 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=900&q=80',
+    url: '',
     notes: 'Cartons count matched with invoice items. Delivered to designated consignee reception desk.'
   },
   {
@@ -33,7 +33,7 @@ export const SAMPLE_POD_PRESETS: PodPreset[] = [
     name: 'JNPT Port Container Gate Pass',
     category: 'Port EXIM',
     badge: 'Port Authority Sealed ✓',
-    url: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=80',
+    url: '',
     notes: 'Customs seal verified intact at JNPT Nhava Sheva Terminal Gate 2. Container clearance approved.'
   },
   {
@@ -41,7 +41,7 @@ export const SAMPLE_POD_PRESETS: PodPreset[] = [
     name: 'Cold-Chain Delivery Receipt',
     category: 'Reefer / Pharma',
     badge: 'Temperature Compliant ✓',
-    url: 'https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=900&q=80',
+    url: '',
     notes: 'Temperature log verified: maintained between +2°C to +8°C throughout transit. Zero thaw reported.'
   }
 ];
@@ -94,8 +94,7 @@ export default function DigitalPodVerifyModal({
       // fallback
     }
     // Route-specific default preset so different bookings don't all look identical
-    const index = Math.abs(bookingNumber.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % SAMPLE_POD_PRESETS.length;
-    return SAMPLE_POD_PRESETS[index].url;
+    return null;
   });
 
   const [photoMeta, setPhotoMeta] = useState<{
@@ -137,6 +136,10 @@ export default function DigitalPodVerifyModal({
   function processFile(file: File, sourceName: string) {
     if (!file.type.startsWith('image/') && !file.name.match(/\.(jpg|jpeg|png|webp|gif|heic|bmp)$/i)) {
       alert('Please upload a valid image file (JPEG, PNG, WebP).');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert(`File size is ${(file.size / (1024 * 1024)).toFixed(2)} MB. Please upload an image under 2 MB.`);
       return;
     }
 

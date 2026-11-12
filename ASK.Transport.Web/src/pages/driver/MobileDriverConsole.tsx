@@ -46,7 +46,7 @@ const DRIVER_PRESETS: DriverPreset[] = [
       endingOdometerKm: null,
       deliveryOtp: '4821',
       isOtpVerified: false,
-      podPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400',
+      podPhotoUrl: '',
       podSubmittedAt: null
     }
   },
@@ -75,7 +75,7 @@ const DRIVER_PRESETS: DriverPreset[] = [
       endingOdometerKm: null,
       deliveryOtp: '9182',
       isOtpVerified: false,
-      podPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400',
+      podPhotoUrl: '',
       podSubmittedAt: null
     }
   },
@@ -104,7 +104,7 @@ const DRIVER_PRESETS: DriverPreset[] = [
       endingOdometerKm: null,
       deliveryOtp: '7714',
       isOtpVerified: false,
-      podPhotoUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400',
+      podPhotoUrl: '',
       podSubmittedAt: null
     }
   }
@@ -152,7 +152,7 @@ export default function MobileDriverConsole() {
   const [otpLoading, setOtpLoading] = useState(false);
 
   // POD State
-  const [podPhotoUrl, setPodPhotoUrl] = useState<string>(trip.podPhotoUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400');
+  const [podPhotoUrl, setPodPhotoUrl] = useState<string>(trip.podPhotoUrl || '');
   const [podMsg, setPodMsg] = useState<string>('');
   const [podLoading, setPodLoading] = useState(false);
 
@@ -246,7 +246,7 @@ export default function MobileDriverConsole() {
           amount: Number(amount),
           liters: liters ? Number(liters) : undefined,
           fuelStationName: pumpName || undefined,
-          receiptPhotoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400',
+          receiptPhotoUrl: '',
           odometerReading: expenseOdo ? Number(expenseOdo) : undefined
         });
       } catch {}
@@ -830,17 +830,46 @@ export default function MobileDriverConsole() {
                   alt="POD Document"
                   style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', borderRadius: '10px', border: '1px solid #374151' }}
                 />
-                <div style={{ marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPodPhotoUrl('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400');
-                      triggerToast('📸 Physical POD stamped photo captured from camera!');
+                <div style={{ marginTop: '10px' }}>
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      background: '#1f2937',
+                      color: '#38bdf8',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
                     }}
-                    style={{ padding: '7px 14px', background: '#1f2937', color: '#38bdf8', border: '1px solid #374151', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
                   >
-                    📸 Retake / Capture Physical Slip Photo
-                  </button>
+                    📸 Upload or Take Photo (Max 2 MB)
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert(`File size is ${(file.size / (1024 * 1024)).toFixed(2)} MB. Please upload an image under 2 MB.`);
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            if (ev.target?.result) {
+                              setPodPhotoUrl(ev.target.result as string);
+                              triggerToast('📸 Photo loaded successfully (under 2 MB)!');
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
 

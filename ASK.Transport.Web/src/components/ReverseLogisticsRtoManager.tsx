@@ -1,3 +1,4 @@
+import ImageUploadOrCapture from './ImageUploadOrCapture';
 import React, { useEffect, useState } from 'react';
 import { RefreshCw, CheckCircle2, X, PlusCircle, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -5,7 +6,9 @@ import {
   getReverseLogisticsCases,
   initiateRtoCase,
   updateRtoStatus,
-  type RtoSummaryResponse
+  updateRtoCasePhoto,
+  type RtoSummaryResponse,
+  type RtoReturnCase
 } from '../api/enterpriseApi';
 import './ReverseLogisticsRtoManager.css';
 
@@ -14,7 +17,7 @@ export default function ReverseLogisticsRtoManager() {
   const [loading, setLoading] = useState(false);
   const [justRefreshed, setJustRefreshed] = useState(false);
   const { t } = useLanguage();
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [selectedCaseForPhoto, setSelectedCaseForPhoto] = useState<RtoReturnCase | null>(null);
 
   // New RTO Modal
   const [showInitiateModal, setShowInitiateModal] = useState(false);
@@ -25,7 +28,7 @@ export default function ReverseLogisticsRtoManager() {
   const [returnReason, setReturnReason] = useState('Damaged in Transit / Water Ingress');
   const [damageSeverity, setDamageSeverity] = useState('Major Goods Damaged');
   const [claimAmount, setClaimAmount] = useState('48500');
-  const [damagePhoto, setDamagePhoto] = useState('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400');
+  const [damagePhoto, setDamagePhoto] = useState('');
 
   // Success Notification
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -296,15 +299,25 @@ export default function ReverseLogisticsRtoManager() {
               {/* ACTION MILESTONES & PHOTO */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {c.damagePhotoUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPhoto(c.damagePhotoUrl)}
-                      style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '6px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      <span>📷</span> View Inspection Evidence
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCaseForPhoto(c)}
+                    style={{
+                      padding: '6px 12px',
+                      background: c.damagePhotoUrl ? 'rgba(239, 68, 68, 0.1)' : 'rgba(56, 189, 248, 0.1)',
+                      color: c.damagePhotoUrl ? '#ef4444' : '#38bdf8',
+                      border: c.damagePhotoUrl ? '1px solid rgba(239, 68, 68, 0.25)' : '1px solid rgba(56, 189, 248, 0.25)',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>📷</span> {c.damagePhotoUrl ? 'View Inspection Evidence' : 'Upload / Take Photo (Max 2 MB)'}
+                  </button>
                   <span className="rto-terminal-info">
                     {t('Current Terminal:', 'वर्तमान टर्मिनल:')} <strong className="rto-terminal-val">{c.currentReverseHub}</strong>
                   </span>
@@ -484,27 +497,26 @@ export default function ReverseLogisticsRtoManager() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label className="rto-form-label">CLAIM / REFUND AMOUNT (₹):</label>
-                  <input
-                    type="number"
-                    value={claimAmount}
-                    onChange={e => setClaimAmount(e.target.value)}
-                    required
-                    className="rto-form-input"
-                    style={{ fontWeight: 800, color: '#ef4444' }}
-                  />
-                </div>
-                <div>
-                  <label className="rto-form-label">DAMAGE PHOTO URL:</label>
-                  <input
-                    type="text"
-                    value={damagePhoto}
-                    onChange={e => setDamagePhoto(e.target.value)}
-                    className="rto-form-input"
-                  />
-                </div>
+              <div>
+                <label className="rto-form-label">CLAIM / REFUND AMOUNT (₹):</label>
+                <input
+                  type="number"
+                  value={claimAmount}
+                  onChange={e => setClaimAmount(e.target.value)}
+                  required
+                  className="rto-form-input"
+                  style={{ fontWeight: 800, color: '#ef4444' }}
+                />
+              </div>
+
+              <div>
+                <ImageUploadOrCapture
+                  label="DAMAGE EVIDENCE PHOTO (MAX 2 MB):"
+                  value={damagePhoto}
+                  onChange={setDamagePhoto}
+                  onRemove={() => setDamagePhoto('')}
+                  placeholderText="Upload an image (Max 2 MB) or take a photo"
+                />
               </div>
 
               <div className="rto-modal-actions">
@@ -535,25 +547,41 @@ export default function ReverseLogisticsRtoManager() {
         </div>
       )}
 
-      {/* PHOTO PREVIEW MODAL */}
-      {selectedPhoto && (
-        <div className="rto-modal-overlay">
-          <div className="rto-modal-card" style={{ maxWidth: '640px', textAlign: 'center' }}>
+      {/* PHOTO PREVIEW & UPLOAD MODAL */}
+      {selectedCaseForPhoto && (
+        <div className="rto-modal-overlay" onClick={() => setSelectedCaseForPhoto(null)}>
+          <div className="rto-modal-card" style={{ maxWidth: '640px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
             <div className="rto-modal-header">
-              <h4 className="rto-modal-title">Damage Evidence Inspection</h4>
+              <h4 className="rto-modal-title">Damage Evidence Inspection — {selectedCaseForPhoto.caseNumber}</h4>
               <button
                 type="button"
-                onClick={() => setSelectedPhoto(null)}
+                onClick={() => setSelectedCaseForPhoto(null)}
                 className="rto-modal-close"
               >
                 <X size={18} />
               </button>
             </div>
-            <img src={selectedPhoto} alt="Full Damage Proof" style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '10px', objectFit: 'contain' }} />
+            <div style={{ margin: '16px 0', textAlign: 'left' }}>
+              <ImageUploadOrCapture
+                label="DAMAGE INSPECTION EVIDENCE (MAX 2 MB):"
+                value={selectedCaseForPhoto.damagePhotoUrl}
+                onChange={async (dataUrl) => {
+                  await updateRtoCasePhoto(selectedCaseForPhoto.id, dataUrl);
+                  setSelectedCaseForPhoto({ ...selectedCaseForPhoto, damagePhotoUrl: dataUrl });
+                  loadData();
+                }}
+                onRemove={async () => {
+                  await updateRtoCasePhoto(selectedCaseForPhoto.id, '');
+                  setSelectedCaseForPhoto({ ...selectedCaseForPhoto, damagePhotoUrl: '' });
+                  loadData();
+                }}
+                placeholderText="Upload an image (Max 2 MB) or take a photo"
+              />
+            </div>
             <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center' }}>
               <button
                 type="button"
-                onClick={() => setSelectedPhoto(null)}
+                onClick={() => setSelectedCaseForPhoto(null)}
                 className="rto-btn-cancel"
               >
                 Close Preview

@@ -2700,7 +2700,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'bookings' ? 'active' : ''}`}
                   onClick={() => setActiveTab('bookings')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Bookings & Bilty', 'बुकिंग और बिल्टी')}</span>
                   {isTabRevoked('bookings').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2710,7 +2709,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'shipments' ? 'active' : ''}`}
                   onClick={() => setActiveTab('shipments')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Shipments & Dispatch', 'कंसाइनमेंट और डिस्पैच')}</span>
                   {isTabRevoked('shipments').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2720,7 +2718,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ewaybill' ? 'active' : ''}`}
                   onClick={() => setActiveTab('ewaybill')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('NIC E-Way Bill & Part-B', 'ई-वे बिल और भाग-बी')}</span>
                   {isTabRevoked('ewaybill').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2730,7 +2727,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'hubs' ? 'active' : ''}`}
                   onClick={() => setActiveTab('hubs')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Hubs & Terminals', 'हब और टर्मिनल')}</span>
                   {isTabRevoked('hubs').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2740,7 +2736,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'dock_yard' ? 'active' : ''}`}
                   onClick={() => setActiveTab('dock_yard')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Gate Pass & Dock Yard', 'गेट पास और डॉक यार्ड')}</span>
                   {isTabRevoked('dock_yard').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2750,7 +2745,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'weighbridge' ? 'active' : ''}`}
                   onClick={() => setActiveTab('weighbridge')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Dharam Kanta & Weighbridge', 'धरम कांटा और वे-ब्रिज')}</span>
                   {isTabRevoked('weighbridge').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2760,7 +2754,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'rto_vault' ? 'active' : ''}`}
                   onClick={() => setActiveTab('rto_vault')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('RTO Check-Post Vault', 'आरटीओ चेक-पोस्ट वॉल्ट')}</span>
                   {isTabRevoked('rto_vault').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2769,7 +2762,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'pod_inward' ? 'active' : ''}`}
                   onClick={() => setActiveTab('pod_inward')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Physical POD & SOS Rescue', 'भौतिक पीओडी और आपातकालीन सहायता')}</span>
                   {isTabRevoked('pod_inward').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2803,7 +2795,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'expenses' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('expenses'); setActiveTab('fleet_mgmt', 'expenses'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Trip Petty Cash & P&L', 'ट्रिप खर्च और लाभ-हानि')}</span>
                 </button>
 
@@ -2812,7 +2803,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fastag_reconcile' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('fastag_reconcile'); setActiveTab('fleet_mgmt', 'fastag_reconcile'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('FASTag NETC Toll Reconciliation', 'फास्टैग टोल समाधान')}</span>
                 </button>
 
@@ -2821,7 +2811,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'duty_slip' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('duty_slip'); setActiveTab('fleet_mgmt', 'duty_slip'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Driver WhatsApp Duty Slip', 'ड्राइवर व्हाट्सएप ड्यूटी स्लिप')}</span>
                 </button>
 
@@ -2830,7 +2819,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'fuel_theft' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('fuel_theft'); setActiveTab('fleet_mgmt', 'fuel_theft'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Fuel & Diesel Theft Radar', 'ईंधन और डीजल रडार')}</span>
                 </button>
 
@@ -2839,7 +2827,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'cold_chain' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('cold_chain'); setActiveTab('fleet_mgmt', 'cold_chain'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Cold-Chain Temp Radar', 'कोल्ड-चेन तापमान रडार')}</span>
                 </button>
 
@@ -2848,7 +2835,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'maintenance' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('maintenance'); setActiveTab('fleet_mgmt', 'maintenance'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Parivahan RC & Challan Radar', 'परिवहन RC और चालान रडार')}</span>
                 </button>
 
@@ -2857,7 +2843,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'fleet_mgmt' && fleetDeckSubTab === 'tyre_radar' ? 'active' : ''}`}
                   onClick={() => { setFleetDeckSubTab('tyre_radar'); setActiveTab('fleet_mgmt', 'tyre_radar'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Tyre & TPMS Radar', 'टायर और टीपीएमएस रडार')}</span>
                 </button>
 
@@ -2868,7 +2853,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'vehicles' ? 'active' : ''}`}
                   onClick={() => setActiveTab('vehicles')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Fleet & Vehicles', 'फ्लीट और वाहन')}</span>
                   {isTabRevoked('vehicles').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2878,7 +2862,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'drivers' ? 'active' : ''}`}
                   onClick={() => setActiveTab('drivers')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Sarathi Drivers', 'सारथी चालक')}</span>
                   {isTabRevoked('drivers').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2888,7 +2871,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'telematics' ? 'active' : ''}`}
                   onClick={() => setActiveTab('telematics')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('GPS Telematics Radar', 'जीपीएस टेलीमैटिक्स रडार')}</span>
                   {isTabRevoked('telematics').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2898,7 +2880,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'driver_settlement' ? 'active' : ''}`}
                   onClick={() => setActiveTab('driver_settlement')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Trip Settlement & Hisaab', 'ट्रिप निपटान और हिसाब')}</span>
                   {isTabRevoked('driver_settlement').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2908,7 +2889,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ais140_safety' ? 'active' : ''}`}
                   onClick={() => setActiveTab('ais140_safety')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('AIS-140 Highway Safety', 'एआईएस-140 सुरक्षा')}</span>
                   {isTabRevoked('ais140_safety').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2942,7 +2922,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'settlement' ? 'active' : ''}`}
                   onClick={() => { setFinanceDeckSubTab('settlement'); setActiveTab('finance_accounting', 'settlement'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Hired Fleet & 194C TDS', 'किराए का बेड़ा और 194C टीडीएस')}</span>
                 </button>
 
@@ -2951,7 +2930,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && (financeDeckSubTab === 'einv' || financeDeckSubTab === 'erp') ? 'active' : ''}`}
                   onClick={() => { setFinanceDeckSubTab('einv'); setActiveTab('finance_accounting', 'einv'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('GST E-Invoice & ERP Ledgers', 'जीएसटी ई-चालान और ईआरपी लेजर')}</span>
                 </button>
 
@@ -2960,7 +2938,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'finance_accounting' && financeDeckSubTab === 'credit' ? 'active' : ''}`}
                   onClick={() => { setFinanceDeckSubTab('credit'); setActiveTab('finance_accounting', 'credit'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Shipper Credit & Auto-Lock', 'कस्टमर क्रेडिट और ऑटो-लॉक')}</span>
                 </button>
 
@@ -2969,7 +2946,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'cargo_claims' ? 'active' : ''}`}
                   onClick={() => setActiveTab('cargo_claims')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Cargo Claims & SLA Shield', 'कार्गो दावे और एसएलए सुरक्षा')}</span>
                   {isTabRevoked('cargo_claims').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2978,7 +2954,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'executive_pnl' ? 'active' : ''}`}
                   onClick={() => setActiveTab('executive_pnl')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Executive P&L Margins Radar', 'लाभ-हानि मार्जिन रडार')}</span>
                   {isTabRevoked('executive_pnl').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2988,7 +2963,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'tax_audit' ? 'active' : ''}`}
                   onClick={() => setActiveTab('tax_audit')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('CA 1-Click Tax & Audit Vault', 'सीए टैक्स और ऑडिट वॉल्ट')}</span>
                   {isTabRevoked('tax_audit').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -2998,7 +2972,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'enterprise_b2b' ? 'active' : ''}`}
                   onClick={() => setActiveTab('enterprise_b2b')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('B2B Bulk, Auction & RTO', 'बी2बी बल्क, नीलामी और आरटीओ')}</span>
                 </button>
 
@@ -3007,7 +2980,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'tariff' ? 'active' : ''}`}
                   onClick={() => setActiveTab('tariff')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Rate Calculator & Tariff Master', 'रेट कैलकुलेटर एवं भाड़ा मास्टर')}</span>
                   {isTabRevoked('tariff').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -3041,7 +3013,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === '3d_load' ? 'active' : ''}`}
                   onClick={() => { setAiDeckSubTab('3d_load'); setActiveTab('ai_automation', '3d_load'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>3D Cargo Load Planner</span>
                 </button>
 
@@ -3050,7 +3021,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'ocr_scanner' ? 'active' : ''}`}
                   onClick={() => { setAiDeckSubTab('ocr_scanner'); setActiveTab('ai_automation', 'ocr_scanner'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('AI Bilty Scanner (OCR)', 'एआई बिल्टी स्कैनर (ओसीआर)')}</span>
                 </button>
 
@@ -3059,7 +3029,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'route_predictor' ? 'active' : ''}`}
                   onClick={() => { setAiDeckSubTab('route_predictor'); setActiveTab('ai_automation', 'route_predictor'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Highway Route Predictor', 'हाईवे मार्ग अनुमान')}</span>
                 </button>
 
@@ -3068,7 +3037,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'spot_rate_ai' ? 'active' : ''}`}
                   onClick={() => { setAiDeckSubTab('spot_rate_ai'); setActiveTab('ai_automation', 'spot_rate_ai'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Spot Freight Rate AI', 'स्पॉट भाड़ा दर एआई')}</span>
                 </button>
 
@@ -3077,7 +3045,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'ai_automation' && aiDeckSubTab === 'whatsapp_bot' ? 'active' : ''}`}
                   onClick={() => { setAiDeckSubTab('whatsapp_bot'); setActiveTab('ai_automation', 'whatsapp_bot'); }}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('WhatsApp AI Logistics Bot', 'व्हाट्सएप एआई लॉजिस्टिक्स बॉट')}</span>
                 </button>
               </div>
@@ -3110,7 +3077,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'customers' ? 'active' : ''}`}
                   onClick={() => setActiveTab('customers')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('User Management', 'उपयोगकर्ता प्रबंधन')}</span>
                   {isTabRevoked('customers').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -3120,7 +3086,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'access' ? 'active' : ''}`}
                   onClick={() => setActiveTab('access')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Staff Access & Roles', 'स्टाफ अधिकार और भूमिकाएं')}</span>
                 </button>
 
@@ -3129,7 +3094,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'audit' ? 'active' : ''}`}
                   onClick={() => setActiveTab('audit')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Security & Audit Trail', 'सुरक्षा और ऑडिट लॉग')}</span>
                   {isTabRevoked('audit').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -3139,7 +3103,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'support' ? 'active' : ''}`}
                   onClick={() => setActiveTab('support')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Support & Escalations', 'सहायता और शिकायत निवारण')}</span>
                   {isTabRevoked('support').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -3149,7 +3112,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'reports' ? 'active' : ''}`}
                   onClick={() => setActiveTab('reports')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('Reports & Data Export', 'रिपोर्ट और डेटा निर्यात')}</span>
                   {isTabRevoked('reports').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>
@@ -3159,7 +3121,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   className={`admin-nav-sub-item ${activeTab === 'settings' ? 'active' : ''}`}
                   onClick={() => setActiveTab('settings')}
                 >
-                  <span className="nav-sub-bullet">•</span>
                   <span>{t('System Settings', 'सिस्टम सेटिंग्स')}</span>
                   {isTabRevoked('settings').revoked && <span className="nav-revoked-pill">🔒</span>}
                 </button>

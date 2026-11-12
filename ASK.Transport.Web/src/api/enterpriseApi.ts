@@ -866,7 +866,7 @@ const DEFAULT_RTO_CASES: RtoReturnCase[] = [
     returnReason: 'Damaged in Transit / Water Ingress',
     damageSeverity: 'Major Goods Damaged',
     customerRefundClaimed: 48500,
-    damagePhotoUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400',
+    damagePhotoUrl: '',
     originFactory: 'North Star Auto Components (Pune Hub 4)',
     consigneeWhoRejected: 'Speedcraft Motors Depot (Gurugram NH-48)',
     currentReverseHub: 'Jaipur SuperHub Transit Yard',
@@ -888,7 +888,7 @@ const DEFAULT_RTO_CASES: RtoReturnCase[] = [
     returnReason: 'Wrong SKU / Specification Mismatch',
     damageSeverity: 'No Damage (Wrong Dispatch)',
     customerRefundClaimed: 125000,
-    damagePhotoUrl: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=400',
+    damagePhotoUrl: '',
     originFactory: 'Tata Steel Tubes Division (Jamshedpur)',
     consigneeWhoRejected: 'Larsen & Toubro ECC Hub (Ahmedabad)',
     currentReverseHub: 'Jamshedpur Plant Warehouse',
@@ -910,7 +910,7 @@ const DEFAULT_RTO_CASES: RtoReturnCase[] = [
     returnReason: 'Severe Impact Breakage during Highway Transit',
     damageSeverity: 'Total Consignment Loss',
     customerRefundClaimed: 215000,
-    damagePhotoUrl: 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400',
+    damagePhotoUrl: '',
     originFactory: 'Bajaj Heavy Engineering Ltd (Bhosari)',
     consigneeWhoRejected: 'Hero MotoCorp Ancillary Hub (Haridwar)',
     currentReverseHub: 'Bhosari Central QA Lab',
@@ -997,7 +997,7 @@ export async function initiateRtoCase(payload: {
     returnReason: payload.returnReason || 'Damaged in Transit / Consignee Rejection',
     damageSeverity: payload.damageSeverity || 'Major Goods Damaged',
     customerRefundClaimed: Number(payload.claimAmount) || 48500,
-    damagePhotoUrl: payload.damagePhotoUrl || 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400',
+    damagePhotoUrl: payload.damagePhotoUrl || '',
     originFactory: payload.originFactory || 'North Star Auto Components (Pune Factory)',
     consigneeWhoRejected: payload.consigneeWhoRejected || 'Speedcraft Motors Depot',
     currentReverseHub: 'Origin Terminal QA Gate',
@@ -1072,4 +1072,23 @@ export async function updateRtoStatus(
     message: `RTO case milestone updated to ${payload.status.replace(/_/g, ' ')}!`,
     rtoCase: {} as any
   };
+}
+
+export async function updateRtoCasePhoto(caseId: number, photoUrl: string): Promise<void> {
+  try {
+    const raw = localStorage.getItem('ask_custom_rto_cases');
+    let list: RtoReturnCase[] = raw ? JSON.parse(raw) : [];
+    const idx = list.findIndex(c => c.id === caseId);
+    if (idx !== -1) {
+      list[idx].damagePhotoUrl = photoUrl;
+    } else {
+      const def = DEFAULT_RTO_CASES.find(c => c.id === caseId);
+      if (def) {
+        list.push({ ...def, damagePhotoUrl: photoUrl });
+      }
+    }
+    localStorage.setItem('ask_custom_rto_cases', JSON.stringify(list));
+  } catch (err) {
+    console.warn('Could not update RTO case photo locally:', err);
+  }
 }
