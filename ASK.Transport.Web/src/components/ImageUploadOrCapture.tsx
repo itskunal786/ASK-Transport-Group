@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { UploadCloud, Camera, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
 import './ImageUploadOrCapture.css';
 
 interface ImageUploadOrCaptureProps {
@@ -16,7 +17,7 @@ export default function ImageUploadOrCapture({
   onRemove,
   label,
   maxSizeMb = 2,
-  placeholderText = 'Upload an image (Max 2 MB) or take a photo'
+  placeholderText = 'Select an option below to provide photo evidence (Max 2 MB):'
 }: ImageUploadOrCaptureProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -80,59 +81,106 @@ export default function ImageUploadOrCapture({
       />
 
       {value ? (
-        <div className="img-preview-box">
-          <img src={value} alt="Uploaded Proof" className="img-preview-image" />
-          <div className="img-preview-overlay">
-            <div className="img-preview-actions">
+        <div className="img-selected-preview-card">
+          <div className="img-preview-top-bar">
+            <span className="img-preview-status-badge">
+              <CheckCircle2 size={15} /> Photo Evidence Selected / फोटो चयनित
+            </span>
+            {onRemove && (
               <button
                 type="button"
-                className="img-btn-action change"
-                onClick={() => fileInputRef.current?.click()}
+                className="img-btn-inline-remove"
+                onClick={onRemove}
+                title="Remove photo"
               >
-                Upload New (Max {maxSizeMb} MB)
+                <Trash2 size={13} /> Remove
               </button>
-              <button
-                type="button"
-                className="img-btn-action camera"
-                onClick={() => cameraInputRef.current?.click()}
-              >
-                Take Photo
-              </button>
-              {onRemove && (
-                <button
-                  type="button"
-                  className="img-btn-action remove"
-                  onClick={onRemove}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
+            )}
+          </div>
+
+          <div className="img-preview-display">
+            <img src={value} alt="Uploaded Proof Evidence" className="img-preview-image" />
+          </div>
+
+          <div className="img-change-options-bar">
+            <button
+              type="button"
+              className="img-change-btn upload"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadCloud size={15} /> 📁 Upload Different Image (Max {maxSizeMb} MB)
+            </button>
+            <button
+              type="button"
+              className="img-change-btn camera"
+              onClick={() => cameraInputRef.current?.click()}
+            >
+              <Camera size={15} /> 📷 Retake Photo with Camera
+            </button>
           </div>
         </div>
       ) : (
-        <div className="img-dropzone">
-          <p className="img-dropzone-text">{placeholderText}</p>
-          <div className="img-button-group">
-            <button
-              type="button"
-              className="img-upload-btn upload"
+        <div className="img-selection-suite">
+          {placeholderText && <p className="img-selection-hint">{placeholderText}</p>}
+          <div className="img-two-options-grid">
+            {/* OPTION 1: UPLOAD AN IMAGE */}
+            <div
+              className="img-option-card upload-card"
               onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  fileInputRef.current?.click();
+                }
+              }}
             >
-              Upload Image (Max {maxSizeMb} MB)
-            </button>
-            <button
-              type="button"
-              className="img-upload-btn camera"
+              <div className="img-card-icon-wrap upload">
+                <UploadCloud size={28} />
+              </div>
+              <div className="img-card-text">
+                <strong className="img-card-title">1. Upload an Image</strong>
+                <span className="img-card-desc">Choose from device gallery / local file</span>
+                <span className="img-card-limit">Max size {maxSizeMb} MB • JPG, PNG, WebP</span>
+              </div>
+              <button type="button" className="img-card-action-btn upload">
+                Browse Files
+              </button>
+            </div>
+
+            {/* OPTION 2: TAKE A PHOTO */}
+            <div
+              className="img-option-card camera-card"
               onClick={() => cameraInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  cameraInputRef.current?.click();
+                }
+              }}
             >
-              Take a Photo
-            </button>
+              <div className="img-card-icon-wrap camera">
+                <Camera size={28} />
+              </div>
+              <div className="img-card-text">
+                <strong className="img-card-title">2. Take a Photo</strong>
+                <span className="img-card-desc">Capture directly with device camera</span>
+                <span className="img-card-limit">Live snapshot • Auto-scaled proof</span>
+              </div>
+              <button type="button" className="img-card-action-btn camera">
+                Open Camera
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {error && <div className="img-upload-error">{error}</div>}
+      {error && (
+        <div className="img-upload-error">
+          <AlertCircle size={15} /> {error}
+        </div>
+      )}
     </div>
   );
 }

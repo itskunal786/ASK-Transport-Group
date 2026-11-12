@@ -18,6 +18,8 @@ export default function ReverseLogisticsRtoManager() {
   const [justRefreshed, setJustRefreshed] = useState(false);
   const { t } = useLanguage();
   const [selectedCaseForPhoto, setSelectedCaseForPhoto] = useState<RtoReturnCase | null>(null);
+  const [tempModalPhoto, setTempModalPhoto] = useState<string>('');
+  const [savingPhoto, setSavingPhoto] = useState(false);
 
   // New RTO Modal
   const [showInitiateModal, setShowInitiateModal] = useState(false);
@@ -301,7 +303,10 @@ export default function ReverseLogisticsRtoManager() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <button
                     type="button"
-                    onClick={() => setSelectedCaseForPhoto(c)}
+                    onClick={() => {
+                      setSelectedCaseForPhoto(c);
+                      setTempModalPhoto(c.damagePhotoUrl || '');
+                    }}
                     style={{
                       padding: '6px 12px',
                       background: c.damagePhotoUrl ? 'rgba(239, 68, 68, 0.1)' : 'rgba(56, 189, 248, 0.1)',
@@ -564,27 +569,56 @@ export default function ReverseLogisticsRtoManager() {
             <div style={{ margin: '16px 0', textAlign: 'left' }}>
               <ImageUploadOrCapture
                 label="DAMAGE INSPECTION EVIDENCE (MAX 2 MB):"
-                value={selectedCaseForPhoto.damagePhotoUrl}
-                onChange={async (dataUrl) => {
-                  await updateRtoCasePhoto(selectedCaseForPhoto.id, dataUrl);
-                  setSelectedCaseForPhoto({ ...selectedCaseForPhoto, damagePhotoUrl: dataUrl });
-                  loadData();
-                }}
-                onRemove={async () => {
-                  await updateRtoCasePhoto(selectedCaseForPhoto.id, '');
-                  setSelectedCaseForPhoto({ ...selectedCaseForPhoto, damagePhotoUrl: '' });
-                  loadData();
-                }}
-                placeholderText="Upload an image (Max 2 MB) or take a photo"
+                value={tempModalPhoto}
+                onChange={(dataUrl) => setTempModalPhoto(dataUrl)}
+                onRemove={() => setTempModalPhoto('')}
+                placeholderText="Select an option below to upload damage evidence or capture with camera:"
               />
             </div>
-            <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button
                 type="button"
                 onClick={() => setSelectedCaseForPhoto(null)}
                 className="rto-btn-cancel"
+                style={{ padding: '9px 18px', fontSize: '13px' }}
               >
-                Close Preview
+                ✕ Cancel / रद्द करें
+              </button>
+              <button
+                type="button"
+                disabled={savingPhoto}
+                onClick={async () => {
+                  try {
+                    setSavingPhoto(true);
+                    await updateRtoCasePhoto(selectedCaseForPhoto.id, tempModalPhoto);
+                    setSelectedCaseForPhoto(null);
+                    await loadData();
+                    setSuccessMsg('✓ Damage inspection evidence successfully submitted & saved!');
+                    setTimeout(() => setSuccessMsg(null), 4000);
+                  } catch (err: unknown) {
+                    const message = err instanceof Error ? err.message : 'Failed to submit evidence photo';
+                    alert(message);
+                  } finally {
+                    setSavingPhoto(false);
+                  }
+                }}
+                className="rto-btn-submit"
+                style={{
+                  padding: '9px 22px',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)'
+                }}
+              >
+                {savingPhoto ? 'Saving...' : '✓ Submit Evidence / सबमिट करें'}
               </button>
             </div>
           </div>

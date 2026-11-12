@@ -1,163 +1,321 @@
 .img-upload-capture-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
 }
 
 .img-upload-label {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-secondary, #94a3b8);
+  display: block;
 }
 
-.img-dropzone {
-  border: 2px dashed rgba(56, 189, 248, 0.4);
-  border-radius: 12px;
-  padding: 20px 16px;
-  background: rgba(15, 23, 42, 0.4);
-  text-align: center;
-  transition: all 0.2s ease;
+.img-selection-suite {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
 }
 
-[data-theme="light"] .img-dropzone,
-body:not(.dark) .img-dropzone {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-
-.img-dropzone:hover {
-  border-color: #0284c7;
-  background: rgba(2, 132, 199, 0.05);
-}
-
-.img-dropzone-text {
+.img-selection-hint {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary, #94a3b8);
+  text-align: left;
 }
 
-.img-button-group {
+/* ==========================================================================
+   TWO CLEARLY SEPARATE ACTION CARDS: UPLOAD VS TAKE PHOTO
+   ========================================================================== */
+
+.img-two-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 580px) {
+  .img-two-options-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.img-option-card {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  user-select: none;
 }
 
-.img-upload-btn {
-  padding: 8px 16px;
+/* Option 1: Upload Card */
+.img-option-card.upload-card {
+  background: rgba(2, 132, 199, 0.05);
+  border: 2px dashed rgba(2, 132, 199, 0.45);
+}
+
+.img-option-card.upload-card:hover,
+.img-option-card.upload-card:focus-visible {
+  background: rgba(2, 132, 199, 0.12);
+  border-color: #0284c7;
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.18);
+}
+
+/* Option 2: Camera Card */
+.img-option-card.camera-card {
+  background: rgba(16, 185, 129, 0.05);
+  border: 2px dashed rgba(16, 185, 129, 0.45);
+}
+
+.img-option-card.camera-card:hover,
+.img-option-card.camera-card:focus-visible {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.18);
+}
+
+/* Card Icons */
+.img-card-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  transition: transform 0.2s ease;
+}
+
+.img-card-icon-wrap.upload {
+  background: rgba(2, 132, 199, 0.14);
+  color: #0284c7;
+}
+
+.img-card-icon-wrap.camera {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.img-option-card:hover .img-card-icon-wrap {
+  transform: scale(1.1);
+}
+
+/* Card Text */
+.img-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 14px;
+}
+
+.img-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary, #f1f5f9);
+}
+
+[data-theme="light"] .img-card-title,
+body:not(.dark) .img-card-title {
+  color: #0f172a;
+}
+
+.img-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  font-weight: 500;
+}
+
+.img-card-limit {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Card Action Buttons */
+.img-card-action-btn {
+  padding: 8px 18px;
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   border: none;
   transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  pointer-events: none; /* Clicking whole card triggers */
 }
 
-.img-upload-btn.upload {
+.img-card-action-btn.upload {
   background: #0284c7;
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
 }
 
-.img-upload-btn.upload:hover {
-  background: #0369a1;
-  transform: translateY(-1px);
-}
-
-.img-upload-btn.camera {
+.img-card-action-btn.camera {
   background: #10b981;
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-.img-upload-btn.camera:hover {
-  background: #059669;
-  transform: translateY(-1px);
-}
+/* ==========================================================================
+   SELECTED PREVIEW CARD
+   ========================================================================== */
 
-.img-preview-box {
-  position: relative;
+.img-selected-preview-card {
+  border: 1.5px solid var(--border-color, #334155);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border-color, #334155);
   background: #090f1d;
   display: flex;
+  flex-direction: column;
+}
+
+[data-theme="light"] .img-selected-preview-card,
+body:not(.dark) .img-selected-preview-card {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.img-preview-top-bar {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  max-height: 320px;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border-bottom: 1px solid var(--border-color, #334155);
 }
 
-.img-preview-image {
-  max-width: 100%;
-  max-height: 320px;
-  object-fit: contain;
-  display: block;
+[data-theme="light"] .img-preview-top-bar,
+body:not(.dark) .img-preview-top-bar {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
 }
 
-.img-preview-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.95) 100%);
-  padding: 14px;
-  display: flex;
-  justify-content: center;
+.img-preview-status-badge {
+  color: #10b981;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.img-preview-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.img-btn-action {
-  padding: 6px 12px;
+.img-btn-inline-remove {
+  background: rgba(220, 38, 38, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.3);
   border-radius: 6px;
-  font-size: 11.5px;
+  padding: 4px 10px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   transition: all 0.15s ease;
 }
 
-.img-btn-action.change {
-  background: #0284c7;
-  color: #ffffff;
-}
-
-.img-btn-action.camera {
-  background: #10b981;
-  color: #ffffff;
-}
-
-.img-btn-action.remove {
+.img-btn-inline-remove:hover {
   background: #dc2626;
   color: #ffffff;
 }
 
-.img-btn-action:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.img-preview-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #020617;
+  max-height: 280px;
 }
 
-.img-upload-error {
+[data-theme="light"] .img-preview-display,
+body:not(.dark) .img-preview-display {
+  background: #ffffff;
+}
+
+.img-preview-image {
+  max-width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.img-change-options-bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.8);
+  border-top: 1px solid var(--border-color, #334155);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+[data-theme="light"] .img-change-options-bar,
+body:not(.dark) .img-change-options-bar {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.img-change-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.img-change-btn.upload {
+  background: rgba(2, 132, 199, 0.16);
+  color: #38bdf8;
+  border: 1px solid rgba(2, 132, 199, 0.35);
+}
+
+.img-change-btn.upload:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.img-change-btn.camera {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.img-change-btn.camera:hover {
+  background: #10b981;
+  color: #ffffff;
+}
+
+/* Errors */
+.img-upload-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #f87171;
+  font-size: 12px;
+  font-weight: 600;
   padding: 6px 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.25);
   border-radius: 6px;
 }

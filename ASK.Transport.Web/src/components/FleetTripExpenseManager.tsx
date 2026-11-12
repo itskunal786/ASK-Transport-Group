@@ -151,6 +151,7 @@ export default function FleetTripExpenseManager() {
 
   // Receipt Preview & Upload Modal
   const [selectedExpenseForSlip, setSelectedExpenseForSlip] = useState<TripExpense | null>(null);
+  const [tempSlipPhoto, setTempSlipPhoto] = useState('');
   const [newReceiptPhoto, setNewReceiptPhoto] = useState('');
 
   // Rejection Modal
@@ -494,7 +495,10 @@ export default function FleetTripExpenseManager() {
                     {exp.odometerReading && <span className="fleet-exp-chip">🧭 Odo: {exp.odometerReading} km</span>}
                     <button
                       type="button"
-                      onClick={() => setSelectedExpenseForSlip(exp)}
+                      onClick={() => {
+                        setSelectedExpenseForSlip(exp);
+                        setTempSlipPhoto(exp.receiptPhotoUrl || '');
+                      }}
                       className="fleet-expense-btn-slip"
                       style={!exp.receiptPhotoUrl ? { background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.25)' } : undefined}
                     >
@@ -776,27 +780,46 @@ export default function FleetTripExpenseManager() {
             <div style={{ textAlign: 'left', margin: '14px 0' }}>
               <ImageUploadOrCapture
                 label="RECEIPT / SLIP PHOTO (MAX 2 MB):"
-                value={selectedExpenseForSlip.receiptPhotoUrl}
-                onChange={(dataUrl) => {
-                  setExpenses(prev => prev.map(x => x.id === selectedExpenseForSlip.id ? { ...x, receiptPhotoUrl: dataUrl } : x));
-                  setSelectedExpenseForSlip({ ...selectedExpenseForSlip, receiptPhotoUrl: dataUrl });
-                }}
-                onRemove={() => {
-                  setExpenses(prev => prev.map(x => x.id === selectedExpenseForSlip.id ? { ...x, receiptPhotoUrl: '' } : x));
-                  setSelectedExpenseForSlip({ ...selectedExpenseForSlip, receiptPhotoUrl: '' });
-                }}
-                placeholderText="Upload an image (Max 2 MB) or take a photo"
+                value={tempSlipPhoto}
+                onChange={(dataUrl) => setTempSlipPhoto(dataUrl)}
+                onRemove={() => setTempSlipPhoto('')}
+                placeholderText="Select an option below to upload slip proof or capture with camera:"
               />
             </div>
 
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button
                 type="button"
                 onClick={() => setSelectedExpenseForSlip(null)}
                 className="fleet-expense-btn-cancel"
-                style={{ padding: '8px 20px' }}
+                style={{ padding: '8px 18px', fontSize: '13px' }}
               >
-                Close
+                ✕ Cancel / रद्द करें
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setExpenses(prev => prev.map(x => x.id === selectedExpenseForSlip.id ? { ...x, receiptPhotoUrl: tempSlipPhoto } : x));
+                  setSelectedExpenseForSlip(null);
+                  alert('✓ Receipt slip proof successfully submitted & saved!');
+                }}
+                className="fleet-expense-btn-submit"
+                style={{
+                  padding: '8px 22px',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)'
+                }}
+              >
+                ✓ Submit Slip / सबमिट करें
               </button>
             </div>
           </div>
