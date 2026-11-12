@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
-import LanguageToggle from '../../components/LanguageToggle';
 import { useLanguage } from '../../context/LanguageContext';
 import {
   getAdminOperationsSummary,
@@ -3317,7 +3316,6 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             </button>
           </div>
           <div className="admin-top-profile">
-            <LanguageToggle />
             <ThemeToggle />
 
             {/* SUPER ADMIN APPROVAL NOTIFICATION BELL */}

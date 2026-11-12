@@ -36,7 +36,7 @@ export default function InactivityReLoginModal({
   const handleUnlockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password.trim()) {
-      setError('Please enter your password to unlock. / कृपया अनलॉक करने के लिए पासवर्ड दर्ज करें।');
+      setError('Please enter your password to unlock.');
       return;
     }
 
@@ -82,9 +82,6 @@ export default function InactivityReLoginModal({
           <h2 id="inactivity-title" className="inactivity-title">
             Session Expired due to Inactivity
           </h2>
-          <div className="inactivity-sub-hindi">
-            निष्क्रियता के कारण आपका सत्र लॉक कर दिया गया है
-          </div>
 
           <p className="inactivity-explanation">
             No activity was detected on the portal for 15 minutes. To protect sensitive logistics and financial data, your active session was suspended. Re-enter your password to unlock and resume instantly without losing your work.
@@ -122,7 +119,7 @@ export default function InactivityReLoginModal({
           <div className="inactivity-field-wrap">
             <label htmlFor="inactivity-password" className="inactivity-label">
               <Lock size={13} />
-              <span>Password to Re-Authenticate / पासवर्ड दर्ज करें</span>
+              <span>Password to Re-Authenticate</span>
             </label>
 
             <div className="inactivity-input-box">
@@ -158,12 +155,12 @@ export default function InactivityReLoginModal({
             {loading ? (
               <>
                 <RefreshCw size={16} className="inactivity-spinner" />
-                <span>Verifying Credentials... / सत्यापन हो रहा है...</span>
+                <span>Verifying Credentials...</span>
               </>
             ) : (
               <>
                 <LogIn size={16} />
-                <span>Quick Re-Login & Resume / तुरंत पुनः लॉगिन करें</span>
+                <span>Quick Re-Login & Resume</span>
               </>
             )}
           </button>
@@ -177,7 +174,7 @@ export default function InactivityReLoginModal({
             className="inactivity-switch-btn"
             disabled={loading}
           >
-            <span>Sign in with a different account / मुख्य लॉगिन पेज पर जाएं</span>
+            <span>Sign in with a different account</span>
             <ArrowRight size={14} />
           </button>
         </div>

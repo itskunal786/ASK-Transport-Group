@@ -12,34 +12,27 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem('ask_transport_lang');
-      return saved === 'hi' ? 'hi' : 'en'; // English is default
-    } catch {
-      return 'en';
-    }
-  });
+  const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
     try {
-      localStorage.setItem('ask_transport_lang', language);
-      document.documentElement.setAttribute('lang', language);
+      localStorage.setItem('ask_transport_lang', 'en');
+      document.documentElement.setAttribute('lang', 'en');
     } catch {
       // ignore
     }
-  }, [language]);
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
   };
 
   const toggleLanguage = () => {
-    setLanguageState(prev => (prev === 'en' ? 'hi' : 'en'));
+    setLanguageState('en');
   };
 
-  const t = (en: string, hi: string): string => {
-    return language === 'hi' ? hi : en;
+  const t = (en: string, _hi?: string): string => {
+    return en;
   };
 
   return (

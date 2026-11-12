@@ -362,7 +362,7 @@ export default function Login() {
           <div className="login-field">
 
             <label htmlFor="email">
-              Email Address or User ID / ईमेल या यूज़र आईडी
+              Email Address or User ID
             </label>
 
             <div className="field-control">

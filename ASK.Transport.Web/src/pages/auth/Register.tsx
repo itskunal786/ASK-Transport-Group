@@ -130,7 +130,7 @@ export default function Register() {
 
       await verifyOtp({ email: trimmedEmail, otp: trimmedOtp });
       setIsEmailVerified(true);
-      setOtpNotification('✓ Email verified successfully! (ईमेल सत्यापित हो गया)');
+      setOtpNotification('✓ Email verified successfully!');
       try {
         localStorage.setItem(`ask_verified_${trimmedEmail.toLowerCase()}`, 'true');
         sessionStorage.setItem(`ask_verified_${trimmedEmail.toLowerCase()}`, 'true');
@@ -138,7 +138,7 @@ export default function Register() {
     } catch {
       if (trimmedOtp === activeOtpCode || trimmedOtp === '123456' || trimmedOtp === '4821' || trimmedOtp.length === 6) {
         setIsEmailVerified(true);
-        setOtpNotification('✓ Email verified successfully! (ईमेल सत्यापित हो गया)');
+        setOtpNotification('✓ Email verified successfully!');
         try {
           localStorage.setItem(`ask_verified_${trimmedEmail.toLowerCase()}`, 'true');
           sessionStorage.setItem(`ask_verified_${trimmedEmail.toLowerCase()}`, 'true');
@@ -454,15 +454,15 @@ export default function Register() {
           <div className="register-field register-email-field-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <label htmlFor="email" style={{ margin: 0 }}>
-                Email Address / ईमेल पता
+                Email Address
               </label>
               {isEmailVerified ? (
                 <span className="reg-email-verified-tag" style={{ color: '#16a34a', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <CheckCircle2 size={14} /> Email Verified / सत्यापित
+                  <CheckCircle2 size={14} /> Email Verified
                 </span>
               ) : otpSent ? (
                 <span style={{ color: '#0284c7', fontSize: '11.5px', fontWeight: 700 }}>
-                  ✉️ OTP Dispatched / भेजा गया
+                  ✉️ OTP Dispatched
                 </span>
               ) : null}
             </div>
@@ -517,7 +517,7 @@ export default function Register() {
               <div className="register-inline-otp-card">
                 <div className="register-otp-card-header">
                   <span className="register-otp-card-title">
-                    <Mail size={15} /> <strong>Email Verification Code / ईमेल ओटीपी</strong>
+                    <Mail size={15} /> <strong>Email Verification Code</strong>
                   </span>
                   {otpTimer > 0 ? (
                     <span className="register-otp-timer">
@@ -740,7 +740,7 @@ export default function Register() {
               </div>
               <h2 className="reg-modal-title">Account Created &amp; User ID Generated</h2>
               <div className="reg-modal-subtitle-hi">
-                आपका नया यूज़र आईडी जनरेट होकर ईमेल और मोबाइल पर भेज दिया गया है
+                Your unique User ID has been generated and dispatched to your email and mobile phone
               </div>
             </div>
 
@@ -759,7 +759,7 @@ export default function Register() {
                 }}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copied ? 'Copied! / कॉपी हुआ' : 'Copy ID'}</span>
+                <span>{copied ? 'Copied!' : 'Copy ID'}</span>
               </button>
             </div>
 
@@ -806,7 +806,7 @@ export default function Register() {
                 className="reg-btn-primary"
                 onClick={() => navigate(`/login?userId=${encodeURIComponent(successInfo.userIdCode)}`)}
               >
-                <span>Sign In with User ID / लॉगिन करें</span>
+                <span>Sign In with User ID</span>
                 <ArrowRight size={15} />
               </button>
               <button
@@ -814,7 +814,7 @@ export default function Register() {
                 className="reg-btn-secondary"
                 onClick={() => navigate(`/verify-otp?email=${encodeURIComponent(successInfo.email)}&userId=${encodeURIComponent(successInfo.userIdCode)}`)}
               >
-                <span>Verify OTP / ओटीपी</span>
+                <span>Verify OTP</span>
               </button>
             </div>
           </div>

@@ -84,7 +84,7 @@ export default function ImageUploadOrCapture({
         <div className="img-selected-preview-card">
           <div className="img-preview-top-bar">
             <span className="img-preview-status-badge">
-              <CheckCircle2 size={15} /> Photo Evidence Selected / फोटो चयनित
+              <CheckCircle2 size={15} /> Photo Evidence Selected
             </span>
             {onRemove && (
               <button

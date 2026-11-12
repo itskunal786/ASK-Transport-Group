@@ -794,7 +794,7 @@ export default function FleetTripExpenseManager() {
                 className="fleet-expense-btn-cancel"
                 style={{ padding: '8px 18px', fontSize: '13px' }}
               >
-                ✕ Cancel / रद्द करें
+                ✕ Cancel
               </button>
               <button
                 type="button"
@@ -819,7 +819,7 @@ export default function FleetTripExpenseManager() {
                   boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)'
                 }}
               >
-                ✓ Submit Slip / सबमिट करें
+                ✓ Submit Slip
               </button>
             </div>
           </div>

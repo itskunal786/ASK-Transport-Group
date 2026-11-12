@@ -582,7 +582,7 @@ export default function ReverseLogisticsRtoManager() {
                 className="rto-btn-cancel"
                 style={{ padding: '9px 18px', fontSize: '13px' }}
               >
-                ✕ Cancel / रद्द करें
+                ✕ Cancel
               </button>
               <button
                 type="button"
@@ -618,7 +618,7 @@ export default function ReverseLogisticsRtoManager() {
                   boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)'
                 }}
               >
-                {savingPhoto ? 'Saving...' : '✓ Submit Evidence / सबमिट करें'}
+                {savingPhoto ? 'Saving...' : '✓ Submit Evidence'}
               </button>
             </div>
           </div>

@@ -19,7 +19,6 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import ThemeToggle from './ThemeToggle';
-import LanguageToggle from './LanguageToggle';
 
 export default function PublicNavbar() {
   const { user, logout } = useAuth();
@@ -136,7 +135,6 @@ export default function PublicNavbar() {
         {/* RIGHT ACTION CENTER */}
         <div className="landing-header-actions">
           <div className="landing-controls-cluster">
-            <LanguageToggle />
             <ThemeToggle />
           </div>
 
@@ -299,7 +297,6 @@ export default function PublicNavbar() {
 
           <div className="mobile-drawer-actions">
             <div className="mobile-controls-row">
-              <LanguageToggle />
               <ThemeToggle />
             </div>
 
