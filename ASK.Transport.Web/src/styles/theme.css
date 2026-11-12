@@ -95,6 +95,45 @@
 
 
 /* ========================================================
+   GLOBAL CSS CUSTOM PROPERTIES (VARIABLES)
+   Ensures 100% Crisp, High-Contrast Typography Across All Modes
+   ======================================================== */
+:root,
+[data-theme="light"],
+body.light {
+  --bg-app: #f4f7fb;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-inner: #f8fafc;
+  --bg-subtle: #f1f5f9;
+  --bg-input: #ffffff;
+  --border-color: #cbd5e1;
+  --border: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-highlight: #0284c7;
+}
+
+[data-theme="dark"],
+html[data-theme="dark"],
+body.dark,
+.dark {
+  --bg-app: #090f1d;
+  --bg-surface: #111a2e;
+  --bg-card: #111a2e;
+  --bg-card-inner: #0f172a;
+  --bg-subtle: #0c1527;
+  --bg-input: #091122;
+  --border-color: #1e2c47;
+  --border: #1e2c47;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-highlight: #38bdf8;
+}
+
+/* ========================================================
    2. DARK THEME GLOBAL FOUNDATION
    Applied on: [data-theme="dark"], html[data-theme="dark"], body.dark
    ======================================================== */
@@ -104,6 +143,9 @@ html[data-theme="dark"],
 body.dark {
   background-color: #090f1d !important;
   color: #cbd5e1 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 [data-theme="dark"] body,

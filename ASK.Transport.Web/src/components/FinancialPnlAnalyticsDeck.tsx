@@ -357,7 +357,7 @@ export const FinancialPnlAnalyticsDeck: React.FC<FinancialPnlAnalyticsDeckProps>
 
       {/* 5. DOWNLOADABLE DATA LEDGERS (4 COMPLIANCE CARDS) */}
       <div>
-        <h3 style={{ margin: '0 0 14px', fontSize: '15px', color: 'var(--text-primary, #0f172a)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #f8fafc)', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <FileSpreadsheet size={18} style={{ color: '#0284c7' }} />
           <span>Export Structured Compliance Ledgers &amp; Statutory Reports</span>
         </h3>

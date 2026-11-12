@@ -4299,13 +4299,13 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                             type="button"
                             onClick={() => handleOpenChallan(b)}
                             style={{
-                              padding: '5px 10px',
+                              padding: '6px 12px',
                               borderRadius: '6px',
-                              border: '1px solid #c7d2fe',
-                              background: '#eef2ff',
-                              color: '#4338ca',
-                              fontSize: '11.5px',
-                              fontWeight: 600,
+                              border: '1px solid rgba(56, 189, 248, 0.4)',
+                              background: 'rgba(56, 189, 248, 0.12)',
+                              color: '#38bdf8',
+                              fontSize: '12px',
+                              fontWeight: 700,
                               cursor: 'pointer'
                             }}
                             title={`Vehicle: ${b.assignedVehicle} | Driver: ${b.assignedDriver}`}
@@ -6600,16 +6600,16 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                         )}
 
                         {/* PARTICULARS */}
-                        <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <div style={{ color: '#334155' }}>
+                        <div style={{ fontSize: '12.5px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ color: 'var(--text-primary)' }}>
                             <strong>📍 Checkpoint:</strong> {v.locationName}
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
-                            <span>Driver: <strong style={{ color: '#0f172a' }}>{v.driverName}</strong></span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                            <span>Driver: <strong style={{ color: 'var(--text-primary)' }}>{v.driverName}</strong></span>
                             <span>Tel: {v.driverPhone}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ color: '#64748b' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>
                               Fuel: <strong>{v.fuelPercent}%</strong> | Ping: {v.lastPing}
                             </span>
                             <span className={`geofence-tag ${isDeviated ? 'geofence-dev' : 'geofence-ok'}`}>
@@ -6844,12 +6844,12 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       <div className="admin-card-unit-head">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span className="shipment-id-badge">{t.id}</span>
-                          <span style={{ fontWeight: 700, color: '#4338ca', fontSize: '11.5px' }}>{t.consignmentNo}</span>
+                          <span style={{ fontWeight: 800, color: '#38bdf8', fontSize: '12px', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.25)' }}>{t.consignmentNo}</span>
                         </div>
                         <span
                           className={`admin-badge-status ticket-prio-badge ticket-prio-${t.priority.toLowerCase()} admin-priority-${t.priority.toLowerCase()}`}
                           data-priority={t.priority}
-                          style={{ padding: '3px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: 700 }}
+                          style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 800 }}
                         >
                           {t.priority}
                         </span>
@@ -6857,21 +6857,21 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                       <div className="admin-card-unit-body">
                         <div>
-                          <strong style={{ fontSize: '13.5px', color: 'var(--text-primary, #0f172a)' }}>{t.customerName}</strong>
-                          <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>📞 {t.customerPhone}</span>
+                          <strong style={{ fontSize: '14.5px', color: 'var(--text-primary)', fontWeight: 800, display: 'block' }}>{t.customerName}</strong>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>📞 {t.customerPhone}</span>
                         </div>
 
-                        <div style={{ background: 'var(--bg-input, #f8fafc)', padding: '8px 10px', borderRadius: '8px', fontSize: '12px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{t.subject}</div>
-                          <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '2px' }}>[{t.category}] • {t.createdAt}</div>
+                        <div className="admin-ticket-subject-card" style={{ padding: '10px 12px', borderRadius: '8px', fontSize: '13px' }}>
+                          <div style={{ fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4 }}>{t.subject}</div>
+                          <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 500 }}>[{t.category}] • {t.createdAt}</div>
                         </div>
 
                         <div className="admin-card-unit-row">
-                          <span style={{ color: 'var(--text-secondary, #64748b)' }}>Status:</span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '13px' }}>Status:</span>
                           <span
                             className={`admin-badge-status admin-support-status admin-support-status-${t.status.toLowerCase().replace(/\s+/g, '-')}`}
                             data-status={t.status}
-                            style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 700 }}
+                            style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 800 }}
                           >
                             {t.status}
                           </span>
@@ -6886,7 +6886,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                             setEditingTicket(t);
                             setTicketResolutionNote(t.resolutionNotes || '');
                           }}
-                          style={{ padding: '5px 12px', fontSize: '11.5px', width: '100%' }}
+                          style={{ padding: '8px 16px', fontSize: '12.5px', fontWeight: 800, width: '100%' }}
                         >
                           Manage Ticket
                         </button>
@@ -8062,10 +8062,10 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
               </div>
 
               <form onSubmit={handleAddDriver}>
-                <div style={{ margin: '14px 24px 0', padding: '10px 14px', background: '#f5f3ff', border: '1px dashed #818cf8', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ margin: '14px 24px 0', padding: '12px 16px', background: 'rgba(99, 102, 241, 0.12)', border: '1px dashed rgba(99, 102, 241, 0.45)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <strong style={{ fontSize: '12px', color: '#4338ca' }}>🤖 AI Auto-Scan Driver License</strong>
-                    <p style={{ margin: 0, fontSize: '11px', color: '#6366f1' }}>Upload DL photo to auto-fill name, phone &amp; Sarathi status</p>
+                    <strong style={{ fontSize: '13px', color: '#a5b4fc', display: 'block' }}>🤖 AI Auto-Scan Driver License</strong>
+                    <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: '#cbd5e1' }}>Upload DL photo to auto-fill name, phone &amp; Sarathi status</p>
                   </div>
                   <button
                     type="button"
@@ -8073,7 +8073,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       setAiScannerDocType('driving_license');
                       setShowAiScannerModal(true);
                     }}
-                    style={{ padding: '6px 14px', background: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '8px 16px', background: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
                   >
                     Scan DL with AI
                   </button>
@@ -8326,7 +8326,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       type="text"
                       disabled
                       value={editingVehiclePlate}
-                      style={{ background: '#f1f5f9', fontWeight: 800, color: '#0f172a' }}
+                      style={{ background: 'var(--bg-input, #0f172a)', fontWeight: 800, color: 'var(--text-primary, #f8fafc)', border: '1px solid var(--border-color, #1e2c47)' }}
                     />
                   </div>
 
@@ -8572,7 +8572,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
             <div className="rights-modal-box" onClick={e => e.stopPropagation()}>
               <div className="rights-modal-head">
                 <div>
-                  <h2 style={{ color: '#4338ca' }}>🛡️ Super Admin Rights Delegation</h2>
+                  <h2 style={{ color: '#38bdf8' }}>🛡️ Super Admin Rights Delegation</h2>
                   <p>Assign specific permissions for: <strong>{rightsModalUser.name}</strong> ({rightsModalUser.role})</p>
                 </div>
                 <button

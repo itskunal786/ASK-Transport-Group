@@ -675,8 +675,8 @@ body.dark .ssd-key-box,
 }
 
 .ssd-card-human-title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 16.5px;
+  font-weight: 800;
   margin: 0;
   color: var(--text-primary, #0f172a);
 }
@@ -684,20 +684,24 @@ body.dark .ssd-key-box,
 [data-theme="dark"] .ssd-card-human-title,
 body.dark .ssd-card-human-title,
 .dark .ssd-card-human-title {
-  color: #f8fafc !important;
+  color: #ffffff !important;
 }
 
 .ssd-card-desc {
-  font-size: 12px;
-  color: #64748b;
+  font-size: 13.5px;
+  color: #475569;
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
 [data-theme="dark"] .ssd-card-desc,
 body.dark .ssd-card-desc,
 .dark .ssd-card-desc {
-  color: #94a3b8 !important;
+  color: #e2e8f0 !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+  font-weight: 500 !important;
 }
 
 /* ----------------------------------------------------------------------------
@@ -758,8 +762,17 @@ body.dark .ssd-toggle-segmented,
 }
 
 .ssd-val-preview {
-  font-size: 11px;
-  color: #64748b;
+  font-size: 12px;
+  color: #0284c7;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .ssd-val-preview,
+body.dark .ssd-val-preview,
+.dark .ssd-val-preview {
+  color: #38bdf8 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
 }
 
 /* Standard Stepper + Input Group */
@@ -800,7 +813,8 @@ body.dark .ssd-stepper-btn,
 .dark .ssd-stepper-btn {
   background: #1e293b !important;
   border-color: #334155 !important;
-  color: #94a3b8 !important;
+  color: #f8fafc !important;
+  font-weight: 800 !important;
 }
 
 [data-theme="dark"] .ssd-stepper-btn:hover,
