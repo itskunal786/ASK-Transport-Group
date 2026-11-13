@@ -1087,6 +1087,20 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
   if (cleanUrl.includes('/admin/users') || cleanUrl.includes('/users')) {
     let users = getStorageItem('ask_admin_users', SEED_ADMIN_USERS);
 
+    // Guarantee all 4 enterprise seed users exist in the directory
+    if (!Array.isArray(users) || users.length < SEED_ADMIN_USERS.length) {
+      const existingIds = new Set((Array.isArray(users) ? users : []).map((u: any) => u.id));
+      const merged = Array.isArray(users) ? [...users] : [];
+      for (const s of SEED_ADMIN_USERS) {
+        if (!existingIds.has(s.id)) {
+          merged.push(s);
+          existingIds.add(s.id);
+        }
+      }
+      users = merged;
+      setStorageItem('ask_admin_users', users);
+    }
+
     if (cleanUrl.includes('/role') && method === 'PUT') {
       const id = parseInt(cleanUrl.split('/users/')[1]?.split('/')[0], 10);
       const role = parsedBody?.role || 'Admin';
