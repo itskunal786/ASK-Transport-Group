@@ -4744,95 +4744,32 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
               {/* 3. SEARCH & ROLE FILTER TOOLBAR */}
               <div className="user-dir-toolbar">
-                <div className="user-dir-search-wrap">
-                  <span className="user-dir-search-icon">🔍</span>
-                  <input
-                    type="text"
-                    value={customerSearch}
-                    onChange={e => setCustomerSearch(e.target.value)}
-                    placeholder={t('Search users by name, email, phone, role or ID...', 'नाम, ईमेल, फोन या भूमिका से खोजें...')}
-                    className="user-dir-search-input"
-                  />
-                  {customerSearch ? (
-                    <button
-                      type="button"
-                      onClick={() => setCustomerSearch('')}
-                      className="user-dir-search-clear"
-                      title="Clear search"
-                    >
-                      ✕
-                    </button>
-                  ) : (
-                    <span className="user-dir-search-kbd">⌘K</span>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <div className="user-dir-filter-chips">
-                    <button
-                      type="button"
-                      onClick={() => setUserRoleFilter('All')}
-                      className={`user-dir-chip ${userRoleFilter === 'All' ? 'active' : ''}`}
-                    >
-                      {t('All', 'सभी')} ({totalUsersCount})
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setUserRoleFilter('SuperAdmin')}
-                      className={`user-dir-chip ${userRoleFilter === 'SuperAdmin' ? 'active' : ''}`}
-                    >
-                      👑 Super Admins ({superAdminsCount})
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setUserRoleFilter('Admin')}
-                      className={`user-dir-chip ${userRoleFilter === 'Admin' ? 'active' : ''}`}
-                    >
-                      ⚡ Admins ({adminsCount})
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setUserRoleFilter('User')}
-                      className={`user-dir-chip ${userRoleFilter === 'User' ? 'active' : ''}`}
-                    >
-                      👤 Users / Shippers ({usersCount})
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setUserRoleFilter('Active')}
-                      className={`user-dir-chip ${userRoleFilter === 'Active' ? 'active' : ''}`}
-                    >
-                      🟢 Active ({activeUsersCount})
-                    </button>
-
-                    {awaitingSuperAdminCount > 0 && (
+                <div className="user-dir-toolbar-top">
+                  <div className="user-dir-search-wrap">
+                    <span className="user-dir-search-icon">🔍</span>
+                    <input
+                      type="text"
+                      value={customerSearch}
+                      onChange={e => setCustomerSearch(e.target.value)}
+                      placeholder={t('Search users by name, email, phone, role or ID...', 'नाम, ईमेल, फोन या भूमिका से खोजें...')}
+                      className="user-dir-search-input"
+                    />
+                    {customerSearch ? (
                       <button
                         type="button"
-                        onClick={() => setUserRoleFilter('Reverify')}
-                        className={`user-dir-chip reverify ${userRoleFilter === 'Reverify' ? 'active' : ''}`}
+                        onClick={() => setCustomerSearch('')}
+                        className="user-dir-search-clear"
+                        title="Clear search"
                       >
-                        👑 Needs SuperAdmin Pass ({awaitingSuperAdminCount})
+                        ✕
                       </button>
-                    )}
-
-                    {pendingApprovalCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setUserRoleFilter('Pending')}
-                        className={`user-dir-chip ${userRoleFilter === 'Pending' ? 'active' : ''}`}
-                        style={{ color: '#d97706', borderColor: '#f59e0b' }}
-                      >
-                        🔔 Needs Action ({pendingApprovalCount})
-                      </button>
+                    ) : (
+                      <span className="user-dir-search-kbd">⌘K</span>
                     )}
                   </div>
 
                   {/* View Mode Toggle: List vs Cards */}
-                  <div className="user-dir-view-mode-toggle" style={{ marginLeft: 'auto' }}>
+                  <div className="user-dir-view-mode-toggle">
                     <button
                       type="button"
                       onClick={() => setUserDirViewMode('list')}
@@ -4851,6 +4788,69 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     </button>
                   </div>
                 </div>
+
+                <div className="user-dir-filter-chips">
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('All')}
+                    className={`user-dir-chip ${userRoleFilter === 'All' ? 'active' : ''}`}
+                  >
+                    {t('All', 'सभी')} ({totalUsersCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('SuperAdmin')}
+                    className={`user-dir-chip ${userRoleFilter === 'SuperAdmin' ? 'active' : ''}`}
+                  >
+                    👑 Super Admins ({superAdminsCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('Admin')}
+                    className={`user-dir-chip ${userRoleFilter === 'Admin' ? 'active' : ''}`}
+                  >
+                    ⚡ Admins ({adminsCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('User')}
+                    className={`user-dir-chip ${userRoleFilter === 'User' ? 'active' : ''}`}
+                  >
+                    👤 Users / Shippers ({usersCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUserRoleFilter('Active')}
+                    className={`user-dir-chip ${userRoleFilter === 'Active' ? 'active' : ''}`}
+                  >
+                    🟢 Active ({activeUsersCount})
+                  </button>
+
+                  {awaitingSuperAdminCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setUserRoleFilter('Reverify')}
+                      className={`user-dir-chip reverify ${userRoleFilter === 'Reverify' ? 'active' : ''}`}
+                    >
+                      👑 Needs SuperAdmin Pass ({awaitingSuperAdminCount})
+                    </button>
+                  )}
+
+                  {pendingApprovalCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setUserRoleFilter('Pending')}
+                      className={`user-dir-chip ${userRoleFilter === 'Pending' ? 'active' : ''}`}
+                      style={{ color: '#d97706', borderColor: '#f59e0b' }}
+                    >
+                      🔔 Needs Action ({pendingApprovalCount})
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* 4. USER DIRECTORY VIEW: EXECUTIVE TABLE (LIST) OR MODERN GRID CARDS */}
@@ -4860,11 +4860,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   <table className="user-dir-table">
                     <thead>
                       <tr>
-                        <th>{t('User & Identity', 'उपयोगकर्ता पहचान')}</th>
-                        <th>{t('Official Contact', 'संपर्क')}</th>
-                        <th>{t('Assigned Role', 'भूमिका')}</th>
-                        <th>{t('Clearance & Status', 'क्लीयरेंस स्थिति')}</th>
-                        <th style={{ textAlign: 'right' }}>{t('Actions', 'कार्रवाई')}</th>
+                        <th style={{ width: '31%' }}>{t('User & Identity', 'उपयोगकर्ता पहचान')}</th>
+                        <th style={{ width: '24%' }}>{t('Official Contact', 'संपर्क')}</th>
+                        <th style={{ width: '15%' }}>{t('Assigned Role', 'भूमिका')}</th>
+                        <th style={{ width: '16%' }}>{t('Clearance & Status', 'क्लीयरेंस स्थिति')}</th>
+                        <th style={{ width: '14%', textAlign: 'right' }}>{t('Actions', 'कार्रवाई')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -4891,12 +4891,18 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                   </div>
                                   <div className="user-dir-name-col">
                                     <div className="user-dir-name-row">
-                                      <span className="user-dir-name">{u.name}</span>
+                                      <span className="user-dir-name" title={u.name}>{u.name}</span>
                                       <span className="user-dir-id-badge">
                                         🆔 {uIdCode}
                                       </span>
                                     </div>
-                                    <span className="user-dir-contact-sub">
+                                    <span className="user-dir-contact-sub" title={
+                                      u.role === 'SuperAdmin'
+                                        ? 'Executive Management • Master Clearance'
+                                        : u.role === 'Admin'
+                                        ? 'Operations & Fleet Command'
+                                        : 'Enterprise Consignee & Shipper'
+                                    }>
                                       {u.role === 'SuperAdmin'
                                         ? t('Executive Management • Master Clearance', 'कार्यकारी प्रबंधन • मुख्य क्लीयरेंस')
                                         : u.role === 'Admin'
@@ -4913,7 +4919,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                     href={`mailto:${u.email}`}
                                     onClick={e => e.stopPropagation()}
                                     className="user-dir-contact-item email"
-                                    title={t('Send Email', 'ईमेल भेजें')}
+                                    title={u.email}
                                   >
                                     <span className="contact-icon">📧</span>
                                     <span className="contact-text">{u.email}</span>
@@ -4923,7 +4929,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                       href={`tel:${u.phone}`}
                                       onClick={e => e.stopPropagation()}
                                       className="user-dir-contact-item phone"
-                                      title={t('Call Phone', 'कॉल करें')}
+                                      title={u.phone}
                                     >
                                       <span className="contact-icon">📞</span>
                                       <span className="contact-text">{u.phone}</span>
@@ -4952,7 +4958,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                               </td>
 
                               <td>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start' }}>
+                                <div className="user-dir-status-cell">
                                   <span className={`user-dir-status-pill ${u.isActive ? 'active' : 'suspended'}`}>
                                     <span className={`user-dir-status-dot ${u.isActive ? 'active' : 'suspended'}`} />
                                     {u.isActive ? t('Active', 'सक्रिय') : t('Suspended', 'निलंबित')}
@@ -4960,23 +4966,23 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                                   {u.role === 'SuperAdmin' ? (
                                     <span className="user-dir-clearance-badge verified super">
-                                      👑 {t('Full Master Clearance', 'मास्टर क्लीयरेंस')}
+                                      👑 {t('Full Master', 'मास्टर')}
                                     </span>
                                   ) : u.role === 'Admin' ? (
                                     <span className="user-dir-clearance-badge verified admin">
-                                      ⚡ {t('Admin Cleared', 'एडमिन क्लीयरेंस')}
+                                      ⚡ {t('Admin Cleared', 'एडमिन')}
                                     </span>
                                   ) : userApproved ? (
                                     <span className="user-dir-clearance-badge verified">
-                                      🟢 {t('Full Access (Dual Verified)', 'डुअल सत्यापित')}
+                                      🟢 {t('Dual Verified', 'सत्यापित')}
                                     </span>
                                   ) : isReverify ? (
                                     <span className="user-dir-clearance-badge reverify">
-                                      👑 {t('Needs SuperAdmin Pass', 'सुपरएडमिन पास प्रतीक्षित')}
+                                      👑 {t('SuperAdmin Pass', 'सुपरएडमिन')}
                                     </span>
                                   ) : (
                                     <span className="user-dir-clearance-badge pending">
-                                      🔔 {t('Approval Pending', 'सत्यापन प्रतीक्षित')}
+                                      🔔 {t('Approval Pending', 'प्रतीक्षित')}
                                     </span>
                                   )}
                                 </div>
@@ -4990,35 +4996,36 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                     onClick={() => handleOpenUserDetails(u)}
                                     title={t('Open Complete Profile & Actions', 'पूर्ण विवरण खोलें')}
                                   >
-                                    🔍 {t('Details', 'विवरण')}
+                                    <span>🔍</span>
+                                    <span>{t('Manage', 'प्रबंधन')}</span>
                                   </button>
 
                                   <button
                                     type="button"
-                                    className="user-dir-btn-action edit"
+                                    className="user-dir-btn-action icon-only edit"
                                     onClick={() => handleOpenEditUser(u)}
                                     title={t('Edit user details', 'विवरण संपादित करें')}
                                   >
-                                    ✏️ {t('Edit', 'बदलें')}
+                                    ✏️
                                   </button>
 
                                   <button
                                     type="button"
-                                    className={`user-dir-btn-action ${u.isActive ? 'suspend' : 'activate'}`}
+                                    className={`user-dir-btn-action icon-only ${u.isActive ? 'suspend' : 'activate'}`}
                                     onClick={() => handleToggleUserStatus(u)}
                                     title={u.isActive ? t('Suspend User Account', 'खाता निलंबित करें') : t('Activate User Account', 'सक्रिय करें')}
                                   >
-                                    {u.isActive ? t('Suspend', 'रोकें') : t('Activate', 'चालू करें')}
+                                    {u.isActive ? '⏸' : '▶'}
                                   </button>
 
                                   {user?.role === 'SuperAdmin' && canDelete && (
                                     <button
                                       type="button"
-                                      className="user-dir-btn-action delete"
+                                      className="user-dir-btn-action icon-only delete"
                                       onClick={() => handleOpenDeleteUser(u)}
                                       title={t('Delete User Permanently', 'उपयोगकर्ता हटाएं')}
                                     >
-                                      🗑️ {t('Delete', 'हटाएं')}
+                                      🗑️
                                     </button>
                                   )}
                                 </div>
