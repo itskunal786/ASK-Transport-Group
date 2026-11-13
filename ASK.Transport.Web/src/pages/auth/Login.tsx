@@ -23,6 +23,7 @@ export default function Login() {
   });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showDemoHelper, setShowDemoHelper] = useState(false);
   const [error, setError] = useState(() => {
     if (typeof window !== 'undefined') {
       const search = window.location.search;
@@ -39,9 +40,6 @@ export default function Login() {
     return '';
   });
   const [loading, setLoading] = useState(false);
-
-  const lastKnownEmail = typeof window !== 'undefined' ? sessionStorage.getItem('ask_last_user_email') : null;
-  const lastKnownUserId = typeof window !== 'undefined' ? sessionStorage.getItem('ask_last_registered_userid') : null;
 
   // Clear inputs on mount if no prefill provided
   useState(() => {
@@ -250,64 +248,38 @@ export default function Login() {
             <small>LOGISTICS & SUPPLY CHAIN</small>
           </div>
 
-          {/* Role Switcher Tabs */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' }}>
+          {/* Segmented Portal Switcher */}
+          <div className="login-portal-segmented-bar">
             <button
               type="button"
               onClick={() => handleSelectRole('customer')}
-              style={{
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: loginRole === 'customer' ? '2px solid #0284c7' : '1px solid #cbd5e1',
-                background: loginRole === 'customer' ? 'rgba(2, 132, 199, 0.12)' : '#ffffff',
-                color: loginRole === 'customer' ? '#0284c7' : '#64748b',
-                fontWeight: 800,
-                fontSize: '0.84rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
+              className={`login-portal-tab ${loginRole === 'customer' ? 'active' : ''}`}
             >
-              <span>👤</span> Customer Login
+              <span className="portal-tab-icon">👤</span>
+              <span className="portal-tab-text">Customer Portal</span>
             </button>
             <button
               type="button"
               onClick={() => handleSelectRole('admin')}
-              style={{
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: loginRole === 'admin' ? '2px solid #f59e0b' : '1px solid #cbd5e1',
-                background: loginRole === 'admin' ? 'rgba(245, 158, 11, 0.14)' : '#ffffff',
-                color: loginRole === 'admin' ? '#b45309' : '#64748b',
-                fontWeight: 800,
-                fontSize: '0.84rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
+              className={`login-portal-tab admin ${loginRole === 'admin' ? 'active' : ''}`}
             >
-              <span>🛡️</span> Admin / Super Admin
+              <span className="portal-tab-icon">🛡️</span>
+              <span className="portal-tab-text">Staff & Admin</span>
             </button>
           </div>
 
           <div className="form-heading">
+            <span className={`portal-badge-pill ${loginRole === 'admin' ? 'admin' : 'customer'}`}>
+              {loginRole === 'admin' ? '🛡️ OPERATIONS COMMAND ACCESS' : '🚚 FREIGHT & CONSIGNMENT ACCESS'}
+            </span>
 
-            <span>{loginRole === 'admin' ? 'ADMIN & SUPER ADMIN PORTAL' : 'CUSTOMER PORTAL'}</span>
-
-            <h2>{loginRole === 'admin' ? 'Staff & Administrator Sign In' : 'Sign in to your account'}</h2>
+            <h2>{loginRole === 'admin' ? 'Staff & Administrator Sign In' : 'Sign In to Your Account'}</h2>
 
             <p>
               {loginRole === 'admin'
-                ? 'Enter administrator credentials to access central operations deck. (Customer accounts cannot login here).'
-                : 'Enter your registered customer email and password. (Admin & Super Admin accounts cannot login here).'}
+                ? 'Authorized gateway for ASK Transport fleet operations, dispatch management, and executive control.'
+                : 'Manage your enterprise bookings, live GPS tracking, GST bilties, and freight invoices.'}
             </p>
-
           </div>
 
           {error && (
@@ -316,217 +288,47 @@ export default function Login() {
             </div>
           )}
 
-          {/* OFFICIAL DEMO & TEST CREDENTIALS ACCORDION / VAULT */}
-          {loginRole === 'admin' ? (
-            <div className="login-credentials-helper admin-credentials">
-              <div className="helper-header">
-                <span className="helper-shield">🛡️</span>
-                <div>
-                  <strong>Admin Operations Command Vault</strong>
-                  <small>Unique Enterprise Credentials (Strictly for ASK Staff)</small>
-                </div>
-              </div>
-
-              <div className="helper-roles-grid">
-                <div className="helper-role-card super">
-                  <div className="role-tag super-admin">👑 Super Admin Master</div>
-                  <div className="credential-row">
-                    <span>User ID:</span>
-                    <code>ASK-MASTER-7001</code>
-                  </div>
-                  <div className="credential-row">
-                    <span>Email:</span>
-                    <code>master.superadmin@asktransport.com</code>
-                  </div>
-                  <div className="credential-row">
-                    <span>Password:</span>
-                    <code>AskSuperMaster#2026!</code>
-                  </div>
-                  <button
-                    type="button"
-                    className="quick-fill-btn super"
-                    onClick={() => {
-                      setEmail('ASK-MASTER-7001');
-                      setPassword('AskSuperMaster#2026!');
-                      setError('');
-                    }}
-                  >
-                    ⚡ Auto-Fill Super Admin
-                  </button>
-                </div>
-
-                <div className="helper-role-card ops">
-                  <div className="role-tag ops-admin">⚡ Operations Admin</div>
-                  <div className="credential-row">
-                    <span>User ID:</span>
-                    <code>ASK-OPS-5002</code>
-                  </div>
-                  <div className="credential-row">
-                    <span>Email:</span>
-                    <code>operations.head@asktransport.com</code>
-                  </div>
-                  <div className="credential-row">
-                    <span>Password:</span>
-                    <code>AskOpsCommand#2026!</code>
-                  </div>
-                  <button
-                    type="button"
-                    className="quick-fill-btn ops"
-                    onClick={() => {
-                      setEmail('ASK-OPS-5002');
-                      setPassword('AskOpsCommand#2026!');
-                      setError('');
-                    }}
-                  >
-                    ⚡ Auto-Fill Operations Admin
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="login-credentials-helper customer-credentials">
-              <div className="helper-header">
-                <span className="helper-shield">👤</span>
-                <div>
-                  <strong>Registered Shipper & Customer Portal</strong>
-                  <small>B2B Freight Client Access (Cannot access Admin portal)</small>
-                </div>
-              </div>
-
-              <div className="helper-role-card cust">
-                <div className="role-tag customer">🚚 Verified B2B Shipper</div>
-                <div className="credential-row">
-                  <span>User ID / Email:</span>
-                  <code>ASK-CUST-30003</code> <em>(or user@askgroup.com)</em>
-                </div>
-                <div className="credential-row">
-                  <span>Password:</span>
-                  <code>User@123</code>
-                </div>
-                <button
-                  type="button"
-                  className="quick-fill-btn cust"
-                  onClick={() => {
-                    setEmail('ASK-CUST-30003');
-                    setPassword('User@123');
-                    setError('');
-                  }}
-                >
-                  ⚡ Auto-Fill Customer Credentials
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* QUICK RE-LOGIN CHIPS FOR USER ID & EMAIL */}
-          {(!email) && (lastKnownUserId || lastKnownEmail) && (
-            <div style={{ marginBottom: '14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-              {lastKnownUserId && (
-                <button
-                  type="button"
-                  onClick={() => handleEmailChange(lastKnownUserId)}
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.12)',
-                    border: '1px solid #10b981',
-                    color: '#059669',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    padding: '5px 12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                  title="Click to sign in with your auto-generated User ID"
-                >
-                  <span>🆔 User ID:</span>
-                  <strong>{lastKnownUserId}</strong>
-                </button>
-              )}
-              {lastKnownEmail && (
-                <button
-                  type="button"
-                  onClick={() => handleEmailChange(lastKnownEmail)}
-                  style={{
-                    background: 'rgba(2, 132, 199, 0.08)',
-                    border: '1px dashed #0284c7',
-                    color: '#0284c7',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    padding: '5px 12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>📧 Email:</span>
-                  <strong>{lastKnownEmail}</strong>
-                </button>
-              )}
-            </div>
-          )}
-
           <div className="login-field">
-
             <label htmlFor="email">
               Email Address or User ID
             </label>
-
             <div className="field-control">
-
               <span className="mail-icon"></span>
-
               <input
                 id="email"
                 name="ask_no_autofill_email"
                 type="text"
-                placeholder={loginRole === 'admin' ? 'ASK-MASTER-7001, ASK-OPS-5002, or admin email' : 'ASK-CUST-30003 or customer email'}
+                placeholder={loginRole === 'admin' ? 'ASK-MASTER-7001, ASK-OPS-5002, or admin email' : 'ASK-CUST-30003 or registered email'}
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                onBlur={() => handleEmailChange(email)}
                 autoComplete="off"
                 required
               />
-
             </div>
-
           </div>
 
           <div className="login-field">
-
             <div className="password-row">
-
               <label htmlFor="password">
                 Password
               </label>
-
               <Link to="/forgot-password">
                 Forgot Password?
               </Link>
-
             </div>
-
             <div className="field-control" style={{ position: 'relative' }}>
-
               <span className="lock-icon"></span>
-
               <input
                 id="password"
                 name="ask_no_autofill_pwd"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 required
                 style={{ paddingRight: '42px' }}
               />
-
               <button
                 type="button"
                 onClick={() => setShowPassword(p => !p)}
@@ -548,27 +350,113 @@ export default function Login() {
               >
                 {showPassword ? '👁️' : '🔒'}
               </button>
-
             </div>
-
           </div>
 
-
           <button
-            className="signin-btn"
+            className={`signin-btn ${loginRole === 'admin' ? 'admin-btn' : ''}`}
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Authenticating...' : (loginRole === 'admin' ? 'Sign In to Operations Deck →' : 'Sign In to Customer Portal →')}
           </button>
 
+          {loginRole === 'customer' ? (
+            <div className="create-account">
+              <span>New to ASK Transport?</span>
+              <Link to="/register">Create an account</Link>
+            </div>
+          ) : (
+            <div className="admin-secure-notice">
+              <span>🔒 Encrypted 256-bit Central Operations Gateway</span>
+            </div>
+          )}
 
-          <div className="create-account">
-            <span>New to ASK Transport?</span>
+          {/* Discreet Collapsed Test Credentials Accordion */}
+          <div className="login-demo-helper-wrap">
+            <button
+              type="button"
+              className="login-demo-toggle-btn"
+              onClick={() => setShowDemoHelper(prev => !prev)}
+            >
+              <span>🔑</span>
+              <span>Need test credentials?</span>
+              <span style={{ fontSize: '10px' }}>{showDemoHelper ? '▲ Hide' : '▼ View'}</span>
+            </button>
 
-            <Link to="/register">
-              Create an account
-            </Link>
+            {showDemoHelper && (
+              <div className="login-demo-drawer">
+                {loginRole === 'admin' ? (
+                  <div className="login-demo-cards-stack">
+                    <div className="login-demo-card">
+                      <div className="demo-card-head">
+                        <strong>👑 Super Admin Master</strong>
+                        <button
+                          type="button"
+                          className="demo-quick-btn"
+                          onClick={() => {
+                            setEmail('ASK-MASTER-7001');
+                            setPassword('AskSuperMaster#2026!');
+                            setError('');
+                          }}
+                        >
+                          ⚡ 1-Click Auto-Fill
+                        </button>
+                      </div>
+                      <div className="demo-card-lines">
+                        <div><span>ID:</span> <code>ASK-MASTER-7001</code></div>
+                        <div><span>Email:</span> <code>master.superadmin@asktransport.com</code></div>
+                        <div><span>Pass:</span> <code>AskSuperMaster#2026!</code></div>
+                      </div>
+                    </div>
+
+                    <div className="login-demo-card">
+                      <div className="demo-card-head">
+                        <strong>⚡ Operations Admin</strong>
+                        <button
+                          type="button"
+                          className="demo-quick-btn"
+                          onClick={() => {
+                            setEmail('ASK-OPS-5002');
+                            setPassword('AskOpsCommand#2026!');
+                            setError('');
+                          }}
+                        >
+                          ⚡ 1-Click Auto-Fill
+                        </button>
+                      </div>
+                      <div className="demo-card-lines">
+                        <div><span>ID:</span> <code>ASK-OPS-5002</code></div>
+                        <div><span>Email:</span> <code>operations.head@asktransport.com</code></div>
+                        <div><span>Pass:</span> <code>AskOpsCommand#2026!</code></div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="login-demo-card">
+                    <div className="demo-card-head">
+                      <strong>🚚 Verified Shipper / Customer</strong>
+                      <button
+                        type="button"
+                        className="demo-quick-btn"
+                        onClick={() => {
+                          setEmail('ASK-CUST-30003');
+                          setPassword('User@123');
+                          setError('');
+                        }}
+                      >
+                        ⚡ 1-Click Auto-Fill
+                      </button>
+                    </div>
+                    <div className="demo-card-lines">
+                      <div><span>ID:</span> <code>ASK-CUST-30003</code></div>
+                      <div><span>Email:</span> <code>user@askgroup.com</code></div>
+                      <div><span>Pass:</span> <code>User@123</code></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
         </form>
