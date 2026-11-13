@@ -23,7 +23,6 @@ export default function Login() {
   });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showDemoHelper, setShowDemoHelper] = useState(false);
   const [error, setError] = useState(() => {
     if (typeof window !== 'undefined') {
       const search = window.location.search;
@@ -371,93 +370,6 @@ export default function Login() {
               <span>🔒 Encrypted 256-bit Central Operations Gateway</span>
             </div>
           )}
-
-          {/* Discreet Collapsed Test Credentials Accordion */}
-          <div className="login-demo-helper-wrap">
-            <button
-              type="button"
-              className="login-demo-toggle-btn"
-              onClick={() => setShowDemoHelper(prev => !prev)}
-            >
-              <span>🔑</span>
-              <span>Need test credentials?</span>
-              <span style={{ fontSize: '10px' }}>{showDemoHelper ? '▲ Hide' : '▼ View'}</span>
-            </button>
-
-            {showDemoHelper && (
-              <div className="login-demo-drawer">
-                {loginRole === 'admin' ? (
-                  <div className="login-demo-cards-stack">
-                    <div className="login-demo-card">
-                      <div className="demo-card-head">
-                        <strong>👑 Super Admin Master</strong>
-                        <button
-                          type="button"
-                          className="demo-quick-btn"
-                          onClick={() => {
-                            setEmail('ASK-MASTER-7001');
-                            setPassword('AskSuperMaster#2026!');
-                            setError('');
-                          }}
-                        >
-                          ⚡ 1-Click Auto-Fill
-                        </button>
-                      </div>
-                      <div className="demo-card-lines">
-                        <div><span>ID:</span> <code>ASK-MASTER-7001</code></div>
-                        <div><span>Email:</span> <code>master.superadmin@asktransport.com</code></div>
-                        <div><span>Pass:</span> <code>AskSuperMaster#2026!</code></div>
-                      </div>
-                    </div>
-
-                    <div className="login-demo-card">
-                      <div className="demo-card-head">
-                        <strong>⚡ Operations Admin</strong>
-                        <button
-                          type="button"
-                          className="demo-quick-btn"
-                          onClick={() => {
-                            setEmail('ASK-OPS-5002');
-                            setPassword('AskOpsCommand#2026!');
-                            setError('');
-                          }}
-                        >
-                          ⚡ 1-Click Auto-Fill
-                        </button>
-                      </div>
-                      <div className="demo-card-lines">
-                        <div><span>ID:</span> <code>ASK-OPS-5002</code></div>
-                        <div><span>Email:</span> <code>operations.head@asktransport.com</code></div>
-                        <div><span>Pass:</span> <code>AskOpsCommand#2026!</code></div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="login-demo-card">
-                    <div className="demo-card-head">
-                      <strong>🚚 Verified Shipper / Customer</strong>
-                      <button
-                        type="button"
-                        className="demo-quick-btn"
-                        onClick={() => {
-                          setEmail('ASK-CUST-30003');
-                          setPassword('User@123');
-                          setError('');
-                        }}
-                      >
-                        ⚡ 1-Click Auto-Fill
-                      </button>
-                    </div>
-                    <div className="demo-card-lines">
-                      <div><span>ID:</span> <code>ASK-CUST-30003</code></div>
-                      <div><span>Email:</span> <code>user@askgroup.com</code></div>
-                      <div><span>Pass:</span> <code>User@123</code></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
 
         </form>
 
