@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function ProtectedRoute() {
   const { user, isLoggedIn } = useAuth();
@@ -13,5 +14,9 @@ export default function ProtectedRoute() {
     return <Navigate to="/admin" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <ErrorBoundary fallbackTitle="Customer Portal Error">
+      <Outlet />
+    </ErrorBoundary>
+  );
 }

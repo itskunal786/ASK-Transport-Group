@@ -163,39 +163,26 @@ export function isUserApproved(user: AccessControlUser | null | undefined): bool
   if (!user) return false;
   if (user.role === 'Admin' || user.role === 'SuperAdmin') return true;
 
-  // Check matching approval request state
-  const req = getApprovalRequestForUser(user.id, user.email);
-  if (req) {
-    if (req.status === 'PENDING_SUPERADMIN') return false; // Waiting for SuperAdmin Re-verification!
-    if (req.status === 'APPROVED') return true;
-    if (req.status === 'PENDING' || req.status === 'REJECTED') return false;
-  }
-
-  // Check persistent stage flag by user ID
+  // Check if explicitly suspended or deactivated in admin console
   if (user.id !== undefined && user.id !== null) {
-    const stage = localStorage.getItem(`ask_user_approval_stage_${user.id}`);
-    if (stage === 'PENDING_SUPERADMIN') return false;
-    if (stage === 'APPROVED') return true;
+    const suspended = localStorage.getItem(`ask_user_suspended_${user.id}`);
+    if (suspended === 'true') return false;
     const byId = localStorage.getItem(`ask_user_approved_${user.id}`);
-    if (byId === 'true') return true;
     if (byId === 'false') return false;
+    if (byId === 'true') return true;
   }
 
-  // Check persistent stage flag by user email
   if (user.email) {
     const emailKey = user.email.trim().toLowerCase();
-    const stage = localStorage.getItem(`ask_user_approval_stage_${emailKey}`);
-    if (stage === 'PENDING_SUPERADMIN') return false;
-    if (stage === 'APPROVED') return true;
+    const suspended = localStorage.getItem(`ask_user_suspended_${emailKey}`);
+    if (suspended === 'true') return false;
     const byEmail = localStorage.getItem(`ask_user_approved_${emailKey}`);
-    if (byEmail === 'true') return true;
     if (byEmail === 'false') return false;
+    if (byEmail === 'true') return true;
   }
 
-  if (user.isApproved === true) return true;
-
-  // By default, newly created / registered users are restricted to Book & Track only
-  return false;
+  // Active customer accounts have full access to payments, invoices, bookings, and documents
+  return true;
 }
 
 /**

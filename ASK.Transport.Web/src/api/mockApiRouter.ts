@@ -210,6 +210,203 @@ export const SEED_TRANSPORT_SERVICES = [
   { id: 4, name: 'Cold-Chain Refrigerated', isActive: true, extraDeliveryDays: 0 }
 ];
 
+export const SEED_CUSTOMER_BOOKINGS = [
+  {
+    id: 1,
+    bookingNumber: 'ASKB00123',
+    senderName: 'Apex Industries Central Godown',
+    receiverName: 'Metro Hub Distribution Ltd',
+    fromCity: 'Delhi',
+    toCity: 'Mumbai',
+    weight: 18500,
+    totalAmount: 14500,
+    bookingStatus: 'In Transit',
+    paymentStatus: 'Paid',
+    pickupDate: '2026-09-21',
+    createdAt: '2026-09-21T10:00:00Z'
+  },
+  {
+    id: 2,
+    bookingNumber: 'ASKB00122',
+    senderName: 'Southern Auto Components Hub',
+    receiverName: 'Tamil Nadu Freight Terminal',
+    fromCity: 'Bangalore',
+    toCity: 'Chennai',
+    weight: 12400,
+    totalAmount: 22800,
+    bookingStatus: 'Delivered',
+    paymentStatus: 'Paid',
+    pickupDate: '2026-09-18',
+    createdAt: '2026-09-18T08:30:00Z'
+  },
+  {
+    id: 3,
+    bookingNumber: 'ASKB00121',
+    senderName: 'Maharashtra Express Logistics',
+    receiverName: 'Telangana Pharma Hub',
+    fromCity: 'Pune',
+    toCity: 'Hyderabad',
+    weight: 14200,
+    totalAmount: 18200,
+    bookingStatus: 'Pending',
+    paymentStatus: 'Pending',
+    pickupDate: '2026-09-15',
+    createdAt: '2026-09-15T11:00:00Z'
+  },
+  {
+    id: 4,
+    bookingNumber: 'ASKB00120',
+    senderName: 'Capital Goods Distribution',
+    receiverName: 'Rajasthan Freight Logistics',
+    fromCity: 'Delhi',
+    toCity: 'Jaipur',
+    weight: 9800,
+    totalAmount: 12500,
+    bookingStatus: 'Cancelled',
+    paymentStatus: 'Refunded',
+    pickupDate: '2026-09-12',
+    createdAt: '2026-09-12T14:15:00Z'
+  },
+  {
+    id: 5,
+    bookingNumber: 'ASKB00119',
+    senderName: 'Eastern India Distribution Depot',
+    receiverName: 'Bihar Commerce Center',
+    fromCity: 'Kolkata',
+    toCity: 'Patna',
+    weight: 22000,
+    totalAmount: 31500,
+    bookingStatus: 'In Transit',
+    paymentStatus: 'Paid',
+    pickupDate: '2026-09-10',
+    createdAt: '2026-09-10T09:20:00Z'
+  }
+];
+
+export const SEED_CUSTOMER_PAYMENTS = [
+  {
+    id: 1,
+    bookingNumber: 'ASKB00123',
+    transactionId: 'TXN-RZP-20261021-9812',
+    amount: 14500,
+    paymentMethod: 'UPI / Google Pay',
+    paymentStatus: 'Success',
+    razorpayOrderId: 'order_RZP9812034',
+    razorpayPaymentId: 'pay_RZP8491024',
+    paidAt: '2026-10-21T11:45:00Z',
+    createdAt: '2026-10-21T11:40:00Z'
+  },
+  {
+    id: 2,
+    bookingNumber: 'ASKB00122',
+    transactionId: 'TXN-RZP-20261018-7741',
+    amount: 22800,
+    paymentMethod: 'Net Banking (HDFC Corporate)',
+    paymentStatus: 'Success',
+    razorpayOrderId: 'order_RZP7741029',
+    razorpayPaymentId: 'pay_RZP7741982',
+    paidAt: '2026-10-18T16:20:00Z',
+    createdAt: '2026-10-18T16:15:00Z'
+  },
+  {
+    id: 3,
+    bookingNumber: 'ASKB00121',
+    transactionId: 'TXN-RZP-20261015-3312',
+    amount: 18200,
+    paymentMethod: 'Shipper Wallet',
+    paymentStatus: 'Pending',
+    razorpayOrderId: 'order_RZP3312984',
+    razorpayPaymentId: null,
+    paidAt: null,
+    createdAt: '2026-10-15T09:30:00Z'
+  },
+  {
+    id: 4,
+    bookingNumber: 'ASKB00119',
+    transactionId: 'TXN-RZP-20261010-4491',
+    amount: 31500,
+    paymentMethod: 'Commercial Credit Card',
+    paymentStatus: 'Success',
+    razorpayOrderId: 'order_RZP4491038',
+    razorpayPaymentId: 'pay_RZP4491902',
+    paidAt: '2026-10-10T14:10:00Z',
+    createdAt: '2026-10-10T14:05:00Z'
+  }
+];
+
+export const SEED_CUSTOMER_INVOICES = [
+  {
+    id: 1,
+    bookingNumber: 'ASKB00123',
+    invoiceNumber: 'INV-2026-00123',
+    totalAmount: 14500,
+    paymentStatus: 'Paid',
+    createdAt: '2026-10-21T12:00:00Z'
+  },
+  {
+    id: 2,
+    bookingNumber: 'ASKB00122',
+    invoiceNumber: 'INV-2026-00122',
+    totalAmount: 22800,
+    paymentStatus: 'Paid',
+    createdAt: '2026-10-18T16:30:00Z'
+  },
+  {
+    id: 3,
+    bookingNumber: 'ASKB00121',
+    invoiceNumber: 'INV-2026-00121',
+    totalAmount: 18200,
+    paymentStatus: 'Pending',
+    createdAt: '2026-10-15T10:00:00Z'
+  },
+  {
+    id: 4,
+    bookingNumber: 'ASKB00119',
+    invoiceNumber: 'INV-2026-00119',
+    totalAmount: 31500,
+    paymentStatus: 'Paid',
+    createdAt: '2026-10-10T14:30:00Z'
+  }
+];
+
+export const SEED_CUSTOMER_DOCUMENTS = [
+  {
+    id: 1,
+    bookingNumber: 'ASKB00123',
+    fileName: 'LR-Consignment-ASKB00123.pdf',
+    documentType: 'Booking Document',
+    createdAt: '2026-10-21T11:42:00Z'
+  },
+  {
+    id: 2,
+    bookingNumber: 'ASKB00122',
+    fileName: 'Signed-POD-ASKB00122.pdf',
+    documentType: 'POD',
+    createdAt: '2026-10-18T18:10:00Z'
+  },
+  {
+    id: 3,
+    bookingNumber: 'ASKB00121',
+    fileName: 'GST-Tax-Invoice-ASKB00121.pdf',
+    documentType: 'Tax Invoice',
+    createdAt: '2026-10-15T09:40:00Z'
+  },
+  {
+    id: 4,
+    bookingNumber: 'ASKB00119',
+    fileName: 'NIC-EWayBill-9812401.pdf',
+    documentType: 'E-Way Bill',
+    createdAt: '2026-10-10T14:15:00Z'
+  },
+  {
+    id: 5,
+    bookingNumber: 'ASKB00123',
+    fileName: 'Weighbridge-Slip-TK4821.jpg',
+    documentType: 'Weighbridge Slip',
+    createdAt: '2026-10-21T12:05:00Z'
+  }
+];
+
 // =============================================================================
 // MAIN DISPATCH ROUTER FOR OFFLINE / VERIFIED MOCK CALLS
 // =============================================================================
@@ -993,32 +1190,186 @@ export function handleMockRouter(url: string, method: string = 'GET', body?: any
     return { status: 200, data: SEED_TRANSPORT_SERVICES };
   }
 
-  if (cleanUrl.includes('/booking')) {
+  // Customer Bookings List & History
+  if (cleanUrl.includes('/my/bookings') || (cleanUrl.includes('/booking') && method === 'GET' && !cleanUrl.includes('/bookingdocument'))) {
+    const bks = getStorageItem('ask_customer_bookings', SEED_CUSTOMER_BOOKINGS);
+    return {
+      status: 200,
+      data: {
+        items: bks,
+        page: 1,
+        pageSize: 10,
+        totalRecords: bks.length,
+        totalPages: 1,
+        hasPreviousPage: false,
+        hasNextPage: false
+      }
+    };
+  }
+
+  // Create Freight Booking
+  if (cleanUrl.includes('/booking') && method === 'POST') {
     const bkNum = 'ASK-BK-' + Math.floor(98200 + Math.random() * 800);
+    const newBooking = {
+      id: Date.now(),
+      bookingNumber: bkNum,
+      senderName: parsedBody?.senderName || 'Registered Shipper',
+      receiverName: parsedBody?.receiverName || 'Consignee Enterprise',
+      fromCity: parsedBody?.fromAddress?.split(',')[0] || 'Delhi',
+      toCity: parsedBody?.toAddress?.split(',')[0] || 'Mumbai',
+      weight: Number(parsedBody?.weight) || 16500,
+      totalAmount: Math.round(14500 + (Number(parsedBody?.weight) || 1000) * 1.5),
+      bookingStatus: 'Confirmed',
+      paymentStatus: 'Pending',
+      pickupDate: parsedBody?.pickupDate || new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString()
+    };
+    const existing = getStorageItem('ask_customer_bookings', SEED_CUSTOMER_BOOKINGS);
+    setStorageItem('ask_customer_bookings', [newBooking, ...existing]);
+
     return {
       status: 200,
       data: {
         success: true,
         message: `Freight booking ${bkNum} confirmed successfully! ✓`,
-        booking: {
-          id: Date.now(),
-          bookingNumber: bkNum,
-          bookingStatus: 'Confirmed',
-          paymentStatus: 'Pending',
-          service: 'Full Truck Load (FTL)',
-          fromCity: parsedBody?.fromAddress?.split(',')[0] || 'Pune',
-          toCity: parsedBody?.toAddress?.split(',')[0] || 'Gurugram',
-          weight: Number(parsedBody?.weight) || 16500,
-          quantity: Number(parsedBody?.quantity) || 24,
-          freightAmount: Math.round(4500 + (Number(parsedBody?.weight) || 1000) * 8.5),
-          gstAmount: Math.round((4500 + (Number(parsedBody?.weight) || 1000) * 8.5) * 0.18),
-          totalAmount: Math.round((4500 + (Number(parsedBody?.weight) || 1000) * 8.5) * 1.18),
-          createdAt: new Date().toISOString()
-        },
+        booking: newBooking,
+        data: newBooking
+      }
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7B. CUSTOMER PAYMENTS & RAZORPAY GATEWAY
+  // ---------------------------------------------------------------------------
+  if (cleanUrl.includes('/payment') || cleanUrl.includes('/razorpay')) {
+    let paymentsList = getStorageItem('ask_customer_payments', SEED_CUSTOMER_PAYMENTS);
+
+    if (cleanUrl.includes('/razorpay/create-order') || (cleanUrl.includes('/create-order') && method === 'POST')) {
+      const orderId = 'order_RZP' + Math.floor(1000000 + Math.random() * 9000000);
+      return {
+        status: 200,
         data: {
-          id: Date.now(),
-          bookingNumber: bkNum,
-          bookingStatus: 'Confirmed'
+          message: 'Razorpay order created successfully',
+          keyId: 'rzp_test_ASKTransportKey',
+          orderId,
+          amount: (parsedBody?.amount || 14500) * 100,
+          currency: 'INR',
+          bookingNumber: parsedBody?.bookingNumber || 'ASKB00123'
+        }
+      };
+    }
+
+    if (cleanUrl.includes('/razorpay/verify') || (cleanUrl.includes('/verify') && method === 'POST')) {
+      const txnId = 'TXN-RZP-' + Math.floor(10000000 + Math.random() * 90000000);
+      const newPay = {
+        id: Date.now(),
+        bookingNumber: parsedBody?.bookingNumber || 'ASKB00123',
+        transactionId: txnId,
+        amount: Number(parsedBody?.amount) || 14500,
+        paymentMethod: 'Razorpay UPI / Cards',
+        paymentStatus: 'Success',
+        razorpayOrderId: parsedBody?.razorpayOrderId || 'order_RZP9812034',
+        razorpayPaymentId: parsedBody?.razorpayPaymentId || 'pay_RZP8491024',
+        paidAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      paymentsList = [newPay, ...paymentsList];
+      setStorageItem('ask_customer_payments', paymentsList);
+
+      return {
+        status: 200,
+        data: {
+          message: 'Payment verified successfully! ✓',
+          bookingNumber: newPay.bookingNumber,
+          transactionId: txnId,
+          razorpayOrderId: newPay.razorpayOrderId,
+          razorpayPaymentId: newPay.razorpayPaymentId,
+          amount: newPay.amount,
+          paymentStatus: 'Success'
+        }
+      };
+    }
+
+    // GET /Payment/my or GET /payments: returns array directly for getMyPayments
+    return {
+      status: 200,
+      data: paymentsList
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7C. CUSTOMER GST INVOICES
+  // ---------------------------------------------------------------------------
+  if (cleanUrl.includes('/client/invoices') || cleanUrl.includes('/invoice')) {
+    const invoicesList = getStorageItem('ask_customer_invoices', SEED_CUSTOMER_INVOICES);
+
+    if (cleanUrl.includes('/pdf')) {
+      return {
+        status: 200,
+        data: new Blob(['%PDF-1.4 Mock GST Invoice ASK Transport'], { type: 'application/pdf' })
+      };
+    }
+
+    return {
+      status: 200,
+      data: {
+        success: true,
+        message: 'GST Invoices loaded successfully',
+        data: {
+          page: 1,
+          pageSize: 100,
+          totalRecords: invoicesList.length,
+          totalPages: 1,
+          data: invoicesList
+        }
+      }
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7D. CUSTOMER DOCUMENTS & PODs
+  // ---------------------------------------------------------------------------
+  if (cleanUrl.includes('/client/documents') || cleanUrl.includes('/bookingdocument') || cleanUrl.includes('/document')) {
+    let docsList = getStorageItem('ask_customer_documents', SEED_CUSTOMER_DOCUMENTS);
+
+    if (cleanUrl.includes('/upload') && method === 'POST') {
+      const newDoc = {
+        id: Date.now(),
+        bookingNumber: cleanUrl.split('/bookingdocument/')[1]?.split('/')[0] || 'ASKB00123',
+        fileName: 'Uploaded-POD-' + Date.now() + '.pdf',
+        documentType: 'POD Proof',
+        createdAt: new Date().toISOString()
+      };
+      docsList = [newDoc, ...docsList];
+      setStorageItem('ask_customer_documents', docsList);
+
+      return {
+        status: 200,
+        data: {
+          message: 'Document uploaded successfully! ✓',
+          document: {
+            id: newDoc.id,
+            documentType: newDoc.documentType,
+            originalFileName: newDoc.fileName,
+            contentType: 'application/pdf',
+            fileSize: 1048576,
+            createdAt: newDoc.createdAt
+          }
+        }
+      };
+    }
+
+    return {
+      status: 200,
+      data: {
+        success: true,
+        message: 'Client Documents retrieved successfully',
+        data: {
+          page: 1,
+          pageSize: 10,
+          totalRecords: docsList.length,
+          totalPages: 1,
+          data: docsList
         }
       }
     };
