@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { isUserApproved, requestUserApproval, isApprovalPending, isPendingSuperAdminReverify, getApprovalRequestForUser } from '../utils/accessControl';
 import ThemeToggle from '../components/ThemeToggle';
 import '../styles/Dashboard.css';
 
@@ -12,55 +11,11 @@ interface CustomerLayoutProps {
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
-
-  const [approved, setApproved] = useState(() => isUserApproved(user));
-  const [isPending, setIsPending] = useState(() => isApprovalPending(user?.id, user?.email));
-  const [isPendingReverify, setIsPendingReverify] = useState(() => isPendingSuperAdminReverify(user?.id, user?.email));
-  const [requestToast, setRequestToast] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    setApproved(isUserApproved(user));
-    setIsPending(isApprovalPending(user?.id, user?.email));
-
-    function handleAccessChange() {
-      setApproved(isUserApproved(user));
-      setIsPending(isApprovalPending(user?.id, user?.email));
-      setIsPendingReverify(isPendingSuperAdminReverify(user?.id, user?.email));
-    }
-
-    function handleRequestUpdate() {
-      setIsPending(isApprovalPending(user?.id, user?.email));
-      setIsPendingReverify(isPendingSuperAdminReverify(user?.id, user?.email));
-      setApproved(isUserApproved(user));
-    }
-
-    window.addEventListener('ask_access_control_change', handleAccessChange);
-    window.addEventListener('ask_approval_request_updated', handleRequestUpdate);
-    window.addEventListener('ask_approval_request_submitted', handleRequestUpdate);
-    return () => {
-      window.removeEventListener('ask_access_control_change', handleAccessChange);
-      window.removeEventListener('ask_approval_request_updated', handleRequestUpdate);
-      window.removeEventListener('ask_approval_request_submitted', handleRequestUpdate);
-    };
-  }, [user]);
-
-  async function handleRequestApproval() {
-    if (!user) return;
-    try {
-      await requestUserApproval(user);
-      setIsPending(true);
-      setRequestToast('✓ Account clearance request submitted! Super Admin has been notified to verify your account.');
-      setTimeout(() => setRequestToast(null), 6000);
-    } catch {
-      setRequestToast('✓ Account clearance request submitted! Super Admin has been notified.');
-      setTimeout(() => setRequestToast(null), 6000);
-    }
-  }
 
   function active(path: string) {
     return location.pathname === path ? 'active' : '';
@@ -124,6 +79,8 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
         {/* NAVIGATION */}
         <nav className="dashboard-nav">
+          <div className="nav-group-label">MAIN OPERATIONS</div>
+
           <Link className={active('/dashboard')} to="/dashboard">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
@@ -162,12 +119,14 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             Track Shipment
           </Link>
 
+          <div className="nav-group-label" style={{ marginTop: '14px' }}>FINANCIALS &amp; VAULT</div>
+
           <Link className={active('/payments')} to="/payments">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="2" y="5" width="20" height="14" rx="2" />
               <line x1="2" y1="10" x2="22" y2="10" />
             </svg>
-            Payments
+            Payments &amp; Wallet
           </Link>
 
           <Link className={active('/invoices')} to="/invoices">
@@ -178,7 +137,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               <line x1="16" y1="17" x2="8" y2="17" />
               <polyline points="10 9 9 9 8 9" />
             </svg>
-            Invoices
+            GST Invoices
           </Link>
 
           <Link className={active('/documents')} to="/documents">
@@ -189,14 +148,24 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               <line x1="16" y1="17" x2="8" y2="17" />
               <polyline points="10 9 9 9 8 9" />
             </svg>
-            Documents
+            Documents &amp; PODs
           </Link>
+
+          <div className="nav-group-label" style={{ marginTop: '14px' }}>SUPPORT &amp; PREFERENCES</div>
 
           <Link className={active('/support')} to="/support">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg>
-            Support & Help
+            Support &amp; Help
+          </Link>
+
+          <Link className={active('/profile')} to="/profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Profile &amp; Settings
           </Link>
         </nav>
 
@@ -247,11 +216,17 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             </svg>
             <input
               type="text"
-              placeholder="Search by tracking number, booking ID, or destination..."
+              placeholder="Search by Bilty ASKB..., city, cargo or consignment..."
             />
+            <span className="topbar-search-kbd">Ctrl + K</span>
           </div>
 
           <div className="topbar-right">
+            <div className="topbar-fleet-live-pill" title="AIS-140 Highway GPS Network Online">
+              <span className="pulse-beacon-dot" />
+              <span>Fleet GPS Live</span>
+            </div>
+
             <ThemeToggle />
 
             {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
@@ -259,7 +234,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 Admin Center ↗
               </Link>
             )}
-            
 
             <Link to="/notifications" className="topbar-icon-btn notification" title="Notifications">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -271,11 +245,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
             <Link to="/profile" className="topbar-user-profile" title="View Profile">
               <div className="topbar-user-avatar">
-                {user?.name?.charAt(0).toUpperCase() || 'K'}
+                {user?.name?.charAt(0).toUpperCase() || 'S'}
               </div>
               <div className="topbar-user-info">
-                <strong>{user?.name || 'ASK User'}</strong>
-                <small>{user?.role || 'Customer'}</small>
+                <strong>{user?.name || 'Sandeep Verma'}</strong>
+                <small>{user?.role === 'SuperAdmin' ? 'Super Admin' : user?.role === 'Admin' ? 'Operations Admin' : 'Corporate Shipper'}</small>
               </div>
             </Link>
 
@@ -286,7 +260,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
               className="topbar-logout-btn"
               title="Sign Out of Your Account"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
@@ -295,81 +269,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             </button>
           </div>
         </header>
-
-        {/* RESTRICTED ACCOUNT CLEARANCE NOTICE FOR NEW UNAPPROVED USERS */}
-        {!approved && (() => {
-          const reqDetails = getApprovalRequestForUser(user?.id, user?.email);
-          return (
-            <div className="customer-access-ribbon">
-              <div className="ribbon-content">
-                <span className="ribbon-pill" style={{ background: isPendingReverify ? 'rgba(245, 158, 11, 0.2)' : undefined, color: isPendingReverify ? '#fbbf24' : undefined, border: isPendingReverify ? '1px solid #f59e0b' : undefined }}>
-                  {isPendingReverify ? '🛡️ Step 1/2 Admin Verified' : '🟡 Basic Shipper Access'}
-                </span>
-                <span>
-                  {isPendingReverify ? (
-                    <>
-                      <strong>Step 1 Verified:</strong> Operations Admin ({reqDetails?.adminApprovedBy || 'Admin'}) has pre-approved your account. Forwarded for <strong>SuperAdmin Final Re-Verification & Master Pass</strong>. Full clearance will unlock automatically.
-                    </>
-                  ) : (
-                    <>
-                      New accounts currently have access to <strong>Book Shipment</strong> and <strong>Track Shipment</strong> only. Payments, Invoices, and Documents will be unlocked upon administrative account verification.
-                    </>
-                  )}
-                </span>
-              </div>
-              {isPendingReverify ? (
-                <span className="ribbon-action-btn" style={{ background: 'rgba(245, 158, 11, 0.25)', color: '#fbbf24', border: '1px solid #f59e0b', cursor: 'default' }}>
-                  👑 Awaiting SuperAdmin Final Pass
-                </span>
-              ) : isPending ? (
-                <span className="ribbon-action-btn pending" title="Super Admin has been alerted to review your account" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fde68a', border: '1px solid rgba(245, 158, 11, 0.4)', cursor: 'default' }}>
-                  ⏳ Approval Pending (Admin Notified)
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="ribbon-action-btn"
-                  onClick={handleRequestApproval}
-                  title="Send notification to Super Admin to unlock your account"
-                  style={{ cursor: 'pointer', border: 'none' }}
-                >
-                  Request Approval →
-                </button>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* APPROVAL NOTIFICATION TOAST */}
-        {requestToast && (
-          <div style={{
-            position: 'fixed',
-            top: '24px',
-            right: '24px',
-            background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
-            color: '#ffffff',
-            padding: '14px 20px',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px -5px rgba(6, 95, 70, 0.4)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            fontSize: '13px',
-            fontWeight: 700,
-            border: '1px solid rgba(52, 211, 153, 0.4)',
-            animation: 'fadeInDown 0.3s ease'
-          }}>
-            <span style={{ fontSize: '18px' }}>🔔</span>
-            <span>{requestToast}</span>
-            <button
-              onClick={() => setRequestToast(null)}
-              style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', marginLeft: '10px', fontSize: '14px', fontWeight: 'bold' }}
-            >
-              ✕
-            </button>
-          </div>
-        )}
 
         {/* CONTENT */}
         <div className="customer-content-area">
