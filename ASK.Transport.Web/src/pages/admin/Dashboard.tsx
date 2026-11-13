@@ -2022,7 +2022,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       showToast('⚠️ Action Denied: You cannot delete your own active administrator account.');
       return;
     }
-    const isRootAdmin = u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com';
+    const isRootAdmin = u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || u.email?.toLowerCase() === 'master.superadmin@asktransport.com' || u.role === 'SuperAdmin';
     if (isRootAdmin) {
       showToast('⚠️ Protected Identity: Master SuperAdmin account cannot be deleted.');
       return;
@@ -4839,7 +4839,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                           const isReverify = isPendingSuperAdminReverify(u.id, u.email);
                           const avatar = getUserAvatar(u.name, u.role);
                           const uIdCode = (u as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(u.id, u.email, u.role);
-                          const canDelete = !(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase()))));
+                          const canDelete = !(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || u.email?.toLowerCase() === 'master.superadmin@asktransport.com' || u.role === 'SuperAdmin' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase()))));
 
                           return (
                             <tr
@@ -5275,7 +5275,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                                   🛡️ {t('Rights', 'अधिकार')}
                                 </button>
 
-                                {!(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase())))) && (
+                                {!(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || u.email?.toLowerCase() === 'master.superadmin@asktransport.com' || u.role === 'SuperAdmin' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase())))) && (
                                   <button
                                     type="button"
                                     className="user-dir-btn-action delete"

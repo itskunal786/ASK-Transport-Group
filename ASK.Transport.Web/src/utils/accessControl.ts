@@ -52,11 +52,28 @@ export function getUserIdCodeForUser(userId?: number | string, email?: string, r
   const req = getApprovalRequestForUser(userId, email);
   if (req?.userIdCode) return req.userIdCode;
 
-  // Known seeds
-  if (email === 'superadmin@askgroup.com') return 'ASK-SUP-10001';
-  if (email === 'admin@askgroup.com') return 'ASK-ADM-20002';
-  if (email === 'ops@askgroup.com') return 'ASK-ADM-20003';
-  if (email === 'user@askgroup.com') return 'ASK-CUST-30003';
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  // Known seeds - SuperAdmin & Admin unique IDs
+  if (
+    cleanEmail === 'master.superadmin@asktransport.com' ||
+    cleanEmail === 'superadmin@askgroup.com' ||
+    cleanEmail === 'admin@asktransport.com' ||
+    role === 'SuperAdmin'
+  ) {
+    return 'ASK-MASTER-7001';
+  }
+  if (
+    cleanEmail === 'operations.head@asktransport.com' ||
+    cleanEmail === 'admin@askgroup.com' ||
+    cleanEmail === 'kunal@asktransport.com' ||
+    (role === 'Admin' && cleanEmail.includes('kunal'))
+  ) {
+    return 'ASK-OPS-5002';
+  }
+  if (cleanEmail === 'ops@askgroup.com' || cleanEmail === 'rajesh.sharma@asktransport.com') return 'ASK-ADM-20003';
+  if (cleanEmail === 'user@askgroup.com') return 'ASK-CUST-30003';
+  if (cleanEmail === 'pooja.verma@asktransport.com') return 'ASK-CUST-40004';
 
   // Generate deterministic ID
   const prefix = role === 'SuperAdmin' ? 'ASK-SUP' : role === 'Admin' ? 'ASK-ADM' : 'ASK-CUST';

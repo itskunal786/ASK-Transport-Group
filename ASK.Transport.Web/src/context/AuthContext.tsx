@@ -174,12 +174,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const cleanPassword = password.trim();
 
     // Map admin / superadmin credentials if needed
-    const isSuper = cleanId === 'superadmin@askgroup.com' || cleanId === 'ask-sup-10001';
-    const effectiveIdentifier = (cleanId === 'ops@askgroup.com' || cleanId === 'ask-adm-20003') ? 'admin@askgroup.com' : cleanId;
-    // SuperAdmin in backend uses SuperAdmin@123; accept Admin@123 as well by mapping it
-    const effectivePassword = (isSuper && (cleanPassword === 'Admin@123' || cleanPassword === 'admin@123'))
+    const isSuper =
+      cleanId === 'master.superadmin@asktransport.com' ||
+      cleanId === 'superadmin@askgroup.com' ||
+      cleanId === 'admin@asktransport.com' ||
+      cleanId === 'ask-master-7001' ||
+      cleanId === 'ask-sup-10001' ||
+      cleanId === 'ask-sup-9901';
+
+    const isAdmin =
+      cleanId === 'operations.head@asktransport.com' ||
+      cleanId === 'admin@askgroup.com' ||
+      cleanId === 'ops@askgroup.com' ||
+      cleanId === 'kunal@asktransport.com' ||
+      cleanId === 'rajesh.sharma@asktransport.com' ||
+      cleanId === 'ask-ops-5002' ||
+      cleanId === 'ask-adm-20002' ||
+      cleanId === 'ask-adm-20003' ||
+      cleanId === 'ask-adm-10002';
+
+    const effectiveIdentifier = isSuper
+      ? 'superadmin@askgroup.com'
+      : (isAdmin ? 'admin@askgroup.com' : cleanId);
+
+    // Map passwords for backend if using new unique credentials
+    const effectivePassword = isSuper && (cleanPassword === 'AskSuperMaster#2026!' || cleanPassword === 'Admin@123' || cleanPassword === 'admin@123')
       ? 'SuperAdmin@123'
-      : cleanPassword;
+      : (isAdmin && (cleanPassword === 'AskOpsCommand#2026!' || cleanPassword === 'admin@123'))
+        ? 'Admin@123'
+        : cleanPassword;
 
     try {
       response = await authApi.login({

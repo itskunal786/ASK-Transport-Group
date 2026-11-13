@@ -203,13 +203,28 @@ const STORAGE_USERS_KEY = 'ask_secure_auth_users';
 export const SEED_SECURE_USERS: SecureAuthRecord[] = [
   {
     id: 1,
-    userIdCode: 'ASK-SUP-10001',
+    userIdCode: 'ASK-MASTER-7001',
     name: 'ASK Super Admin',
-    email: 'superadmin@askgroup.com',
+    email: 'master.superadmin@asktransport.com',
     phone: '+91 99999 99990',
     role: 'SuperAdmin',
+    // SHA-256 of "AskSuperMaster#2026!"
+    passwordHash: 'dda7330915c7d52978ede692d1b67e4ad43e1a4e074ed2bb4cb8307100d8fc6e',
     // SHA-256 of "SuperAdmin@123"
-    passwordHash: 'd3535b78e24867f3c850fec1c8591b7a469b8f8683be64d835057cb9fd204aa1',
+    secondaryHash: 'd3535b78e24867f3c850fec1c8591b7a469b8f8683be64d835057cb9fd204aa1',
+    isVerified: true,
+    isActive: true,
+    createdAt: '2026-01-01T00:00:00Z'
+  },
+  {
+    id: 2,
+    userIdCode: 'ASK-OPS-5002',
+    name: 'ASK Operations Lead',
+    email: 'operations.head@asktransport.com',
+    phone: '+91 99999 99999',
+    role: 'Admin',
+    // SHA-256 of "AskOpsCommand#2026!"
+    passwordHash: '548f0efeb6c57a6d288f46b488195eaab89024f2fefbfd324b69a5c57a1a5658',
     // SHA-256 of "Admin@123"
     secondaryHash: 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7',
     isVerified: true,
@@ -217,31 +232,16 @@ export const SEED_SECURE_USERS: SecureAuthRecord[] = [
     createdAt: '2026-01-01T00:00:00Z'
   },
   {
-    id: 2,
-    userIdCode: 'ASK-ADM-20002',
-    name: 'ASK GROUP Admin',
-    email: 'admin@askgroup.com',
-    phone: '+91 99999 99999',
-    role: 'Admin',
-    // SHA-256 of "Admin@123"
-    passwordHash: 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7',
-    // SHA-256 of "admin@123"
-    secondaryHash: '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358',
-    isVerified: true,
-    isActive: true,
-    createdAt: '2026-01-01T00:00:00Z'
-  },
-  {
     id: 3,
     userIdCode: 'ASK-ADM-20003',
-    name: 'ASK Operations Lead',
+    name: 'ASK Operations Admin',
     email: 'ops@askgroup.com',
     phone: '+91 99999 99999',
     role: 'Admin',
+    // SHA-256 of "AskOpsCommand#2026!"
+    passwordHash: '548f0efeb6c57a6d288f46b488195eaab89024f2fefbfd324b69a5c57a1a5658',
     // SHA-256 of "Admin@123"
-    passwordHash: 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7',
-    // SHA-256 of "admin@123"
-    secondaryHash: '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358',
+    secondaryHash: 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7',
     isVerified: true,
     isActive: true,
     createdAt: '2026-01-01T00:00:00Z'
@@ -274,7 +274,17 @@ export function getSecureUserRegistry(): SecureAuthRecord[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        // Guarantee system admin accounts (SuperAdmin & Admin) have latest credentials
+        const map = new Map<number, SecureAuthRecord>();
+        SEED_SECURE_USERS.forEach(su => map.set(su.id, su));
+        parsed.forEach((pu: SecureAuthRecord) => {
+          if (!map.has(pu.id)) {
+            map.set(pu.id, pu);
+          }
+        });
+        const merged = Array.from(map.values());
+        localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(merged));
+        return merged;
       }
     }
   } catch {}
@@ -353,35 +363,85 @@ export async function authenticateWithSecureHash(
 
   // Compute incoming password's SHA-256 hash
   const incomingHash = await hashPasswordSHA256(cleanPwd);
-
   const registry = getSecureUserRegistry();
+
+  // 1. Check SuperAdmin aliases
+  const isSuperAlias =
+    cleanId === 'master.superadmin@asktransport.com' ||
+    cleanId === 'superadmin@askgroup.com' ||
+    cleanId === 'admin@asktransport.com' ||
+    cleanId === 'ask-master-7001' ||
+    cleanId === 'ask-sup-10001' ||
+    cleanId === 'ask-sup-9901';
+
+  if (isSuperAlias) {
+    const superRecord = registry.find(u => u.role === 'SuperAdmin') || SEED_SECURE_USERS[0];
+    const superHashes = [
+      superRecord.passwordHash,
+      superRecord.secondaryHash,
+      'dda7330915c7d52978ede692d1b67e4ad43e1a4e074ed2bb4cb8307100d8fc6e', // AskSuperMaster#2026!
+      'd3535b78e24867f3c850fec1c8591b7a469b8f8683be64d835057cb9fd204aa1', // SuperAdmin@123
+      'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7'  // Admin@123
+    ];
+    if (superHashes.includes(incomingHash)) {
+      return buildSecureLoginResponse(superRecord);
+    }
+  }
+
+  // 2. Check Admin aliases
+  const isAdminAlias =
+    cleanId === 'operations.head@asktransport.com' ||
+    cleanId === 'admin@askgroup.com' ||
+    cleanId === 'ops@askgroup.com' ||
+    cleanId === 'kunal@asktransport.com' ||
+    cleanId === 'rajesh.sharma@asktransport.com' ||
+    cleanId === 'ask-ops-5002' ||
+    cleanId === 'ask-adm-20002' ||
+    cleanId === 'ask-adm-20003' ||
+    cleanId === 'ask-adm-10002';
+
+  if (isAdminAlias) {
+    const adminRecord = registry.find(u => u.role === 'Admin') || SEED_SECURE_USERS[1];
+    const adminHashes = [
+      adminRecord.passwordHash,
+      adminRecord.secondaryHash,
+      '548f0efeb6c57a6d288f46b488195eaab89024f2fefbfd324b69a5c57a1a5658', // AskOpsCommand#2026!
+      'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7', // Admin@123
+      '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358'  // admin@123
+    ];
+    if (adminHashes.includes(incomingHash)) {
+      return buildSecureLoginResponse(adminRecord);
+    }
+  }
+
+  // 3. Regular lookup in registry
   const matchedUser = registry.find(u =>
     u.email.toLowerCase() === cleanId ||
     (u.userIdCode && u.userIdCode.toLowerCase() === cleanId) ||
     String(u.id) === cleanId
   );
 
-  if (!matchedUser) {
-    // If not found in registry, check default seed
-    const seedUser = SEED_SECURE_USERS.find(u =>
-      u.email.toLowerCase() === cleanId ||
-      (u.userIdCode && u.userIdCode.toLowerCase() === cleanId) ||
-      String(u.id) === cleanId
-    );
-    if (seedUser && (seedUser.passwordHash === incomingHash || seedUser.secondaryHash === incomingHash)) {
-      return buildSecureLoginResponse(seedUser);
+  if (matchedUser) {
+    const isValid =
+      matchedUser.passwordHash === incomingHash ||
+      (matchedUser.secondaryHash && matchedUser.secondaryHash === incomingHash);
+
+    if (isValid) {
+      return buildSecureLoginResponse(matchedUser);
     }
-    return null;
   }
 
-  // Validate SHA-256 hash
-  const isValid =
-    matchedUser.passwordHash === incomingHash ||
-    (matchedUser.secondaryHash && matchedUser.secondaryHash === incomingHash);
+  // 4. Default seed lookup
+  const seedUser = SEED_SECURE_USERS.find(u =>
+    u.email.toLowerCase() === cleanId ||
+    (u.userIdCode && u.userIdCode.toLowerCase() === cleanId) ||
+    String(u.id) === cleanId
+  );
+  if (seedUser && (seedUser.passwordHash === incomingHash || seedUser.secondaryHash === incomingHash)) {
+    return buildSecureLoginResponse(seedUser);
+  }
 
-  if (!isValid) return null;
-
-  return buildSecureLoginResponse(matchedUser);
+  return null;
 }
 
 function buildSecureLoginResponse(record: SecureAuthRecord): LoginResponse {

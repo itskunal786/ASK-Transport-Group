@@ -5,7 +5,7 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('portal=admin')) {
@@ -54,34 +54,20 @@ export default function Login() {
     setPassword('');
   });
 
+  function handleSelectRole(role: 'customer' | 'admin') {
+    setLoginRole(role);
+    setError('');
+    setEmail('');
+    setPassword('');
+    if (role === 'admin') {
+      navigate('/login?portal=admin', { replace: true });
+    } else {
+      navigate('/login', { replace: true });
+    }
+  }
+
   function handleEmailChange(val: string) {
     setEmail(val);
-    const trimmed = val.trim().toLowerCase();
-    if (loginRole === 'customer') {
-      if (
-        trimmed === 'superadmin@askgroup.com' ||
-        trimmed === 'admin@askgroup.com' ||
-        trimmed.startsWith('superadmin@') ||
-        trimmed.startsWith('admin@') ||
-        trimmed.startsWith('ask-sup') ||
-        trimmed.startsWith('ask-adm')
-      ) {
-        setLoginRole('admin');
-        navigate('/login?portal=admin', { replace: true });
-        setError('');
-      }
-    } else if (loginRole === 'admin') {
-      if (
-        trimmed === 'user@askgroup.com' ||
-        trimmed.startsWith('user@') ||
-        trimmed.startsWith('customer@') ||
-        trimmed.startsWith('ask-cust')
-      ) {
-        setLoginRole('customer');
-        navigate('/login', { replace: true });
-        setError('');
-      }
-    }
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -95,8 +81,28 @@ export default function Login() {
       // Immediately clear sensitive password from component memory
       setPassword('');
 
-      // Smart role-based portal routing:
-      if (user.role === 'Admin' || user.role === 'SuperAdmin') {
+      const isAdminOrSuper = user.role === 'Admin' || user.role === 'SuperAdmin';
+
+      // 1. Strict Enforcement: Customer accounts CANNOT log into Admin Portal
+      if (loginRole === 'admin' && !isAdminOrSuper) {
+        await logout();
+        setError(
+          '⛔ Access Denied: This portal is strictly restricted to ASK Group Administrators & Super Admins. Customer accounts cannot log in here. Please switch to the "👤 Customer Login" tab to sign in.'
+        );
+        return;
+      }
+
+      // 2. Strict Enforcement: Administrator accounts CANNOT log into Customer Portal
+      if (loginRole === 'customer' && isAdminOrSuper) {
+        await logout();
+        setError(
+          '⛔ Access Restricted: Administrator and Super Admin accounts cannot log in through the Customer portal. Please click the "🛡️ Admin / Super Admin" tab above to sign in.'
+        );
+        return;
+      }
+
+      // 3. Authorized portal login
+      if (isAdminOrSuper) {
         localStorage.setItem('ask_admin_active_tab', 'dashboard');
         navigate('/admin?tab=dashboard');
       } else {
@@ -248,43 +254,45 @@ export default function Login() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' }}>
             <button
               type="button"
-              onClick={() => {
-                setLoginRole('customer');
-                setError('');
-              }}
+              onClick={() => handleSelectRole('customer')}
               style={{
-                padding: '8px 12px',
+                padding: '9px 12px',
                 borderRadius: '8px',
                 border: loginRole === 'customer' ? '2px solid #0284c7' : '1px solid #cbd5e1',
-                background: loginRole === 'customer' ? 'rgba(2, 132, 199, 0.1)' : '#ffffff',
+                background: loginRole === 'customer' ? 'rgba(2, 132, 199, 0.12)' : '#ffffff',
                 color: loginRole === 'customer' ? '#0284c7' : '#64748b',
-                fontWeight: 700,
-                fontSize: '0.82rem',
+                fontWeight: 800,
+                fontSize: '0.84rem',
                 cursor: 'pointer',
-                transition: 'all 0.15s'
+                transition: 'all 0.15s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
               }}
             >
-              👤 Customer Login
+              <span>👤</span> Customer Login
             </button>
             <button
               type="button"
-              onClick={() => {
-                setLoginRole('admin');
-                setError('');
-              }}
+              onClick={() => handleSelectRole('admin')}
               style={{
-                padding: '8px 12px',
+                padding: '9px 12px',
                 borderRadius: '8px',
                 border: loginRole === 'admin' ? '2px solid #f59e0b' : '1px solid #cbd5e1',
-                background: loginRole === 'admin' ? 'rgba(245, 158, 11, 0.12)' : '#ffffff',
+                background: loginRole === 'admin' ? 'rgba(245, 158, 11, 0.14)' : '#ffffff',
                 color: loginRole === 'admin' ? '#b45309' : '#64748b',
-                fontWeight: 700,
-                fontSize: '0.82rem',
+                fontWeight: 800,
+                fontSize: '0.84rem',
                 cursor: 'pointer',
-                transition: 'all 0.15s'
+                transition: 'all 0.15s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
               }}
             >
-              🛡️ Admin / Super Admin
+              <span>🛡️</span> Admin / Super Admin
             </button>
           </div>
 
@@ -305,6 +313,108 @@ export default function Login() {
           {error && (
             <div className="login-error">
               {error}
+            </div>
+          )}
+
+          {/* OFFICIAL DEMO & TEST CREDENTIALS ACCORDION / VAULT */}
+          {loginRole === 'admin' ? (
+            <div className="login-credentials-helper admin-credentials">
+              <div className="helper-header">
+                <span className="helper-shield">🛡️</span>
+                <div>
+                  <strong>Admin Operations Command Vault</strong>
+                  <small>Unique Enterprise Credentials (Strictly for ASK Staff)</small>
+                </div>
+              </div>
+
+              <div className="helper-roles-grid">
+                <div className="helper-role-card super">
+                  <div className="role-tag super-admin">👑 Super Admin Master</div>
+                  <div className="credential-row">
+                    <span>User ID:</span>
+                    <code>ASK-MASTER-7001</code>
+                  </div>
+                  <div className="credential-row">
+                    <span>Email:</span>
+                    <code>master.superadmin@asktransport.com</code>
+                  </div>
+                  <div className="credential-row">
+                    <span>Password:</span>
+                    <code>AskSuperMaster#2026!</code>
+                  </div>
+                  <button
+                    type="button"
+                    className="quick-fill-btn super"
+                    onClick={() => {
+                      setEmail('ASK-MASTER-7001');
+                      setPassword('AskSuperMaster#2026!');
+                      setError('');
+                    }}
+                  >
+                    ⚡ Auto-Fill Super Admin
+                  </button>
+                </div>
+
+                <div className="helper-role-card ops">
+                  <div className="role-tag ops-admin">⚡ Operations Admin</div>
+                  <div className="credential-row">
+                    <span>User ID:</span>
+                    <code>ASK-OPS-5002</code>
+                  </div>
+                  <div className="credential-row">
+                    <span>Email:</span>
+                    <code>operations.head@asktransport.com</code>
+                  </div>
+                  <div className="credential-row">
+                    <span>Password:</span>
+                    <code>AskOpsCommand#2026!</code>
+                  </div>
+                  <button
+                    type="button"
+                    className="quick-fill-btn ops"
+                    onClick={() => {
+                      setEmail('ASK-OPS-5002');
+                      setPassword('AskOpsCommand#2026!');
+                      setError('');
+                    }}
+                  >
+                    ⚡ Auto-Fill Operations Admin
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="login-credentials-helper customer-credentials">
+              <div className="helper-header">
+                <span className="helper-shield">👤</span>
+                <div>
+                  <strong>Registered Shipper & Customer Portal</strong>
+                  <small>B2B Freight Client Access (Cannot access Admin portal)</small>
+                </div>
+              </div>
+
+              <div className="helper-role-card cust">
+                <div className="role-tag customer">🚚 Verified B2B Shipper</div>
+                <div className="credential-row">
+                  <span>User ID / Email:</span>
+                  <code>ASK-CUST-30003</code> <em>(or user@askgroup.com)</em>
+                </div>
+                <div className="credential-row">
+                  <span>Password:</span>
+                  <code>User@123</code>
+                </div>
+                <button
+                  type="button"
+                  className="quick-fill-btn cust"
+                  onClick={() => {
+                    setEmail('ASK-CUST-30003');
+                    setPassword('User@123');
+                    setError('');
+                  }}
+                >
+                  ⚡ Auto-Fill Customer Credentials
+                </button>
+              </div>
             </div>
           )}
 
@@ -373,7 +483,7 @@ export default function Login() {
                 id="email"
                 name="ask_no_autofill_email"
                 type="text"
-                placeholder={loginRole === 'admin' ? 'admin@askgroup.com or ASK-ADM-XXXXX' : 'Enter email or User ID (e.g. ASK-CUST-XXXXX)'}
+                placeholder={loginRole === 'admin' ? 'ASK-MASTER-7001, ASK-OPS-5002, or admin email' : 'ASK-CUST-30003 or customer email'}
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={() => handleEmailChange(email)}
