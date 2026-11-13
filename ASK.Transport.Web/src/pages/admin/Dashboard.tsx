@@ -1139,6 +1139,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   const [userToDelete, setUserToDelete] = useState<AdminUserData | null>(null);
   const [deleteUserLoading, setDeleteUserLoading] = useState(false);
 
+  // User Directory View Mode & Details Dossier Modal
+  const [userDirViewMode, setUserDirViewMode] = useState<'list' | 'grid'>('list');
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState<AdminUserData | null>(null);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
+
   // Super Admin Account Clearance Notifications
   const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>(() => getApprovalRequests());
   const [showNotifMenu, setShowNotifMenu] = useState(false);
@@ -1894,6 +1899,15 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       showToast(res.message || 'User data updated successfully!');
       setShowEditUserModal(false);
       loadUsers();
+      if (selectedUserForDetails && selectedUserForDetails.id === editingUser.id) {
+        setSelectedUserForDetails(prev => prev ? {
+          ...prev,
+          name: editUserName.trim(),
+          phone: editUserPhone.trim(),
+          email: editUserEmail.trim(),
+          isActive: editUserActive
+        } : null);
+      }
     } catch (err: any) {
       showToast(err?.message || 'Failed to update user');
     } finally {
@@ -1916,6 +1930,9 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       showToast(res.message || `Role updated to ${targetRole}!`);
       setShowRoleModal(false);
       loadUsers();
+      if (selectedUserForDetails && selectedUserForDetails.id === roleModalUser.id) {
+        setSelectedUserForDetails(prev => prev ? { ...prev, role: targetRole } : null);
+      }
     } catch (err: any) {
       showToast(err?.message || 'Failed to update role');
     } finally {
@@ -1974,12 +1991,20 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
     }
   }
 
+  function handleOpenUserDetails(u: AdminUserData) {
+    setSelectedUserForDetails(u);
+    setShowUserDetailsModal(true);
+  }
+
   async function handleToggleUserStatus(u: AdminUserData) {
     try {
       const newStatus = !u.isActive;
       await changeUserStatus(u.id, newStatus);
       showToast(`User ${u.name} ${newStatus ? 'activated' : 'suspended'}!`);
       loadUsers();
+      if (selectedUserForDetails && selectedUserForDetails.id === u.id) {
+        setSelectedUserForDetails(prev => prev ? { ...prev, isActive: newStatus } : null);
+      }
     } catch (err: any) {
       showToast(err?.message || 'Failed to update status');
     }
@@ -2024,6 +2049,11 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       localStorage.removeItem(`ask_user_revoked_ids_${userToDelete.id}`);
       localStorage.removeItem(`ask_user_granted_ids_${userToDelete.id}`);
 
+      if (selectedUserForDetails && selectedUserForDetails.id === userToDelete.id) {
+        setShowUserDetailsModal(false);
+        setSelectedUserForDetails(null);
+      }
+
       const uIdCode = (userToDelete as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(userToDelete.id, userToDelete.email, userToDelete.role);
       showToast(`🗑️ User "${userToDelete.name}" (${uIdCode}) deleted permanently.`);
       setShowDeleteUserModal(false);
@@ -2042,6 +2072,9 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       setUserApproved(u.id, u.email, false);
       setApprovalRequests(getApprovalRequests());
       setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: false } : x)));
+      if (selectedUserForDetails && selectedUserForDetails.id === u.id) {
+        setSelectedUserForDetails(prev => prev ? { ...prev, isApproved: false } : null);
+      }
       showToast(`🔒 Restricted ${u.name} (${uIdCode}) to Book & Track only.`);
       return;
     }
@@ -2052,12 +2085,18 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
       setUserApproved(u.id, u.email, true);
       setApprovalRequests(getApprovalRequests());
       setAdminUsers(prev => prev.map(x => (x.id === u.id || (u.email && x.email.toLowerCase() === u.email.toLowerCase()) ? { ...x, isApproved: true } : x)));
+      if (selectedUserForDetails && selectedUserForDetails.id === u.id) {
+        setSelectedUserForDetails(prev => prev ? { ...prev, isApproved: true } : null);
+      }
       showToast(`👑 Re-Verified & Passed (${uIdCode})! Full clearance granted to ${u.name}. Dual-authorization complete.`);
     } else {
       // Operations Admin gives Level-1 Pre-Approval (Forward to SuperAdmin)
       await adminPreApproveUserRequest(u.id, u.email, user?.name || 'Operations Admin');
       setApprovalRequests(getApprovalRequests());
       setAdminUsers(prev => prev.map(x => (x.id === u.id ? { ...x, isApproved: false } : x)));
+      if (selectedUserForDetails && selectedUserForDetails.id === u.id) {
+        setSelectedUserForDetails(prev => prev ? { ...prev, isApproved: false } : null);
+      }
       showToast(`🛡️ Pre-Approved by ${user?.name || 'Admin'} (Verified ID: ${uIdCode})! Forwarded to SuperAdmin for dual-control Re-Verification & Pass.`);
     }
   }
@@ -4748,17 +4787,237 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                         🔔 Needs Action ({pendingApprovalCount})
                       </button>
                     )}
+
+                    {/* View Mode Toggle: List vs Cards */}
+                    <div className="user-dir-view-mode-toggle" style={{ marginLeft: 'auto' }}>
+                      <button
+                        type="button"
+                        onClick={() => setUserDirViewMode('list')}
+                        className={`user-dir-view-btn ${userDirViewMode === 'list' ? 'active' : ''}`}
+                        title={t('Switch to executive list table view', 'सूची दृश्य')}
+                      >
+                        📄 {t('List View', 'सूची दृश्य')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUserDirViewMode('grid')}
+                        className={`user-dir-view-btn ${userDirViewMode === 'grid' ? 'active' : ''}`}
+                        title={t('Switch to cards view', 'कार्ड दृश्य')}
+                      >
+                        🗂️ {t('Cards View', 'कार्ड दृश्य')}
+                      </button>
+                    </div>
                   </div>
 
                 </div>
               </div>
 
-              {/* 4. USER DIRECTORY VIEW: MODERN GRID CARDS ONLY */}
-              <div className="user-dir-cards-grid">
+              {/* 4. USER DIRECTORY VIEW: EXECUTIVE TABLE (LIST) OR MODERN GRID CARDS */}
+              {userDirViewMode === 'list' ? (
+                /* 4A. EXECUTIVE TABLE / LIST VIEW (PRIMARY DEFAULT VIEW) */
+                <div className="user-dir-table-wrapper">
+                  <table className="user-dir-table">
+                    <thead>
+                      <tr>
+                        <th>{t('User & Identity', 'उपयोगकर्ता पहचान')}</th>
+                        <th>{t('Official Contact', 'संपर्क')}</th>
+                        <th>{t('Assigned Role', 'भूमिका')}</th>
+                        <th>{t('Clearance & Status', 'क्लीयरेंस स्थिति')}</th>
+                        <th style={{ textAlign: 'right' }}>{t('Actions', 'कार्रवाई')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.length > 0 ? (
+                        filteredUsers.map(u => {
+                          const userApproved = isUserApproved(u);
+                          const isReverify = isPendingSuperAdminReverify(u.id, u.email);
+                          const avatar = getUserAvatar(u.name, u.role);
+                          const uIdCode = (u as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(u.id, u.email, u.role);
+                          const canDelete = !(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase()))));
+
+                          return (
+                            <tr
+                              key={u.id}
+                              onClick={() => handleOpenUserDetails(u)}
+                              style={{ cursor: 'pointer' }}
+                              title={t('Click to open complete user profile & management dossier', 'पूर्ण विवरण खोलने के लिए क्लिक करें')}
+                            >
+                              <td>
+                                <div className="user-dir-profile-cell">
+                                  <div className="user-dir-avatar" style={{ background: avatar.bg, position: 'relative' }}>
+                                    {avatar.initials}
+                                    <span className={`user-dir-avatar-dot ${u.isActive ? 'active' : 'suspended'}`} />
+                                  </div>
+                                  <div className="user-dir-name-col">
+                                    <div className="user-dir-name-row">
+                                      <span className="user-dir-name">{u.name}</span>
+                                      <span
+                                        className="user-dir-id-badge"
+                                        style={{
+                                          background: 'rgba(56, 189, 248, 0.14)',
+                                          color: '#0284c7',
+                                          border: '1px solid rgba(56, 189, 248, 0.35)',
+                                          fontWeight: 800,
+                                          padding: '2px 7px',
+                                          borderRadius: '6px',
+                                          fontSize: '11px',
+                                          letterSpacing: '0.3px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '3px'
+                                        }}
+                                      >
+                                        🆔 {uIdCode}
+                                      </span>
+                                    </div>
+                                    <span className="user-dir-contact-sub" style={{ fontSize: '11px' }}>
+                                      {u.role === 'SuperAdmin'
+                                        ? t('Executive Management • Master Clearance', 'कार्यकारी प्रबंधन')
+                                        : u.role === 'Admin'
+                                        ? t('Operations & Fleet Command', 'परिचालन नियंत्रण')
+                                        : t('Enterprise Consignee & Shipper', 'एंटरप्राइज शिपर')}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td>
+                                <div className="user-dir-contact-sub">
+                                  <a
+                                    href={`mailto:${u.email}`}
+                                    onClick={e => e.stopPropagation()}
+                                    className="user-dir-email-link"
+                                    title={t('Send Email', 'ईमेल भेजें')}
+                                  >
+                                    📧 {u.email}
+                                  </a>
+                                  {u.phone ? (
+                                    <a
+                                      href={`tel:${u.phone}`}
+                                      onClick={e => e.stopPropagation()}
+                                      style={{ color: '#94a3b8', textDecoration: 'none' }}
+                                      title={t('Call Phone', 'कॉल करें')}
+                                    >
+                                      📞 {u.phone}
+                                    </a>
+                                  ) : (
+                                    <span style={{ color: '#64748b', fontSize: '11px' }}>📞 {t('Phone not set', 'फोन नहीं है')}</span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td>
+                                <span
+                                  className={`user-dir-role-pill ${
+                                    u.role === 'SuperAdmin'
+                                      ? 'superadmin'
+                                      : u.role === 'Admin'
+                                      ? 'admin'
+                                      : 'user'
+                                  }`}
+                                >
+                                  {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Operations Admin' : '👤 Portal User'}
+                                </span>
+                              </td>
+
+                              <td>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                                  <span className={`user-dir-status-pill ${u.isActive ? 'active' : 'suspended'}`}>
+                                    <span className={`user-dir-status-dot ${u.isActive ? 'active' : 'suspended'}`} />
+                                    {u.isActive ? t('Active', 'सक्रिय') : t('Suspended', 'निलंबित')}
+                                  </span>
+
+                                  {u.role === 'SuperAdmin' ? (
+                                    <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>
+                                      👑 {t('Full Master Clearance', 'मास्टर क्लीयरेंस')}
+                                    </span>
+                                  ) : u.role === 'Admin' ? (
+                                    <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700 }}>
+                                      ⚡ {t('Admin Cleared', 'एडमिन क्लीयरेंस')}
+                                    </span>
+                                  ) : userApproved ? (
+                                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 700 }}>
+                                      🟢 {t('Full Access (Dual Verified)', 'डुअल सत्यापित')}
+                                    </span>
+                                  ) : isReverify ? (
+                                    <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>
+                                      👑 {t('Needs SuperAdmin Pass', 'सुपरएडमिन पास प्रतीक्षित')}
+                                    </span>
+                                  ) : (
+                                    <span style={{ fontSize: '11px', color: '#d97706', fontWeight: 700 }}>
+                                      🔔 {t('Approval Pending', 'सत्यापन प्रतीक्षित')}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td style={{ textAlign: 'right' }}>
+                                <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+                                  <button
+                                    type="button"
+                                    className="user-dir-btn-action"
+                                    onClick={() => handleOpenUserDetails(u)}
+                                    style={{
+                                      background: '#0284c7',
+                                      color: '#ffffff',
+                                      borderColor: '#0284c7',
+                                      fontWeight: 700
+                                    }}
+                                    title={t('Open Complete Profile & Actions', 'पूर्ण विवरण खोलें')}
+                                  >
+                                    🔍 {t('Details', 'विवरण')}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="user-dir-btn-action edit"
+                                    onClick={() => handleOpenEditUser(u)}
+                                    title={t('Edit user details', 'विवरण संपादित करें')}
+                                  >
+                                    ✏️ {t('Edit', 'बदलें')}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className={`user-dir-btn-action ${u.isActive ? 'suspend' : 'activate'}`}
+                                    onClick={() => handleToggleUserStatus(u)}
+                                    title={u.isActive ? t('Suspend User Account', 'खाता निलंबित करें') : t('Activate User Account', 'सक्रिय करें')}
+                                  >
+                                    {u.isActive ? t('Suspend', 'रोकें') : t('Activate', 'चालू करें')}
+                                  </button>
+
+                                  {user?.role === 'SuperAdmin' && canDelete && (
+                                    <button
+                                      type="button"
+                                      className="user-dir-btn-action delete"
+                                      onClick={() => handleOpenDeleteUser(u)}
+                                      title={t('Delete User Permanently', 'उपयोगकर्ता हटाएं')}
+                                    >
+                                      🗑️ {t('Delete', 'हटाएं')}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                            <strong>{t('No users found matching your search', 'कोई उपयोगकर्ता नहीं मिला')}</strong>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                /* 4B. MODERN GRID CARDS VIEW */
+                <div className="user-dir-cards-grid">
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map(u => {
                       const userApproved = isUserApproved(u);
-                      const isPending = isApprovalPending(u.id, u.email);
                       const isReverify = isPendingSuperAdminReverify(u.id, u.email);
                       const req = getApprovalRequestForUser(u.id, u.email);
                       const avatar = getUserAvatar(u.name, u.role);
@@ -4767,7 +5026,12 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                       return (
                         <div key={u.id} className="user-dir-card">
                           {/* Card Header: Avatar with Status Dot, Name, Role, Dept */}
-                          <div className="user-dir-card-header">
+                          <div
+                            className="user-dir-card-header"
+                            onClick={() => handleOpenUserDetails(u)}
+                            style={{ cursor: 'pointer' }}
+                            title={t('Click to open complete user profile & management dossier', 'पूर्ण विवरण खोलने के लिए क्लिक करें')}
+                          >
                             <div className="user-dir-card-user-info">
                               <div className="user-dir-card-avatar" style={{ background: avatar.bg }}>
                                 {avatar.initials}
@@ -4853,34 +5117,34 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                             <div className="badge-item">
                               <span className="badge-label">{t('Clearance Status', 'क्लीयरेंस')}</span>
                               {u.role === 'SuperAdmin' ? (
-                                <span className="user-dir-clearance-pill master">👑 Full Master</span>
+                                <span className="user-dir-clearance-badge verified super">
+                                  👑 {t('Full Master', 'मास्टर')}
+                                </span>
                               ) : u.role === 'Admin' ? (
-                                <span className="user-dir-clearance-pill cleared">⚡ Admin Cleared</span>
+                                <span className="user-dir-clearance-badge verified admin">
+                                  ⚡ {t('Admin Cleared', 'एडमिन')}
+                                </span>
                               ) : userApproved ? (
-                                <span className="user-dir-clearance-pill dual-cleared" title="Verified by Admin and passed by SuperAdmin">
-                                  🟢 Full Access (Dual Verified)
+                                <span className="user-dir-clearance-badge verified">
+                                  🟢 {t('Full Access (Dual Verified)', 'सत्यापित')}
                                 </span>
                               ) : isReverify ? (
-                                <span className="user-dir-clearance-pill reverify" title="Admin pre-approved. SuperAdmin re-verification required">
-                                  👑 Needs SuperAdmin Pass
-                                </span>
-                              ) : isPending ? (
-                                <span className="user-dir-clearance-pill pending" title="User requested account clearance">
-                                  🔔 Approval Pending
+                                <span className="user-dir-clearance-badge reverify">
+                                  👑 {t('Needs SuperAdmin Pass', 'सुपरएडमिन पास')}
                                 </span>
                               ) : (
-                                <span className="user-dir-clearance-pill restricted" title="New User Restricted to Book & Track only">
-                                  🟡 Book &amp; Track Only
+                                <span className="user-dir-clearance-badge pending">
+                                  🔔 {t('Approval Pending', 'प्रतीक्षित')}
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          {/* Transparency Audit Trail Strip (Dual-Control) */}
-                          {u.role === 'User' && (req?.adminApprovedBy || isReverify || userApproved) && (
-                            <div className="user-dir-trail-box">
-                              <span className="user-dir-trail-item" style={{ color: req?.adminApprovedBy ? '#0284c7' : '#64748b' }}>
-                                🛡️ Admin: <strong>{req?.adminApprovedBy || 'Direct Clearance'}</strong>
+                          {/* Dual-Control Audit Signature Trail */}
+                          {u.role === 'User' && (req || isReverify || userApproved) && (
+                            <div className="user-dir-card-scopes audit-trail-box">
+                              <span className="user-dir-trail-item" style={{ color: (req?.adminApprovedBy || userApproved) ? '#0284c7' : '#94a3b8' }}>
+                                🛡️ Admin: <strong>{req?.adminApprovedBy || (userApproved ? 'Admin Verified' : 'Pending')}</strong>
                               </span>
                               <span className="user-dir-trail-arrow">➔</span>
                               <span className="user-dir-trail-item" style={{ color: userApproved ? '#059669' : '#d97706' }}>
@@ -4891,6 +5155,16 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
 
                           {/* Quick Actions Footer */}
                           <div className="user-dir-card-actions">
+                            <button
+                              type="button"
+                              className="user-dir-btn-action"
+                              style={{ background: '#0284c7', color: '#ffffff', borderColor: '#0284c7', fontWeight: 700 }}
+                              onClick={() => handleOpenUserDetails(u)}
+                              title={t('Open Complete Profile & Actions', 'पूर्ण विवरण खोलें')}
+                            >
+                              🔍 {t('Details', 'विवरण')}
+                            </button>
+
                             {u.role === 'User' && (
                               !userApproved ? (
                                 isReverify ? (
@@ -5028,6 +5302,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     </div>
                   )}
                 </div>
+              )}
             </div>
           );
         })()}
@@ -9031,7 +9306,359 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
           </div>
         )}
         {/* ============================================================== */}
-        {/* MODAL 8: ADD PAN-INDIA HUB MODAL (SUPERADMIN ONLY) */}
+        {/* ============================================================== */}
+        {/* MODAL 7C: USER PROFILE DOSSIER & COMPREHENSIVE MANAGEMENT MODAL */}
+        {/* ============================================================== */}
+        {showUserDetailsModal && selectedUserForDetails && (() => {
+          const u = selectedUserForDetails;
+          const userApproved = isUserApproved(u);
+          const isReverify = isPendingSuperAdminReverify(u.id, u.email);
+          const req = getApprovalRequestForUser(u.id, u.email);
+          const avatar = getUserAvatar(u.name, u.role);
+          const uIdCode = (u as { userIdCode?: string }).userIdCode || getUserIdCodeForUser(u.id, u.email, u.role);
+          const auditInfo = formatAuditTimestamp((u as any).createdAt);
+          const canDelete = !(u.email?.toLowerCase() === 'admin@asktransport.com' || u.email?.toLowerCase() === 'superadmin@askgroup.com' || (user && (user.id === u.id || (user.email && u.email && user.email.toLowerCase() === u.email.toLowerCase()))));
+
+          return (
+            <div className="user-dossier-overlay" onClick={() => setShowUserDetailsModal(false)}>
+              <div className="user-dossier-modal" onClick={e => e.stopPropagation()}>
+                {/* Dossier Header */}
+                <div className="user-dossier-header">
+                  <div className="user-dossier-profile-hero">
+                    <div className="user-dossier-avatar-large" style={{ background: avatar.bg }}>
+                      {avatar.initials}
+                      <span className={`user-dossier-avatar-dot ${u.isActive ? 'active' : 'suspended'}`} />
+                    </div>
+                    <div className="user-dossier-hero-info">
+                      <div className="user-dossier-hero-title-row">
+                        <h2 className="user-dossier-hero-name">{u.name}</h2>
+                        <span
+                          style={{
+                            background: 'rgba(56, 189, 248, 0.15)',
+                            color: '#38bdf8',
+                            border: '1px solid rgba(56, 189, 248, 0.4)',
+                            fontWeight: 800,
+                            padding: '3px 10px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          🆔 {uIdCode}
+                        </span>
+                        <span
+                          className={`user-dir-role-pill ${
+                            u.role === 'SuperAdmin' ? 'superadmin' : u.role === 'Admin' ? 'admin' : 'user'
+                          }`}
+                        >
+                          {u.role === 'SuperAdmin' ? '👑 Super Admin' : u.role === 'Admin' ? '⚡ Operations Admin' : '👤 Portal User'}
+                        </span>
+                        <span className={`user-dir-status-pill ${u.isActive ? 'active' : 'suspended'}`}>
+                          <span className={`user-dir-status-dot ${u.isActive ? 'active' : 'suspended'}`} />
+                          {u.isActive ? t('Active', 'सक्रिय') : t('Suspended', 'निलंबित')}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                        {u.role === 'SuperAdmin'
+                          ? t('Executive Management • Master Clearance & Root Access', 'कार्यकारी प्रबंधन • मुख्य क्लीयरेंस')
+                          : u.role === 'Admin'
+                          ? t('Operations & Fleet Logistics Command Subsystem', 'परिचालन एवं फ्लीट नियंत्रण')
+                          : t('Enterprise Consignee & Freight Shipper Account', 'एंटरप्राइज शिपर एवं कंसाइनी')}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowUserDetailsModal(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#94a3b8',
+                      fontSize: '26px',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      lineHeight: 1
+                    }}
+                    title="Close"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                {/* Dossier Body */}
+                <div className="user-dossier-body">
+                  {/* 4-Tile Matrix */}
+                  <div className="user-dossier-grid">
+                    <div className="user-dossier-tile">
+                      <span className="user-dossier-tile-label">
+                        <span>📧</span> Official Email Address
+                      </span>
+                      <span className="user-dossier-tile-value">
+                        <a href={`mailto:${u.email}`} style={{ color: '#38bdf8', textDecoration: 'none' }}>
+                          {u.email}
+                        </a>
+                      </span>
+                    </div>
+
+                    <div className="user-dossier-tile">
+                      <span className="user-dossier-tile-label">
+                        <span>📞</span> Contact Phone Number
+                      </span>
+                      <span className="user-dossier-tile-value">
+                        {u.phone ? (
+                          <a href={`tel:${u.phone}`} style={{ color: '#f1f5f9', textDecoration: 'none' }}>
+                            {u.phone}
+                          </a>
+                        ) : (
+                          <span style={{ color: '#64748b' }}>Not Registered</span>
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="user-dossier-tile">
+                      <span className="user-dossier-tile-label">
+                        <span>📅</span> Registered / Created Date
+                      </span>
+                      <span className="user-dossier-tile-value">
+                        {auditInfo.formatted || 'Active Member'}
+                        <small style={{ display: 'block', fontSize: '11px', color: '#94a3b8', fontWeight: 500, marginTop: '2px' }}>
+                          {auditInfo.relative}
+                        </small>
+                      </span>
+                    </div>
+
+                    <div className="user-dossier-tile">
+                      <span className="user-dossier-tile-label">
+                        <span>🛡️</span> Dual-Clearance Status
+                      </span>
+                      <span className="user-dossier-tile-value">
+                        {u.role === 'SuperAdmin' ? (
+                          <span style={{ color: '#f59e0b' }}>👑 Full Master Clearance</span>
+                        ) : u.role === 'Admin' ? (
+                          <span style={{ color: '#38bdf8' }}>⚡ Operations Admin Cleared</span>
+                        ) : userApproved ? (
+                          <span style={{ color: '#10b981' }}>🟢 Full Access (Dual Verified)</span>
+                        ) : isReverify ? (
+                          <span style={{ color: '#f59e0b' }}>👑 Needs SuperAdmin Pass</span>
+                        ) : (
+                          <span style={{ color: '#d97706' }}>🔔 Level-1 Approval Pending</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Dual-Control Clearance & Authorization Box */}
+                  <div className="user-dossier-section">
+                    <div className="user-dossier-section-title">
+                      <span>🛡️</span> Dual-Control Access & Authorization Clearance
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                      {u.role === 'SuperAdmin' ? (
+                        <div>
+                          Master SuperAdmin identity holds unrestricted access across all enterprise logistics, financial ledgers, fleet telematics, and staff permission subsystems.
+                        </div>
+                      ) : u.role === 'Admin' ? (
+                        <div>
+                          Operations Administrator cleared for dispatch duty slips, shipment allotting, gate pass tracking, and Level-1 approval clearance for new customer accounts.
+                        </div>
+                      ) : userApproved ? (
+                        <div>
+                          <p style={{ margin: '0 0 8px 0', color: '#10b981', fontWeight: 600 }}>
+                            ✓ Dual-authorization process complete. Account fully approved for multi-state freight bookings, tracking, and GST billing.
+                          </p>
+                          {req && (
+                            <div style={{ fontSize: '11.5px', color: '#94a3b8', background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '8px' }}>
+                              <span>👤 Admin Pre-Approved: <strong>{req.adminApprovedBy || 'Operations Admin'}</strong></span> &bull;{' '}
+                              <span>👑 SuperAdmin Passed: <strong>{req.superAdminVerifiedBy || 'Super Admin'}</strong></span>
+                            </div>
+                          )}
+                        </div>
+                      ) : isReverify ? (
+                        <div>
+                          <p style={{ margin: '0 0 10px 0', color: '#f59e0b', fontWeight: 600 }}>
+                            ⚠️ Level-2 Clearance Pending: User was pre-approved by {req?.adminApprovedBy || 'Operations Admin'}. Awaiting SuperAdmin ID Re-Verification and Master Pass.
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {user?.role === 'SuperAdmin' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="user-dir-btn-action reverify"
+                                  onClick={() => handleToggleUserApproval(u, true)}
+                                >
+                                  👑 Re-Verify ID & Pass (Grant Access)
+                                </button>
+                                <button
+                                  type="button"
+                                  className="user-dir-btn-action restrict"
+                                  onClick={() => handleToggleUserApproval(u, false)}
+                                >
+                                  ✕ Reject Request
+                                </button>
+                              </>
+                            ) : (
+                              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                                ⏳ Waiting for SuperAdmin dual-signoff pass.
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p style={{ margin: '0 0 10px 0', color: '#d97706', fontWeight: 600 }}>
+                            🔔 Fresh Registration: Awaiting initial administrative verification and security review.
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {user?.role === 'SuperAdmin' ? (
+                              <button
+                                type="button"
+                                className="user-dir-btn-action approve"
+                                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', borderColor: '#b45309' }}
+                                onClick={() => handleToggleUserApproval(u, true)}
+                              >
+                                ⚡ SuperAdmin Direct Bypass & Approve
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="user-dir-btn-action approve"
+                                onClick={() => handleToggleUserApproval(u, true)}
+                              >
+                                🛡️ Admin Pre-Approve (Verify ID: {uIdCode})
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="user-dir-btn-action restrict"
+                              onClick={() => handleToggleUserApproval(u, false)}
+                            >
+                              ✕ Reject
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* System Subsystems & Rights Cloud */}
+                  <div className="user-dossier-section">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div className="user-dossier-section-title">
+                        <span>⚡</span> Subsystem Access & Delegated Rights
+                      </div>
+                      {user?.role === 'SuperAdmin' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleOpenRightsModal(u);
+                          }}
+                          style={{
+                            background: 'rgba(99, 102, 241, 0.15)',
+                            color: '#a5b4fc',
+                            border: '1px solid rgba(99, 102, 241, 0.35)',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🛡️ Manage Privileges
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="user-dossier-pills-row">
+                      <span className="user-dossier-priv-pill">📦 Shipments & Bilty</span>
+                      <span className="user-dossier-priv-pill">🚚 Fleet Telematics</span>
+                      {u.role !== 'User' && (
+                        <>
+                          <span className="user-dossier-priv-pill">💰 Enterprise Finance</span>
+                          <span className="user-dossier-priv-pill">⚖️ Weighbridge & Gate Pass</span>
+                          <span className="user-dossier-priv-pill">🛡️ Security Audit Vault</span>
+                        </>
+                      )}
+                      {u.role === 'SuperAdmin' && (
+                        <>
+                          <span className="user-dossier-priv-pill" style={{ color: '#fbbf24', borderColor: 'rgba(245, 158, 11, 0.4)' }}>
+                            👑 Root Directory Administration
+                          </span>
+                          <span className="user-dossier-priv-pill" style={{ color: '#fbbf24', borderColor: 'rgba(245, 158, 11, 0.4)' }}>
+                            👑 Role & Staff Assignment
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dossier Sticky Footer Action Bar */}
+                <div className="user-dossier-footer">
+                  <div className="user-dossier-footer-actions">
+                    <button
+                      type="button"
+                      className="user-dossier-btn edit"
+                      onClick={() => handleOpenEditUser(u)}
+                    >
+                      ✏️ {t('Edit Profile', 'प्रोफाइल संपादित करें')}
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`user-dossier-btn ${u.isActive ? 'suspend' : 'activate'}`}
+                      onClick={() => handleToggleUserStatus(u)}
+                    >
+                      {u.isActive ? `🛑 ${t('Suspend Account', 'खाता रोकें')}` : `🟢 ${t('Activate Account', 'खाता सक्रिय करें')}`}
+                    </button>
+
+                    {user?.role === 'SuperAdmin' && (
+                      <>
+                        <button
+                          type="button"
+                          className="user-dossier-btn role"
+                          onClick={() => handleOpenRoleModal(u)}
+                        >
+                          👑 {t('Change Role', 'भूमिका बदलें')}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="user-dossier-btn rights"
+                          onClick={() => handleOpenRightsModal(u)}
+                        >
+                          🛡️ {t('Manage Rights', 'अधिकार')}
+                        </button>
+
+                        {canDelete && (
+                          <button
+                            type="button"
+                            className="user-dossier-btn delete"
+                            onClick={() => handleOpenDeleteUser(u)}
+                          >
+                            🗑️ {t('Delete User Permanently', 'खाता स्थायी रूप से हटाएं')}
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="user-dossier-btn close"
+                    onClick={() => setShowUserDetailsModal(false)}
+                  >
+                    {t('Close', 'बंद करें')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        
+{/* MODAL 8: ADD PAN-INDIA HUB MODAL (SUPERADMIN ONLY) */}
         {/* ============================================================== */}
         {showAddHubModal && (
           <div className="st-modal-overlay" onClick={() => setShowAddHubModal(false)}>
