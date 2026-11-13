@@ -754,7 +754,7 @@ export default function Dashboard() {
     setIsMobileNavOpen(false);
   }, [activeTab, aiDeckSubTab, fleetDeckSubTab, financeDeckSubTab]);
 
-  // Hierarchical Navigation Accordion State (Single-Open Accordion: Only one group expands at a time)
+  // Hierarchical Navigation Accordion State (Strict Single-Open Accordion: Only one group expands at a time)
   const getInitialNavGroups = (tab: AdminTab): Record<string, boolean> => {
     if (['bookings', 'shipments', 'ewaybill', 'hubs', 'dock_yard', 'weighbridge', 'rto_vault', 'pod_inward'].includes(tab)) {
       return { operations: true, fleet: false, enterprise: false, ai: false, governance: false };
@@ -771,17 +771,24 @@ export default function Dashboard() {
     if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(tab)) {
       return { operations: false, fleet: false, enterprise: false, ai: false, governance: true };
     }
-    // On dashboard home: open operations, fleet, and enterprise so users instantly see all key modules
-    return { operations: true, fleet: true, enterprise: true, ai: false, governance: false };
+    // On dashboard home: keep all accordion groups collapsed so only 1 group opens when clicked
+    return { operations: false, fleet: false, enterprise: false, ai: false, governance: false };
   };
 
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>(() => getInitialNavGroups(activeTab));
 
+  // Strict Single-Open Accordion Toggle: Clicking an open group closes it; clicking any other group opens ONLY that group and closes ALL others
   const toggleNavGroup = (groupKey: string) => {
-    setOpenNavGroups(prev => ({
-      ...prev,
-      [groupKey]: !prev[groupKey]
-    }));
+    setOpenNavGroups(prev => {
+      const willBeOpen = !prev[groupKey];
+      return {
+        operations: groupKey === 'operations' ? willBeOpen : false,
+        fleet: groupKey === 'fleet' ? willBeOpen : false,
+        enterprise: groupKey === 'enterprise' ? willBeOpen : false,
+        ai: groupKey === 'ai' ? willBeOpen : false,
+        governance: groupKey === 'governance' ? willBeOpen : false,
+      };
+    });
   };
 
   const isGroupActive = (group: 'operations' | 'fleet' | 'enterprise' | 'ai' | 'governance'): boolean => {
@@ -813,6 +820,8 @@ export default function Dashboard() {
       setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: true, governance: false });
     } else if (['customers', 'access', 'audit', 'support', 'reports', 'settings'].includes(activeTab)) {
       setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: false, governance: true });
+    } else if (activeTab === 'dashboard') {
+      setOpenNavGroups({ operations: false, fleet: false, enterprise: false, ai: false, governance: false });
     }
   }, [activeTab]);
 
