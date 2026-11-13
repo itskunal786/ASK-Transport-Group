@@ -24,11 +24,11 @@ const YEAR_2026_DATA: MonthlyDataPoint[] = [
 ];
 
 const CARGO_CATEGORIES = [
-  { name: 'Heavy FTL Freight (32ft Multi-Axle)', pct: 38, count: 488, revenue: '₹1.61 Cr', color: '#0284c7' },
-  { name: 'PTL Express Parcel & LTL', pct: 27, count: 346, revenue: '₹1.14 Cr', color: '#10b981' },
-  { name: 'Reefer Cold-Chain & Pharma', pct: 18, count: 231, revenue: '₹76.5 L', color: '#f59e0b' },
-  { name: 'Automotive Parts & Machinery', pct: 12, count: 154, revenue: '₹51.0 L', color: '#8b5cf6' },
-  { name: 'ODC & Project Consignments', pct: 5, count: 65, revenue: '₹21.2 L', color: '#ec4899' }
+  { name: 'Heavy FTL Freight', sub: '32ft Multi-Axle • 488 Bilties', pct: 38, count: 488, revenue: '₹1.61 Cr', color: '#0284c7' },
+  { name: 'PTL Express Parcel', sub: 'Part Truckload • 346 Bilties', pct: 27, count: 346, revenue: '₹1.14 Cr', color: '#10b981' },
+  { name: 'Reefer Cold-Chain', sub: 'Pharma & Perishables • 231 Bilties', pct: 18, count: 231, revenue: '₹76.5 L', color: '#f59e0b' },
+  { name: 'Automotive Machinery', sub: 'OEM Spares & Parts • 154 Bilties', pct: 12, count: 154, revenue: '₹51.0 L', color: '#8b5cf6' },
+  { name: 'ODC Project Cargo', sub: 'Over-Dimensional • 65 Bilties', pct: 5, count: 65, revenue: '₹21.2 L', color: '#ec4899' }
 ];
 
 const CORRIDOR_PERFORMANCE = [
@@ -80,10 +80,10 @@ const CORRIDOR_PERFORMANCE = [
 ];
 
 const FLEET_STATUS_BREAKDOWN = [
-  { label: 'Active In-Transit on Highways', count: 184, pct: 75.1, color: '#10b981' },
-  { label: 'Dock Inward / Hub Loading', count: 32, pct: 13.1, color: '#0284c7' },
-  { label: 'Yard Staging / Ready for Booking', count: 18, pct: 7.3, color: '#f59e0b' },
-  { label: 'Workshop Scheduled Maintenance', count: 11, pct: 4.5, color: '#ef4444' }
+  { label: 'Active on Highways', sub: 'Interstate Long-Haul Trips', count: 184, pct: 75.1, color: '#10b981' },
+  { label: 'Dock Inward / Hub', sub: 'Cross-Dock Terminal Load', count: 32, pct: 13.1, color: '#0284c7' },
+  { label: 'Yard Staging Ready', sub: 'Available for Immediate Dispatch', count: 18, pct: 7.3, color: '#f59e0b' },
+  { label: 'Workshop Service', sub: 'Preventive Fleet Maintenance', count: 11, pct: 4.5, color: '#ef4444' }
 ];
 
 export default function DashboardAnalyticsCharts() {
@@ -344,7 +344,9 @@ export default function DashboardAnalyticsCharts() {
               </h3>
               <div className="analytics-card-sub">Volume and revenue share across vehicle segments</div>
             </div>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981' }}>1,284 Active Shipments</span>
+            <span style={{ fontSize: '11.5px', fontWeight: 800, padding: '3px 10px', borderRadius: '20px', background: 'rgba(2, 132, 199, 0.12)', color: '#0284c7', border: '1px solid rgba(2, 132, 199, 0.25)' }}>
+              1,284 Active Shipments
+            </span>
           </div>
 
           <div className="pie-chart-content-wrap">
@@ -356,7 +358,7 @@ export default function DashboardAnalyticsCharts() {
                   const circumference = 2 * Math.PI * 50; // radius = 50
 
                   return CARGO_CATEGORIES.map((cat, cIdx) => {
-                    const strokeDasharray = `${(cat.pct / 100) * circumference} ${circumference}`;
+                    const strokeDasharray = `${((cat.pct / 100) * circumference) - 2} ${circumference}`;
                     const strokeDashoffset = -((accumulatedPct / 100) * circumference);
                     accumulatedPct += cat.pct;
                     const isHovered = hoveredCategoryIdx === cIdx;
@@ -380,8 +382,15 @@ export default function DashboardAnalyticsCharts() {
               </svg>
 
               <div className="pie-center-badge">
-                <strong>{hoveredCategoryIdx !== null ? `${CARGO_CATEGORIES[hoveredCategoryIdx].pct}%` : '1,284'}</strong>
-                <small>{hoveredCategoryIdx !== null ? 'Category Share' : 'Total Bilties'}</small>
+                <span className="pie-center-sup">
+                  {hoveredCategoryIdx !== null ? 'SELECTED' : 'TOTAL'}
+                </span>
+                <strong>
+                  {hoveredCategoryIdx !== null ? `${CARGO_CATEGORIES[hoveredCategoryIdx].pct}%` : '1,284'}
+                </strong>
+                <small title={hoveredCategoryIdx !== null ? CARGO_CATEGORIES[hoveredCategoryIdx].name : 'Active Bilties'}>
+                  {hoveredCategoryIdx !== null ? CARGO_CATEGORIES[hoveredCategoryIdx].name : 'Active Bilties'}
+                </small>
               </div>
             </div>
 
@@ -398,17 +407,35 @@ export default function DashboardAnalyticsCharts() {
                   >
                     <div className="pie-legend-left">
                       <span className="pie-legend-dot" style={{ background: cat.color }}></span>
-                      <span className="pie-legend-label" title={cat.name}>{cat.name}</span>
+                      <div className="pie-legend-text">
+                        <span className="pie-legend-title">{cat.name}</span>
+                        <span className="pie-legend-sub">{cat.sub}</span>
+                      </div>
                     </div>
                     <div className="pie-legend-right">
                       <span className="pie-legend-val">{cat.revenue}</span>
-                      <span className="pie-legend-pct" style={{ background: `${cat.color}22`, color: cat.color }}>
+                      <span className="pie-legend-pct" style={{ background: `${cat.color}20`, color: cat.color, border: `1px solid ${cat.color}40` }}>
                         {cat.pct}%
                       </span>
                     </div>
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          <div className="graph-metrics-strip" style={{ marginTop: 'auto' }}>
+            <div className="strip-item">
+              <small>Top Category Share</small>
+              <strong style={{ color: '#0284c7' }}>Heavy FTL (38%)</strong>
+            </div>
+            <div className="strip-item">
+              <small>Cumulative Revenue</small>
+              <strong style={{ color: '#10b981' }}>₹4.24 Cr Invoiced</strong>
+            </div>
+            <div className="strip-item">
+              <small>Active Consignments</small>
+              <strong style={{ color: '#f59e0b' }}>1,284 Bilties</strong>
             </div>
           </div>
         </div>
@@ -474,7 +501,9 @@ export default function DashboardAnalyticsCharts() {
               </h3>
               <div className="analytics-card-sub">Active highway dispatch, dock inward turnaround, and yard readiness</div>
             </div>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#0284c7' }}>245 Heavy Trucks</span>
+            <span style={{ fontSize: '11.5px', fontWeight: 800, padding: '3px 10px', borderRadius: '20px', background: 'rgba(2, 132, 199, 0.12)', color: '#0284c7', border: '1px solid rgba(2, 132, 199, 0.25)' }}>
+              245 Heavy Trucks
+            </span>
           </div>
 
           <div className="pie-chart-content-wrap">
@@ -486,7 +515,7 @@ export default function DashboardAnalyticsCharts() {
                   const circumference = 2 * Math.PI * 50;
 
                   return FLEET_STATUS_BREAKDOWN.map((item, fIdx) => {
-                    const strokeDasharray = `${(item.pct / 100) * circumference} ${circumference}`;
+                    const strokeDasharray = `${((item.pct / 100) * circumference) - 2} ${circumference}`;
                     const strokeDashoffset = -((accumulatedPct / 100) * circumference);
                     accumulatedPct += item.pct;
                     const isHovered = hoveredFleetIdx === fIdx;
@@ -510,8 +539,15 @@ export default function DashboardAnalyticsCharts() {
               </svg>
 
               <div className="pie-center-badge">
-                <strong>{hoveredFleetIdx !== null ? FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].count : '184'}</strong>
-                <small>{hoveredFleetIdx !== null ? 'Units' : 'On Highway'}</small>
+                <span className="pie-center-sup">
+                  {hoveredFleetIdx !== null ? 'FLEET SHARE' : 'TOTAL FLEET'}
+                </span>
+                <strong>
+                  {hoveredFleetIdx !== null ? FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].count : '245'}
+                </strong>
+                <small title={hoveredFleetIdx !== null ? `${FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].pct}% • ${FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].label}` : 'Heavy Trucks'}>
+                  {hoveredFleetIdx !== null ? `${FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].pct}% • ${FLEET_STATUS_BREAKDOWN[hoveredFleetIdx].label}` : 'Heavy Trucks'}
+                </small>
               </div>
             </div>
 
@@ -528,17 +564,55 @@ export default function DashboardAnalyticsCharts() {
                   >
                     <div className="pie-legend-left">
                       <span className="pie-legend-dot" style={{ background: item.color }}></span>
-                      <span className="pie-legend-label">{item.label}</span>
+                      <div className="pie-legend-text">
+                        <span className="pie-legend-title">{item.label}</span>
+                        <span className="pie-legend-sub">{item.sub}</span>
+                      </div>
                     </div>
                     <div className="pie-legend-right">
                       <span className="pie-legend-val">{item.count} Trucks</span>
-                      <span className="pie-legend-pct" style={{ background: `${item.color}22`, color: item.color }}>
+                      <span className="pie-legend-pct" style={{ background: `${item.color}20`, color: item.color, border: `1px solid ${item.color}40` }}>
                         {item.pct}%
                       </span>
                     </div>
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* LIVE SEGMENTED FLEET HEALTH PROGRESS BAR */}
+          <div className="fleet-live-progress-wrap">
+            <div className="fleet-segmented-bar">
+              {FLEET_STATUS_BREAKDOWN.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="fleet-bar-segment"
+                  style={{
+                    width: `${item.pct}%`,
+                    background: item.color,
+                  }}
+                  title={`${item.label}: ${item.count} trucks (${item.pct}%)`}
+                />
+              ))}
+            </div>
+            <div className="fleet-quick-pills">
+              {FLEET_STATUS_BREAKDOWN.map((item, idx) => (
+                <span
+                  key={idx}
+                  className={`fleet-quick-pill ${hoveredFleetIdx === idx ? 'active' : ''}`}
+                  style={{
+                    color: item.color,
+                    background: `${item.color}15`,
+                    borderColor: `${item.color}35`,
+                  }}
+                  onMouseEnter={() => setHoveredFleetIdx(idx)}
+                  onMouseLeave={() => setHoveredFleetIdx(null)}
+                >
+                  <span className="pill-dot" style={{ background: item.color }} />
+                  {item.count} {item.label.split(' ')[0]} ({item.pct}%)
+                </span>
+              ))}
             </div>
           </div>
 

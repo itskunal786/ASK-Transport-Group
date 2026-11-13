@@ -269,12 +269,12 @@
 .pie-chart-content-wrap {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   flex: 1;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
-@media (max-width: 580px) {
+@media (max-width: 640px) {
   .pie-chart-content-wrap {
     flex-direction: column;
   }
@@ -282,8 +282,8 @@
 
 .pie-svg-container {
   position: relative;
-  width: 190px;
-  height: 190px;
+  width: 165px;
+  height: 165px;
   flex-shrink: 0;
 }
 
@@ -296,15 +296,15 @@
 
 .pie-segment-path {
   fill: transparent;
-  stroke-width: 32;
+  stroke-width: 28;
   cursor: pointer;
   transition: stroke-width 0.25s, filter 0.25s;
 }
 
 .pie-segment-path:hover,
 .pie-segment-path.active {
-  stroke-width: 38 !important;
-  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.25));
+  stroke-width: 34 !important;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.35));
 }
 
 .pie-center-badge {
@@ -318,27 +318,41 @@
   justify-content: center;
   text-align: center;
   pointer-events: none;
+  max-width: 105px;
+}
+
+.pie-center-sup {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #0284c7;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
 }
 
 .pie-center-badge strong {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   color: var(--text-primary, #0f172a);
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .pie-center-badge small {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--text-secondary, #64748b);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin-top: 3px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
 }
 
 .pie-legend-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
@@ -348,10 +362,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 7px 11px;
+  border-radius: 9px;
   background: var(--bg-surface, #f8fafc);
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -359,24 +373,32 @@
 .pie-legend-row:hover,
 .pie-legend-row.active {
   background: rgba(2, 132, 199, 0.08);
-  border-color: rgba(2, 132, 199, 0.3);
+  border-color: rgba(2, 132, 199, 0.35);
+  transform: translateX(2px);
 }
 
 .pie-legend-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   min-width: 0;
+  flex: 1;
 }
 
 .pie-legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 3px;
   flex-shrink: 0;
 }
 
-.pie-legend-label {
+.pie-legend-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pie-legend-title {
   font-size: 12px;
   font-weight: 700;
   color: var(--text-primary, #0f172a);
@@ -385,10 +407,20 @@
   text-overflow: ellipsis;
 }
 
+.pie-legend-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
 .pie-legend-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-shrink: 0;
 }
 
@@ -396,15 +428,74 @@
   font-size: 11.5px;
   font-weight: 800;
   color: var(--text-primary, #0f172a);
+  font-variant-numeric: tabular-nums;
 }
 
 .pie-legend-pct {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
-  color: #0284c7;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(2, 132, 199, 0.1);
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* LIVE SEGMENTED PROGRESS STRIP */
+.fleet-live-progress-wrap {
+  margin: 8px 0 12px;
+  padding: 10px 14px;
+  background: var(--bg-surface, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fleet-segmented-bar {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e2e8f0;
+  gap: 2px;
+}
+
+.fleet-bar-segment {
+  height: 100%;
+  transition: width 0.4s ease;
+  border-radius: 2px;
+}
+
+.fleet-quick-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fleet-quick-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fleet-quick-pill.active,
+.fleet-quick-pill:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
 }
 
 /* HIGHWAY CORRIDOR PERFORMANCE BARS */
@@ -470,40 +561,106 @@
   font-weight: 600;
 }
 
-/* DARK THEME SUPPORT */
+/* ============================================================================
+   DARK THEME COMPREHENSIVE SUPPORT (data-theme="dark", body.dark, .dark)
+   ============================================================================ */
 [data-theme="dark"] .analytics-suite-header,
-[data-theme="dark"] .analytics-card {
-  background: #0f172a !important;
-  border-color: #334155 !important;
+body.dark .analytics-suite-header,
+.dark .analytics-suite-header,
+[data-theme="dark"] .analytics-card,
+body.dark .analytics-card,
+.dark .analytics-card {
+  background: #0c1527 !important;
+  border-color: #1e2c47 !important;
 }
 
 [data-theme="dark"] .analytics-title-group h2,
+body.dark .analytics-title-group h2,
+.dark .analytics-title-group h2,
 [data-theme="dark"] .analytics-card-head h3,
+body.dark .analytics-card-head h3,
+.dark .analytics-card-head h3,
 [data-theme="dark"] .strip-item strong,
+body.dark .strip-item strong,
+.dark .strip-item strong,
 [data-theme="dark"] .pie-center-badge strong,
-[data-theme="dark"] .pie-legend-label,
+body.dark .pie-center-badge strong,
+.dark .pie-center-badge strong,
+[data-theme="dark"] .pie-legend-title,
+body.dark .pie-legend-title,
+.dark .pie-legend-title,
 [data-theme="dark"] .pie-legend-val,
-[data-theme="dark"] .corridor-name {
+body.dark .pie-legend-val,
+.dark .pie-legend-val,
+[data-theme="dark"] .corridor-name,
+body.dark .corridor-name,
+.dark .corridor-name {
   color: #f8fafc !important;
 }
 
-[data-theme="dark"] .analytics-period-toggle,
-[data-theme="dark"] .pie-legend-row,
-[data-theme="dark"] .corridor-row {
-  background: #1e293b !important;
-  border-color: #334155 !important;
+[data-theme="dark"] .pie-center-sup,
+body.dark .pie-center-sup,
+.dark .pie-center-sup {
+  color: #38bdf8 !important;
 }
 
-[data-theme="dark"] .analytics-tab-btn {
+[data-theme="dark"] .pie-center-badge small,
+body.dark .pie-center-badge small,
+.dark .pie-center-badge small,
+[data-theme="dark"] .pie-legend-sub,
+body.dark .pie-legend-sub,
+.dark .pie-legend-sub {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .analytics-period-toggle,
+body.dark .analytics-period-toggle,
+.dark .analytics-period-toggle,
+[data-theme="dark"] .pie-legend-row,
+body.dark .pie-legend-row,
+.dark .pie-legend-row,
+[data-theme="dark"] .corridor-row,
+body.dark .corridor-row,
+.dark .corridor-row,
+[data-theme="dark"] .fleet-live-progress-wrap,
+body.dark .fleet-live-progress-wrap,
+.dark .fleet-live-progress-wrap {
+  background: #091122 !important;
+  border-color: #1e2c47 !important;
+}
+
+[data-theme="dark"] .pie-legend-row:hover,
+body.dark .pie-legend-row:hover,
+.dark .pie-legend-row:hover,
+[data-theme="dark"] .pie-legend-row.active,
+body.dark .pie-legend-row.active,
+.dark .pie-legend-row.active {
+  background: rgba(2, 132, 199, 0.16) !important;
+  border-color: rgba(56, 189, 248, 0.45) !important;
+}
+
+[data-theme="dark"] .fleet-segmented-bar,
+body.dark .fleet-segmented-bar,
+.dark .fleet-segmented-bar {
+  background: #1e293b !important;
+}
+
+[data-theme="dark"] .analytics-tab-btn,
+body.dark .analytics-tab-btn,
+.dark .analytics-tab-btn {
   background: #1e293b !important;
   border-color: #334155 !important;
   color: #94a3b8 !important;
 }
 
-[data-theme="dark"] .graph-grid-line {
+[data-theme="dark"] .graph-grid-line,
+body.dark .graph-grid-line,
+.dark .graph-grid-line {
   stroke: #1e293b !important;
 }
 
-[data-theme="dark"] .corridor-bar-track {
+[data-theme="dark"] .corridor-bar-track,
+body.dark .corridor-bar-track,
+.dark .corridor-bar-track {
   background: #334155 !important;
 }
