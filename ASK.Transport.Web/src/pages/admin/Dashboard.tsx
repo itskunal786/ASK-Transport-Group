@@ -90,6 +90,7 @@ interface BookingRow {
 
 export interface SupportTicket {
   id: string;
+  vehicleNo?: string;
   customerName: string;
   customerPhone: string;
   consignmentNo: string;
@@ -338,7 +339,8 @@ const INITIAL_VEHICLES: VehicleRow[] = [
 
 const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
   {
-    id: 'TCK-8091',
+    id: 'MP 04 QF 56978',
+    vehicleNo: 'MP 04 QF 56978',
     customerName: 'Reliance Retail Logistics',
     customerPhone: '+91 98200 12345',
     consignmentNo: 'ASKB00123',
@@ -351,7 +353,8 @@ const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
     resolutionNotes: 'Driver contacted; clear of toll congestion now moving at 58 km/h.'
   },
   {
-    id: 'TCK-8092',
+    id: 'MH 12 EF 9012',
+    vehicleNo: 'MH 12 EF 9012',
     customerName: 'Tata Motors Fleet Operations',
     customerPhone: '+91 98223 99887',
     consignmentNo: 'ASKB00122',
@@ -364,7 +367,8 @@ const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
     resolutionNotes: 'Electronic POD generated and mailed to accounting.'
   },
   {
-    id: 'TCK-8093',
+    id: 'RJ 14 GB 4120',
+    vehicleNo: 'RJ 14 GB 4120',
     customerName: 'Sun Pharma Distribution',
     customerPhone: '+91 98980 44332',
     consignmentNo: 'ASKB00118',
@@ -376,7 +380,8 @@ const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
     assignedTo: 'Fleet Radar Team'
   },
   {
-    id: 'TCK-8094',
+    id: 'HR 26 LM 4321',
+    vehicleNo: 'HR 26 LM 4321',
     customerName: 'Havells India Lighting',
     customerPhone: '+91 98110 55667',
     consignmentNo: 'ASKB00120',
@@ -1503,7 +1508,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
   function handleRejectPod(reason: string) {
     if (!podVerifyBooking) return;
     const newTicket: SupportTicket = {
-      id: `TCK-${Math.floor(8100 + Math.random() * 900)}`,
+      id: podVerifyBooking.assignedVehicle || 'MP 04 QF 56978',
+      vehicleNo: podVerifyBooking.assignedVehicle || 'MP 04 QF 56978',
       customerName: podVerifyBooking.customer,
       customerPhone: '+91 98765 00000',
       consignmentNo: podVerifyBooking.bookingNo,
@@ -7196,7 +7202,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <div className="admin-toolbar-search">
                   <input
                     type="text"
-                    placeholder="Search by Ticket ID, Customer, or Consignment Ref..."
+                    placeholder="Search by Vehicle No (e.g. MP 04...), Customer, or Consignment Ref..."
                     value={ticketSearch}
                     onChange={e => setTicketSearch(e.target.value)}
                   />
@@ -7230,6 +7236,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                   .filter(t => {
                     const matchSearch =
                       t.id.toLowerCase().includes(ticketSearch.toLowerCase()) ||
+                      (t.vehicleNo && t.vehicleNo.toLowerCase().includes(ticketSearch.toLowerCase())) ||
                       t.customerName.toLowerCase().includes(ticketSearch.toLowerCase()) ||
                       t.consignmentNo.toLowerCase().includes(ticketSearch.toLowerCase()) ||
                       t.subject.toLowerCase().includes(ticketSearch.toLowerCase());
@@ -7242,7 +7249,7 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                     <div key={t.id} className="admin-card-unit">
                       <div className="admin-card-unit-head">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span className="shipment-id-badge">{t.id}</span>
+                          <span className="shipment-id-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 800, background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.35)', letterSpacing: '0.4px', padding: '3px 9px', borderRadius: '6px' }} title={`Assigned Vehicle Registration: ${t.vehicleNo || t.id}`}><span>🚛</span><span>{t.vehicleNo || t.id}</span></span>
                           <span style={{ fontWeight: 800, color: '#38bdf8', fontSize: '12px', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.25)' }}>{t.consignmentNo}</span>
                         </div>
                         <span
@@ -7301,8 +7308,8 @@ function formatAuditTimestamp(rawDate?: any): { formatted: string; relative: str
                 <div className="st-drawer-box" style={{ maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
                   <div className="st-drawer-head">
                     <div>
-                      <h2>🎧 Manage Ticket: {editingTicket.id}</h2>
-                      <p>Client: {editingTicket.customerName} | Ref: {editingTicket.consignmentNo}</p>
+                      <h2>🎧 Manage Escalation: 🚛 {editingTicket.vehicleNo || editingTicket.id}</h2>
+                      <p>Client: {editingTicket.customerName} | Vehicle: {editingTicket.vehicleNo || editingTicket.id} | Ref: {editingTicket.consignmentNo}</p>
                     </div>
                     <button type="button" className="st-drawer-close" onClick={() => setEditingTicket(null)}>
                       &times;
