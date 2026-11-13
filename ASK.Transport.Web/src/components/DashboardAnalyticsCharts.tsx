@@ -151,7 +151,9 @@ export default function DashboardAnalyticsCharts() {
   }, [linePath, points]);
 
   // Hovered active point data
-  const activeMonthData = hoveredMonthIdx !== null && YEAR_2026_DATA[hoveredMonthIdx] ? YEAR_2026_DATA[hoveredMonthIdx] : YEAR_2026_DATA[10];
+  const activePointIdx = hoveredMonthIdx !== null ? hoveredMonthIdx : 10;
+  const activeMonthData = YEAR_2026_DATA[activePointIdx] || YEAR_2026_DATA[10];
+  const activePoint = points[activePointIdx] || points[points.length - 1];
 
   return (
     <section className="dashboard-analytics-suite" aria-label="Operations Analytics and Visual Radar">
@@ -236,25 +238,40 @@ export default function DashboardAnalyticsCharts() {
             </div>
           </div>
 
-          {/* DYNAMIC HOVER TOOLTIP */}
-          {activeMonthData && (
-            <div className="graph-tooltip-box">
-              <span>🗓️ {activeMonthData.month} 2026</span>
-              <strong>
-                {graphMetric === 'revenue'
-                  ? `₹${activeMonthData.revenueLakhs} Lakhs Gross`
-                  : graphMetric === 'consignments'
-                  ? `${activeMonthData.consignments.toLocaleString('en-IN')} Bilties`
-                  : `${activeMonthData.tonnageMt.toLocaleString('en-IN')} Metric Tons`}
-              </strong>
-              <small style={{ color: '#94a3b8' }}>
-                ₹{activeMonthData.revenueLakhs}L • {activeMonthData.consignments} Bookings • {activeMonthData.tonnageMt} MT
-              </small>
-            </div>
-          )}
-
-          {/* SVG AREA GRAPH */}
+          {/* SVG AREA GRAPH WITH DYNAMIC TRACKING TOOLTIP */}
           <div className="analytics-graph-container">
+            {/* DYNAMIC HOVER TOOLTIP TRACKING ACTIVE POINT */}
+            {activeMonthData && activePoint && (() => {
+              const xRatio = activePoint.x / graphWidth;
+              const yRatio = activePoint.y / graphHeight;
+              const isNearTop = yRatio < 0.32;
+              const arrowClass = xRatio > 0.78 ? 'arrow-at-right' : xRatio < 0.22 ? 'arrow-at-left' : 'arrow-at-center';
+              const flipClass = isNearTop ? 'tooltip-below' : 'tooltip-above';
+
+              return (
+                <div
+                  className={`graph-tooltip-box ${arrowClass} ${flipClass}`}
+                  style={{
+                    left: `${xRatio * 100}%`,
+                    top: `${yRatio * 100}%`
+                  }}
+                >
+                  <div className="tooltip-stem-arrow" />
+                  <span className="tooltip-calendar-date">🗓️ {activeMonthData.month} 2026</span>
+                  <strong>
+                    {graphMetric === 'revenue'
+                      ? `₹${activeMonthData.revenueLakhs} Lakhs Gross`
+                      : graphMetric === 'consignments'
+                      ? `${activeMonthData.consignments.toLocaleString('en-IN')} Bilties`
+                      : `${activeMonthData.tonnageMt.toLocaleString('en-IN')} Metric Tons`}
+                  </strong>
+                  <small>
+                    ₹{activeMonthData.revenueLakhs}L • {activeMonthData.consignments} Bookings • {activeMonthData.tonnageMt} MT
+                  </small>
+                </div>
+              );
+            })()}
+
             <svg viewBox={`0 0 ${graphWidth} ${graphHeight}`} className="analytics-graph-svg">
               <defs>
                 <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -281,11 +298,42 @@ export default function DashboardAnalyticsCharts() {
                 );
               })}
 
+              {/* Active vertical dashed tracking line */}
+              {activePoint && (
+                <line
+                  x1={activePoint.x}
+                  y1={padTop}
+                  x2={activePoint.x}
+                  y2={graphHeight - padBottom}
+                  stroke="#38bdf8"
+                  strokeWidth="1.5"
+                  strokeDasharray="3 3"
+                  opacity="0.6"
+                />
+              )}
+
               {/* Area fill */}
               <path d={areaPath} fill="url(#areaGradient)" />
 
               {/* Stroke line */}
               <path d={linePath} fill="none" stroke="url(#lineGradient)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+
+              {/* Column hover capture zones */}
+              {points.map((pt, pIdx) => {
+                const colWidth = (graphWidth - padLeft - padRight) / points.length;
+                return (
+                  <rect
+                    key={`col-zone-${pIdx}`}
+                    x={pt.x - colWidth / 2}
+                    y={padTop}
+                    width={colWidth}
+                    height={graphHeight - padTop - padBottom}
+                    fill="transparent"
+                    style={{ cursor: 'pointer' }}
+                    onMouseEnter={() => setHoveredMonthIdx(pIdx)}
+                  />
+                );
+              })}
 
               {/* X Axis month labels and interactive points */}
               {points.map((pt, pIdx) => {
